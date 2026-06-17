@@ -46,9 +46,13 @@ builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
 builder.Services.AddOpenApi();
 
 // ─────────────────────────────
-// Controllers
+// Controllers + JSON (enums como string)
 // ─────────────────────────────
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 
 // ─────────────────────────────
 // CORS (React dev)
