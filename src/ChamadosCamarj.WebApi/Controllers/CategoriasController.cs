@@ -1,6 +1,7 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using ChamadosCamarj.Domain.Interfaces;
-using ChamadosCamarj.Domain.Entities;
+using ChamadosCamarj.Application.Features.Categorias.DTOs;
+using ChamadosCamarj.Application.Features.Categorias.Queries;
 
 namespace ChamadosCamarj.WebApi.Controllers;
 
@@ -9,21 +10,23 @@ namespace ChamadosCamarj.WebApi.Controllers;
 [Produces("application/json")]
 public class CategoriasController : ControllerBase
 {
-    private readonly ICategoriaRepository _categoriaRepository;
+    private readonly IMediator _mediator;
 
-    public CategoriasController(ICategoriaRepository categoriaRepository)
+    public CategoriasController(IMediator mediator)
     {
-        _categoriaRepository = categoriaRepository;
+        _mediator = mediator;
     }
 
     /// <summary>
-    /// Lista todas as categorias ativas
+    /// Lista todas as categorias disponíveis
     /// </summary>
     [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<Categoria>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<Categoria>>> Listar(CancellationToken cancellationToken)
+    [ProducesResponseType(typeof(IEnumerable<CategoriaResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<CategoriaResponse>>> Listar(
+        [FromQuery] bool? apenasAtivas = null,
+        CancellationToken cancellationToken = default)
     {
-        var categorias = await _categoriaRepository.ObterAtivasAsync(cancellationToken);
-        return Ok(categorias);
+        var result = await _mediator.Send(new ListarCategoriasQuery(apenasAtivas), cancellationToken);
+        return Ok(result);
     }
 }
