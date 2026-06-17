@@ -2,6 +2,7 @@ using System.Reflection;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
 using ChamadosCamarj.Application.Common.Behaviours;
 using ChamadosCamarj.Domain.Entities;
 using ChamadosCamarj.Domain.Interfaces;
@@ -40,13 +41,9 @@ builder.Services.AddScoped<IChamadoRepository, ChamadoRepository>();
 builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
 
 // ─────────────────────────────
-// Swagger
+// OpenAPI (nativo .NET 10)
 // ─────────────────────────────
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new() { Title = "ChamadosCamarj API", Version = "v1" });
-});
+builder.Services.AddOpenApi();
 
 // ─────────────────────────────
 // Controllers
@@ -73,8 +70,8 @@ var app = builder.Build();
 // ─────────────────────────────
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.UseCors("AllowFrontend");
@@ -89,7 +86,6 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     db.Database.EnsureCreated();
 
-    // Seed categorias se estiver vazio
     if (!db.Categorias.Any())
     {
         db.Categorias.AddRange(
