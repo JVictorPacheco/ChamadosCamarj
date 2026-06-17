@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ChamadosCamarj.Application.Common.Behaviours;
 using ChamadosCamarj.Application.Features.Chamados.Commands;
+using ChamadosCamarj.Application.Features.Chamados.Queries;
 using ChamadosCamarj.Domain.Interfaces;
 using ChamadosCamarj.Infrastructure.Data;
 using ChamadosCamarj.Infrastructure.Repositories;
@@ -37,14 +38,10 @@ builder.Services.AddScoped<IChamadoRepository, ChamadoRepository>();
 builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
 
 // ─────────────────────────────
-// Controllers + Swagger
+// Controllers + OpenAPI (nativo)
 // ─────────────────────────────
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new() { Title = "ChamadosCamarj API", Version = "v1" });
-});
 
 // ─────────────────────────────
 // CORS (para o React dev)
@@ -66,8 +63,7 @@ var app = builder.Build();
 // ─────────────────────────────
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapOpenApi();
 }
 
 app.UseCors("AllowFrontend");
@@ -80,6 +76,7 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.EnsureCreated();
     await DatabaseSeeder.SeedAsync(db);
 }
 

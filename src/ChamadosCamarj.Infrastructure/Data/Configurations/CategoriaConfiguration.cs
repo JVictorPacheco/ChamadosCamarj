@@ -12,6 +12,9 @@ public class CategoriaConfiguration : IEntityTypeConfiguration<Categoria>
 
         builder.HasKey(c => c.Id);
 
+        builder.Property(c => c.Id)
+            .ValueGeneratedNever();
+
         builder.Property(c => c.Nome)
             .IsRequired()
             .HasMaxLength(100);
