@@ -75,12 +75,12 @@ app.UseHttpsRedirection();
 app.MapControllers();
 
 // ─────────────────────────────
-// Auto-migration (dev)
+// Database initialization + Seed
 // ─────────────────────────────
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.EnsureCreated(); // SQLite - cria o banco se não existir
+    await DatabaseSeeder.SeedAsync(db);
 }
 
 app.Run();
