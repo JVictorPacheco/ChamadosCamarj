@@ -1,8 +1,8 @@
-using System.Reflection;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ChamadosCamarj.Application.Common.Behaviours;
+using ChamadosCamarj.Application.Features.Chamados.Commands;
 using ChamadosCamarj.Domain.Interfaces;
 using ChamadosCamarj.Infrastructure.Data;
 using ChamadosCamarj.Infrastructure.Repositories;
@@ -10,7 +10,7 @@ using ChamadosCamarj.Infrastructure.Repositories;
 var builder = WebApplication.CreateBuilder(args);
 
 // ─────────────────────────────
-// Database
+// Database (SQLite)
 // ─────────────────────────────
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(
@@ -21,8 +21,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // ─────────────────────────────
 builder.Services.AddMediatR(cfg =>
 {
-    cfg.RegisterServicesFromAssembly(Assembly.Load("ChamadosCamarj.Application"));
-    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
+    cfg.RegisterServicesFromAssemblyContaining<AbrirChamadoCommand>();
+    cfg.AddOpenBehavior(typeof(ValidationBehaviour<,>));
 });
 
 // ─────────────────────────────
