@@ -253,7 +253,7 @@ GET    /api/chamados/relatorios     → Dashboard/Métricas
 |--------|------------|--------|
 | Backend | .NET 9 + Clean Architecture | Você já usa, perfeito |
 | ORM | EF Core 9 | Já conhece |
-| BD | PostgreSQL | Open source, robusto |
+| BD | SQLite (dev) / PostgreSQL (prod) | Dev: zero setup • Prod: robusto |
 | CQRS | MediatR | Você tá aprendendo |
 | Validação | FluentValidation | Já tem no ContosoPizza |
 | Frontend | React + TypeScript + Vite | Moderno, rápido |
@@ -293,7 +293,7 @@ GET    /api/chamados/relatorios     → Dashboard/Métricas
 | 📂 **Categorias** | Autorização, Atendimento, Super e Tendência, Reembolso, Financeiro |
 | ⏱️ **SLA** | Urgente: 8h | Alta: 24h | Média: 12-16h | Baixa: 48h |
 | 🗄️ **Anexos** | Supabase Storage (bucket S3) — Solicitantes e Atendentes anexam |
-| 🛢️ **BD** | PostgreSQL (via Supabase) |
+| 🛢️ **BD** | SQLite (dev) → PostgreSQL (produção via Supabase) |
 | 🧠 **Metodologia** | Spec-Driven Development (SDD) |
 | 📝 **Docs** | Obsidian (mapeamento completo) |
 | 🎨 **Frontend** | React + TypeScript + Vite + TailwindCSS + Shadcn/ui |
@@ -301,11 +301,11 @@ GET    /api/chamados/relatorios     → Dashboard/Métricas
 ## 13. PERGUNTAS RESPONDIDAS ✅
 
 - ✅ **Nome do sistema:** ChamadosCamarj
-|- ✅ **Notificações internas:** Sim, notificações push (navegador) + desktop (Electron/Tauri no futuro)
-- ✅ **Dashboard:** Sim, gráficos na página inicial (básico)
-- ✅ **Mobile:** Futuramente, por enquanto só web
-|- ✅ **SLA Baixa:** 48h | **SLA Média:** 12-16h | **SLA Alta:** 24h | **SLA Urgente:** 8h
-- ✅ **Anexos:** Atendentes também anexam
+| - ✅ **Notificações internas:** Sim, notificações push (navegador) + desktop (Electron/Tauri no futuro)
+| - ✅ **Dashboard:** Sim, gráficos na página inicial (básico)
+| - ✅ **Mobile:** Futuramente, por enquanto só web
+| - ✅ **SLA Baixa:** 48h | SLA Média: 12-16h | SLA Alta: 24h | SLA Urgente: 8h
+| - ✅ **Anexos:** Atendentes também anexam
 
 ---
 

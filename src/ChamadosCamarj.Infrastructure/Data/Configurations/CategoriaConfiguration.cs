@@ -24,11 +24,11 @@ public class CategoriaConfiguration : IEntityTypeConfiguration<Categoria>
 
         // Seed das categorias padrão
         builder.HasData(
-            new { Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567891"), Nome = "Autorização", Descricao = "Pedidos de autorização", Ativa = true, DataCriacao = DateTime.UtcNow, DataAtualizacao = (DateTime?)null },
-            new { Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567892"), Nome = "Atendimento", Descricao = "Atendimento geral", Ativa = true, DataCriacao = DateTime.UtcNow, DataAtualizacao = (DateTime?)null },
-            new { Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567893"), Nome = "Super e Tendência", Descricao = "Assuntos de supervisão e tendências", Ativa = true, DataCriacao = DateTime.UtcNow, DataAtualizacao = (DateTime?)null },
-            new { Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567894"), Nome = "Reembolso", Descricao = "Solicitações de reembolso", Ativa = true, DataCriacao = DateTime.UtcNow, DataAtualizacao = (DateTime?)null },
-            new { Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567895"), Nome = "Financeiro", Descricao = "Assuntos financeiros", Ativa = true, DataCriacao = DateTime.UtcNow, DataAtualizacao = (DateTime?)null }
+            new Categoria { Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567891"), Nome = "Autorização", Descricao = "Pedidos de autorização", Ativa = true },
+            new Categoria { Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567892"), Nome = "Atendimento", Descricao = "Atendimento geral", Ativa = true },
+            new Categoria { Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567893"), Nome = "Super e Tendência", Descricao = "Assuntos de supervisão e tendências", Ativa = true },
+            new Categoria { Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567894"), Nome = "Reembolso", Descricao = "Solicitações de reembolso", Ativa = true },
+            new Categoria { Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567895"), Nome = "Financeiro", Descricao = "Assuntos financeiros", Ativa = true }
         );
     }
 }
