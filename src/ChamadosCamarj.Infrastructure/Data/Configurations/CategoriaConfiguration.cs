@@ -23,12 +23,33 @@ public class CategoriaConfiguration : IEntityTypeConfiguration<Categoria>
             .IsUnique();
 
         // Seed das categorias padrão
+        var seedDate = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         builder.HasData(
-            new Categoria { Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567891"), Nome = "Autorização", Descricao = "Pedidos de autorização", Ativa = true },
-            new Categoria { Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567892"), Nome = "Atendimento", Descricao = "Atendimento geral", Ativa = true },
-            new Categoria { Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567893"), Nome = "Super e Tendência", Descricao = "Assuntos de supervisão e tendências", Ativa = true },
-            new Categoria { Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567894"), Nome = "Reembolso", Descricao = "Solicitações de reembolso", Ativa = true },
-            new Categoria { Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567895"), Nome = "Financeiro", Descricao = "Assuntos financeiros", Ativa = true }
+            new Categoria("Autorização", "Pedidos de autorização")
+            {
+                Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567891"),
+                DataCriacao = seedDate
+            },
+            new Categoria("Atendimento", "Atendimento geral")
+            {
+                Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567892"),
+                DataCriacao = seedDate
+            },
+            new Categoria("Super e Tendência", "Assuntos de supervisão e tendências")
+            {
+                Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567893"),
+                DataCriacao = seedDate
+            },
+            new Categoria("Reembolso", "Solicitações de reembolso")
+            {
+                Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567894"),
+                DataCriacao = seedDate
+            },
+            new Categoria("Financeiro", "Assuntos financeiros")
+            {
+                Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567895"),
+                DataCriacao = seedDate
+            }
         );
     }
 }
