@@ -2,8 +2,8 @@ using System.Reflection;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Scalar.AspNetCore;
 using ChamadosCamarj.Application.Common.Behaviours;
+using ChamadosCamarj.Domain.Entities;
 using ChamadosCamarj.Domain.Interfaces;
 using ChamadosCamarj.Infrastructure.Data;
 using ChamadosCamarj.Infrastructure.Repositories;
@@ -40,9 +40,13 @@ builder.Services.AddScoped<IChamadoRepository, ChamadoRepository>();
 builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
 
 // ─────────────────────────────
-// OpenAPI (built-in .NET 10)
+// Swagger
 // ─────────────────────────────
-builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new() { Title = "ChamadosCamarj API", Version = "v1" });
+});
 
 // ─────────────────────────────
 // Controllers
@@ -69,12 +73,8 @@ var app = builder.Build();
 // ─────────────────────────────
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
-    app.MapScalarApiReference(options =>
-    {
-        options.WithTitle("ChamadosCamarj API")
-               .WithTheme(ScalarTheme.Purple);
-    });
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseCors("AllowFrontend");
@@ -93,11 +93,11 @@ using (var scope = app.Services.CreateScope())
     if (!db.Categorias.Any())
     {
         db.Categorias.AddRange(
-            new ChamadosCamarj.Domain.Entities.Categoria("Autorização", "Pedidos de autorização"),
-            new ChamadosCamarj.Domain.Entities.Categoria("Atendimento", "Atendimento geral"),
-            new ChamadosCamarj.Domain.Entities.Categoria("Super e Tendência", "Assuntos de supervisão e tendências"),
-            new ChamadosCamarj.Domain.Entities.Categoria("Reembolso", "Solicitações de reembolso"),
-            new ChamadosCamarj.Domain.Entities.Categoria("Financeiro", "Assuntos financeiros")
+            new Categoria("Autorização", "Pedidos de autorização"),
+            new Categoria("Atendimento", "Atendimento geral"),
+            new Categoria("Super e Tendência", "Assuntos de supervisão e tendências"),
+            new Categoria("Reembolso", "Solicitações de reembolso"),
+            new Categoria("Financeiro", "Assuntos financeiros")
         );
         db.SaveChanges();
     }
