@@ -21,15 +21,5 @@ public class CategoriaConfiguration : IEntityTypeConfiguration<Categoria>
 
         builder.HasIndex(c => c.Nome)
             .IsUnique();
-
-        // Seed das categorias padrão
-        var now = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-        builder.HasData(
-            new Categoria("Autorização", "Pedidos de autorização") { Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567891") },
-            new Categoria("Atendimento", "Atendimento geral") { Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567892") },
-            new Categoria("Super e Tendência", "Assuntos de supervisão e tendências") { Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567893") },
-            new Categoria("Reembolso", "Solicitações de reembolso") { Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567894") },
-            new Categoria("Financeiro", "Assuntos financeiros") { Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567895") }
-        );
     }
 }

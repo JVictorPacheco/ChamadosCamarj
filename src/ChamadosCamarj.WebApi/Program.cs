@@ -28,7 +28,7 @@ builder.Services.AddMediatR(cfg =>
 // ─────────────────────────────
 // FluentValidation
 // ─────────────────────────────
-builder.Services.AddValidatorsFromAssembly(Assembly.Load("ChamadosCamarj.Application"));
+builder.Services.AddValidatorsFromAssemblyContaining<AbrirChamadoCommand>();
 
 // ─────────────────────────────
 // Dependency Injection
