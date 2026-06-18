@@ -63,9 +63,17 @@ public class ChamadosController : ControllerBase
     [ProducesResponseType(typeof(ChamadoResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ChamadoResponse>> Abrir(
-        [FromBody] AbrirChamadoCommand command,
+        [FromBody] AbrirChamadoRequest request,
         CancellationToken cancellationToken)
     {
+        var command = new AbrirChamadoCommand(
+            request.Titulo,
+            request.Descricao,
+            request.SolicitanteNome,
+            request.SolicitanteEmail,
+            request.CategoriaId,
+            request.Prioridade);
+
         var result = await _mediator.Send(command, cancellationToken);
         return CreatedAtAction(nameof(ObterPorId), new { id = result.Id }, result);
     }
@@ -144,10 +152,11 @@ public class ChamadosController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Comentar(
         Guid id,
-        [FromBody] ComentarChamadoCommand command,
+        [FromBody] ComentarChamadoRequest request,
         CancellationToken cancellationToken)
     {
-        await _mediator.Send(command with { ChamadoId = id }, cancellationToken);
+        var command = new ComentarChamadoCommand(id, request.Autor, request.Conteudo, request.Interno);
+        await _mediator.Send(command, cancellationToken);
         return NoContent();
     }
 }
