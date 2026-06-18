@@ -20,6 +20,7 @@ Sistema interno para **gestão de chamados corporativos** da CAMARJ. Colaborador
 | [[🗺️ Roadmap]] | Fases do desenvolvimento |
 | [[💬 Decisões]] | Decisões tomadas com o Victor |
 | [[📝 Perguntas Pendentes]] | O que ainda precisa responder |
+| [[⚠️ Concerns]] | Débito técnico e riscos identificados |
 
 ---
 
@@ -36,4 +37,4 @@ Sistema interno para **gestão de chamados corporativos** da CAMARJ. Colaborador
 
 ---
 
-> *Última atualização: Junho 2026*
+> *Última atualização: 2026-06-18 — Mapeamento completo do código realizado. Fases 1 e 2 concluídas.*
