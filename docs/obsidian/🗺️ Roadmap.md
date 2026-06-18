@@ -27,15 +27,28 @@
 - [x] Pipeline Behavior FluentValidation
 - [x] OpenAPI + Scalar UI
 
-### 🔧 Fase 2.5 — Correções (PENDENTE — antes do Frontend)
-> Concerns identificados no mapeamento do código. Ver [[⚠️ Concerns]].
-- [ ] Filtros de ListarChamados no banco (não em memória)
-- [ ] CategoriasController usar MediatR
-- [ ] DatabaseSeeder substituir seed inline de Program.cs
-- [ ] Validators para Atribuir e Comentar
-- [ ] Commands + Endpoints para Fechar e Cancelar
-- [ ] Corrigir migration (ComentarioId em Anexos)
-- [ ] Criar projeto de testes unitários (Domain)
+### 🔧 Fase 2.5 — Correções (EM ANDAMENTO)
+> Ver [[⚠️ Concerns]] para status de cada item.
+
+**Bloco 1 — ✅ Merged (PR #1)**
+- [x] DatabaseSeeder substituir seed inline de Program.cs (C-04)
+- [x] CategoriasController usar MediatR (C-03)
+- [x] Validators para Atribuir e Comentar (C-05)
+- [x] Commands + Endpoints para Fechar e Cancelar (C-06)
+- [x] Fix: DTOs de request para body binding (System.Text.Json + MediatR)
+
+**Bloco 2 — 🔃 PR aberto (PR #2)**
+- [x] Filtros e paginação no banco via IQueryable (C-02)
+- [x] PagedResult<T> com total, totalPaginas, temProxima/Anterior
+- [x] Testado: GET /api/chamados com filtros, paginação e busca
+
+**Bloco 3 — ⏳ Próximo**
+- [ ] Criar projeto ChamadosCamarj.UnitTests (C-09)
+- [ ] Testes do Domain: SLA, transições de status, validações
+
+**Bloco 4 — ⏳ Pendente (decisão necessária)**
+- [ ] Resolver SQLite dev vs PostgreSQL migration (C-01)
+- [ ] Corrigir ComentarioId na migration de Anexos (C-07)
 
 ### 🎨 Fase 3 — Frontend Básico
 - [ ] Login com [[🔐 Azure AD]]
@@ -67,4 +80,4 @@
 
 ---
 
-> **Progresso atual:** ✅ Fase 2 concluída → 🔧 Fase 2.5 (correções antes do Frontend)
+> **Progresso atual:** 🔧 Fase 2.5 — Bloco 2 com PR aberto. Próximo: Bloco 3 (testes unitários).

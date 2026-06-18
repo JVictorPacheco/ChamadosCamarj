@@ -1,14 +1,57 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-06-18
+> Atualizado em: 2026-06-18 (fim da sessão)
 
 ---
 
 ## 📍 Onde estamos
 
-**Fase 2 concluída** — Domain + CQRS + API REST funcionando com SQLite em dev.
+**Fase 2.5 em andamento.** Bloco 1 merged, Bloco 2 com PR aberto aguardando merge.
 
-O próximo passo é resolver os concerns da **Fase 2.5** antes de iniciar o Frontend (Fase 3). Os concerns mais críticos são C-01 (banco) e C-02 (performance).
+Ao retornar: fazer merge do PR #2 (Bloco 2) e iniciar o **Bloco 3 — testes unitários**.
+
+---
+
+## ✅ Concluído nesta sessão (2026-06-18)
+
+### Bloco 1 — PR #1 — Merged ✅
+- C-04: Seed centralizado no `DatabaseSeeder.SeedAsync()`
+- C-03: `CategoriasController` via `IMediator` + `ListarCategoriasQuery`
+- C-05: Validators para `AtribuirChamadoCommand` e `ComentarChamadoCommand`
+- C-06: `FecharChamadoCommand` + `CancelarChamadoCommand` + endpoints
+- Fix: DTOs de request para body binding (`AbrirChamadoRequest`, `ComentarChamadoRequest`)
+
+### Bloco 2 — PR #2 — Aberto 🔃
+- C-02: Filtros e paginação movidos para o banco via `IQueryable`
+- `PagedResult<T>`: novo DTO com `Items`, `Total`, `TotalPaginas`, `TemProxima`, `TemAnterior`
+- `IChamadoRepository.ListarAsync()`: novo método com filtros tipados
+- Testado: GET /api/chamados com status, prioridade, categoriaId, busca e paginação
+
+### Infraestrutura Git criada nesta sessão
+- `.specs/` criado com 10 documentos de mapeamento brownfield
+- `docs/obsidian/` atualizado (Roadmap, Concerns, Home)
+- `.gitignore` atualizado (*.db, workspace.json)
+- Branch padrão de trabalho: `feature/*` → `develop` → PR → merge
+
+---
+
+## 🔴 Blockers ativos
+
+| ID | Blocker |
+|----|---------|
+| C-01 | SQLite dev vs PostgreSQL migration — resolver antes de ir para Supabase |
+
+---
+
+## 📋 Próximos passos (ordem)
+
+1. **Agora:** Fazer merge do PR #2 (Bloco 2)
+2. **Bloco 3:** Criar `ChamadosCamarj.UnitTests` — testes do Domain
+   - `ChamadoTests`: SLA por prioridade, transições de status, Cancelar só de Aberto/EmAndamento
+   - `CategoriaTests`: Ativar/Desativar
+   - Validators: AbrirChamadoCommandValidator
+3. **Bloco 4:** Decisão sobre banco (SQLite dev vs PostgreSQL) + corrigir migration (C-07)
+4. **Fase 3:** Frontend React
 
 ---
 
@@ -24,45 +67,14 @@ O próximo passo é resolver os concerns da **Fase 2.5** antes de iniciar o Fron
 | Seed | 5 categorias fixas com GUIDs determinísticos |
 | Atendentes | Victor (Admin) + Fábio (Atendente) |
 | SLA | Urgente 8h, Alta 24h, Média 16h, Baixa 48h |
-| Notificações | Push navegador + Desktop (Electron/Tauri futuro) |
-| Mobile | Web primeiro, mobile no futuro |
-| Docs | Obsidian (docs/obsidian/) |
-
----
-
-## 🔴 Blockers ativos
-
-| ID | Blocker |
-|----|---------|
-| C-01 | Conflito SQLite dev vs PostgreSQL migration — resolver antes de subir para Supabase |
-
----
-
-## 📋 TODOs (ordenados por prioridade)
-
-1. Corrigir `ListarChamadosQueryHandler` — filtros no banco, não em memória (C-02)
-2. `CategoriasController` usar `IMediator` (C-03)
-3. Usar `DatabaseSeeder.SeedAsync()` em vez de seed inline (C-04)
-4. Validators para `AtribuirChamadoCommand` e `ComentarChamadoCommand` (C-05)
-5. Commands + Endpoints para `Fechar` e `Cancelar` (C-06)
-6. Corrigir migration — coluna `ComentarioId` em `Anexos` (C-07)
-7. Criar projeto `ChamadosCamarj.UnitTests` com testes do Domain (C-09)
-8. Iniciar Frontend React (Fase 3)
+| Git flow | feature/* → develop (PR) → main (release) |
+| Body binding | DTOs de request separados dos Commands MediatR |
 
 ---
 
 ## 💡 Ideias adiadas (deferred)
 
-- **Reembolso workflow:** Possível integração com sistema financeiro no futuro
-- **App mobile:** Web primeiro, avaliar PWA ou React Native depois
-- **Electron/Tauri:** Para notificações desktop — após o web estar estável
-- **Redis:** Cache planejado no SPEC mas sem prioridade definida
-- **Serilog:** Logging estruturado — adicionar antes de ir para produção
-
----
-
-## 🎓 Aprendizados
-
-- `EnsureCreated()` não aplica migrations — bom para dev rápido, perigoso para mudanças de schema
-- `ObterTodosAsync()` + filtro em memória é um padrão a evitar desde o início
-- `CategoriasController` foi uma exceção ao padrão CQRS — deve ser corrigido
+- App mobile (PWA ou React Native) — após web estável
+- Electron/Tauri para notificações desktop
+- Redis cache
+- Serilog logging estruturado — antes de ir para produção
