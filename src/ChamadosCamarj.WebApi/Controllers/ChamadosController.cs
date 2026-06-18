@@ -21,11 +21,11 @@ public class ChamadosController : ControllerBase
     }
 
     /// <summary>
-    /// Lista todos os chamados com filtros opcionais
+    /// Lista chamados com filtros e paginação
     /// </summary>
     [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<ChamadoResponse>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<ChamadoResponse>>> Listar(
+    [ProducesResponseType(typeof(PagedResult<ChamadoResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PagedResult<ChamadoResponse>>> Listar(
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanhoPagina = 10,
         [FromQuery] string? status = null,
