@@ -4,7 +4,6 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using ChamadosCamarj.Application.Common.Behaviours;
-using ChamadosCamarj.Domain.Entities;
 using ChamadosCamarj.Domain.Interfaces;
 using ChamadosCamarj.Infrastructure.Data;
 using ChamadosCamarj.Infrastructure.Repositories;
@@ -83,24 +82,13 @@ app.UseHttpsRedirection();
 app.MapControllers();
 
 // ─────────────────────────────
-// Auto-migration + Seed categorias
+// Auto-migration + Seed
 // ─────────────────────────────
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     db.Database.EnsureCreated();
-
-    if (!db.Categorias.Any())
-    {
-        db.Categorias.AddRange(
-            new Categoria("Autorização", "Pedidos de autorização") { Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567891") },
-            new Categoria("Atendimento", "Atendimento geral") { Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567892") },
-            new Categoria("Super e Tendência", "Assuntos de supervisão e tendências") { Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567893") },
-            new Categoria("Reembolso", "Solicitações de reembolso") { Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567894") },
-            new Categoria("Financeiro", "Assuntos financeiros") { Id = Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567895") }
-        );
-        db.SaveChanges();
-    }
+    await DatabaseSeeder.SeedAsync(db);
 }
 
 app.Run();
