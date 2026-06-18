@@ -13,3 +13,5 @@ Thumbs.db
 *.db
 *.db-shm
 *.db-wal
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
