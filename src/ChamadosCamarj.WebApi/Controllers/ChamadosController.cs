@@ -1,8 +1,8 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using ChamadosCamarj.Application.Features.Chamados.Commands;
-using ChamadosCamarj.Application.Features.Chamados.Queries;
 using ChamadosCamarj.Application.Features.Chamados.DTOs;
+using ChamadosCamarj.Application.Features.Chamados.Queries;
 
 namespace ChamadosCamarj.WebApi.Controllers;
 
@@ -109,6 +109,30 @@ public class ChamadosController : ControllerBase
     public async Task<IActionResult> Resolver(Guid id, CancellationToken cancellationToken)
     {
         await _mediator.Send(new ResolverChamadoCommand(id), cancellationToken);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Fecha um chamado resolvido
+    /// </summary>
+    [HttpPatch("{id:guid}/fechar")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Fechar(Guid id, CancellationToken cancellationToken)
+    {
+        await _mediator.Send(new FecharChamadoCommand(id), cancellationToken);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Cancela um chamado aberto ou em andamento
+    /// </summary>
+    [HttpPatch("{id:guid}/cancelar")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Cancelar(Guid id, CancellationToken cancellationToken)
+    {
+        await _mediator.Send(new CancelarChamadoCommand(id), cancellationToken);
         return NoContent();
     }
 
