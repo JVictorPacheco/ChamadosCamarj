@@ -8,6 +8,7 @@ public interface IChamadoRepository
     // Comandos
     Task<Chamado> AdicionarAsync(Chamado chamado, CancellationToken cancellationToken = default);
     Task AtualizarAsync(Chamado chamado, CancellationToken cancellationToken = default);
+    Task AdicionarComentarioAsync(Comentario comentario, CancellationToken cancellationToken = default);
 
     // Consultas
     Task<Chamado?> ObterPorIdAsync(Guid id, CancellationToken cancellationToken = default);

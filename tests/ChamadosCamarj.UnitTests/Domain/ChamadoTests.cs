@@ -146,6 +146,77 @@ public class ChamadoTests
         chamado.DataLimite.Should().NotBe(dataLimiteAnterior);
     }
 
+    // ── Transições de status inválidas ──────────────────────────────────────
+
+    [Fact]
+    public void Resolver_QuandoJaCancelado_DeveLancarInvalidOperationException()
+    {
+        var chamado = CriarChamado();
+        chamado.Cancelar();
+
+        var act = () => chamado.Resolver();
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void Fechar_QuandoNuncaFoiResolvido_DeveLancarInvalidOperationException()
+    {
+        var chamado = CriarChamado();
+        chamado.Atribuir(Guid.NewGuid(), "Victor");
+
+        var act = () => chamado.Fechar();
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void Cancelar_QuandoJaFechado_DeveLancarInvalidOperationException()
+    {
+        var chamado = CriarChamado();
+        chamado.Atribuir(Guid.NewGuid(), "Victor");
+        chamado.Resolver();
+        chamado.Fechar();
+
+        var act = () => chamado.Cancelar();
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void Atribuir_QuandoJaCancelado_DeveLancarInvalidOperationException()
+    {
+        var chamado = CriarChamado();
+        chamado.Cancelar();
+
+        var act = () => chamado.Atribuir(Guid.NewGuid(), "Victor");
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void Reabrir_QuandoJaAberto_DeveLancarInvalidOperationException()
+    {
+        var chamado = CriarChamado();
+
+        var act = () => chamado.Reabrir();
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void AlterarPrioridade_QuandoFechado_DeveLancarInvalidOperationException()
+    {
+        var chamado = CriarChamado();
+        chamado.Atribuir(Guid.NewGuid(), "Victor");
+        chamado.Resolver();
+        chamado.Fechar();
+
+        var act = () => chamado.AlterarPrioridade(PrioridadeChamado.Urgente);
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
     // ── AtualizarDados ───────────────────────────────────────────────────────
 
     [Fact]

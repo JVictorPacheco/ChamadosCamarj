@@ -7,6 +7,7 @@ using ChamadosCamarj.Application.Common.Behaviours;
 using ChamadosCamarj.Domain.Interfaces;
 using ChamadosCamarj.Infrastructure.Data;
 using ChamadosCamarj.Infrastructure.Repositories;
+using ChamadosCamarj.WebApi.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,6 +72,8 @@ var app = builder.Build();
 // ─────────────────────────────
 // Middleware Pipeline
 // ─────────────────────────────
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
