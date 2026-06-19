@@ -11,13 +11,13 @@ using ChamadosCamarj.Infrastructure.Repositories;
 var builder = WebApplication.CreateBuilder(args);
 
 // ─────────────────────────────
-// Database — SQLite
+// Database — PostgreSQL (Supabase)
 // ─────────────────────────────
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? "Data Source=chamadoscamarj.db";
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' não configurada.");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite(connectionString));
+    options.UseNpgsql(connectionString));
 
 // ─────────────────────────────
 // MediatR + CQRS
@@ -82,12 +82,12 @@ app.UseHttpsRedirection();
 app.MapControllers();
 
 // ─────────────────────────────
-// Auto-migration + Seed
+// Migrations automáticas + Seed
 // ─────────────────────────────
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.EnsureCreated();
+    await db.Database.MigrateAsync();
     await DatabaseSeeder.SeedAsync(db);
 }
 

@@ -61,4 +61,4 @@
 
 - `ApplyConfigurationsFromAssembly` para carregar configs Fluent API
 - Queries com `AsNoTracking()` e `Include()` explícito
-- `db.Database.EnsureCreated()` em dev (não usa `Migrate()`)
+- `db.Database.MigrateAsync()` na inicialização (dev e prod) — sem `EnsureCreated()`

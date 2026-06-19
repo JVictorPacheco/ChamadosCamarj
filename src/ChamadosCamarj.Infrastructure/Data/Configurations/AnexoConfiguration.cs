@@ -26,5 +26,15 @@ public class AnexoConfiguration : IEntityTypeConfiguration<Anexo>
 
         builder.Property(a => a.TamanhoBytes)
             .IsRequired();
+
+        // C-07: FK opcional para Comentario (estava no modelo mas ausente na migration)
+        builder.HasOne(a => a.Comentario)
+            .WithMany()
+            .HasForeignKey(a => a.ComentarioId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasIndex(a => a.ChamadoId);
+        builder.HasIndex(a => a.ComentarioId);
     }
 }

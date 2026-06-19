@@ -27,7 +27,7 @@ HTTP Request
                 → CommandHandler / QueryHandler
                     → IRepository
                         → ApplicationDbContext (EF Core)
-                            → SQLite (dev) / PostgreSQL (prod)
+                            → PostgreSQL via Supabase (dev e prod)
 ```
 
 ## CQRS com MediatR
@@ -56,5 +56,5 @@ AddMediatR(...)          // registra handlers do assembly Application
 AddValidatorsFromAssembly // registra validators do assembly Application
 AddScoped<IChamadoRepository, ChamadoRepository>
 AddScoped<ICategoriaRepository, CategoriaRepository>
-AddDbContext<ApplicationDbContext>(UseSqlite)
+AddDbContext<ApplicationDbContext>(UseNpgsql)
 ```

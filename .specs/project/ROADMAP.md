@@ -31,18 +31,18 @@
 - [x] OpenAPI + Scalar UI
 - [x] Seed das 5 categorias da CAMARJ
 
-## 🔧 Fase 2.5 — Correções antes de avançar (PENDENTE)
+## ✅ Fase 2.5 — Correções antes de avançar (COMPLETA)
 
-> Identificados no mapeamento — resolver antes da Fase 3
+> Identificados no mapeamento — todos resolvidos em 2026-06-19
 
-- [ ] C-01: Resolver conflito SQLite dev vs PostgreSQL migration
-- [ ] C-02: Mover filtros de ListarChamados para query no banco
-- [ ] C-03: CategoriasController usar MediatR
-- [ ] C-04: Remover seed inline de Program.cs, usar DatabaseSeeder
-- [ ] C-05: Criar validators para Atribuir e Comentar
-- [ ] C-06: Criar Commands + Endpoints para Fechar e Cancelar
-- [ ] C-07: Corrigir migration — adicionar ComentarioId em Anexos
-- [ ] C-09: Criar projeto de testes (Domain unit tests)
+- [x] C-01: Resolver conflito SQLite dev vs PostgreSQL migration — migrado para Supabase (session pooler) em dev e prod
+- [x] C-02: Mover filtros de ListarChamados para query no banco
+- [x] C-03: CategoriasController usar MediatR
+- [x] C-04: Remover seed inline de Program.cs, usar DatabaseSeeder
+- [x] C-05: Criar validators para Atribuir e Comentar
+- [x] C-06: Criar Commands + Endpoints para Fechar e Cancelar
+- [x] C-07: Corrigir migration — adicionar ComentarioId em Anexos
+- [x] C-09: Criar projeto de testes (Domain unit tests) — 48 testes passando
 
 ## 🎨 Fase 3 — Frontend Básico
 

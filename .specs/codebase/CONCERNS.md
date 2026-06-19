@@ -1,24 +1,22 @@
 # Concerns — Débito Técnico e Riscos
 
-> Itens identificados no mapeamento de 2026-06-18. Ordenados por impacto.
+> Itens identificados no mapeamento de 2026-06-18. Todos os itens abaixo foram resolvidos em 2026-06-19.
 
 ---
 
-## 🔴 CRÍTICO
+## ✅ RESOLVIDOS
 
-### C-01 — Conflito SQLite dev vs PostgreSQL migration
+### C-01 — Conflito SQLite dev vs PostgreSQL migration (RESOLVIDO)
 
-**Problema:** `appsettings.json` usa SQLite (`chamadoscamarj.db`) e `Program.cs` registra `UseSqlite`. Mas a migration `20260614000000_InitialCreate.cs` usa tipos PostgreSQL nativos (`uuid`, `character varying`, `timestamp with time zone`). Essa migration **não roda no SQLite**.
+**Problema:** `appsettings.json` usava SQLite (`chamadoscamarj.db`) e `Program.cs` registrava `UseSqlite`. Mas a migration `20260614000000_InitialCreate.cs` usava tipos PostgreSQL nativos (`uuid`, `character varying`, `timestamp with time zone`). Essa migration não rodava no SQLite.
 
-**Situação atual:** O app usa `EnsureCreated()` em dev, que ignora as migrations e cria o schema diretamente do modelo. Funciona em dev, mas a migration está desatualizada para PostgreSQL.
+**Solução aplicada:** Dev e prod agora usam o mesmo PostgreSQL via Supabase. `Program.cs` mudou de `UseSqlite` + `EnsureCreated()` para `UseNpgsql` + `MigrateAsync()`. Migration recriada (`20260619130320_InitialCreate`) com tipos PostgreSQL corretos, já incluindo a FK do C-07.
 
-**Risco:** Na hora de migrar para Supabase/PostgreSQL, as migrations precisarão ser recriadas ou a configuração dual precisará ser feita corretamente.
-
-**Solução recomendada:** Usar `IDesignTimeDbContextFactory` para gerar migrations PostgreSQL, e manter SQLite apenas como `UseSqlite` em dev sem migrations. Ou usar PostgreSQL desde o início via Docker.
+**Detalhe de conexão importante:** a aba "Direct connection" do Supabase só resolve via IPv6 e falha em redes sem IPv6. A aba "Transaction pooler" (porta 6543) não suporta bem prepared statements do EF Core. A conexão que funciona é o **Session pooler** (porta 5432, host `aws-N-<região>.pooler.supabase.com`, usuário `postgres.<project_ref>`). Senha fica em `dotnet user-secrets` em dev, nunca em `appsettings.json`.
 
 ---
 
-### C-02 — Filtros de ListarChamados em memória (N+1 risco)
+### C-02 — Filtros de ListarChamados em memória (N+1 risco) (RESOLVIDO)
 
 **Problema:** `ListarChamadosQueryHandler` chama `ObterTodosAsync()` que carrega **todos os chamados** do banco (com Includes de Categoria, Comentarios e Anexos), depois filtra e pagina em memória.
 
@@ -28,9 +26,9 @@
 
 ---
 
-## 🟡 MÉDIO
+## ✅ Demais itens (RESOLVIDOS)
 
-### C-03 — CategoriasController bypassa CQRS
+### C-03 — CategoriasController bypassa CQRS (RESOLVIDO)
 
 **Problema:** `CategoriasController` injeta `ICategoriaRepository` diretamente em vez de usar `IMediator`. Existe `ListarCategoriasQuery` no Application mas não é usada.
 
@@ -40,7 +38,7 @@
 
 ---
 
-### C-04 — DatabaseSeeder não é chamado (código morto)
+### C-04 — DatabaseSeeder não é chamado (código morto) (RESOLVIDO)
 
 **Problema:** `DatabaseSeeder.cs` tem um método `SeedAsync()` bem estruturado, mas o seed real é feito inline e de forma síncrona em `Program.cs`.
 
@@ -50,7 +48,7 @@
 
 ---
 
-### C-05 — Validators ausentes em 3 Commands
+### C-05 — Validators ausentes em 3 Commands (RESOLVIDO)
 
 **Problema:** `AtribuirChamadoCommand`, `ComentarChamadoCommand` e `ResolverChamadoCommand` não têm validators FluentValidation. Qualquer input inválido chega até o Handler sem validação.
 
@@ -58,7 +56,7 @@
 
 ---
 
-### C-06 — Fechar e Cancelar sem Command/Endpoint
+### C-06 — Fechar e Cancelar sem Command/Endpoint (RESOLVIDO)
 
 **Problema:** `Chamado.Fechar()` e `Chamado.Cancelar()` existem no Domain, mas não há:
 - `FecharChamadoCommand` + Handler
@@ -69,7 +67,7 @@
 
 ---
 
-### C-07 — ComentarioId ausente na Migration de Anexos
+### C-07 — ComentarioId ausente na Migration de Anexos (RESOLVIDO)
 
 **Problema:** `Anexo.cs` tem `ComentarioId (Guid?)` e FK de navegação para `Comentario`, mas a Migration não criou essa coluna nem o FK `FK_Anexos_Comentarios_ComentarioId`.
 
@@ -77,9 +75,9 @@
 
 ---
 
-## 🟢 BAIXO
+## 🟢 BAIXO (parcialmente resolvidos)
 
-### C-08 — Seed com IDs fixos hardcoded em Program.cs
+### C-08 — Seed com IDs fixos hardcoded em Program.cs (RESOLVIDO — seed inline removido)
 
 **Problema:** O seed inline usa `Guid.Parse("a1b2c3d4-...")` hardcoded para as categorias, enquanto `DatabaseSeeder.cs` não usa IDs fixos (deixa o `NewGuid()` do BaseEntity).
 
@@ -87,16 +85,16 @@
 
 ---
 
-### C-09 — Sem testes
+### C-09 — Sem testes (RESOLVIDO)
 
 **Problema:** O README menciona `tests/ChamadosCamarj.UnitTests/` mas o diretório não existe.
 
-**Impacto:** Sem cobertura de testes para o Domain (que tem lógica de negócio relevante: SLA, transições de estado).
+**Solução aplicada:** Projeto `ChamadosCamarj.UnitTests` criado, 48 testes cobrindo Domain e Application passando.
 
 ---
 
-### C-10 — `db.Database.EnsureCreated()` em dev
+### C-10 — `db.Database.EnsureCreated()` em dev (RESOLVIDO)
 
 **Problema:** `EnsureCreated()` não aplica migrations — cria o schema do zero. Se o schema mudar, o banco local pode ficar stale sem aviso.
 
-**Solução:** Em dev, usar `db.Database.Migrate()` ou deletar o `.db` manualmente ao mudar o schema.
+**Solução aplicada:** Substituído por `db.Database.MigrateAsync()` junto com a migração para PostgreSQL (C-01).
