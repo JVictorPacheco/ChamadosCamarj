@@ -52,9 +52,11 @@ ChamadosCamarj/
 │   │   │   │   │   ├── AtribuirChamadoCommand.cs + Handler
 │   │   │   │   │   ├── AtualizarChamadoCommand.cs + Handler
 │   │   │   │   │   ├── ComentarChamadoCommand.cs + Handler
-│   │   │   │   │   └── ResolverChamadoCommand.cs + Handler
+│   │   │   │   │   ├── ResolverChamadoCommand.cs + Handler
+│   │   │   │   │   ├── FecharChamadoCommand.cs + Handler
+│   │   │   │   │   └── CancelarChamadoCommand.cs + Handler
 │   │   │   │   ├── Queries/
-│   │   │   │   │   ├── ListarChamadosQuery.cs + Handler
+│   │   │   │   │   ├── ListarChamadosQuery.cs + Handler ← filtros via IQueryable no banco
 │   │   │   │   │   └── ObterChamadoPorIdQuery.cs + Handler
 │   │   │   │   ├── DTOs/
 │   │   │   │   │   ├── ChamadoResponse.cs
@@ -62,10 +64,12 @@ ChamadosCamarj/
 │   │   │   │   │   └── AtualizarChamadoRequest.cs
 │   │   │   │   └── Validators/
 │   │   │   │       ├── AbrirChamadoCommandValidator.cs
-│   │   │   │       └── AtualizarChamadoCommandValidator.cs
+│   │   │   │       ├── AtualizarChamadoCommandValidator.cs
+│   │   │   │       ├── AtribuirChamadoCommandValidator.cs
+│   │   │   │       └── ComentarChamadoCommandValidator.cs
 │   │   │   └── Categorias/
 │   │   │       ├── DTOs/CategoriaResponse.cs
-│   │   │       └── Queries/ListarCategoriasQuery.cs + Handler
+│   │   │       └── Queries/ListarCategoriasQuery.cs + Handler ← usado via MediatR no controller
 │   │   └── Mappings/
 │   │       └── ChamadoMappings.cs   ← Extension: Chamado → ChamadoResponse
 │   │
@@ -73,31 +77,29 @@ ChamadosCamarj/
 │   │   ├── Data/
 │   │   │   ├── Configurations/      ← Fluent API configs (EF Core)
 │   │   │   ├── ApplicationDbContext.cs
-│   │   │   └── DatabaseSeeder.cs    ← NÃO UTILIZADO (seed está em Program.cs)
+│   │   │   └── DatabaseSeeder.cs    ← chamado por Program.cs (SeedAsync)
 │   │   ├── Migrations/
-│   │   │   └── 20260614000000_InitialCreate.cs ← Schema PostgreSQL (conflita com SQLite dev)
+│   │   │   └── 20260619130320_InitialCreate.cs ← Schema PostgreSQL, inclui FK ComentarioId em Anexos
 │   │   └── Repositories/
 │   │       ├── ChamadoRepository.cs
 │   │       └── CategoriaRepository.cs
 │   │
 │   └── ChamadosCamarj.WebApi/
 │       ├── Controllers/
-│       │   ├── ChamadosController.cs   ← GET, POST, PUT, PATCH atribuir/resolver, POST comentarios
-│       │   └── CategoriasController.cs ← GET (bypassa MediatR — injeta repo direto)
+│       │   ├── ChamadosController.cs   ← GET, POST, PUT, PATCH atribuir/resolver/fechar/cancelar, POST comentarios
+│       │   └── CategoriasController.cs ← GET via IMediator
 │       ├── Properties/launchSettings.json
-│       ├── appsettings.json            ← ConnectionString SQLite
+│       ├── appsettings.json            ← ConnectionString PostgreSQL/Supabase (sem senha)
 │       ├── appsettings.Development.json
-│       ├── chamadoscamarj.db           ← Banco SQLite local (dev)
-│       └── Program.cs                  ← DI, Middleware, Seed inline
+│       └── Program.cs                  ← DI, Middleware, MigrateAsync + DatabaseSeeder.SeedAsync
 │
-├── docker-compose.yml               ← PostgreSQL local (porta 5432)
+├── docker-compose.yml               ← PostgreSQL local (não usado desde a migração para Supabase)
 ├── ChamadosCamarj.sln
 └── README.md
 ```
 
 ## Notas sobre o que está faltando
 
-- `/tests/` — mencionado no README mas não existe ainda
-- Frontend React — não iniciado
-- `IEmailReceiverService` e `IStorageService` — interfaces existem, sem implementação
-- Commands para `Fechar` e `Cancelar` — métodos existem no Domain, sem Command/Endpoint
+- Frontend React — não iniciado (Fase 3)
+- `IEmailReceiverService` e `IStorageService` — interfaces existem, sem implementação (Fase 4)
+- Decisão de hospedagem em produção e injeção da connection string lá — pendente, não bloqueia o Frontend

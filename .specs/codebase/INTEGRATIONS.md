@@ -2,21 +2,16 @@
 
 ## Implementadas
 
-### SQLite (dev)
-- **Tipo:** Banco local
-- **Config:** `appsettings.json` → `ConnectionStrings:DefaultConnection`
-- **Arquivo:** `src/ChamadosCamarj.WebApi/chamadoscamarj.db`
-- **Uso:** `EnsureCreated()` — sem migrations em dev
+### PostgreSQL / Supabase (dev e produção)
+- **Tipo:** Banco relacional gerenciado
+- **Pacote:** `Npgsql.EntityFrameworkCore.PostgreSQL`
+- **Config:** `appsettings.json` (host/usuário, sem senha) + `dotnet user-secrets` (senha, dev) / variável de ambiente (prod)
+- **Conexão:** Session pooler (`aws-1-us-east-2.pooler.supabase.com:5432`) — não usar "Direct connection" (IPv6-only) nem "Transaction pooler" (incompatível com prepared statements do EF Core)
+- **Uso:** `MigrateAsync()` na inicialização — aplica migrations reais, sem `EnsureCreated()`
 
 ---
 
 ## Planejadas (não implementadas)
-
-### PostgreSQL / Supabase (produção)
-- **Tipo:** Banco relacional gerenciado
-- **Pacote:** `Npgsql.EntityFrameworkCore.PostgreSQL`
-- **Config:** variável de ambiente / secrets em prod
-- **Concern:** Migration atual usa tipos PostgreSQL mas o app roda SQLite (ver CONCERNS.md C-01)
 
 ### Azure AD (autenticação)
 - **Tipo:** OAuth2 / OpenID Connect corporativo Microsoft

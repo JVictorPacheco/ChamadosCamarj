@@ -37,8 +37,7 @@ Sistema interno de **gestão de chamados corporativos** da CAMARJ. Colaboradores
 
 ## Stack Decisões
 
-- **Banco em produção:** PostgreSQL via Supabase
-- **Banco em dev:** SQLite (temporário — ver CONCERNS.md)
+- **Banco (dev e produção):** PostgreSQL via Supabase — mesma instância, conexão via Session pooler
 - **Auth:** Azure AD (corporativo Microsoft)
 - **Anexos:** Supabase Storage (S3)
 - **Tempo real:** SignalR (planejado Fase 5)
