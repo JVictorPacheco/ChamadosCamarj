@@ -1,14 +1,14 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-06-18
+> Atualizado em: 2026-06-19
 
 ---
 
 ## 📍 Onde estamos
 
-**Fase 2 concluída** — Domain + CQRS + API REST funcionando com SQLite em dev.
+**Fase 2.5 concluída** — todos os concerns (C-01 a C-09) resolvidos. API roda em PostgreSQL real via Supabase (pooler, sessão), migrations aplicadas com `MigrateAsync()`, seed centralizado, validators completos, ciclo de vida do chamado (Fechar/Cancelar) exposto, 48 testes unitários passando.
 
-O próximo passo é resolver os concerns da **Fase 2.5** antes de iniciar o Frontend (Fase 3). Os concerns mais críticos são C-01 (banco) e C-02 (performance).
+Próximo passo: **Fase 3 — Frontend React**.
 
 ---
 
@@ -16,7 +16,9 @@ O próximo passo é resolver os concerns da **Fase 2.5** antes de iniciar o Fron
 
 | Decisão | Detalhe |
 |---------|---------|
-| Banco dev | SQLite temporário — mover para PostgreSQL/Supabase em prod |
+| Banco dev e prod | PostgreSQL via Supabase — mesma instância para os dois ambientes |
+| Conexão Supabase | **Session pooler** (`aws-1-us-east-2.pooler.supabase.com:5432`), não "Direct connection" (IPv6-only, falha em redes sem IPv6) nem "Transaction pooler" (incompatível com prepared statements do EF Core) |
+| Senha do banco | `dotnet user-secrets` local (dev) — nunca em `appsettings.json` |
 | Auth | Azure AD (Microsoft Entra ID) — implementar na Fase 3/6 |
 | Anexos | Supabase Storage — implementar na Fase 4 |
 | Email | MailKit IMAP — suporte@camarj.com.br / ti@camarj.com.br |
@@ -32,22 +34,21 @@ O próximo passo é resolver os concerns da **Fase 2.5** antes de iniciar o Fron
 
 ## 🔴 Blockers ativos
 
-| ID | Blocker |
-|----|---------|
-| C-01 | Conflito SQLite dev vs PostgreSQL migration — resolver antes de subir para Supabase |
+Nenhum.
+
+---
+
+## 📌 Pendências (não bloqueantes)
+
+| Pendência | Detalhe |
+|-----------|---------|
+| Hospedagem em produção | Onde a API vai rodar (VM, Docker, Azure App Service etc.) e como a connection string será injetada lá — decidir antes do deploy, não bloqueia o Frontend |
 
 ---
 
 ## 📋 TODOs (ordenados por prioridade)
 
-1. Corrigir `ListarChamadosQueryHandler` — filtros no banco, não em memória (C-02)
-2. `CategoriasController` usar `IMediator` (C-03)
-3. Usar `DatabaseSeeder.SeedAsync()` em vez de seed inline (C-04)
-4. Validators para `AtribuirChamadoCommand` e `ComentarChamadoCommand` (C-05)
-5. Commands + Endpoints para `Fechar` e `Cancelar` (C-06)
-6. Corrigir migration — coluna `ComentarioId` em `Anexos` (C-07)
-7. Criar projeto `ChamadosCamarj.UnitTests` com testes do Domain (C-09)
-8. Iniciar Frontend React (Fase 3)
+1. Iniciar Frontend React (Fase 3)
 
 ---
 
