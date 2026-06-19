@@ -1,3 +1,4 @@
+using ChamadosCamarj.Application.Common.Exceptions;
 using ChamadosCamarj.Application.Features.Chamados.Commands;
 using ChamadosCamarj.Domain.Entities;
 using ChamadosCamarj.Domain.Enums;
@@ -10,6 +11,7 @@ namespace ChamadosCamarj.UnitTests.Application.Handlers;
 public class AbrirChamadoHandlerTests
 {
     private readonly Mock<IChamadoRepository> _repositoryMock = new();
+    private readonly Mock<ICategoriaRepository> _categoriaRepositoryMock = new();
     private readonly AbrirChamadoCommandHandler _handler;
 
     public AbrirChamadoHandlerTests()
@@ -18,7 +20,11 @@ public class AbrirChamadoHandlerTests
             .Setup(r => r.AdicionarAsync(It.IsAny<Chamado>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Chamado c, CancellationToken _) => c);
 
-        _handler = new AbrirChamadoCommandHandler(_repositoryMock.Object);
+        _categoriaRepositoryMock
+            .Setup(r => r.ExisteAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        _handler = new AbrirChamadoCommandHandler(_repositoryMock.Object, _categoriaRepositoryMock.Object);
     }
 
     [Fact]
@@ -65,5 +71,21 @@ public class AbrirChamadoHandlerTests
         result.DataLimite.Should().NotBeNull();
         result.DataLimite!.Value.Should().BeOnOrAfter(antes.AddHours(24));
         result.DataLimite!.Value.Should().BeOnOrBefore(DateTime.UtcNow.AddHours(24).AddSeconds(1));
+    }
+
+    [Fact]
+    public async Task Handle_QuandoCategoriaNaoExiste_DeveLancarNotFoundException()
+    {
+        _categoriaRepositoryMock
+            .Setup(r => r.ExisteAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        var command = new AbrirChamadoCommand(
+            "Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
+
+        var act = async () => await _handler.Handle(command, CancellationToken.None);
+
+        await act.Should().ThrowAsync<NotFoundException>();
+        _repositoryMock.Verify(r => r.AdicionarAsync(It.IsAny<Chamado>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 }

@@ -58,6 +58,9 @@ public class Chamado : BaseEntity
     // Métodos de negócio
     public void Atribuir(Guid responsavelId, string responsavelNome)
     {
+        if (Status is StatusChamado.Fechado or StatusChamado.Cancelado)
+            throw new InvalidOperationException($"Não é possível atribuir um chamado com status '{Status}'.");
+
         ResponsavelId = responsavelId;
         ResponsavelNome = responsavelNome;
         Status = StatusChamado.EmAndamento;
@@ -66,6 +69,9 @@ public class Chamado : BaseEntity
 
     public void Resolver()
     {
+        if (Status is not (StatusChamado.Aberto or StatusChamado.EmAndamento))
+            throw new InvalidOperationException($"Não é possível resolver um chamado com status '{Status}'.");
+
         Status = StatusChamado.Resolvido;
         DataConclusao = DateTime.UtcNow;
         DataAtualizacao = DateTime.UtcNow;
@@ -73,12 +79,18 @@ public class Chamado : BaseEntity
 
     public void Fechar()
     {
+        if (Status != StatusChamado.Resolvido)
+            throw new InvalidOperationException("Só é possível fechar um chamado que já foi resolvido.");
+
         Status = StatusChamado.Fechado;
         DataAtualizacao = DateTime.UtcNow;
     }
 
     public void Reabrir()
     {
+        if (Status is not (StatusChamado.Resolvido or StatusChamado.Fechado or StatusChamado.Cancelado))
+            throw new InvalidOperationException($"Não é possível reabrir um chamado com status '{Status}'.");
+
         Status = StatusChamado.Aberto;
         ResponsavelId = null;
         ResponsavelNome = null;
@@ -88,12 +100,18 @@ public class Chamado : BaseEntity
 
     public void Cancelar()
     {
+        if (Status is StatusChamado.Fechado or StatusChamado.Cancelado)
+            throw new InvalidOperationException($"Não é possível cancelar um chamado com status '{Status}'.");
+
         Status = StatusChamado.Cancelado;
         DataAtualizacao = DateTime.UtcNow;
     }
 
     public void AlterarPrioridade(PrioridadeChamado novaPrioridade)
     {
+        if (Status is StatusChamado.Fechado or StatusChamado.Cancelado)
+            throw new InvalidOperationException($"Não é possível alterar a prioridade de um chamado com status '{Status}'.");
+
         Prioridade = novaPrioridade;
         DataLimite = CalcularDataLimite(novaPrioridade);
         DataAtualizacao = DateTime.UtcNow;

@@ -17,13 +17,13 @@ public class ComentarChamadoCommandHandler : IRequestHandler<ComentarChamadoComm
 
     public async Task Handle(ComentarChamadoCommand request, CancellationToken cancellationToken)
     {
-        var chamado = await _chamadoRepository.ObterPorIdAsync(request.ChamadoId, cancellationToken)
-            ?? throw new NotFoundException("Chamado", request.ChamadoId);
+        var existe = await _chamadoRepository.ExisteAsync(request.ChamadoId, cancellationToken);
+        if (!existe)
+            throw new NotFoundException("Chamado", request.ChamadoId);
 
         var tipo = request.Interno ? TipoComentario.Interno : TipoComentario.Publico;
         var comentario = new Comentario(request.ChamadoId, request.Autor, request.Conteudo, tipo);
-        chamado.Comentarios.Add(comentario);
 
-        await _chamadoRepository.AtualizarAsync(chamado, cancellationToken);
+        await _chamadoRepository.AdicionarComentarioAsync(comentario, cancellationToken);
     }
 }

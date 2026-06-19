@@ -35,6 +35,15 @@ public class ChamadoRepository : IChamadoRepository
         await _context.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task AdicionarComentarioAsync(Comentario comentario, CancellationToken cancellationToken = default)
+    {
+        if (comentario == null)
+            throw new ArgumentNullException(nameof(comentario));
+
+        await _context.Set<Comentario>().AddAsync(comentario, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<Chamado?> ObterPorIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _dbSet

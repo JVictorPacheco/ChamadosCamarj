@@ -1,4 +1,5 @@
 using MediatR;
+using ChamadosCamarj.Application.Common.Exceptions;
 using ChamadosCamarj.Application.Features.Chamados.DTOs;
 using ChamadosCamarj.Application.Mappings;
 using ChamadosCamarj.Domain.Entities;
@@ -9,14 +10,20 @@ namespace ChamadosCamarj.Application.Features.Chamados.Commands;
 public class AbrirChamadoCommandHandler : IRequestHandler<AbrirChamadoCommand, ChamadoResponse>
 {
     private readonly IChamadoRepository _chamadoRepository;
+    private readonly ICategoriaRepository _categoriaRepository;
 
-    public AbrirChamadoCommandHandler(IChamadoRepository chamadoRepository)
+    public AbrirChamadoCommandHandler(IChamadoRepository chamadoRepository, ICategoriaRepository categoriaRepository)
     {
         _chamadoRepository = chamadoRepository;
+        _categoriaRepository = categoriaRepository;
     }
 
     public async Task<ChamadoResponse> Handle(AbrirChamadoCommand request, CancellationToken cancellationToken)
     {
+        var categoriaExiste = await _categoriaRepository.ExisteAsync(request.CategoriaId, cancellationToken);
+        if (!categoriaExiste)
+            throw new NotFoundException("Categoria", request.CategoriaId);
+
         var chamado = new Chamado(
             request.Titulo,
             request.Descricao,
