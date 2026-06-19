@@ -6,9 +6,9 @@
 
 ## 📍 Onde estamos
 
-**Fase 2.5 concluída** — todos os concerns (C-01 a C-09) resolvidos. API roda em PostgreSQL real via Supabase (pooler, sessão), migrations aplicadas com `MigrateAsync()`, seed centralizado, validators completos, ciclo de vida do chamado (Fechar/Cancelar) exposto, 48 testes unitários passando.
+**Fase 2.5 concluída** — todos os concerns (C-01 a C-10) resolvidos, mais 3 bugs encontrados em teste manual e corrigidos (PR #6 mergeada em `develop`): categoria inexistente sem validação, transições de status sem guard, e `DbUpdateConcurrencyException` ao comentar. 55 testes unitários passando. API roda em PostgreSQL real via Supabase.
 
-Próximo passo: **Fase 3 — Frontend React**.
+**Fase 3 — Frontend (Portal do Solicitante) em planejamento.** Spec escrito em `.specs/features/frontend-portal-solicitante/spec.md`, aguardando aprovação do usuário antes de seguir pra Design.
 
 ---
 
@@ -29,6 +29,9 @@ Próximo passo: **Fase 3 — Frontend React**.
 | Notificações | Push navegador + Desktop (Electron/Tauri futuro) |
 | Mobile | Web primeiro, mobile no futuro |
 | Docs | Obsidian (docs/obsidian/) |
+| Escopo Fase 3 | Só visão do Solicitante (abrir, listar, detalhe, comentar). Ações de Atendente ficam pra quando o Kanban (Fase 5) for feito |
+| Auth mockada Fase 3 | Seletor de perfil (Admin/Atendente/Solicitante) salvo em localStorage — sem Azure AD real ainda. Troca futura isolada no contexto de autenticação |
+| Localização do frontend | `/frontend` na raiz do repo, ao lado de `src/`, `tests/` e `docs/` |
 
 ---
 
@@ -48,7 +51,10 @@ Nenhum.
 
 ## 📋 TODOs (ordenados por prioridade)
 
-1. Iniciar Frontend React (Fase 3)
+1. Aprovar `.specs/features/frontend-portal-solicitante/spec.md` com o usuário
+2. API-01: criar endpoint `GET /api/chamados/{id}/comentarios` (pré-requisito de backend — `ChamadoResponse` hoje não expõe o conteúdo dos comentários, só a contagem)
+3. Fase Design da Fase 3 (arquitetura de pastas, componentes, data-fetching)
+4. Fase Tasks + Execute da Fase 3
 
 ---
 
@@ -67,3 +73,7 @@ Nenhum.
 - `EnsureCreated()` não aplica migrations — bom para dev rápido, perigoso para mudanças de schema
 - `ObterTodosAsync()` + filtro em memória é um padrão a evitar desde o início
 - `CategoriasController` foi uma exceção ao padrão CQRS — deve ser corrigido
+- EF Core `Update()` num grafo carregado com `AsNoTracking()` marca entidades filhas com Guid client-gerado como `Modified` em vez de `Added` — gera `DbUpdateConcurrencyException` ao tentar UPDATE numa linha que não existe. Pra adicionar uma entidade filha nova, inserir direto via `DbSet.AddAsync()`, nunca reenviar o grafo do pai inteiro
+- Nenhuma transição de status do `Chamado` tinha guard — sempre validar o `Status` atual antes de mudar de estado em entidades com ciclo de vida
+- Sem middleware de tratamento de erro, toda exceção (incluindo `ValidationException` do FluentValidation) virava uma página 500 crua — middleware global de exceção é essencial mesmo em APIs pequenas
+- Supabase: "Direct connection" é IPv6-only (falha em rede sem IPv6); "Transaction pooler" não suporta prepared statements do EF Core; usar "Session pooler"

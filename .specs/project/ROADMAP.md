@@ -44,13 +44,16 @@
 - [x] C-07: Corrigir migration — adicionar ComentarioId em Anexos
 - [x] C-09: Criar projeto de testes (Domain unit tests) — 48 testes passando
 
-## 🎨 Fase 3 — Frontend Básico
+## 🎨 Fase 3 — Frontend: Portal do Solicitante
 
-- [ ] Setup React + Vite + TailwindCSS + Shadcn/ui
-- [ ] Login com Azure AD
-- [ ] Lista de chamados com filtros
-- [ ] Detalhe do chamado
+> Spec completo em `.specs/features/frontend-portal-solicitante/spec.md`. Escopo restrito ao Solicitante — ações de Atendente (fila, assumir, resolver) ficam pra Fase 5 (Kanban). Auth mockada (seletor de perfil), Azure AD real fica pra depois.
+
+- [ ] API-01: endpoint `GET /api/chamados/{id}/comentarios` (pré-requisito de backend)
+- [ ] Setup React + Vite + TailwindCSS + Shadcn/ui (`/frontend` na raiz)
+- [ ] Seletor de perfil mockado (Admin/Atendente/Solicitante)
 - [ ] Abertura de chamado (portal)
+- [ ] Lista de chamados com filtros
+- [ ] Detalhe do chamado (com comentários)
 - [ ] Comentários públicos
 
 ## 📧 Fase 4 — Integração Email + Storage
