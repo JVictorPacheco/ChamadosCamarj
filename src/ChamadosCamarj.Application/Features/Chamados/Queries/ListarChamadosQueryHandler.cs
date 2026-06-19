@@ -5,7 +5,7 @@ using ChamadosCamarj.Domain.Interfaces;
 
 namespace ChamadosCamarj.Application.Features.Chamados.Queries;
 
-public class ListarChamadosQueryHandler : IRequestHandler<ListarChamadosQuery, IEnumerable<ChamadoResponse>>
+public class ListarChamadosQueryHandler : IRequestHandler<ListarChamadosQuery, PagedResult<ChamadoResponse>>
 {
     private readonly IChamadoRepository _chamadoRepository;
 
@@ -14,33 +14,32 @@ public class ListarChamadosQueryHandler : IRequestHandler<ListarChamadosQuery, I
         _chamadoRepository = chamadoRepository;
     }
 
-    public async Task<IEnumerable<ChamadoResponse>> Handle(ListarChamadosQuery request, CancellationToken cancellationToken)
+    public async Task<PagedResult<ChamadoResponse>> Handle(ListarChamadosQuery request, CancellationToken cancellationToken)
     {
-        var chamados = await _chamadoRepository.ObterTodosAsync(cancellationToken);
+        Domain.Enums.StatusChamado? status = null;
+        if (!string.IsNullOrWhiteSpace(request.Status) &&
+            Enum.TryParse<Domain.Enums.StatusChamado>(request.Status, ignoreCase: true, out var statusParsed))
+            status = statusParsed;
 
-        // Filtros
-        if (!string.IsNullOrWhiteSpace(request.Status) && Enum.TryParse<Domain.Enums.StatusChamado>(request.Status, true, out var status))
-            chamados = chamados.Where(c => c.Status == status);
+        Domain.Enums.PrioridadeChamado? prioridade = null;
+        if (!string.IsNullOrWhiteSpace(request.Prioridade) &&
+            Enum.TryParse<Domain.Enums.PrioridadeChamado>(request.Prioridade, ignoreCase: true, out var prioridadeParsed))
+            prioridade = prioridadeParsed;
 
-        if (!string.IsNullOrWhiteSpace(request.Prioridade) && Enum.TryParse<Domain.Enums.PrioridadeChamado>(request.Prioridade, true, out var prioridade))
-            chamados = chamados.Where(c => c.Prioridade == prioridade);
+        var (items, total) = await _chamadoRepository.ListarAsync(
+            request.Pagina,
+            request.TamanhoPagina,
+            status,
+            prioridade,
+            request.ResponsavelId,
+            request.CategoriaId,
+            request.Busca,
+            cancellationToken);
 
-        if (request.ResponsavelId.HasValue)
-            chamados = chamados.Where(c => c.ResponsavelId == request.ResponsavelId);
-
-        if (request.CategoriaId.HasValue)
-            chamados = chamados.Where(c => c.CategoriaId == request.CategoriaId);
-
-        if (!string.IsNullOrWhiteSpace(request.Busca))
-            chamados = chamados.Where(c =>
-                c.Titulo.Contains(request.Busca, StringComparison.OrdinalIgnoreCase) ||
-                c.Descricao.Contains(request.Busca, StringComparison.OrdinalIgnoreCase));
-
-        // Paginação
-        chamados = chamados
-            .Skip((request.Pagina - 1) * request.TamanhoPagina)
-            .Take(request.TamanhoPagina);
-
-        return chamados.Select(c => c.ToResponse());
+        return new PagedResult<ChamadoResponse>(
+            items.Select(c => c.ToResponse()),
+            total,
+            request.Pagina,
+            request.TamanhoPagina);
     }
 }

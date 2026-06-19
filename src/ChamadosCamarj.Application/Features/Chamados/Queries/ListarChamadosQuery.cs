@@ -11,4 +11,4 @@ public record ListarChamadosQuery(
     Guid? ResponsavelId = null,
     Guid? CategoriaId = null,
     string? Busca = null
-) : IRequest<IEnumerable<ChamadoResponse>>;
+) : IRequest<PagedResult<ChamadoResponse>>;

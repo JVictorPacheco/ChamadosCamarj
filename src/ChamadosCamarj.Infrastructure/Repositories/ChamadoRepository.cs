@@ -35,6 +35,15 @@ public class ChamadoRepository : IChamadoRepository
         await _context.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task AdicionarComentarioAsync(Comentario comentario, CancellationToken cancellationToken = default)
+    {
+        if (comentario == null)
+            throw new ArgumentNullException(nameof(comentario));
+
+        await _context.Set<Comentario>().AddAsync(comentario, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<Chamado?> ObterPorIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _dbSet
@@ -94,6 +103,47 @@ public class ChamadoRepository : IChamadoRepository
             .Where(c => c.DataLimite != null && c.DataLimite < DateTime.UtcNow && c.Status != Domain.Enums.StatusChamado.Resolvido && c.Status != Domain.Enums.StatusChamado.Fechado && c.Status != Domain.Enums.StatusChamado.Cancelado)
             .OrderBy(c => c.DataLimite)
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<(IEnumerable<Chamado> Items, int Total)> ListarAsync(
+        int pagina,
+        int tamanhoPagina,
+        Domain.Enums.StatusChamado? status = null,
+        Domain.Enums.PrioridadeChamado? prioridade = null,
+        Guid? responsavelId = null,
+        Guid? categoriaId = null,
+        string? busca = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _dbSet.AsNoTracking().AsQueryable();
+
+        if (status.HasValue)
+            query = query.Where(c => c.Status == status.Value);
+
+        if (prioridade.HasValue)
+            query = query.Where(c => c.Prioridade == prioridade.Value);
+
+        if (responsavelId.HasValue)
+            query = query.Where(c => c.ResponsavelId == responsavelId.Value);
+
+        if (categoriaId.HasValue)
+            query = query.Where(c => c.CategoriaId == categoriaId.Value);
+
+        if (!string.IsNullOrWhiteSpace(busca))
+            query = query.Where(c => c.Titulo.Contains(busca) || c.Descricao.Contains(busca));
+
+        var total = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .Include(c => c.Categoria)
+            .Include(c => c.Comentarios)
+            .Include(c => c.Anexos)
+            .OrderByDescending(c => c.DataCriacao)
+            .Skip((pagina - 1) * tamanhoPagina)
+            .Take(tamanhoPagina)
+            .ToListAsync(cancellationToken);
+
+        return (items, total);
     }
 
     public async Task<bool> ExisteAsync(Guid id, CancellationToken cancellationToken = default)

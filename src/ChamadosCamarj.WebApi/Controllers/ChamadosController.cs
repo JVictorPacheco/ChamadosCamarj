@@ -1,8 +1,8 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using ChamadosCamarj.Application.Features.Chamados.Commands;
-using ChamadosCamarj.Application.Features.Chamados.Queries;
 using ChamadosCamarj.Application.Features.Chamados.DTOs;
+using ChamadosCamarj.Application.Features.Chamados.Queries;
 
 namespace ChamadosCamarj.WebApi.Controllers;
 
@@ -21,11 +21,11 @@ public class ChamadosController : ControllerBase
     }
 
     /// <summary>
-    /// Lista todos os chamados com filtros opcionais
+    /// Lista chamados com filtros e paginação
     /// </summary>
     [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<ChamadoResponse>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<ChamadoResponse>>> Listar(
+    [ProducesResponseType(typeof(PagedResult<ChamadoResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<PagedResult<ChamadoResponse>>> Listar(
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanhoPagina = 10,
         [FromQuery] string? status = null,
@@ -63,9 +63,17 @@ public class ChamadosController : ControllerBase
     [ProducesResponseType(typeof(ChamadoResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ChamadoResponse>> Abrir(
-        [FromBody] AbrirChamadoCommand command,
+        [FromBody] AbrirChamadoRequest request,
         CancellationToken cancellationToken)
     {
+        var command = new AbrirChamadoCommand(
+            request.Titulo,
+            request.Descricao,
+            request.SolicitanteNome,
+            request.SolicitanteEmail,
+            request.CategoriaId,
+            request.Prioridade);
+
         var result = await _mediator.Send(command, cancellationToken);
         return CreatedAtAction(nameof(ObterPorId), new { id = result.Id }, result);
     }
@@ -113,6 +121,30 @@ public class ChamadosController : ControllerBase
     }
 
     /// <summary>
+    /// Fecha um chamado resolvido
+    /// </summary>
+    [HttpPatch("{id:guid}/fechar")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Fechar(Guid id, CancellationToken cancellationToken)
+    {
+        await _mediator.Send(new FecharChamadoCommand(id), cancellationToken);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Cancela um chamado aberto ou em andamento
+    /// </summary>
+    [HttpPatch("{id:guid}/cancelar")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Cancelar(Guid id, CancellationToken cancellationToken)
+    {
+        await _mediator.Send(new CancelarChamadoCommand(id), cancellationToken);
+        return NoContent();
+    }
+
+    /// <summary>
     /// Adiciona um comentário a um chamado
     /// </summary>
     [HttpPost("{id:guid}/comentarios")]
@@ -120,10 +152,11 @@ public class ChamadosController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Comentar(
         Guid id,
-        [FromBody] ComentarChamadoCommand command,
+        [FromBody] ComentarChamadoRequest request,
         CancellationToken cancellationToken)
     {
-        await _mediator.Send(command with { ChamadoId = id }, cancellationToken);
+        var command = new ComentarChamadoCommand(id, request.Autor, request.Conteudo, request.Interno);
+        await _mediator.Send(command, cancellationToken);
         return NoContent();
     }
 }

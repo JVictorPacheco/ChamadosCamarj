@@ -1,4 +1,5 @@
 using ChamadosCamarj.Domain.Entities;
+using ChamadosCamarj.Domain.Enums;
 
 namespace ChamadosCamarj.Domain.Interfaces;
 
@@ -7,14 +8,25 @@ public interface IChamadoRepository
     // Comandos
     Task<Chamado> AdicionarAsync(Chamado chamado, CancellationToken cancellationToken = default);
     Task AtualizarAsync(Chamado chamado, CancellationToken cancellationToken = default);
+    Task AdicionarComentarioAsync(Comentario comentario, CancellationToken cancellationToken = default);
 
     // Consultas
     Task<Chamado?> ObterPorIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<IEnumerable<Chamado>> ObterTodosAsync(CancellationToken cancellationToken = default);
-    Task<IEnumerable<Chamado>> ObterPorStatusAsync(Enums.StatusChamado status, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Chamado>> ObterPorStatusAsync(StatusChamado status, CancellationToken cancellationToken = default);
     Task<IEnumerable<Chamado>> ObterPorSolicitanteAsync(string email, CancellationToken cancellationToken = default);
     Task<IEnumerable<Chamado>> ObterPorResponsavelAsync(Guid responsavelId, CancellationToken cancellationToken = default);
     Task<IEnumerable<Chamado>> ObterAtrasadosAsync(CancellationToken cancellationToken = default);
+
+    Task<(IEnumerable<Chamado> Items, int Total)> ListarAsync(
+        int pagina,
+        int tamanhoPagina,
+        StatusChamado? status = null,
+        PrioridadeChamado? prioridade = null,
+        Guid? responsavelId = null,
+        Guid? categoriaId = null,
+        string? busca = null,
+        CancellationToken cancellationToken = default);
 
     // Verificações
     Task<bool> ExisteAsync(Guid id, CancellationToken cancellationToken = default);
