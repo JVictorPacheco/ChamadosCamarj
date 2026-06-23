@@ -174,7 +174,7 @@ T22 → T23
 
 ---
 
-### T5: TailwindCSS v4 + shadcn/ui init + tema dark + componentes base
+### T5: TailwindCSS v4 + shadcn/ui init + tema dark + componentes base ✅ Done
 
 **What**: Instalar TailwindCSS (plugin `@tailwindcss/vite`) e inicializar shadcn/ui, aplicar os tokens de tema dark de `design.md` (seção "Tema Visual"), adicionar componentes base + `sidebar`
 **Where**: `frontend/` (`components.json`, `src/index.css` — tokens de tema, `src/components/ui/*`)
