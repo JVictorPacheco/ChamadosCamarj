@@ -153,7 +153,7 @@ T22 → T23
 
 ---
 
-### T4: Scaffold do projeto Vite + React + TS
+### T4: Scaffold do projeto Vite + React + TS ✅ Done
 
 **What**: Criar o projeto em `frontend/` com Vite + React + TypeScript, configurar alias `@` pro `src/`
 **Where**: `frontend/` (novo diretório na raiz do repo)
