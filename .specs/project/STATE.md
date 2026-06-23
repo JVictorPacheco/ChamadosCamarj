@@ -65,6 +65,7 @@ Nenhum.
 - **Electron/Tauri:** Para notificações desktop — após o web estar estável
 - **Redis:** Cache planejado no SPEC mas sem prioridade definida
 - **Serilog:** Logging estruturado — adicionar antes de ir para produção
+- **Tipografia da referência visual (2026-06-23):** títulos em serifa + labels em mono caixa-alta, vistos em `Exemplo_Imagem_Camarj_Chamado.jpeg`. Cores e sidebar já adotados no design da Fase 3; tipografia ficou fora de escopo por ora
 
 ---
 

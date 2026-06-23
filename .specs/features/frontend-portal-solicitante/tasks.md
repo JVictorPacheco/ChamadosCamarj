@@ -174,10 +174,10 @@ T22 → T23
 
 ---
 
-### T5: TailwindCSS v4 + shadcn/ui init + componentes base
+### T5: TailwindCSS v4 + shadcn/ui init + tema dark + componentes base
 
-**What**: Instalar TailwindCSS (plugin `@tailwindcss/vite`) e inicializar shadcn/ui, adicionar componentes base
-**Where**: `frontend/` (`components.json`, `src/components/ui/*`)
+**What**: Instalar TailwindCSS (plugin `@tailwindcss/vite`) e inicializar shadcn/ui, aplicar os tokens de tema dark de `design.md` (seção "Tema Visual"), adicionar componentes base + `sidebar`
+**Where**: `frontend/` (`components.json`, `src/index.css` — tokens de tema, `src/components/ui/*`)
 **Depends on**: T4
 **Reuses**: Nenhum
 
@@ -187,11 +187,15 @@ T22 → T23
 
 **Done when**:
 - [ ] `npx shadcn@latest init` configurado (estilo, cor base, CSS variables)
-- [ ] Componentes adicionados: `button`, `card`, `input`, `select`, `badge`, `textarea`, `label`, `alert`, `skeleton`
+- [ ] Tokens de `design.md` (Tema Visual) aplicados em `:root`/`.dark` — `--background`, `--foreground`, `--card`, `--border`, `--primary`, `--primary-foreground`, `--muted-foreground`, `--destructive`, `--chart-1..4`, `--sidebar*`
+- [ ] Dark mode forçado como único tema (`<html class="dark">` ou equivalente, sem toggle)
+- [ ] Componentes adicionados: `button`, `card`, `input`, `select`, `badge`, `textarea`, `label`, `alert`, `skeleton`, `sidebar` (+ dependências que o CLI instalar automaticamente: `separator`, `sheet`, `tooltip`)
 - [ ] Gate check passa: `fe-build`
 
 **Tests**: none
 **Gate**: build
+
+**Verify**: `npm run dev`, abrir no navegador, confirmar visualmente que o fundo está escuro (não branco) e os componentes shadcn renderizam com a cor primária mint, não o azul/cinza padrão.
 
 ---
 
@@ -299,19 +303,22 @@ T22 → T23
 
 ---
 
-### T11: `AppLayout` (header + outlet + sair) [P]
+### T11: `AppLayout` (sidebar + outlet + sair) [P]
 
-**What**: Layout com nome/perfil ativo no header, botão "sair", `<Outlet />`
+**What**: Layout com menu lateral (shadcn `Sidebar`), item "Meus Chamados" (`/chamados`), botão de destaque "Abrir Chamado" (`/chamados/novo`), nome/perfil ativo e botão "sair" no rodapé da sidebar, `<Outlet />` na área de conteúdo
 **Where**: `frontend/src/layouts/AppLayout.tsx`
 **Depends on**: T9, T5
-**Reuses**: `useAuth()`, React Router `<Outlet />`
+**Reuses**: `useAuth()`, React Router `<Outlet />`, shadcn `Sidebar`/`SidebarProvider`/`SidebarMenu`
+**Requirement**: Decisão de design de 2026-06-23 (ver `design.md` — AppLayout)
 
 **Tools**:
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
-- [ ] Mostra nome do perfil ativo
+- [ ] Sidebar fixa renderiza com item "Meus Chamados" e botão "Abrir Chamado"
+- [ ] Item ativo (rota atual) destacado com `--sidebar-accent`/`--sidebar-primary`
+- [ ] Mostra nome do perfil ativo no rodapé da sidebar
 - [ ] Botão "sair" chama `logout()` e redireciona pra `/login`
 - [ ] Gate check passa: `fe-build`
 
