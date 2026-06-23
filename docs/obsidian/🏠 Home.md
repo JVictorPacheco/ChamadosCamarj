@@ -37,4 +37,14 @@ Sistema interno para **gestão de chamados corporativos** da CAMARJ. Colaborador
 
 ---
 
-> *Última atualização: 2026-06-18 — Mapeamento completo do código realizado. Fases 1 e 2 concluídas.*
+## 📍 Onde paramos (2026-06-23)
+
+- ✅ **Fase 2.5 concluída** — backend rodando em PostgreSQL real via Supabase, 3 bugs de teste manual corrigidos (categoria inexistente, transições de status sem validação, erro de concorrência ao comentar). PRs #5 e #6 mergeadas em `develop`.
+- ✅ **Fase 3 planejada** — Spec-Driven Development completo (spec + design + 23 tasks) em `.specs/features/frontend-portal-solicitante/`. PR #7 mergeada. `main` e `develop` sincronizados.
+- ⏭️ **Próximo passo:** Execute da Fase 3, começando pela T1 (endpoint de backend que falta — `GET /chamados/{id}/comentarios`). Nenhuma linha de código do frontend foi escrita ainda.
+- ❓ **Pendente:** decidir se adicionamos 1 teste E2E (Playwright) cobrindo o fluxo feliz completo antes de seguir.
+- 📄 Detalhes completos de retomada em `.specs/HANDOFF.md` (na raiz do repo, fora do Obsidian).
+
+---
+
+> *Última atualização: 2026-06-23 — Fase 2.5 concluída (Postgres + bugfixes), Fase 3 planejada (spec/design/tasks), aguardando Execute.*
