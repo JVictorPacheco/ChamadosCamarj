@@ -199,7 +199,7 @@ T22 → T23
 
 ---
 
-### T6: Instalar e configurar React Router, TanStack Query, React Hook Form
+### T6: Instalar e configurar React Router, TanStack Query, React Hook Form ✅ Done
 
 **What**: Instalar as 3 libs e configurar o shell em `main.tsx`/`App.tsx` (`QueryClientProvider` + `BrowserRouter`, sem rotas reais ainda)
 **Where**: `frontend/src/main.tsx`, `frontend/src/App.tsx`

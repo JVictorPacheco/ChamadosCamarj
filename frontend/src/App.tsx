@@ -1,10 +1,27 @@
 import { useState } from 'react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { BrowserRouter } from 'react-router'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import './App.css'
 
+const queryClient = new QueryClient()
+
 function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <TooltipProvider>
+          <AppContent />
+        </TooltipProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
+  )
+}
+
+function AppContent() {
   const [count, setCount] = useState(0)
 
   return (
