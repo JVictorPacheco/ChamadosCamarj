@@ -240,7 +240,7 @@ T22 → T23
 
 ---
 
-### T8: `lib/api.ts` — cliente HTTP tipado
+### T8: `lib/api.ts` — cliente HTTP tipado ✅ Done
 
 **What**: `apiFetch<T>` + `ApiError`, conforme design
 **Where**: `frontend/src/lib/api.ts`
