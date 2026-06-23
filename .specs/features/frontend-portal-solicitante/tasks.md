@@ -261,7 +261,7 @@ T22 → T23
 
 ---
 
-### T9: `AuthContext` + `useAuth` (mock auth) [P]
+### T9: `AuthContext` + `useAuth` (mock auth) [P] ✅ Done
 
 **What**: Contexto com os 3 perfis mockados fixos (tabela do `design.md`), persistido em `localStorage`
 **Where**: `frontend/src/auth/AuthContext.tsx`
