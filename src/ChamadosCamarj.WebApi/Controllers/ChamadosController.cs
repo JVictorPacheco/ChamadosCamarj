@@ -145,6 +145,17 @@ public class ChamadosController : ControllerBase
     }
 
     /// <summary>
+    /// Lista os comentários de um chamado
+    /// </summary>
+    [HttpGet("{id:guid}/comentarios")]
+    [ProducesResponseType(typeof(IEnumerable<ComentarioResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<ComentarioResponse>>> ListarComentarios(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new ListarComentariosQuery(id), cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
     /// Adiciona um comentário a um chamado
     /// </summary>
     [HttpPost("{id:guid}/comentarios")]

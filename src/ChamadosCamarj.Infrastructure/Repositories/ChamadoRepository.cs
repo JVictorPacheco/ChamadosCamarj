@@ -54,6 +54,15 @@ public class ChamadoRepository : IChamadoRepository
             .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
     }
 
+    public async Task<IEnumerable<Comentario>> ObterComentariosPorChamadoAsync(Guid chamadoId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Set<Comentario>()
+            .Where(c => c.ChamadoId == chamadoId)
+            .OrderBy(c => c.DataCriacao)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<IEnumerable<Chamado>> ObterTodosAsync(CancellationToken cancellationToken = default)
     {
         return await _dbSet

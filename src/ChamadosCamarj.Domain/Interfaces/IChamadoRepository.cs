@@ -12,6 +12,7 @@ public interface IChamadoRepository
 
     // Consultas
     Task<Chamado?> ObterPorIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Comentario>> ObterComentariosPorChamadoAsync(Guid chamadoId, CancellationToken cancellationToken = default);
     Task<IEnumerable<Chamado>> ObterTodosAsync(CancellationToken cancellationToken = default);
     Task<IEnumerable<Chamado>> ObterPorStatusAsync(StatusChamado status, CancellationToken cancellationToken = default);
     Task<IEnumerable<Chamado>> ObterPorSolicitanteAsync(string email, CancellationToken cancellationToken = default);
