@@ -85,7 +85,7 @@ T22 → T23
 
 ## Task Breakdown
 
-### T1: Adicionar `ObterComentariosPorChamadoAsync` ao repositório
+### T1: Adicionar `ObterComentariosPorChamadoAsync` ao repositório ✅ Done
 
 **What**: Novo método no `IChamadoRepository` + implementação em `ChamadoRepository` que retorna os comentários de um chamado ordenados por data de criação
 **Where**: `src/ChamadosCamarj.Domain/Interfaces/IChamadoRepository.cs`, `src/ChamadosCamarj.Infrastructure/Repositories/ChamadoRepository.cs`
@@ -107,7 +107,7 @@ T22 → T23
 
 ---
 
-### T2: Criar `ComentarioResponse` + `ListarComentariosQuery` + Handler
+### T2: Criar `ComentarioResponse` + `ListarComentariosQuery` + Handler ✅ Done
 
 **What**: DTO de resposta, query e handler que chamam o método criado em T1
 **Where**: `src/ChamadosCamarj.Application/Features/Chamados/DTOs/ComentarioResponse.cs`, `src/ChamadosCamarj.Application/Features/Chamados/Queries/ListarComentariosQuery.cs` (+ Handler no mesmo arquivo, seguindo convenção do projeto)
@@ -131,7 +131,7 @@ T22 → T23
 
 ---
 
-### T3: Endpoint `GET /chamados/{id}/comentarios`
+### T3: Endpoint `GET /chamados/{id}/comentarios` ✅ Done
 
 **What**: Novo endpoint no `ChamadosController` que despacha `ListarComentariosQuery` via MediatR
 **Where**: `src/ChamadosCamarj.WebApi/Controllers/ChamadosController.cs`
