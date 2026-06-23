@@ -220,7 +220,7 @@ T22 → T23
 
 ---
 
-### T7: `types/api.ts` — interfaces TS espelhando os DTOs [P]
+### T7: `types/api.ts` — interfaces TS espelhando os DTOs [P] ✅ Done
 
 **What**: Criar todas as interfaces/union types listadas em "Data Models" do `design.md`
 **Where**: `frontend/src/types/api.ts`
