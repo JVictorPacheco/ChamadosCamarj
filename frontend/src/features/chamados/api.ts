@@ -18,6 +18,7 @@ export interface ListarChamadosFiltros {
   responsavelId?: string
   categoriaId?: string
   busca?: string
+  solicitanteEmail?: string
 }
 
 function buildQueryString<T extends object>(filtros: T): string {
