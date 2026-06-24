@@ -1,15 +1,15 @@
 # Fase 3 — Portal do Solicitante Tasks
 
 **Design**: `.specs/features/frontend-portal-solicitante/design.md`
-**Status**: Draft
+**Status**: Done
 
 ---
 
 ## Nota sobre verificação visual
 
-Não há ferramenta de automação de browser (Playwright/etc.) disponível neste ambiente. Os gates abaixo cobrem **build/compilação** e, quando possível, **chamadas reais à API via curl**. Eles não provam que a tela "está bonita" ou que um clique funciona de verdade — isso fica pra você verificar abrindo `http://localhost:5173` no navegador depois de cada fase. Vou avisar exatamente quando isso for necessário.
+Não há ferramenta de automação de browser via MCP disponível neste ambiente. Os gates abaixo cobrem **build/compilação** e, quando possível, **chamadas reais à API via curl**. Eles não provam que a tela "está bonita" — isso fica pra você verificar abrindo `http://localhost:5173` no navegador depois de cada fase.
 
-Testes automatizados de frontend: **nenhum nesta fase** (decisão do usuário) — verificação manual no navegador.
+Testes automatizados de frontend: 1 teste E2E com `@playwright/test` (headless, rodável via Bash, sem MCP extra) cobrindo o fluxo feliz completo, implementado em **T22** (`frontend/e2e/fluxo-completo.spec.ts`), ponto em que o fluxo completo passa a existir de ponta a ponta. Demais verificações de UI continuam manuais.
 
 ---
 
@@ -21,6 +21,7 @@ Testes automatizados de frontend: **nenhum nesta fase** (decisão do usuário) �
 | `dotnet-test` | `dotnet test` (raiz do repo) | Tarefas de backend com handler/lógica de domínio |
 | `fe-build` | `npm run build` (dentro de `frontend/`) | Toda tarefa de frontend — pega erros de TS/import |
 | `fe-dev-boot` | `npm run dev` + `curl -s -o /dev/null -w "%{http_code}" http://localhost:5173` | Confirma que o dev server sobe sem crash (não confirma renderização) |
+| `fe-e2e` | `npx playwright test` (dentro de `frontend/`, com `dotnet run` da API e `npm run dev` do frontend ativos) | T22 — gate do teste E2E do fluxo completo |
 
 ---
 
@@ -542,10 +543,10 @@ T22 → T23
 
 ---
 
-### T22: Integração final — conectar páginas reais nas rotas
+### T22: Integração final — conectar páginas reais nas rotas + teste E2E ✅ Done
 
-**What**: Substituir os placeholders de T12 pelas páginas reais (T19, T20, T21), adicionar navegação (botão "Abrir chamado" na lista, click no card → detalhe)
-**Where**: `frontend/src/App.tsx`
+**What**: Substituir os placeholders de T12 pelas páginas reais (T19, T20, T21), adicionar navegação (botão "Abrir chamado" na lista — já cobre via CTA do estado vazio + botão fixo da sidebar, click no card → detalhe). Instalar `@playwright/test`, configurar `playwright.config.ts` (headless, `baseURL: http://localhost:5173`) e escrever 1 teste E2E cobrindo o fluxo feliz completo
+**Where**: `frontend/src/App.tsx`, `frontend/src/features/chamados/ChamadosListPage.tsx` (card vira `Link`), `frontend/playwright.config.ts` (novo), `frontend/e2e/fluxo-completo.spec.ts` (novo), `frontend/package.json` (script `test:e2e`)
 **Depends on**: T19, T20, T21
 
 **Tools**:
@@ -553,13 +554,16 @@ T22 → T23
 - Skill: NONE
 
 **Done when**:
-- [ ] Fluxo completo navegável: `/login` → escolher Solicitante → `/chamados` (vazio) → abrir chamado → `/chamados/novo` → enviar → redireciona pro detalhe → comentar → ver na timeline
-- [ ] Gate check passa: `fe-build` e `fe-dev-boot`
+- [x] Fluxo completo navegável manualmente: `/login` → escolher Solicitante → `/chamados` (vazio) → abrir chamado → `/chamados/novo` → enviar → redireciona pro detalhe → comentar → ver na timeline
+- [x] `@playwright/test` instalado e Chromium baixado
+- [x] `e2e/fluxo-completo.spec.ts` automatiza o mesmo fluxo (login mock → abrir → detalhe → comentar → listar) e passa headless
+- [x] Script `npm run test:e2e` executa o teste via `npx playwright test`
+- [x] Gate check passa: `fe-build`, `fe-dev-boot` e `fe-e2e` (com API rodando a partir de worktree da branch de backend, dev server ativo)
 
-**Tests**: none
-**Gate**: build
+**Tests**: e2e
+**Gate**: full (`fe-build` + `fe-e2e`)
 
-**Verify (manual, sua parte)**: abrir `http://localhost:5173` no navegador e percorrer o fluxo completo acima de ponta a ponta.
+**Verify (manual, sua parte)**: abrir `http://localhost:5173` no navegador e percorrer o fluxo completo acima de ponta a ponta, além de rodar `npm run test:e2e` e confirmar o teste passando.
 
 ---
 
@@ -668,12 +672,11 @@ Phase 8 (Sequential):     T19,T20,T21 done → T22 → T23
 | T1 | Infrastructure/Repository | none (sem teste dedicado, confirmado em TESTING.md) | none | ✅ OK |
 | T2 | Application/Handler | unit (mock do repositório) | unit | ✅ OK |
 | T3 | WebApi/Controller | none (sem teste dedicado) | none | ✅ OK |
-| T4–T23 | Frontend (todas as camadas) | none (decisão do usuário nesta fase) | none | ✅ OK |
+| T4–T21, T23 | Frontend (componentes, hooks, páginas individuais, docs) | none (decisão do usuário — sem teste por camada isolada) | none | ✅ OK |
+| T22 | Frontend (fluxo completo, integração de rotas) | e2e (decisão revisada — 1 teste cobrindo o happy path completo, só testável após o wiring final) | e2e | ✅ OK |
 
 ---
 
-## Pergunta antes de executar
+## Decisão sobre tooling (resolvida)
 
-Pra cada tarefa, não há MCP ou Skill especializado necessário além das ferramentas padrão (Read/Write/Edit/Bash) — não detectei MCP de browser automation neste ambiente, então a verificação visual final (T22) depende de você abrir o navegador. As skills `run` e `verify` (disponíveis no seu ambiente) podem ajudar a subir e checar a API/dev server nas verificações intermediárias.
-
-Confirma que posso seguir assim, ou prefere que eu use alguma ferramenta específica (ex: alguma extensão/MCP de browser que você tenha) pra essas verificações visuais?
+Confirmado: nenhum MCP ou Skill especializado além das ferramentas padrão (Read/Write/Edit/Bash). Não há MCP de browser automation no ambiente — a verificação visual manual (T22) continua dependendo de abrir o navegador. O teste E2E em T22 usa `@playwright/test` direto via Bash (headless), sem precisar de MCP de browser. As skills `run` e `verify` continuam disponíveis para apoiar verificações intermediárias de API/dev server.
