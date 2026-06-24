@@ -282,7 +282,7 @@ T22 → T23
 
 ---
 
-### T10: `ProfileSelector` (tela `/login`) [P]
+### T10: `ProfileSelector` (tela `/login`) [P] ✅ Done
 
 **What**: Tela com 3 cards (Admin/Atendente/Solicitante) que chamam `login()`
 **Where**: `frontend/src/auth/ProfileSelector.tsx`
