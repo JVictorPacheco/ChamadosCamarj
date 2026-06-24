@@ -432,7 +432,7 @@ T22 → T23
 
 ---
 
-### T17: `FiltroChamados` [P]
+### T17: `FiltroChamados` [P] ✅ Done
 
 **What**: Selects de status/categoria + campo de busca, controlado, emite `onChange` com os filtros
 **Where**: `frontend/src/features/chamados/components/FiltroChamados.tsx`
