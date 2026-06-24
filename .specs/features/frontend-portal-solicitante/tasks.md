@@ -348,7 +348,7 @@ T22 → T23
 
 ---
 
-### T13: `features/chamados/api.ts` — funções de API
+### T13: `features/chamados/api.ts` — funções de API ✅ Done
 
 **What**: As 6 funções listadas no design (`listarChamados`, `obterChamado`, `abrirChamado`, `listarComentarios`, `comentar`, `listarCategorias`)
 **Where**: `frontend/src/features/chamados/api.ts`
