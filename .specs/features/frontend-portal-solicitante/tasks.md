@@ -475,7 +475,7 @@ T22 → T23
 
 ---
 
-### T19: `AbrirChamadoPage` [P]
+### T19: `AbrirChamadoPage` [P] ✅ Done
 
 **What**: Página `/chamados/novo` com formulário (React Hook Form) usando `useAbrirChamado` e `useCategorias`
 **Where**: `frontend/src/features/chamados/AbrirChamadoPage.tsx`
@@ -498,7 +498,7 @@ T22 → T23
 
 ---
 
-### T20: `ChamadosListPage` [P]
+### T20: `ChamadosListPage` [P] ✅ Done
 
 **What**: Página `/chamados` — lista filtrada pelo e-mail do perfil ativo, com `FiltroChamados`, `ChamadoCard` e paginação
 **Where**: `frontend/src/features/chamados/ChamadosListPage.tsx`
@@ -521,7 +521,7 @@ T22 → T23
 
 ---
 
-### T21: `ChamadoDetailPage` [P]
+### T21: `ChamadoDetailPage` [P] ✅ Done
 
 **What**: Página `/chamados/:id` — todos os dados do chamado + `ComentarioList`/`ComentarioForm`
 **Where**: `frontend/src/features/chamados/ChamadoDetailPage.tsx`

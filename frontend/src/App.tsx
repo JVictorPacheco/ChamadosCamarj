@@ -1,11 +1,24 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { ApiError } from '@/lib/api'
 import { AuthProvider, useAuth } from './auth/AuthContext'
 import { ProfileSelector } from './auth/ProfileSelector'
 import { AppLayout } from './layouts/AppLayout'
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: (failureCount, error) => {
+        // Erros 4xx (ex: 404) nao se resolvem tentando de novo - so erros de rede/5xx valem retry
+        if (error instanceof ApiError && error.status !== undefined && error.status < 500) {
+          return false
+        }
+        return failureCount < 3
+      },
+    },
+  },
+})
 
 function App() {
   return (
