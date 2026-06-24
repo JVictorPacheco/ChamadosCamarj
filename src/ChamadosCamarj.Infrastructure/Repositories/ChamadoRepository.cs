@@ -122,6 +122,7 @@ public class ChamadoRepository : IChamadoRepository
         Guid? responsavelId = null,
         Guid? categoriaId = null,
         string? busca = null,
+        string? solicitanteEmail = null,
         CancellationToken cancellationToken = default)
     {
         var query = _dbSet.AsNoTracking().AsQueryable();
@@ -140,6 +141,9 @@ public class ChamadoRepository : IChamadoRepository
 
         if (!string.IsNullOrWhiteSpace(busca))
             query = query.Where(c => c.Titulo.Contains(busca) || c.Descricao.Contains(busca));
+
+        if (!string.IsNullOrWhiteSpace(solicitanteEmail))
+            query = query.Where(c => c.SolicitanteEmail == solicitanteEmail);
 
         var total = await query.CountAsync(cancellationToken);
 

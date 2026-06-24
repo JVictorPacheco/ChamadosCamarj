@@ -32,6 +32,12 @@ O backend (Fase 2.5) está completo e funcional, mas só pode ser testado via Sc
 
 Essa é uma tarefa de backend pequena (Query + Handler + endpoint, seguindo o padrão CQRS já existente) que entra como requisito API-01 abaixo, antes das tarefas de frontend que dependem dela.
 
+### API-02 (descoberto durante o Execute da T20, 2026-06-24)
+
+`GET /api/chamados` (`ListarChamadosQuery`/`ListarAsync`) não tinha filtro por `solicitanteEmail` — só status/prioridade/responsavelId/categoriaId/busca. Sem isso, a User Story "Listar meus chamados com filtros" (AC1: *"listar só os chamados do e-mail do perfil mockado ativo"*) não podia ser implementada corretamente no frontend. Gap não identificado durante o Design original.
+
+**Resolvido:** adicionado `solicitanteEmail` como filtro opcional em `ListarAsync`/`ListarChamadosQuery`/`ListarChamadosQueryHandler`/`ChamadosController.Listar`, seguindo o mesmo padrão dos outros filtros. Existia um método `ObterPorSolicitanteAsync(string email)` no repositório, mas não-paginado e não conectado a nenhum endpoint — deixado intocado (código morto pré-existente).
+
 ---
 
 ## User Stories
@@ -150,7 +156,8 @@ Essa é uma tarefa de backend pequena (Query + Handler + endpoint, seguindo o pa
 
 | Requirement ID | Story | Phase | Status |
 |----------------|-------|-------|--------|
-| API-01 | Pré-requisito backend: endpoint de comentários | Design | Pending |
+| API-01 | Pré-requisito backend: endpoint de comentários | Design | Done |
+| API-02 | Pré-requisito backend: filtro solicitanteEmail em ListarChamados | Execute (T20) | Done |
 | FE-01 | P1: Selecionar perfil mockado | Design | Pending |
 | FE-02 | P1: Abrir chamado (portal) | Design | Pending |
 | FE-03 | P1: Listar meus chamados com filtros | Design | Pending |
