@@ -1,14 +1,14 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-06-19
+> Atualizado em: 2026-06-24
 
 ---
 
 ## 📍 Onde estamos
 
-**Fase 2.5 concluída** — todos os concerns (C-01 a C-10) resolvidos, mais 3 bugs encontrados em teste manual e corrigidos (PR #6 mergeada em `develop`): categoria inexistente sem validação, transições de status sem guard, e `DbUpdateConcurrencyException` ao comentar. 55 testes unitários passando. API roda em PostgreSQL real via Supabase.
+**Fase 2.5 concluída** — todos os concerns (C-01 a C-10) resolvidos, mais 3 bugs encontrados em teste manual e corrigidos (PR #6 mergeada em `develop`): categoria inexistente sem validação, transições de status sem guard, e `DbUpdateConcurrencyException` ao comentar. 57 testes unitários passando (55 + 2 novos da T2 abaixo). API roda em PostgreSQL real via Supabase.
 
-**Fase 3 — Frontend (Portal do Solicitante) em planejamento.** Spec escrito em `.specs/features/frontend-portal-solicitante/spec.md`, aguardando aprovação do usuário antes de seguir pra Design.
+**Fase 3 — Frontend (Portal do Solicitante) em Execute, T1-T12 concluídas.** Backend API-01 pronto (T1-T3, branch `feature/fase3-bloco1-comentarios-api`, PR pendente de abertura manual). Frontend: scaffold, tema dark + sidebar (decisão de 2026-06-23 a partir de referência visual da Camarj), tipos/cliente HTTP/auth mockada, `ProfileSelector`, `AppLayout` (sidebar) e rotas reais já navegáveis ponta a ponta (`/login` → `/chamados` → placeholders das páginas reais). Tudo na branch `feature/fase3-bloco2-frontend-foundation`, PR pendente de abertura manual (`gh` CLI indisponível no ambiente). Próximo: T13/T14 (camada de dados).
 
 ---
 
@@ -51,10 +51,9 @@ Nenhum.
 
 ## 📋 TODOs (ordenados por prioridade)
 
-1. Aprovar `.specs/features/frontend-portal-solicitante/spec.md` com o usuário
-2. API-01: criar endpoint `GET /api/chamados/{id}/comentarios` (pré-requisito de backend — `ChamadoResponse` hoje não expõe o conteúdo dos comentários, só a contagem)
-3. Fase Design da Fase 3 (arquitetura de pastas, componentes, data-fetching)
-4. Fase Tasks + Execute da Fase 3
+1. Continuar Execute da Fase 3: T13/T14 (camada de dados — `features/chamados/api.ts` + hooks TanStack Query) em diante
+2. Restilizar `ProfileSelector` como tela de "login" de fato (logo Camarj + título + layout), mantendo a lógica mockada — usuário vai mandar o arquivo do logo quando puder; usar placeholder/wordmark até lá
+3. Abrir os 2 PRs pendentes pra `develop` (`feature/fase3-bloco1-comentarios-api`, `feature/fase3-bloco2-frontend-foundation`) — `gh` CLI não disponível neste ambiente
 
 ---
 
