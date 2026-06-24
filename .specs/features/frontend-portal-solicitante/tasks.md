@@ -391,7 +391,7 @@ T22 → T23
 
 ---
 
-### T15: `StatusBadge` + `PrioridadeBadge` + `SlaBadge` [P]
+### T15: `StatusBadge` + `PrioridadeBadge` + `SlaBadge` [P] ✅ Done
 
 **What**: 3 componentes pequenos de exibição, cada um mapeando um enum/condição pra uma cor de badge (shadcn `Badge`)
 **Where**: `frontend/src/features/chamados/components/StatusBadge.tsx`, `PrioridadeBadge.tsx`, `SlaBadge.tsx`
