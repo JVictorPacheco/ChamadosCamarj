@@ -370,7 +370,7 @@ T22 → T23
 
 ---
 
-### T14: Hooks do TanStack Query
+### T14: Hooks do TanStack Query ✅ Done
 
 **What**: `useChamados`, `useChamado`, `useComentarios`, `useCategorias`, `useAbrirChamado` (mutation), `useComentar` (mutation)
 **Where**: `frontend/src/features/chamados/hooks/`
