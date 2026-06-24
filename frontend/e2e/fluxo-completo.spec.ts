@@ -27,4 +27,8 @@ test('fluxo completo: login mock -> abrir chamado -> detalhe -> comentar -> list
   await page.getByRole('link', { name: 'Meus Chamados' }).click()
   await page.waitForURL('**/chamados')
   await expect(page.getByText(titulo)).toBeVisible()
+
+  await page.getByText(titulo).click()
+  await page.waitForURL(/\/chamados\/[0-9a-f-]+$/)
+  await expect(page.getByRole('heading', { name: titulo })).toBeVisible()
 })
