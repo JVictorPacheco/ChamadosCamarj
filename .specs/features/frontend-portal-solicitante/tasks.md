@@ -412,7 +412,7 @@ T22 → T23
 
 ---
 
-### T16: `ChamadoCard`
+### T16: `ChamadoCard` ✅ Done
 
 **What**: Card usado na listagem (título, badges, categoria, data)
 **Where**: `frontend/src/features/chamados/components/ChamadoCard.tsx`
