@@ -109,9 +109,11 @@ Antes do frontend poder mostrar comentários, precisa existir um endpoint que re
 
 ### AppLayout
 
-- **Purpose**: Header com nome do perfil ativo + botão "sair" (chama `logout()`) + `<Outlet />` pras rotas filhas
+- **Purpose**: Menu lateral fixo (sidebar, estilo referência visual de 2026-06-23) com nome/perfil ativo no rodapé + botão "sair" (chama `logout()`) + `<Outlet />` pra área de conteúdo
 - **Location**: `frontend/src/layouts/AppLayout.tsx`
-- **Dependencies**: `AuthContext`, React Router `<Outlet />`
+- **Dependencies**: `AuthContext`, React Router `<Outlet />`, shadcn `Sidebar` (e `SidebarProvider`/`SidebarTrigger`)
+- **Decisão de design (2026-06-23)**: trocado de header simples (versão original deste documento) pra sidebar — decisão do usuário, pensando em reuso nas Fases futuras (Atendente/Admin com mais itens de navegação, ex. Kanban da Fase 5). Nesta fase (só Solicitante) a sidebar tem só 1 item de navegação real (`/chamados`), mas a estrutura já fica pronta pra crescer
+- **Itens da sidebar nesta fase**: "Meus Chamados" (`/chamados`) — link único; "Abrir Chamado" pode ser um botão de destaque no topo da sidebar (não um item de navegação separado, já que `/chamados/novo` é uma ação, não uma seção)
 
 ### lib/api.ts — cliente HTTP
 
@@ -262,6 +264,32 @@ export interface ComentarChamadoRequest {
 
 ---
 
+## Tema Visual (Dark Mode) — decisão de 2026-06-23
+
+Paleta extraída por inspeção visual de uma referência (`Exemplo_Imagem_Camarj_Chamado.jpeg`, dashboard interno da Camarj) — **valores aproximados**, não amostrados em pixel exato; ajustar depois se necessário. Aplicada como o único tema da aplicação (sem light mode/toggle, decisão do usuário).
+
+| Token (shadcn CSS var) | Valor aproximado | Uso na referência |
+|---|---|---|
+| `--background` | `#0A1413` (quase preto, tom verde-petróleo) | Fundo geral da aplicação |
+| `--foreground` | `#EDEDE8` | Texto principal |
+| `--card` | `#0F1C1A` | Fundo dos cards de KPI/gráficos |
+| `--border` | `#1E2D2A` | Bordas sutis dos cards |
+| `--primary` | `#5EEAD4` (mint/teal) | Item ativo do menu, linha do gráfico principal, badges positivos, pill de período ativo (12M) |
+| `--primary-foreground` | `#06201C` | Texto sobre fundo `--primary` |
+| `--muted-foreground` | `#8B9C97` (cinza-esverdeado) | Labels em caixa-alta, texto secundário |
+| `--destructive` | `#E8714A` (laranja-avermelhado) | Badges de variação negativa (ex.: sinistralidade subindo) |
+| `--chart-1` | `#5EEAD4` (mint) | Série principal dos gráficos |
+| `--chart-2` | `#60A5FA` (azul) | Série secundária (ex.: PME) |
+| `--chart-3` | `#FB923C` (laranja) | Série terciária (ex.: Adesão) |
+| `--chart-4` | `#A78BFA` (roxo) | Série quaternária (ex.: Individual/Familiar) |
+| `--sidebar` | `#0A1413` (igual ao background) | Fundo da sidebar |
+| `--sidebar-accent` | `#11241F` | Fundo do item ativo na sidebar |
+| `--sidebar-primary` | `#5EEAD4` (mint) | Texto/ícone do item ativo na sidebar |
+
+**Tipografia da referência** (não obrigatório replicar agora — anotado pra decisão futura, fora de escopo desta fase): títulos em serifa, labels em caixa-alta com tracking largo em fonte monoespaçada. Fica como ideia adiada em `STATE.md` caso o usuário queira aplicar depois.
+
+---
+
 ## Confirmação necessária
 
-Componentes shadcn/ui a instalar (mínimo pro MVP): `button`, `card`, `input`, `select`, `badge`, `textarea`, `label`, `alert`, `skeleton`.
+Componentes shadcn/ui a instalar (mínimo pro MVP, já incluindo a sidebar decidida em 2026-06-23): `button`, `card`, `input`, `select`, `badge`, `textarea`, `label`, `alert`, `skeleton`, `sidebar` (+ dependências `separator`, `sheet`, `tooltip`, `skeleton` já cobertas).

@@ -154,7 +154,7 @@ T22 → T23
 
 ---
 
-### T4: Scaffold do projeto Vite + React + TS
+### T4: Scaffold do projeto Vite + React + TS ✅ Done
 
 **What**: Criar o projeto em `frontend/` com Vite + React + TypeScript, configurar alias `@` pro `src/`
 **Where**: `frontend/` (novo diretório na raiz do repo)
@@ -175,10 +175,10 @@ T22 → T23
 
 ---
 
-### T5: TailwindCSS v4 + shadcn/ui init + componentes base
+### T5: TailwindCSS v4 + shadcn/ui init + tema dark + componentes base ✅ Done
 
-**What**: Instalar TailwindCSS (plugin `@tailwindcss/vite`) e inicializar shadcn/ui, adicionar componentes base
-**Where**: `frontend/` (`components.json`, `src/components/ui/*`)
+**What**: Instalar TailwindCSS (plugin `@tailwindcss/vite`) e inicializar shadcn/ui, aplicar os tokens de tema dark de `design.md` (seção "Tema Visual"), adicionar componentes base + `sidebar`
+**Where**: `frontend/` (`components.json`, `src/index.css` — tokens de tema, `src/components/ui/*`)
 **Depends on**: T4
 **Reuses**: Nenhum
 
@@ -188,15 +188,19 @@ T22 → T23
 
 **Done when**:
 - [ ] `npx shadcn@latest init` configurado (estilo, cor base, CSS variables)
-- [ ] Componentes adicionados: `button`, `card`, `input`, `select`, `badge`, `textarea`, `label`, `alert`, `skeleton`
+- [ ] Tokens de `design.md` (Tema Visual) aplicados em `:root`/`.dark` — `--background`, `--foreground`, `--card`, `--border`, `--primary`, `--primary-foreground`, `--muted-foreground`, `--destructive`, `--chart-1..4`, `--sidebar*`
+- [ ] Dark mode forçado como único tema (`<html class="dark">` ou equivalente, sem toggle)
+- [ ] Componentes adicionados: `button`, `card`, `input`, `select`, `badge`, `textarea`, `label`, `alert`, `skeleton`, `sidebar` (+ dependências que o CLI instalar automaticamente: `separator`, `sheet`, `tooltip`)
 - [ ] Gate check passa: `fe-build`
 
 **Tests**: none
 **Gate**: build
 
+**Verify**: `npm run dev`, abrir no navegador, confirmar visualmente que o fundo está escuro (não branco) e os componentes shadcn renderizam com a cor primária mint, não o azul/cinza padrão.
+
 ---
 
-### T6: Instalar e configurar React Router, TanStack Query, React Hook Form
+### T6: Instalar e configurar React Router, TanStack Query, React Hook Form ✅ Done
 
 **What**: Instalar as 3 libs e configurar o shell em `main.tsx`/`App.tsx` (`QueryClientProvider` + `BrowserRouter`, sem rotas reais ainda)
 **Where**: `frontend/src/main.tsx`, `frontend/src/App.tsx`
@@ -217,7 +221,7 @@ T22 → T23
 
 ---
 
-### T7: `types/api.ts` — interfaces TS espelhando os DTOs [P]
+### T7: `types/api.ts` — interfaces TS espelhando os DTOs [P] ✅ Done
 
 **What**: Criar todas as interfaces/union types listadas em "Data Models" do `design.md`
 **Where**: `frontend/src/types/api.ts`
@@ -237,7 +241,7 @@ T22 → T23
 
 ---
 
-### T8: `lib/api.ts` — cliente HTTP tipado
+### T8: `lib/api.ts` — cliente HTTP tipado ✅ Done
 
 **What**: `apiFetch<T>` + `ApiError`, conforme design
 **Where**: `frontend/src/lib/api.ts`
@@ -258,7 +262,7 @@ T22 → T23
 
 ---
 
-### T9: `AuthContext` + `useAuth` (mock auth) [P]
+### T9: `AuthContext` + `useAuth` (mock auth) [P] ✅ Done
 
 **What**: Contexto com os 3 perfis mockados fixos (tabela do `design.md`), persistido em `localStorage`
 **Where**: `frontend/src/auth/AuthContext.tsx`
@@ -279,7 +283,7 @@ T22 → T23
 
 ---
 
-### T10: `ProfileSelector` (tela `/login`) [P]
+### T10: `ProfileSelector` (tela `/login`) [P] ✅ Done
 
 **What**: Tela com 3 cards (Admin/Atendente/Solicitante) que chamam `login()`
 **Where**: `frontend/src/auth/ProfileSelector.tsx`
@@ -300,19 +304,22 @@ T22 → T23
 
 ---
 
-### T11: `AppLayout` (header + outlet + sair) [P]
+### T11: `AppLayout` (sidebar + outlet + sair) [P] ✅ Done
 
-**What**: Layout com nome/perfil ativo no header, botão "sair", `<Outlet />`
+**What**: Layout com menu lateral (shadcn `Sidebar`), item "Meus Chamados" (`/chamados`), botão de destaque "Abrir Chamado" (`/chamados/novo`), nome/perfil ativo e botão "sair" no rodapé da sidebar, `<Outlet />` na área de conteúdo
 **Where**: `frontend/src/layouts/AppLayout.tsx`
 **Depends on**: T9, T5
-**Reuses**: `useAuth()`, React Router `<Outlet />`
+**Reuses**: `useAuth()`, React Router `<Outlet />`, shadcn `Sidebar`/`SidebarProvider`/`SidebarMenu`
+**Requirement**: Decisão de design de 2026-06-23 (ver `design.md` — AppLayout)
 
 **Tools**:
 - MCP: NONE
 - Skill: NONE
 
 **Done when**:
-- [ ] Mostra nome do perfil ativo
+- [ ] Sidebar fixa renderiza com item "Meus Chamados" e botão "Abrir Chamado"
+- [ ] Item ativo (rota atual) destacado com `--sidebar-accent`/`--sidebar-primary`
+- [ ] Mostra nome do perfil ativo no rodapé da sidebar
 - [ ] Botão "sair" chama `logout()` e redireciona pra `/login`
 - [ ] Gate check passa: `fe-build`
 
@@ -321,7 +328,7 @@ T22 → T23
 
 ---
 
-### T12: Wiring de rotas em `App.tsx`
+### T12: Wiring de rotas em `App.tsx` ✅ Done
 
 **What**: Registrar `/login`, e rotas protegidas `/chamados`, `/chamados/novo`, `/chamados/:id` dentro do `AppLayout`, com redirect pra `/login` se não houver perfil mockado. Páginas reais ainda não existem — usar placeholders (`<div>TODO</div>`) nesta tarefa
 **Where**: `frontend/src/App.tsx`
@@ -342,7 +349,7 @@ T22 → T23
 
 ---
 
-### T13: `features/chamados/api.ts` — funções de API
+### T13: `features/chamados/api.ts` — funções de API ✅ Done
 
 **What**: As 6 funções listadas no design (`listarChamados`, `obterChamado`, `abrirChamado`, `listarComentarios`, `comentar`, `listarCategorias`)
 **Where**: `frontend/src/features/chamados/api.ts`
@@ -364,7 +371,7 @@ T22 → T23
 
 ---
 
-### T14: Hooks do TanStack Query
+### T14: Hooks do TanStack Query ✅ Done
 
 **What**: `useChamados`, `useChamado`, `useComentarios`, `useCategorias`, `useAbrirChamado` (mutation), `useComentar` (mutation)
 **Where**: `frontend/src/features/chamados/hooks/`
@@ -385,7 +392,7 @@ T22 → T23
 
 ---
 
-### T15: `StatusBadge` + `PrioridadeBadge` + `SlaBadge` [P]
+### T15: `StatusBadge` + `PrioridadeBadge` + `SlaBadge` [P] ✅ Done
 
 **What**: 3 componentes pequenos de exibição, cada um mapeando um enum/condição pra uma cor de badge (shadcn `Badge`)
 **Where**: `frontend/src/features/chamados/components/StatusBadge.tsx`, `PrioridadeBadge.tsx`, `SlaBadge.tsx`
@@ -406,7 +413,7 @@ T22 → T23
 
 ---
 
-### T16: `ChamadoCard`
+### T16: `ChamadoCard` ✅ Done
 
 **What**: Card usado na listagem (título, badges, categoria, data)
 **Where**: `frontend/src/features/chamados/components/ChamadoCard.tsx`
@@ -426,7 +433,7 @@ T22 → T23
 
 ---
 
-### T17: `FiltroChamados` [P]
+### T17: `FiltroChamados` [P] ✅ Done
 
 **What**: Selects de status/categoria + campo de busca, controlado, emite `onChange` com os filtros
 **Where**: `frontend/src/features/chamados/components/FiltroChamados.tsx`
@@ -446,7 +453,7 @@ T22 → T23
 
 ---
 
-### T18: `ComentarioList` + `ComentarioForm`
+### T18: `ComentarioList` + `ComentarioForm` ✅ Done
 
 **What**: Timeline de comentários públicos (lê de `useComentarios`, filtra `tipo === "Publico"`) + form de novo comentário (usa `useComentar`)
 **Where**: `frontend/src/features/chamados/components/ComentarioList.tsx`, `ComentarioForm.tsx`
