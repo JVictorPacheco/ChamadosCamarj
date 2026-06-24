@@ -474,7 +474,7 @@ T22 → T23
 
 ---
 
-### T19: `AbrirChamadoPage` [P]
+### T19: `AbrirChamadoPage` [P] ✅ Done
 
 **What**: Página `/chamados/novo` com formulário (React Hook Form) usando `useAbrirChamado` e `useCategorias`
 **Where**: `frontend/src/features/chamados/AbrirChamadoPage.tsx`
