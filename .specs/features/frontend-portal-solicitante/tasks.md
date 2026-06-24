@@ -327,7 +327,7 @@ T22 → T23
 
 ---
 
-### T12: Wiring de rotas em `App.tsx`
+### T12: Wiring de rotas em `App.tsx` ✅ Done
 
 **What**: Registrar `/login`, e rotas protegidas `/chamados`, `/chamados/novo`, `/chamados/:id` dentro do `AppLayout`, com redirect pra `/login` se não houver perfil mockado. Páginas reais ainda não existem — usar placeholders (`<div>TODO</div>`) nesta tarefa
 **Where**: `frontend/src/App.tsx`
