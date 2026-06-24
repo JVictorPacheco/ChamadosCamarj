@@ -520,7 +520,7 @@ T22 → T23
 
 ---
 
-### T21: `ChamadoDetailPage` [P]
+### T21: `ChamadoDetailPage` [P] ✅ Done
 
 **What**: Página `/chamados/:id` — todos os dados do chamado + `ComentarioList`/`ComentarioForm`
 **Where**: `frontend/src/features/chamados/ChamadoDetailPage.tsx`
