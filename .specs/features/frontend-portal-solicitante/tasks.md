@@ -303,7 +303,7 @@ T22 → T23
 
 ---
 
-### T11: `AppLayout` (sidebar + outlet + sair) [P]
+### T11: `AppLayout` (sidebar + outlet + sair) [P] ✅ Done
 
 **What**: Layout com menu lateral (shadcn `Sidebar`), item "Meus Chamados" (`/chamados`), botão de destaque "Abrir Chamado" (`/chamados/novo`), nome/perfil ativo e botão "sair" no rodapé da sidebar, `<Outlet />` na área de conteúdo
 **Where**: `frontend/src/layouts/AppLayout.tsx`
