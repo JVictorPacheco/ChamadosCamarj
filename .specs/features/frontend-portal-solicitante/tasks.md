@@ -452,7 +452,7 @@ T22 → T23
 
 ---
 
-### T18: `ComentarioList` + `ComentarioForm`
+### T18: `ComentarioList` + `ComentarioForm` ✅ Done
 
 **What**: Timeline de comentários públicos (lê de `useComentarios`, filtra `tipo === "Publico"`) + form de novo comentário (usa `useComentar`)
 **Where**: `frontend/src/features/chamados/components/ComentarioList.tsx`, `ComentarioForm.tsx`
