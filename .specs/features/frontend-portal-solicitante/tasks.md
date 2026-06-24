@@ -497,7 +497,7 @@ T22 → T23
 
 ---
 
-### T20: `ChamadosListPage` [P]
+### T20: `ChamadosListPage` [P] ✅ Done
 
 **What**: Página `/chamados` — lista filtrada pelo e-mail do perfil ativo, com `FiltroChamados`, `ChamadoCard` e paginação
 **Where**: `frontend/src/features/chamados/ChamadosListPage.tsx`
