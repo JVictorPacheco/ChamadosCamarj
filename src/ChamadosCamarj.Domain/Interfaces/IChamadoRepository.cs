@@ -27,6 +27,7 @@ public interface IChamadoRepository
         Guid? responsavelId = null,
         Guid? categoriaId = null,
         string? busca = null,
+        string? solicitanteEmail = null,
         CancellationToken cancellationToken = default);
 
     // Verificações

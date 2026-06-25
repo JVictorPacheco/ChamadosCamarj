@@ -33,9 +33,10 @@ public class ChamadosController : ControllerBase
         [FromQuery] Guid? responsavelId = null,
         [FromQuery] Guid? categoriaId = null,
         [FromQuery] string? busca = null,
+        [FromQuery] string? solicitanteEmail = null,
         CancellationToken cancellationToken = default)
     {
-        var query = new ListarChamadosQuery(pagina, tamanhoPagina, status, prioridade, responsavelId, categoriaId, busca);
+        var query = new ListarChamadosQuery(pagina, tamanhoPagina, status, prioridade, responsavelId, categoriaId, busca, solicitanteEmail);
         var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
     }
