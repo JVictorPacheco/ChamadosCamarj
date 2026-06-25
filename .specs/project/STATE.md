@@ -55,9 +55,12 @@ Nenhum.
 
 ## 📋 TODOs (ordenados por prioridade)
 
-1. Mergear os 2 PRs da Fase 3 em `develop` (`feature/fase3-bloco1-comentarios-api`, `feature/fase3-bloco2-frontend-foundation`) — abertos, aguardando revisão/merge
-2. Restilizar `ProfileSelector` como tela de "login" de fato (logo Camarj + título + layout), mantendo a lógica mockada — usuário vai mandar o arquivo do logo quando puder; usar placeholder/wordmark até lá
-3. Iniciar Fase 4 (Email + Storage) — Specify/Design antes do Execute
+1. Iniciar Fase 4 (Email + Storage) — Specify/Design antes do Execute
+
+## ✅ Concluído recentemente
+
+- PRs #9, #10, #11 mergeados em `develop` (2026-06-25) + merge direto do restante (API-02, T22, T23) — Fase 3 100% em `develop`
+- `ProfileSelector` restilizada como tela de login real: logo da Camarj (`frontend/src/assets/logo-camarj.png`, fundo transparente, combina bem com o tema dark) + título "Portal de Chamados" + subtítulo — lógica mockada inalterada (branch `feature/fase3-login-branding`)
 
 ---
 
