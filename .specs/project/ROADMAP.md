@@ -75,9 +75,12 @@
 - [ ] Notificações SignalR em tempo real
 - [ ] Filtros avançados + busca full-text
 
-## 🔐 Fase 6 — Azure AD + Admin completo
+## 🔐 Fase 6 — Login Google Workspace + Admin completo
 
-- [ ] Login corporativo completo com perfis
+> Corrigido em 2026-06-25: Camarj usa Google Workspace (Gmail corporativo), não Azure AD/Microsoft como assumido antes. Contas são por setor (ex: autorizacao@camarj.com.br), não por analista individual.
+
+- [ ] Login real via "Sign in with Google" (substitui o seletor mockado)
+- [ ] Mapeamento conta→perfil no backend (tabela/config de usuários por setor)
 - [ ] RBAC: Admin, Atendente, Solicitante
 - [ ] Admin: gerenciar categorias, usuários, configs
 

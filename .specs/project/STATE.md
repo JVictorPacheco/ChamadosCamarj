@@ -23,7 +23,7 @@
 | Banco dev e prod | PostgreSQL via Supabase — mesma instância para os dois ambientes |
 | Conexão Supabase | **Session pooler** (`aws-1-us-east-2.pooler.supabase.com:5432`), não "Direct connection" (IPv6-only, falha em redes sem IPv6) nem "Transaction pooler" (incompatível com prepared statements do EF Core) |
 | Senha do banco | `dotnet user-secrets` local (dev) — nunca em `appsettings.json` |
-| Auth | Azure AD (Microsoft Entra ID) — mockada na Fase 3, real só na Fase 6 (sem acesso ao tenant ainda) |
+| Auth | **Google Workspace (Sign in with Google)** — corrigido em 2026-06-25, não é Azure AD/Microsoft como assumido antes. Mockada na Fase 3, real na Fase 6. Contas são **por setor**, não por analista individual (ex: autorizacao@camarj.com.br) — perfil (Admin/Atendente/Solicitante) é derivado da conta logada, precisa de mapeamento conta→perfil no backend |
 | Anexos | Supabase Storage — implementar na Fase 4 |
 | Email | MailKit IMAP — suporte@camarj.com.br / ti@camarj.com.br |
 | Frontend | React + TS + Vite + TailwindCSS + Shadcn/ui |
@@ -34,7 +34,7 @@
 | Mobile | Web primeiro, mobile no futuro |
 | Docs | Obsidian (docs/obsidian/) |
 | Escopo Fase 3 | Só visão do Solicitante (abrir, listar, detalhe, comentar). Ações de Atendente ficam pra quando o Kanban (Fase 5) for feito |
-| Auth mockada Fase 3 | Seletor de perfil (Admin/Atendente/Solicitante) salvo em localStorage — sem Azure AD real ainda. Troca futura isolada no contexto de autenticação |
+| Auth mockada Fase 3 | Seletor de perfil (Admin/Atendente/Solicitante) salvo em localStorage — sem login Google real ainda. Troca futura isolada no contexto de autenticação |
 | Localização do frontend | `/frontend` na raiz do repo, ao lado de `src/`, `tests/` e `docs/` |
 
 ---
@@ -66,6 +66,7 @@ Nenhum.
 
 ## 💡 Ideias adiadas (deferred)
 
+- **Login real via Google (Fase 6, registrado em 2026-06-25):** "Sign in with Google" no lugar do seletor mockado. Camarj usa Google Workspace, não Azure AD (correção da decisão anterior). Contas são por setor (ex: autorizacao@camarj.com.br), não por analista — perfil (Admin/Atendente/Solicitante) precisa ser derivado de um mapeamento conta→perfil no backend (provavelmente uma tabela/config de usuários, ligando com a ideia de "Admin: gerenciar usuários" já prevista na Fase 6). Decisão do usuário: manter mock por agora, implementar isso quando chegar a Fase 6, na ordem original do roadmap
 - **Reembolso workflow:** Possível integração com sistema financeiro no futuro
 - **App mobile:** Web primeiro, avaliar PWA ou React Native depois
 - **Electron/Tauri:** Para notificações desktop — após o web estar estável
