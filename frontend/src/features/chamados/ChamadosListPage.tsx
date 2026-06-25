@@ -50,7 +50,9 @@ export function ChamadosListPage() {
         <>
           <div className="flex flex-col gap-3">
             {data.items.map((chamado) => (
-              <ChamadoCard key={chamado.id} chamado={chamado} />
+              <Link key={chamado.id} to={`/chamados/${chamado.id}`} className="block">
+                <ChamadoCard chamado={chamado} />
+              </Link>
             ))}
           </div>
 

@@ -1,14 +1,18 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-06-24
+> Atualizado em: 2026-06-25
 
 ---
 
 ## 📍 Onde estamos
 
-**Fase 2.5 concluída** — todos os concerns (C-01 a C-10) resolvidos, mais 3 bugs encontrados em teste manual e corrigidos (PR #6 mergeada em `develop`): categoria inexistente sem validação, transições de status sem guard, e `DbUpdateConcurrencyException` ao comentar. 57 testes unitários passando (55 + 2 novos da T2 abaixo). API roda em PostgreSQL real via Supabase.
+**Fase 2.5 concluída** — todos os concerns (C-01 a C-10) resolvidos, mais 3 bugs encontrados em teste manual e corrigidos (PR #6 mergeada em `develop`): categoria inexistente sem validação, transições de status sem guard, e `DbUpdateConcurrencyException` ao comentar. API roda em PostgreSQL real via Supabase.
 
-**Fase 3 — Frontend (Portal do Solicitante) em Execute, T1-T12 concluídas.** Backend API-01 pronto (T1-T3, branch `feature/fase3-bloco1-comentarios-api`, PR pendente de abertura manual). Frontend: scaffold, tema dark + sidebar (decisão de 2026-06-23 a partir de referência visual da Camarj), tipos/cliente HTTP/auth mockada, `ProfileSelector`, `AppLayout` (sidebar) e rotas reais já navegáveis ponta a ponta (`/login` → `/chamados` → placeholders das páginas reais). Tudo na branch `feature/fase3-bloco2-frontend-foundation`, PR pendente de abertura manual (`gh` CLI indisponível no ambiente). Próximo: T13/T14 (camada de dados).
+**Fase 3 — Frontend (Portal do Solicitante) CONCLUÍDA (T1-T23).** Backend: API-01 (endpoint de comentários) + API-02 (filtro `solicitanteEmail`, gap descoberto durante o Execute) — branch `feature/fase3-bloco1-comentarios-api`, PR aberto. Frontend completo: scaffold, tema dark + sidebar (decisão de 2026-06-23 a partir de referência visual da Camarj), auth mockada, 3 páginas reais (abrir/listar/detalhe chamado), comentários públicos, 1 teste E2E (Playwright) — branch `feature/fase3-bloco2-frontend-foundation`, PR aberto. 59 testes unitários de backend passando.
+
+**Verificado manualmente pelo usuário** (2026-06-24/25): fluxo completo funcionando no navegador, incluindo clique no card da lista → detalhe.
+
+**Próximo:** Fase 4 — Integração Email + Storage (`EmailReceiverService`, parsing de e-mail → chamado, `StorageService`/Supabase, upload de anexos).
 
 ---
 
@@ -19,7 +23,7 @@
 | Banco dev e prod | PostgreSQL via Supabase — mesma instância para os dois ambientes |
 | Conexão Supabase | **Session pooler** (`aws-1-us-east-2.pooler.supabase.com:5432`), não "Direct connection" (IPv6-only, falha em redes sem IPv6) nem "Transaction pooler" (incompatível com prepared statements do EF Core) |
 | Senha do banco | `dotnet user-secrets` local (dev) — nunca em `appsettings.json` |
-| Auth | Azure AD (Microsoft Entra ID) — implementar na Fase 3/6 |
+| Auth | Azure AD (Microsoft Entra ID) — mockada na Fase 3, real só na Fase 6 (sem acesso ao tenant ainda) |
 | Anexos | Supabase Storage — implementar na Fase 4 |
 | Email | MailKit IMAP — suporte@camarj.com.br / ti@camarj.com.br |
 | Frontend | React + TS + Vite + TailwindCSS + Shadcn/ui |
@@ -51,9 +55,9 @@ Nenhum.
 
 ## 📋 TODOs (ordenados por prioridade)
 
-1. Continuar Execute da Fase 3: T13/T14 (camada de dados — `features/chamados/api.ts` + hooks TanStack Query) em diante
+1. Mergear os 2 PRs da Fase 3 em `develop` (`feature/fase3-bloco1-comentarios-api`, `feature/fase3-bloco2-frontend-foundation`) — abertos, aguardando revisão/merge
 2. Restilizar `ProfileSelector` como tela de "login" de fato (logo Camarj + título + layout), mantendo a lógica mockada — usuário vai mandar o arquivo do logo quando puder; usar placeholder/wordmark até lá
-3. Abrir os 2 PRs pendentes pra `develop` (`feature/fase3-bloco1-comentarios-api`, `feature/fase3-bloco2-frontend-foundation`) — `gh` CLI não disponível neste ambiente
+3. Iniciar Fase 4 (Email + Storage) — Specify/Design antes do Execute
 
 ---
 
@@ -77,3 +81,6 @@ Nenhum.
 - Nenhuma transição de status do `Chamado` tinha guard — sempre validar o `Status` atual antes de mudar de estado em entidades com ciclo de vida
 - Sem middleware de tratamento de erro, toda exceção (incluindo `ValidationException` do FluentValidation) virava uma página 500 crua — middleware global de exceção é essencial mesmo em APIs pequenas
 - Supabase: "Direct connection" é IPv6-only (falha em rede sem IPv6); "Transaction pooler" não suporta prepared statements do EF Core; usar "Session pooler"
+- Gaps de filtro descobertos só no Execute (Fase 3): `ListarChamadosQuery` não tinha filtro por `solicitanteEmail`, apesar de existir um requisito explícito pra isso (FE-03) e até um método órfão (`ObterPorSolicitanteAsync`, não-paginado, nunca conectado a endpoint) sugerindo que a intenção sempre existiu — revisar queries de listagem contra os requisitos de UI antes de assumir que os filtros existentes bastam
+- TanStack Query: o `retry` default (3x com backoff) se aplica a QUALQUER erro, incluindo 4xx — um 404 real demorava vários segundos pra aparecer na UI. Configurar `retry` customizado no `QueryClient` pra não tentar de novo em erros 4xx (só erros de rede/5xx valem retry)
+- Branches criadas a partir de `develop` ANTES de um PR anterior ser mergeado não herdam commits desse PR — uma decisão de design/spec registrada só numa branch (ex: decisão do teste E2E, feita na branch de backend) precisa ser replicada manualmente se outra branch de trabalho (frontend) for criada a partir de `develop` nesse meio-tempo, senão a doc diverge silenciosamente

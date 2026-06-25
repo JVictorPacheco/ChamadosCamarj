@@ -5,6 +5,9 @@ import { ApiError } from '@/lib/api'
 import { AuthProvider, useAuth } from './auth/AuthContext'
 import { ProfileSelector } from './auth/ProfileSelector'
 import { AppLayout } from './layouts/AppLayout'
+import { AbrirChamadoPage } from './features/chamados/AbrirChamadoPage'
+import { ChamadosListPage } from './features/chamados/ChamadosListPage'
+import { ChamadoDetailPage } from './features/chamados/ChamadoDetailPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -55,9 +58,9 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={<LoginRoute />} />
       <Route element={<ProtectedRoute />}>
-        <Route path="/chamados" element={<div>TODO: lista de chamados</div>} />
-        <Route path="/chamados/novo" element={<div>TODO: abrir chamado</div>} />
-        <Route path="/chamados/:id" element={<div>TODO: detalhe do chamado</div>} />
+        <Route path="/chamados" element={<ChamadosListPage />} />
+        <Route path="/chamados/novo" element={<AbrirChamadoPage />} />
+        <Route path="/chamados/:id" element={<ChamadoDetailPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/chamados" replace />} />
     </Routes>
