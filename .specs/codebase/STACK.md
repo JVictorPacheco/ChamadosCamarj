@@ -18,10 +18,23 @@
 | Serilog | planned | Logging estruturado (Fase futura) |
 | SignalR | planned | Notificações em tempo real (Fase 5) |
 
-## Frontend (não iniciado)
+## Pacotes principais (Frontend — `frontend/`, Fase 3 completa)
 
-- React + TypeScript + Vite
-- TailwindCSS + Shadcn/ui
+| Pacote | Versão | Uso |
+|--------|--------|-----|
+| React | 19.x | UI |
+| Vite | 8.x | Build/dev server |
+| TypeScript | 6.x (`tsc -b`) | Tipagem, gate de build |
+| TailwindCSS | v4 (via `@tailwindcss/vite`) | Estilos utilitários |
+| shadcn/ui | — | Componentes (Radix por baixo), tema dark customizado (paleta Camarj) |
+| React Router | 8.x | Roteamento client-side (`BrowserRouter`) |
+| TanStack Query | v5 | Data fetching/cache; `retry` customizado (não tenta de novo em 4xx) |
+| React Hook Form | 7.x | Formulários (`AbrirChamadoPage`) |
+| @playwright/test | 1.61.x | Teste E2E (`frontend/e2e/`) |
+
+## Auth (Frontend, Fase 3)
+
+Mockada — `AuthContext` com 3 perfis fixos (Admin/Atendente/Solicitante) salvos em `localStorage`, sem chamada real ao Azure AD. Login corporativo real (Microsoft Entra ID) fica pra **Fase 6** — depende de acesso ao tenant da Camarj, ainda não disponível.
 
 ## Infraestrutura
 

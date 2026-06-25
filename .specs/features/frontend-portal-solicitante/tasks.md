@@ -567,7 +567,7 @@ T22 → T23
 
 ---
 
-### T23: Atualizar documentação (`.specs/` + `STATE.md`)
+### T23: Atualizar documentação (`.specs/` + `STATE.md`) ✅ Done
 
 **What**: Atualizar `STRUCTURE.md` (nova pasta `frontend/`), `TESTING.md` (seção frontend: "sem testes automatizados, verificação manual"), `STACK.md` (libs do frontend confirmadas), `ROADMAP.md` (Fase 3 concluída) e `STATE.md`
 **Where**: `.specs/codebase/STRUCTURE.md`, `.specs/codebase/TESTING.md`, `.specs/codebase/STACK.md`, `.specs/project/ROADMAP.md`, `.specs/project/STATE.md`
