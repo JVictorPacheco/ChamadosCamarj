@@ -146,6 +146,19 @@ public class ChamadosController : ControllerBase
     }
 
     /// <summary>
+    /// Altera o status de um chamado (usado pelo Kanban drag & drop)
+    /// </summary>
+    [HttpPut("{id:guid}/status")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> AlterarStatus(Guid id, [FromBody] AlterarStatusRequest request, CancellationToken cancellationToken)
+    {
+        await _mediator.Send(new AlterarStatusChamadoCommand(id, request.NovoStatus), cancellationToken);
+        return NoContent();
+    }
+
+    /// <summary>
     /// Lista os comentários de um chamado
     /// </summary>
     [HttpGet("{id:guid}/comentarios")]

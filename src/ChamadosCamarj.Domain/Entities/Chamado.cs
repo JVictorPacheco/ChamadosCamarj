@@ -117,6 +117,55 @@ public class Chamado : BaseEntity
         DataAtualizacao = DateTime.UtcNow;
     }
 
+    public void AlterarStatus(StatusChamado novoStatus)
+    {
+        if (Status == novoStatus)
+            return;
+
+        switch (novoStatus)
+        {
+            case StatusChamado.EmAndamento:
+                if (Status != StatusChamado.Aberto)
+                    throw new InvalidOperationException("Só é possível mover para 'Em Andamento' um chamado 'Aberto'.");
+                Status = novoStatus;
+                break;
+
+            case StatusChamado.Resolvido:
+                if (Status != StatusChamado.EmAndamento)
+                    throw new InvalidOperationException("Só é possível resolver um chamado que está 'Em Andamento'.");
+                Status = novoStatus;
+                DataConclusao = DateTime.UtcNow;
+                break;
+
+            case StatusChamado.Fechado:
+                if (Status != StatusChamado.Resolvido)
+                    throw new InvalidOperationException("Só é possível fechar um chamado que já foi resolvido.");
+                Status = novoStatus;
+                break;
+
+            case StatusChamado.Cancelado:
+                if (Status == StatusChamado.Fechado)
+                    throw new InvalidOperationException("Não é possível cancelar um chamado já fechado.");
+                Status = novoStatus;
+                break;
+
+            case StatusChamado.Aberto:
+                // Reabrir a partir de Resolvido, Fechado ou Cancelado
+                if (Status is not (StatusChamado.Resolvido or StatusChamado.Fechado or StatusChamado.Cancelado))
+                    throw new InvalidOperationException($"Não é possível reabrir um chamado com status '{Status}'.");
+                Status = novoStatus;
+                ResponsavelId = null;
+                ResponsavelNome = null;
+                DataConclusao = null;
+                break;
+
+            default:
+                throw new InvalidOperationException($"Status '{novoStatus}' não reconhecido.");
+        }
+
+        DataAtualizacao = DateTime.UtcNow;
+    }
+
     public void AtualizarDados(string titulo, string descricao)
     {
         if (string.IsNullOrWhiteSpace(titulo))
