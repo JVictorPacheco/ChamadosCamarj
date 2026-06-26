@@ -10,6 +10,7 @@ import { AbrirChamadoPage } from './features/chamados/AbrirChamadoPage'
 import { ChamadosListPage } from './features/chamados/ChamadosListPage'
 import { ChamadoDetailPage } from './features/chamados/ChamadoDetailPage'
 import { KanbanPage } from './features/chamados/KanbanPage'
+import { FilaAtendimentoPage } from './features/chamados/FilaAtendimentoPage'
 import { DashboardPage } from './features/dashboard/DashboardPage'
 
 const queryClient = new QueryClient({
@@ -68,6 +69,7 @@ function AppRoutes() {
         <Route path="/chamados/:id" element={<ChamadoDetailPage />} />
         <Route path="/atendimento/kanban" element={<KanbanPage />} />
         <Route path="/atendimento/dashboard" element={<DashboardPage />} />
+        <Route path="/atendimento/fila" element={<FilaAtendimentoPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/chamados" replace />} />
     </Routes>

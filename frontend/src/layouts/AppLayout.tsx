@@ -11,7 +11,9 @@ import {
   SidebarProvider,
 } from '@/components/ui/sidebar'
 import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
 import { useAuth } from '@/auth/AuthContext'
+import { Kanban, LayoutDashboard, Inbox, MessageSquarePlus } from 'lucide-react'
 
 export function AppLayout() {
   const { perfil, logout } = useAuth()
@@ -35,10 +37,46 @@ export function AppLayout() {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={location.pathname === '/chamados'}>
-                <Link to="/chamados">Meus Chamados</Link>
+                <Link to="/chamados">
+                  <Inbox className="h-4 w-4" />
+                  Meus Chamados
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
+
+          {perfil && perfil.tipo !== 'Solicitante' && (
+            <>
+              <Separator className="my-2" />
+              <div className="px-3 py-1 text-xs font-medium text-muted-foreground">Atendimento</div>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={location.pathname === '/atendimento/kanban'}>
+                    <Link to="/atendimento/kanban">
+                      <Kanban className="h-4 w-4" />
+                      Kanban
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={location.pathname === '/atendimento/dashboard'}>
+                    <Link to="/atendimento/dashboard">
+                      <LayoutDashboard className="h-4 w-4" />
+                      Dashboard
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={location.pathname === '/atendimento/fila'}>
+                    <Link to="/atendimento/fila">
+                      <Inbox className="h-4 w-4" />
+                      Fila
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </>
+          )}
         </SidebarContent>
         <SidebarFooter>
           <div className="flex flex-col gap-2 px-2 py-1 text-sm">
