@@ -1,5 +1,4 @@
 using MediatR;
-using ChamadosCamarj.Application.Features.Chamados.DTOs;
 
 namespace ChamadosCamarj.Application.Common.Notifications;
 
