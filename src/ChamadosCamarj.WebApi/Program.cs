@@ -13,13 +13,20 @@ using ChamadosCamarj.WebApi.Hubs;
 var builder = WebApplication.CreateBuilder(args);
 
 // ─────────────────────────────
-// Database — PostgreSQL (Supabase)
+// Database — SQLite (dev) / PostgreSQL (Supabase em produção)
 // ─────────────────────────────
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' não configurada.");
-
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(connectionString));
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseSqlite("Data Source=chamados.db"));
+}
+else
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+        ?? throw new InvalidOperationException("Connection string 'DefaultConnection' não configurada.");
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseNpgsql(connectionString));
+}
 
 // ─────────────────────────────
 // MediatR + CQRS
@@ -95,7 +102,14 @@ app.MapHub<ChamadosHub>("/hubs/chamados");
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await db.Database.MigrateAsync();
+    if (app.Environment.IsDevelopment())
+    {
+        await db.Database.EnsureCreatedAsync();
+    }
+    else
+    {
+        await db.Database.MigrateAsync();
+    }
     await DatabaseSeeder.SeedAsync(db);
 }
 
