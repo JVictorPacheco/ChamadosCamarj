@@ -13,20 +13,21 @@ using ChamadosCamarj.WebApi.Hubs;
 var builder = WebApplication.CreateBuilder(args);
 
 // ─────────────────────────────
-// Database — SQLite (dev) / PostgreSQL (Supabase em produção)
+// User Secrets (senha do Supabase — só na sua máquina)
 // ─────────────────────────────
 if (builder.Environment.IsDevelopment())
 {
-    builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseSqlite("Data Source=chamados.db"));
+    builder.Configuration.AddUserSecrets<Program>();
 }
-else
-{
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-        ?? throw new InvalidOperationException("Connection string 'DefaultConnection' não configurada.");
-    builder.Services.AddDbContext<ApplicationDbContext>(options =>
-        options.UseNpgsql(connectionString));
-}
+
+// ─────────────────────────────
+// Database — PostgreSQL (Supabase)
+// ─────────────────────────────
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' não configurada.");
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(connectionString));
 
 // ─────────────────────────────
 // MediatR + CQRS
@@ -102,14 +103,7 @@ app.MapHub<ChamadosHub>("/hubs/chamados");
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    if (app.Environment.IsDevelopment())
-    {
-        await db.Database.EnsureCreatedAsync();
-    }
-    else
-    {
-        await db.Database.MigrateAsync();
-    }
+    await db.Database.MigrateAsync();
     await DatabaseSeeder.SeedAsync(db);
 }
 
