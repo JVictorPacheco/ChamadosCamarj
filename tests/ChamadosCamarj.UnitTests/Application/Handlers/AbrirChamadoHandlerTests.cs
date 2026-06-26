@@ -4,6 +4,7 @@ using ChamadosCamarj.Domain.Entities;
 using ChamadosCamarj.Domain.Enums;
 using ChamadosCamarj.Domain.Interfaces;
 using FluentAssertions;
+using MediatR;
 using Moq;
 
 namespace ChamadosCamarj.UnitTests.Application.Handlers;
@@ -12,6 +13,7 @@ public class AbrirChamadoHandlerTests
 {
     private readonly Mock<IChamadoRepository> _repositoryMock = new();
     private readonly Mock<ICategoriaRepository> _categoriaRepositoryMock = new();
+    private readonly Mock<IPublisher> _publisherMock = new();
     private readonly AbrirChamadoCommandHandler _handler;
 
     public AbrirChamadoHandlerTests()
@@ -24,7 +26,10 @@ public class AbrirChamadoHandlerTests
             .Setup(r => r.ExisteAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
-        _handler = new AbrirChamadoCommandHandler(_repositoryMock.Object, _categoriaRepositoryMock.Object);
+        _handler = new AbrirChamadoCommandHandler(
+            _repositoryMock.Object,
+            _categoriaRepositoryMock.Object,
+            _publisherMock.Object);
     }
 
     [Fact]

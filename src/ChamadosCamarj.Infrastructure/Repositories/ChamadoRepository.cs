@@ -183,15 +183,14 @@ public class ChamadoRepository : IChamadoRepository
     {
         var resolvidos = await _dbSet
             .Where(c => c.Status == Domain.Enums.StatusChamado.Resolvido
-                && c.DataConclusao.HasValue
-                && c.DataCriacao != null)
-            .Select(c => EF.Functions.DateDiffSecond(c.DataCriacao, c.DataConclusao!.Value))
+                && c.DataConclusao.HasValue)
+            .Select(c => new { c.DataCriacao, DataConclusao = c.DataConclusao!.Value })
             .ToListAsync(cancellationToken);
 
         if (resolvidos.Count == 0)
             return null;
 
-        return resolvidos.Average(s => s / 3600.0);
+        return resolvidos.Average(r => (r.DataConclusao - r.DataCriacao).TotalHours);
     }
 
     public async Task<Dictionary<string, int>> ContarPorCategoriaAsync(CancellationToken cancellationToken = default)
