@@ -61,3 +61,14 @@ export function comentar(chamadoId: string, dados: ComentarChamadoRequest): Prom
 export function listarCategorias(): Promise<CategoriaResponse[]> {
   return apiFetch<CategoriaResponse[]>('/categorias')
 }
+
+export interface AlterarStatusRequest {
+  novoStatus: StatusChamado
+}
+
+export function alterarStatus(chamadoId: string, novoStatus: StatusChamado): Promise<void> {
+  return apiFetch<void>(`/chamados/${chamadoId}/status`, {
+    method: 'PUT',
+    body: JSON.stringify({ novoStatus }),
+  })
+}

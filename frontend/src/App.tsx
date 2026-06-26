@@ -9,6 +9,7 @@ import { SignalRProvider } from './hooks/useSignalR'
 import { AbrirChamadoPage } from './features/chamados/AbrirChamadoPage'
 import { ChamadosListPage } from './features/chamados/ChamadosListPage'
 import { ChamadoDetailPage } from './features/chamados/ChamadoDetailPage'
+import { KanbanPage } from './features/chamados/KanbanPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -64,6 +65,7 @@ function AppRoutes() {
         <Route path="/chamados" element={<ChamadosListPage />} />
         <Route path="/chamados/novo" element={<AbrirChamadoPage />} />
         <Route path="/chamados/:id" element={<ChamadoDetailPage />} />
+        <Route path="/atendimento/kanban" element={<KanbanPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/chamados" replace />} />
     </Routes>
