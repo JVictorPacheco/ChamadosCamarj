@@ -5,6 +5,7 @@ import { ApiError } from '@/lib/api'
 import { AuthProvider, useAuth } from './auth/AuthContext'
 import { ProfileSelector } from './auth/ProfileSelector'
 import { AppLayout } from './layouts/AppLayout'
+import { SignalRProvider } from './hooks/useSignalR'
 import { AbrirChamadoPage } from './features/chamados/AbrirChamadoPage'
 import { ChamadosListPage } from './features/chamados/ChamadosListPage'
 import { ChamadoDetailPage } from './features/chamados/ChamadoDetailPage'
@@ -29,7 +30,9 @@ function App() {
       <BrowserRouter>
         <TooltipProvider>
           <AuthProvider>
-            <AppRoutes />
+            <SignalRProvider>
+              <AppRoutes />
+            </SignalRProvider>
           </AuthProvider>
         </TooltipProvider>
       </BrowserRouter>
