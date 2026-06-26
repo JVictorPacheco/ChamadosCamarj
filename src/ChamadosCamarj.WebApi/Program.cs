@@ -29,7 +29,6 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(Assembly.Load("ChamadosCamarj.Application"));
     cfg.RegisterServicesFromAssembly(Assembly.Load("ChamadosCamarj.WebApi"));
     cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
-    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(LoggingBehaviour<,>));
 });
 // ─────────────────────────────
 // FluentValidation
