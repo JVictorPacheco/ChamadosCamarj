@@ -8,6 +8,7 @@ using ChamadosCamarj.Domain.Interfaces;
 using ChamadosCamarj.Infrastructure.Data;
 using ChamadosCamarj.Infrastructure.Repositories;
 using ChamadosCamarj.WebApi.Middleware;
+using ChamadosCamarj.WebApi.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,8 +56,10 @@ builder.Services.AddControllers()
     });
 
 // ─────────────────────────────
+// SignalR — notificações em tempo real
+builder.Services.AddSignalR();
+
 // CORS (React dev)
-// ─────────────────────────────
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
@@ -83,6 +86,7 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
 app.MapControllers();
+app.MapHub<ChamadosHub>("/hubs/chamados");
 
 // ─────────────────────────────
 // Migrations automáticas + Seed
