@@ -6,7 +6,29 @@ import { listarChamados } from '@/features/chamados/api'
 import { ChamadoCard } from '@/features/chamados/components/ChamadoCard'
 import { useSignalR } from '@/hooks/useSignalR'
 import { useEffect } from 'react'
+import { useAuth } from '@/auth/AuthContext'
+import { useAtribuirChamado } from '@/features/chamados/hooks/useAcoesChamado'
 import type { ChamadoResponse } from '@/types/api'
+
+function BotaoAssumir({ chamado }: { chamado: ChamadoResponse }) {
+  const { perfil } = useAuth()
+  const atribuir = useAtribuirChamado(chamado.id)
+
+  if (chamado.responsavelId) return null
+
+  return (
+    <Button
+      size="sm"
+      disabled={atribuir.isPending}
+      onClick={(e) => {
+        e.preventDefault()
+        atribuir.mutate({ responsavelId: perfil!.id, responsavelNome: perfil!.nome })
+      }}
+    >
+      {atribuir.isPending ? 'Assumindo...' : 'Assumir'}
+    </Button>
+  )
+}
 
 export function FilaAtendimentoPage() {
   const queryClient = useQueryClient()
@@ -15,13 +37,7 @@ export function FilaAtendimentoPage() {
   const { data, isPending, isError } = useQuery<ChamadoResponse[]>({
     queryKey: ['chamados', 'fila'],
     queryFn: async () => {
-      // Busca chamados abertos ordenados por prioridade
-      const result = await listarChamados({
-        pagina: 1,
-        tamanhoPagina: 50,
-        status: 'Aberto',
-      })
-      // Ordena por prioridade (Urgente > Alta > Media > Baixa)
+      const result = await listarChamados({ pagina: 1, tamanhoPagina: 50, status: 'Aberto' })
       const ordem = { Urgente: 0, Alta: 1, Media: 2, Baixa: 3 } as const
       return [...result.items].sort(
         (a, b) =>
@@ -68,9 +84,12 @@ export function FilaAtendimentoPage() {
               <div className="flex-1">
                 <ChamadoCard chamado={chamado} />
               </div>
-              <Button asChild variant="outline" size="sm">
-                <Link to={`/chamados/${chamado.id}`}>Ver</Link>
-              </Button>
+              <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+                <BotaoAssumir chamado={chamado} />
+                <Button asChild variant="outline" size="sm">
+                  <Link to={`/chamados/${chamado.id}`}>Ver</Link>
+                </Button>
+              </div>
             </div>
           </Link>
         ))}
