@@ -1,27 +1,27 @@
 using MediatR;
-using ChamadosCamarj.Domain.Interfaces;
 using ChamadosCamarj.Application.Common.Exceptions;
 using ChamadosCamarj.Application.Common.Notifications;
+using ChamadosCamarj.Domain.Interfaces;
 
 namespace ChamadosCamarj.Application.Features.Chamados.Commands;
 
-public class FecharChamadoCommandHandler : IRequestHandler<FecharChamadoCommand>
+public class AlterarStatusChamadoCommandHandler : IRequestHandler<AlterarStatusChamadoCommand>
 {
     private readonly IChamadoRepository _chamadoRepository;
     private readonly IPublisher _publisher;
 
-    public FecharChamadoCommandHandler(IChamadoRepository chamadoRepository, IPublisher publisher)
+    public AlterarStatusChamadoCommandHandler(IChamadoRepository chamadoRepository, IPublisher publisher)
     {
         _chamadoRepository = chamadoRepository;
         _publisher = publisher;
     }
 
-    public async Task Handle(FecharChamadoCommand request, CancellationToken cancellationToken)
+    public async Task Handle(AlterarStatusChamadoCommand request, CancellationToken cancellationToken)
     {
         var chamado = await _chamadoRepository.ObterPorIdAsync(request.Id, cancellationToken)
             ?? throw new NotFoundException("Chamado", request.Id);
 
-        chamado.Fechar();
+        chamado.AlterarStatus(request.NovoStatus);
         await _chamadoRepository.AtualizarAsync(chamado, cancellationToken);
 
         await _publisher.Publish(new StatusAlteradoNotification(

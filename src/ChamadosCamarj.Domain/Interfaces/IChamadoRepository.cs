@@ -32,4 +32,12 @@ public interface IChamadoRepository
 
     // Verificações
     Task<bool> ExisteAsync(Guid id, CancellationToken cancellationToken = default);
+
+    // Dashboard / Métricas
+    Task<int> ContarPorStatusAsync(StatusChamado status, CancellationToken cancellationToken = default);
+    Task<int> ContarResolvidosHojeAsync(CancellationToken cancellationToken = default);
+    Task<double?> ObterTempoMedioResolucaoHorasAsync(CancellationToken cancellationToken = default);
+    Task<Dictionary<string, int>> ContarPorCategoriaAsync(CancellationToken cancellationToken = default);
+    Task<Dictionary<string, int>> ContarPorPrioridadeAsync(CancellationToken cancellationToken = default);
+    Task<List<(DateTime Data, int Abertos, int Resolvidos)>> ObterTendenciaAsync(int dias, CancellationToken cancellationToken = default);
 }

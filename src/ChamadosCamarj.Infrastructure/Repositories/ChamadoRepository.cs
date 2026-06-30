@@ -163,4 +163,77 @@ public class ChamadoRepository : IChamadoRepository
     {
         return await _dbSet.AnyAsync(c => c.Id == id, cancellationToken);
     }
+
+    public async Task<int> ContarPorStatusAsync(Domain.Enums.StatusChamado status, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet.CountAsync(c => c.Status == status, cancellationToken);
+    }
+
+    public async Task<int> ContarResolvidosHojeAsync(CancellationToken cancellationToken = default)
+    {
+        var hoje = DateTime.UtcNow.Date;
+        return await _dbSet.CountAsync(c =>
+            c.Status == Domain.Enums.StatusChamado.Resolvido &&
+            c.DataConclusao.HasValue &&
+            c.DataConclusao.Value.Date == hoje,
+            cancellationToken);
+    }
+
+    public async Task<double?> ObterTempoMedioResolucaoHorasAsync(CancellationToken cancellationToken = default)
+    {
+        var resolvidos = await _dbSet
+            .Where(c => c.Status == Domain.Enums.StatusChamado.Resolvido
+                && c.DataConclusao.HasValue)
+            .Select(c => new { c.DataCriacao, DataConclusao = c.DataConclusao!.Value })
+            .ToListAsync(cancellationToken);
+
+        if (resolvidos.Count == 0)
+            return null;
+
+        return resolvidos.Average(r => (r.DataConclusao - r.DataCriacao).TotalHours);
+    }
+
+    public async Task<Dictionary<string, int>> ContarPorCategoriaAsync(CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Where(c => c.Status != Domain.Enums.StatusChamado.Fechado
+                     && c.Status != Domain.Enums.StatusChamado.Cancelado)
+            .GroupBy(c => c.Categoria != null ? c.Categoria.Nome : "Sem categoria")
+            .Select(g => new { Categoria = g.Key, Quantidade = g.Count() })
+            .ToDictionaryAsync(x => x.Categoria, x => x.Quantidade, cancellationToken);
+    }
+
+    public async Task<Dictionary<string, int>> ContarPorPrioridadeAsync(CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Where(c => c.Status != Domain.Enums.StatusChamado.Fechado
+                     && c.Status != Domain.Enums.StatusChamado.Cancelado)
+            .GroupBy(c => c.Prioridade)
+            .Select(g => new { Prioridade = g.Key.ToString(), Quantidade = g.Count() })
+            .ToDictionaryAsync(x => x.Prioridade, x => x.Quantidade, cancellationToken);
+    }
+
+    public async Task<List<(DateTime Data, int Abertos, int Resolvidos)>> ObterTendenciaAsync(int dias, CancellationToken cancellationToken = default)
+    {
+        var inicio = DateTime.UtcNow.Date.AddDays(-dias + 1);
+        var fim = DateTime.UtcNow.Date.AddDays(1);
+
+        var chamadosNoPeriodo = await _dbSet
+            .Where(c => c.DataCriacao >= inicio && c.DataCriacao < fim)
+            .Select(c => new
+            {
+                Data = c.DataCriacao.Date,
+                FoiResolvido = c.Status == Domain.Enums.StatusChamado.Resolvido && c.DataConclusao.HasValue
+            })
+            .ToListAsync(cancellationToken);
+
+        return Enumerable.Range(0, dias)
+            .Select(d => inicio.AddDays(d))
+            .Select(data => (
+                Data: data,
+                Abertos: chamadosNoPeriodo.Count(c => c.Data == data),
+                Resolvidos: chamadosNoPeriodo.Count(c => c.Data == data && c.FoiResolvido)
+            ))
+            .ToList();
+    }
 }

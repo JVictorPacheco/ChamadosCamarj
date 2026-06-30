@@ -5,9 +5,13 @@ import { ApiError } from '@/lib/api'
 import { AuthProvider, useAuth } from './auth/AuthContext'
 import { ProfileSelector } from './auth/ProfileSelector'
 import { AppLayout } from './layouts/AppLayout'
+import { SignalRProvider } from './hooks/useSignalR'
 import { AbrirChamadoPage } from './features/chamados/AbrirChamadoPage'
 import { ChamadosListPage } from './features/chamados/ChamadosListPage'
 import { ChamadoDetailPage } from './features/chamados/ChamadoDetailPage'
+import { KanbanPage } from './features/chamados/KanbanPage'
+import { FilaAtendimentoPage } from './features/chamados/FilaAtendimentoPage'
+import { DashboardPage } from './features/dashboard/DashboardPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -29,7 +33,9 @@ function App() {
       <BrowserRouter>
         <TooltipProvider>
           <AuthProvider>
-            <AppRoutes />
+            <SignalRProvider>
+              <AppRoutes />
+            </SignalRProvider>
           </AuthProvider>
         </TooltipProvider>
       </BrowserRouter>
@@ -61,6 +67,9 @@ function AppRoutes() {
         <Route path="/chamados" element={<ChamadosListPage />} />
         <Route path="/chamados/novo" element={<AbrirChamadoPage />} />
         <Route path="/chamados/:id" element={<ChamadoDetailPage />} />
+        <Route path="/atendimento/kanban" element={<KanbanPage />} />
+        <Route path="/atendimento/dashboard" element={<DashboardPage />} />
+        <Route path="/atendimento/fila" element={<FilaAtendimentoPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/chamados" replace />} />
     </Routes>
