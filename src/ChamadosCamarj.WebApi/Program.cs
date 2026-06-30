@@ -8,14 +8,24 @@ using ChamadosCamarj.Domain.Interfaces;
 using ChamadosCamarj.Infrastructure.Data;
 using ChamadosCamarj.Infrastructure.Repositories;
 using ChamadosCamarj.WebApi.Middleware;
+using ChamadosCamarj.WebApi.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // ─────────────────────────────
+// User Secrets (senha do Supabase — só na sua máquina)
+// ─────────────────────────────
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddUserSecrets<Program>();
+}
+
+// ─────────────────────────────
 // Database — PostgreSQL (Supabase)
 // ─────────────────────────────
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' não configurada.");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+if (string.IsNullOrWhiteSpace(connectionString))
+    throw new InvalidOperationException("Connection string 'DefaultConnection' não configurada. Use dotnet user-secrets set.");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
@@ -26,9 +36,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssembly(Assembly.Load("ChamadosCamarj.Application"));
+    cfg.RegisterServicesFromAssembly(Assembly.Load("ChamadosCamarj.WebApi"));
     cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
 });
-
 // ─────────────────────────────
 // FluentValidation
 // ─────────────────────────────
@@ -55,15 +65,18 @@ builder.Services.AddControllers()
     });
 
 // ─────────────────────────────
+// SignalR — notificações em tempo real
+builder.Services.AddSignalR();
+
 // CORS (React dev)
-// ─────────────────────────────
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
         policy.WithOrigins("http://localhost:5173", "http://localhost:3000")
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
 });
 
@@ -83,6 +96,7 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
 app.MapControllers();
+app.MapHub<ChamadosHub>("/hubs/chamados");
 
 // ─────────────────────────────
 // Migrations automáticas + Seed

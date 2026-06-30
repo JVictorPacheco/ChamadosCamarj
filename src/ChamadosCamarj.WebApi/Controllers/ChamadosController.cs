@@ -33,9 +33,10 @@ public class ChamadosController : ControllerBase
         [FromQuery] Guid? responsavelId = null,
         [FromQuery] Guid? categoriaId = null,
         [FromQuery] string? busca = null,
+        [FromQuery] string? solicitanteEmail = null,
         CancellationToken cancellationToken = default)
     {
-        var query = new ListarChamadosQuery(pagina, tamanhoPagina, status, prioridade, responsavelId, categoriaId, busca);
+        var query = new ListarChamadosQuery(pagina, tamanhoPagina, status, prioridade, responsavelId, categoriaId, busca, solicitanteEmail);
         var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
     }
@@ -142,6 +143,30 @@ public class ChamadosController : ControllerBase
     {
         await _mediator.Send(new CancelarChamadoCommand(id), cancellationToken);
         return NoContent();
+    }
+
+    /// <summary>
+    /// Altera o status de um chamado (usado pelo Kanban drag & drop)
+    /// </summary>
+    [HttpPut("{id:guid}/status")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> AlterarStatus(Guid id, [FromBody] AlterarStatusRequest request, CancellationToken cancellationToken)
+    {
+        await _mediator.Send(new AlterarStatusChamadoCommand(id, request.NovoStatus), cancellationToken);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Lista os comentários de um chamado
+    /// </summary>
+    [HttpGet("{id:guid}/comentarios")]
+    [ProducesResponseType(typeof(IEnumerable<ComentarioResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<ComentarioResponse>>> ListarComentarios(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new ListarComentariosQuery(id), cancellationToken);
+        return Ok(result);
     }
 
     /// <summary>

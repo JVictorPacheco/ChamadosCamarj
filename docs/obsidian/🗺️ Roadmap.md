@@ -40,16 +40,15 @@
 - [x] **3 bugs de teste manual corrigidos**: categoria inexistente sem validação, transições de status sem guard, `DbUpdateConcurrencyException` ao comentar
 - [x] Middleware global de tratamento de erro (antes não existia — toda exceção virava 500 cru)
 
-### 🎨 Fase 3 — Frontend: Portal do Solicitante (EM ANDAMENTO — planejamento pronto, Execute não iniciado)
-> Spec-Driven completo em `.specs/features/frontend-portal-solicitante/` (spec + design + 23 tasks, todas aprovadas).
-- [ ] **API-01**: endpoint `GET /chamados/{id}/comentarios` (pré-requisito de backend — falta o conteúdo dos comentários na API hoje)
-- [ ] Setup React + Vite + TS + TailwindCSS + Shadcn/ui em `/frontend`
-- [ ] Seletor de perfil mockado (Admin/Atendente/Solicitante — sem [[🔐 Azure AD]] real ainda)
-- [ ] Abertura de chamado (portal)
-- [ ] Lista de chamados com filtros
-- [ ] Detalhe do chamado (com comentários)
-- [ ] Comentários públicos
-- [ ] Decisão pendente: teste E2E (Playwright) do fluxo principal
+### ✅ Fase 3 — Frontend: Portal do Solicitante (CONCLUÍDA)
+- [x] **API-01**: endpoint `GET /chamados/{id}/comentarios` (`ListarComentariosQuery`)
+- [x] Setup React + Vite + TS + TailwindCSS + Shadcn/ui em `/frontend`
+- [x] Seletor de perfil mockado (Admin/Atendente/Solicitante — sem [[🔐 Azure AD]] real ainda)
+- [x] Abertura de chamado (portal)
+- [x] Lista de chamados com filtros + paginação
+- [x] Detalhe do chamado (com comentários)
+- [x] Comentários públicos
+- [x] Teste E2E (Playwright) — `e2e/fluxo-completo.spec.ts`
 
 ### 📧 Fase 4 — Integração Email + Storage
 - [ ] EmailReceiverService (IMAP/MailKit)
@@ -76,4 +75,4 @@
 
 ---
 
-> **Progresso atual:** ✅ Fase 2.5 concluída → 🎨 Fase 3 planejada, aguardando Execute (ver `.specs/HANDOFF.md` pra retomar exatamente de onde parou).
+> **Progresso atual:** ✅ Fase 2.5 concluída → ✅ Fase 3 concluída → 📊 Fase 5 (Kanban + Dashboard) como próximo passo.

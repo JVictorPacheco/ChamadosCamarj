@@ -4,6 +4,7 @@ using ChamadosCamarj.Domain.Entities;
 using ChamadosCamarj.Domain.Enums;
 using ChamadosCamarj.Domain.Interfaces;
 using FluentAssertions;
+using MediatR;
 using Moq;
 
 namespace ChamadosCamarj.UnitTests.Application.Handlers;
@@ -11,11 +12,12 @@ namespace ChamadosCamarj.UnitTests.Application.Handlers;
 public class AtribuirChamadoHandlerTests
 {
     private readonly Mock<IChamadoRepository> _repositoryMock = new();
+    private readonly Mock<IPublisher> _publisherMock = new();
     private readonly AtribuirChamadoCommandHandler _handler;
 
     public AtribuirChamadoHandlerTests()
     {
-        _handler = new AtribuirChamadoCommandHandler(_repositoryMock.Object);
+        _handler = new AtribuirChamadoCommandHandler(_repositoryMock.Object, _publisherMock.Object);
     }
 
     [Fact]

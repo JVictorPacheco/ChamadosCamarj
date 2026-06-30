@@ -12,6 +12,7 @@ public interface IChamadoRepository
 
     // Consultas
     Task<Chamado?> ObterPorIdAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Comentario>> ObterComentariosPorChamadoAsync(Guid chamadoId, CancellationToken cancellationToken = default);
     Task<IEnumerable<Chamado>> ObterTodosAsync(CancellationToken cancellationToken = default);
     Task<IEnumerable<Chamado>> ObterPorStatusAsync(StatusChamado status, CancellationToken cancellationToken = default);
     Task<IEnumerable<Chamado>> ObterPorSolicitanteAsync(string email, CancellationToken cancellationToken = default);
@@ -26,8 +27,17 @@ public interface IChamadoRepository
         Guid? responsavelId = null,
         Guid? categoriaId = null,
         string? busca = null,
+        string? solicitanteEmail = null,
         CancellationToken cancellationToken = default);
 
     // Verificações
     Task<bool> ExisteAsync(Guid id, CancellationToken cancellationToken = default);
+
+    // Dashboard / Métricas
+    Task<int> ContarPorStatusAsync(StatusChamado status, CancellationToken cancellationToken = default);
+    Task<int> ContarResolvidosHojeAsync(CancellationToken cancellationToken = default);
+    Task<double?> ObterTempoMedioResolucaoHorasAsync(CancellationToken cancellationToken = default);
+    Task<Dictionary<string, int>> ContarPorCategoriaAsync(CancellationToken cancellationToken = default);
+    Task<Dictionary<string, int>> ContarPorPrioridadeAsync(CancellationToken cancellationToken = default);
+    Task<List<(DateTime Data, int Abertos, int Resolvidos)>> ObterTendenciaAsync(int dias, CancellationToken cancellationToken = default);
 }

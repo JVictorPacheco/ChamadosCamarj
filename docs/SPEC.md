@@ -313,10 +313,10 @@ GET    /api/chamados/relatorios     → Dashboard/Métricas
 
 | Fase | O que inclui | Status |
 |------|-------------|--------|
-| **Fase 0** | Spec finalizado + setup do projeto + Obsidian | 🔧 Fazendo agora |
-| **Fase 1** | Domain layer + Migration inicial | ⏳ |
-| **Fase 2** | CQRS (Commands/Queries) + Validators + Controller | ⏳ |
-| **Fase 3** | Frontend básico (login, lista, detalhe, abertura) | ⏳ |
+| **Fase 0** | Spec finalizado + setup do projeto + Obsidian | ✅ Concluída |
+| **Fase 1** | Domain layer + Migration inicial | ✅ Concluída |
+| **Fase 2** | CQRS (Commands/Queries) + Validators + Controller | ✅ Concluída |
+| **Fase 3** | Frontend básico (login, lista, detalhe, abertura) | ✅ Concluída |
 | **Fase 4** | Integração com Email (IMAP receiver) | ⏳ |
 | **Fase 5** | Kanban + Dashboard + Notificações SignalR | ⏳ |
 | **Fase 6** | Azure AD + Perfis + Admin | ⏳ |

@@ -34,6 +34,7 @@ public class ListarChamadosQueryHandler : IRequestHandler<ListarChamadosQuery, P
             request.ResponsavelId,
             request.CategoriaId,
             request.Busca,
+            request.SolicitanteEmail,
             cancellationToken);
 
         return new PagedResult<ChamadoResponse>(

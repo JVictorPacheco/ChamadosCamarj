@@ -1,5 +1,6 @@
 using MediatR;
 using ChamadosCamarj.Application.Common.Exceptions;
+using ChamadosCamarj.Application.Common.Notifications;
 using ChamadosCamarj.Application.Features.Chamados.DTOs;
 using ChamadosCamarj.Application.Mappings;
 using ChamadosCamarj.Domain.Entities;
@@ -11,11 +12,16 @@ public class AbrirChamadoCommandHandler : IRequestHandler<AbrirChamadoCommand, C
 {
     private readonly IChamadoRepository _chamadoRepository;
     private readonly ICategoriaRepository _categoriaRepository;
+    private readonly IPublisher _publisher;
 
-    public AbrirChamadoCommandHandler(IChamadoRepository chamadoRepository, ICategoriaRepository categoriaRepository)
+    public AbrirChamadoCommandHandler(
+        IChamadoRepository chamadoRepository,
+        ICategoriaRepository categoriaRepository,
+        IPublisher publisher)
     {
         _chamadoRepository = chamadoRepository;
         _categoriaRepository = categoriaRepository;
+        _publisher = publisher;
     }
 
     public async Task<ChamadoResponse> Handle(AbrirChamadoCommand request, CancellationToken cancellationToken)
@@ -34,6 +40,12 @@ public class AbrirChamadoCommandHandler : IRequestHandler<AbrirChamadoCommand, C
         );
 
         await _chamadoRepository.AdicionarAsync(chamado, cancellationToken);
+
+        await _publisher.Publish(new ChamadoCriadoNotification(
+            chamado.Id,
+            chamado.Titulo,
+            StatusChamadoNotification.Aberto
+        ), cancellationToken);
 
         return chamado.ToResponse();
     }
