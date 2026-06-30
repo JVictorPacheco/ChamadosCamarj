@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react'
 import {
   HubConnectionBuilder,
-  HubConnectionState,
   type HubConnection,
 } from '@microsoft/signalr'
 import type { SignalREvent } from '@/lib/signalr-events'

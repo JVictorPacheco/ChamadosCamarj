@@ -13,7 +13,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { useAuth } from '@/auth/AuthContext'
-import { Kanban, LayoutDashboard, Inbox, MessageSquarePlus } from 'lucide-react'
+import { Kanban, LayoutDashboard, Inbox } from 'lucide-react'
 
 export function AppLayout() {
   const { perfil, logout } = useAuth()

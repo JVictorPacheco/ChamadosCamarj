@@ -72,3 +72,27 @@ export function alterarStatus(chamadoId: string, novoStatus: StatusChamado): Pro
     body: JSON.stringify({ novoStatus }),
   })
 }
+
+export interface AtribuirRequest {
+  responsavelId: string
+  responsavelNome: string
+}
+
+export function atribuirChamado(chamadoId: string, dados: AtribuirRequest): Promise<void> {
+  return apiFetch<void>(`/chamados/${chamadoId}/atribuir`, {
+    method: 'PATCH',
+    body: JSON.stringify(dados),
+  })
+}
+
+export function resolverChamado(chamadoId: string): Promise<void> {
+  return apiFetch<void>(`/chamados/${chamadoId}/resolver`, { method: 'PATCH' })
+}
+
+export function fecharChamado(chamadoId: string): Promise<void> {
+  return apiFetch<void>(`/chamados/${chamadoId}/fechar`, { method: 'PATCH' })
+}
+
+export function cancelarChamado(chamadoId: string): Promise<void> {
+  return apiFetch<void>(`/chamados/${chamadoId}/cancelar`, { method: 'PATCH' })
+}
