@@ -4,14 +4,15 @@ export type TipoPerfil = 'Admin' | 'Atendente' | 'Solicitante'
 
 export interface Perfil {
   tipo: TipoPerfil
+  id: string
   nome: string
   email: string
 }
 
 const PERFIS: Record<TipoPerfil, Perfil> = {
-  Admin: { tipo: 'Admin', nome: 'Victor', email: 'victor@camarj.com.br' },
-  Atendente: { tipo: 'Atendente', nome: 'Fábio', email: 'fabio@camarj.com.br' },
-  Solicitante: { tipo: 'Solicitante', nome: 'Ana Colaboradora', email: 'ana.colaboradora@camarj.com.br' },
+  Admin:       { tipo: 'Admin',       id: 'a1000000-0000-0000-0000-000000000001', nome: 'Victor',          email: 'victor@camarj.com.br' },
+  Atendente:   { tipo: 'Atendente',   id: 'a2000000-0000-0000-0000-000000000002', nome: 'Fábio',           email: 'fabio@camarj.com.br' },
+  Solicitante: { tipo: 'Solicitante', id: 'a3000000-0000-0000-0000-000000000003', nome: 'Ana Colaboradora', email: 'ana.colaboradora@camarj.com.br' },
 }
 
 const STORAGE_KEY = 'chamados-camarj:perfil'

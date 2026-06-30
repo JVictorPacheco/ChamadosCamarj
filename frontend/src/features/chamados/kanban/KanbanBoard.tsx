@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react'
 import { DndContext, type DragEndEvent, type DragStartEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { useQueryClient } from '@tanstack/react-query'
 import type { ChamadoResponse, StatusChamado } from '@/types/api'
-import { alterarStatus, listarChamados } from '@/features/chamados/api'
+import { alterarStatus } from '@/features/chamados/api'
 import { KanbanColumn } from './KanbanColumn'
 
 const COLUNAS: { status: StatusChamado; titulo: string; cor: string }[] = [
