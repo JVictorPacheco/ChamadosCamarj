@@ -13,22 +13,22 @@ using ChamadosCamarj.WebApi.Hubs;
 var builder = WebApplication.CreateBuilder(args);
 
 // ─────────────────────────────
-// User Secrets (senha do Supabase — só na sua máquina)
+// Database (dev = SQLite automático, prod = PostgreSQL/Supabase)
 // ─────────────────────────────
 if (builder.Environment.IsDevelopment())
 {
-    builder.Configuration.AddUserSecrets<Program>();
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseSqlite("Data Source=chamados.db"));
 }
-
-// ─────────────────────────────
-// Database — PostgreSQL (Supabase)
-// ─────────────────────────────
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-if (string.IsNullOrWhiteSpace(connectionString))
-    throw new InvalidOperationException("Connection string 'DefaultConnection' não configurada. Use dotnet user-secrets set.");
-
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(connectionString));
+else
+{
+    builder.Configuration.AddUserSecrets<Program>();
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    if (string.IsNullOrWhiteSpace(connectionString))
+        throw new InvalidOperationException("Connection string 'DefaultConnection' não configurada.");
+    builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        options.UseNpgsql(connectionString));
+}
 
 // ─────────────────────────────
 // MediatR + CQRS
@@ -104,7 +104,10 @@ app.MapHub<ChamadosHub>("/hubs/chamados");
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await db.Database.MigrateAsync();
+    if (app.Environment.IsDevelopment())
+        await db.Database.EnsureCreatedAsync();
+    else
+        await db.Database.MigrateAsync();
     await DatabaseSeeder.SeedAsync(db);
 }
 
