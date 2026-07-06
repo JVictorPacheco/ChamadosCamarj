@@ -1,6 +1,6 @@
 # 🗺️ Roadmap — Sistema de Chamados
 
-> Última atualização: 2026-06-23
+> Última atualização: 2026-07-01
 
 ## Fases do Desenvolvimento
 
@@ -10,7 +10,7 @@
 - [x] Obsidian estruturado
 - [x] Setup da solução .NET 9 (4 projetos)
 - [x] Setup do repositório GitHub
-- [x] Docker Compose (PostgreSQL local — descontinuado depois da migração pro Supabase)
+- [x] Docker Compose (PostgreSQL local — descontinuado após migração pro Supabase)
 
 ### ✅ Fase 1 — Domain Layer (CONCLUÍDA)
 - [x] Entidades: Chamado, Comentario, Categoria, Anexo
@@ -36,43 +36,56 @@
 - [x] Validators para Atribuir e Comentar
 - [x] Commands + Endpoints para Fechar e Cancelar
 - [x] Migration corrigida (ComentarioId em Anexos)
-- [x] Projeto de testes unitários (55 testes)
-- [x] **3 bugs de teste manual corrigidos**: categoria inexistente sem validação, transições de status sem guard, `DbUpdateConcurrencyException` ao comentar
-- [x] Middleware global de tratamento de erro (antes não existia — toda exceção virava 500 cru)
+- [x] 59 testes unitários passando
+- [x] 3 bugs de teste manual corrigidos (categoria inexistente, transições de status sem guard, DbUpdateConcurrencyException)
+- [x] Middleware global de tratamento de erro
 
 ### ✅ Fase 3 — Frontend: Portal do Solicitante (CONCLUÍDA)
-- [x] **API-01**: endpoint `GET /chamados/{id}/comentarios` (`ListarComentariosQuery`)
-- [x] Setup React + Vite + TS + TailwindCSS + Shadcn/ui em `/frontend`
-- [x] Seletor de perfil mockado (Admin/Atendente/Solicitante — sem [[🔐 Azure AD]] real ainda)
+- [x] API-01: endpoint `GET /chamados/{id}/comentarios`
+- [x] Setup React 19 + Vite + TS + TailwindCSS v4 + Shadcn/ui em `/frontend`
+- [x] Seletor de perfil mockado (Admin/Atendente/Solicitante — sem [[🔐 Google Workspace]] real ainda)
 - [x] Abertura de chamado (portal)
 - [x] Lista de chamados com filtros + paginação
 - [x] Detalhe do chamado (com comentários)
 - [x] Comentários públicos
 - [x] Teste E2E (Playwright) — `e2e/fluxo-completo.spec.ts`
 
+### ✅ Fase 5 — Kanban + Dashboard + Ações de Atendente (CONCLUÍDA)
+- [x] Kanban com drag & drop (dnd-kit) entre colunas de status
+- [x] Dashboard com métricas: total por status, alertas de SLA, chamados recentes
+- [x] Notificações SignalR em tempo real
+- [x] Fila de Atendimento (chamados Abertos ordenados por prioridade)
+- [x] Botão Assumir na Fila de Atendimento
+- [x] Ações no Detalhe: Assumir, Resolver, Fechar, Cancelar (por perfil + status)
+- [x] "Meus Chamados" diferenciado por perfil (Admin=todos, Atendente=responsavelId, Solicitante=email)
+- [x] Bug fix: Link aninhado no card da Fila eliminado
+
 ### 📧 Fase 4 — Integração Email + Storage
-- [ ] EmailReceiverService (IMAP/MailKit)
+- [ ] EmailReceiverService (IMAP/MailKit — suporte@camarj.com.br / ti@camarj.com.br)
 - [ ] Parsing de email → Chamado automático
 - [ ] Resposta automática
 - [ ] Anexos via [[📦 Supabase Storage]]
 
-### 📊 Fase 5 — Kanban + Dashboard
-- [ ] Telas de Atendente (fila, assumir, resolver, fechar) — ficaram de fora da Fase 3 de propósito
-- [ ] Kanban (status drag & drop)
-- [ ] Dashboard com gráficos
-- [ ] Notificações SignalR em tempo real
-- [ ] Filtros avançados
+### 🔐 Fase 6 — Admin Completo + Log + Google Workspace
 
-### 🔐 Fase 6 — Azure AD + Admin
-- [ ] Login corporativo real (substitui o mock da Fase 3)
-- [ ] Perfis e permissões (RBAC)
-- [ ] Admin: categorias, usuários, configs
+> ⚠️ **Corrigido em 2026-06-25:** Camarj usa **Google Workspace** (Gmail corporativo), não Azure AD.
+
+- [ ] **Reatribuição Admin** — mover chamado entre atendentes (qualquer status não-final)
+- [ ] **Log de histórico** — ver [[📋 Histórico de Chamados]] para detalhes
+- [ ] **Comentários internos** — visíveis só para Admin/Atendente
+- [ ] **Alterar prioridade** — Admin pode alterar de qualquer chamado
+- [ ] **Forçar encerramento** — Admin pode fechar/cancelar sem seguir o fluxo normal
+- [ ] Login real via [[🔐 Google Workspace]] (substitui o seletor mockado)
+- [ ] Mapeamento conta→perfil no backend
+- [ ] RBAC real (baseado em claims do token Google)
+- [ ] Admin: gerenciar categorias, usuários e configurações
 
 ### 📈 Fase 7 — Relatórios + SLA
 - [ ] Relatórios por período/categoria/atendente
-- [ ] SLA tracking com alertas
-- [ ] Exportação (CSV/PDF)
+- [ ] SLA tracking com alertas de vencimento
+- [ ] Exportação CSV/PDF
+- [ ] Dashboard de carga por atendente
 
 ---
 
-> **Progresso atual:** ✅ Fase 2.5 concluída → ✅ Fase 3 concluída → 📊 Fase 5 (Kanban + Dashboard) como próximo passo.
+> **Progresso atual:** ✅ Fases 0-3 e 5 concluídas → 🔐 Fase 6 (Admin + Log + Auth) como próximo passo.

@@ -12,11 +12,18 @@ export function ChamadosListPage() {
   const [filtros, setFiltros] = useState<FiltroChamadosValue>({})
   const [pagina, setPagina] = useState(1)
 
-  const { data, isPending, isError } = useChamados({
+  const isAdmin = perfil?.tipo === 'Admin'
+  const isAtendente = perfil?.tipo === 'Atendente'
+
+  const filtrosQuery = {
     ...filtros,
     pagina,
-    solicitanteEmail: perfil?.email,
-  })
+    ...(isAdmin ? {} : isAtendente
+      ? { responsavelId: perfil?.id }
+      : { solicitanteEmail: perfil?.email }),
+  }
+
+  const { data, isPending, isError } = useChamados(filtrosQuery)
 
   const handleFiltrosChange = (novosFiltros: FiltroChamadosValue) => {
     setFiltros(novosFiltros)
@@ -25,7 +32,9 @@ export function ChamadosListPage() {
 
   return (
     <div className="flex flex-col gap-4 p-4">
-      <h1 className="text-xl font-heading">Meus Chamados</h1>
+      <h1 className="text-xl font-heading">
+        {isAdmin ? 'Todos os Chamados' : isAtendente ? 'Chamados em Atendimento' : 'Meus Chamados'}
+      </h1>
 
       <FiltroChamados value={filtros} onChange={handleFiltrosChange} />
 
