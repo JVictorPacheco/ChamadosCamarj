@@ -187,6 +187,18 @@ public class ChamadosController : ControllerBase
     }
 
     /// <summary>
+    /// Lista o histórico de ações de um chamado
+    /// </summary>
+    [HttpGet("{id:guid}/historico")]
+    [ProducesResponseType(typeof(IEnumerable<HistoricoResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<IEnumerable<HistoricoResponse>>> ListarHistorico(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new ListarHistoricoQuery(id), cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
     /// Adiciona um comentário a um chamado
     /// </summary>
     [HttpPost("{id:guid}/comentarios")]
