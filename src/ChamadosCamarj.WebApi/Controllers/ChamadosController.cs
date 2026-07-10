@@ -110,6 +110,23 @@ public class ChamadosController : ControllerBase
     }
 
     /// <summary>
+    /// Reatribui um chamado para outro atendente (Admin)
+    /// </summary>
+    [HttpPatch("{id:guid}/reatribuir")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Reatribuir(
+        Guid id,
+        [FromBody] ReatribuirRequest request,
+        CancellationToken cancellationToken)
+    {
+        var command = new ReatribuirChamadoCommand(id, request.NovoResponsavelId, request.NovoResponsavelNome);
+        await _mediator.Send(command, cancellationToken);
+        return NoContent();
+    }
+
+    /// <summary>
     /// Marca um chamado como resolvido
     /// </summary>
     [HttpPatch("{id:guid}/resolver")]
