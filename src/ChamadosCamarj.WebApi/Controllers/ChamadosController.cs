@@ -127,6 +127,23 @@ public class ChamadosController : ControllerBase
     }
 
     /// <summary>
+    /// Altera a prioridade de um chamado (Admin)
+    /// </summary>
+    [HttpPatch("{id:guid}/prioridade")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> AlterarPrioridade(
+        Guid id,
+        [FromBody] AlterarPrioridadeRequest request,
+        CancellationToken cancellationToken)
+    {
+        var command = new AlterarPrioridadeChamadoCommand(id, request.NovaPrioridade);
+        await _mediator.Send(command, cancellationToken);
+        return NoContent();
+    }
+
+    /// <summary>
     /// Marca um chamado como resolvido
     /// </summary>
     [HttpPatch("{id:guid}/resolver")]
