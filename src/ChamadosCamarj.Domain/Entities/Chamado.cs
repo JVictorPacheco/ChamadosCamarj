@@ -67,6 +67,23 @@ public class Chamado : BaseEntity
         DataAtualizacao = DateTime.UtcNow;
     }
 
+    public void Reatribuir(Guid novoResponsavelId, string novoResponsavelNome)
+    {
+        if (Status is StatusChamado.Fechado or StatusChamado.Cancelado)
+            throw new InvalidOperationException($"Não é possível reatribuir um chamado com status '{Status}'.");
+
+        if (string.IsNullOrWhiteSpace(novoResponsavelNome))
+            throw new ArgumentException("Nome do novo responsável é obrigatório.", nameof(novoResponsavelNome));
+
+        // Se estava Aberto, passa para EmAndamento
+        if (Status == StatusChamado.Aberto)
+            Status = StatusChamado.EmAndamento;
+
+        ResponsavelId = novoResponsavelId;
+        ResponsavelNome = novoResponsavelNome;
+        DataAtualizacao = DateTime.UtcNow;
+    }
+
     public void Resolver()
     {
         if (Status is not (StatusChamado.Aberto or StatusChamado.EmAndamento))
