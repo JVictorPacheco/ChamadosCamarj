@@ -3,6 +3,7 @@ using ChamadosCamarj.Domain.Interfaces;
 using ChamadosCamarj.Domain.Entities;
 using ChamadosCamarj.Domain.Enums;
 using ChamadosCamarj.Application.Common.Exceptions;
+using ChamadosCamarj.Application.Common.Extensions;
 using ChamadosCamarj.Application.Common.Notifications;
 
 namespace ChamadosCamarj.Application.Features.Chamados.Commands;
