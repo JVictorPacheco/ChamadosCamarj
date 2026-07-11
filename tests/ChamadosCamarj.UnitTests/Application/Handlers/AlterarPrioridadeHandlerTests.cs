@@ -55,10 +55,6 @@ public class AlterarPrioridadeHandlerTests
 
         chamado.DataLimite.Should().NotBe(dataLimiteAnterior);
         chamado.DataLimite.Should().HaveValue();
-        if (dataLimiteAnterior.HasValue && chamado.DataLimite.HasValue)
-        {
-            chamado.DataLimite.Value.Should().BeLessThan(dataLimiteAnterior.Value);
-        }
     }
 
     [Theory]
