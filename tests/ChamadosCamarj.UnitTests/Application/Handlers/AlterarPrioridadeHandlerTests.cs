@@ -54,7 +54,10 @@ public class AlterarPrioridadeHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         chamado.DataLimite.Should().NotBe(dataLimiteAnterior);
-        chamado.DataLimite.Should().BeLessThan(dataLimiteAnterior);
+        if (dataLimiteAnterior.HasValue)
+        {
+            chamado.DataLimite.Should().BeLessThan(dataLimiteAnterior.Value);
+        }
     }
 
     [Theory]
