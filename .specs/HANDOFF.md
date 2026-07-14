@@ -1,29 +1,28 @@
 # Handoff
 
 **Date:** 2026-07-14
-**Feature:** Fase 6 — Admin Completo + Log + Google Workspace
-**Task:** T01-T14 concluídos e verificados via Playwright. Falta decidir o próximo passo (T09/T15 ou Fase 4).
+**Feature:** Fase 7 — Relatório Mensal (antecipada)
+**Task:** Specify ainda não começado. Fase 6 (T09/T15) pausada de propósito até o relatório sair.
 
 ## Completed ✓
 
-- Reescrita completa do frontend da Fase 6 (T10-T14): `ReatribuirModal`, `AlterarPrioridadeModal`, `TimelineHistorico` criados em `frontend/src/features/chamados/components/`; `ComentarioForm`/`ComentarioList` estendidos pra comentário interno. Arquivos órfãos em `src/ChamadosCamarj.Web/` apagados.
-- Componentes shadcn instalados via CLI: `dialog`, `checkbox`, `radio-group`.
-- Seção "Frontend" adicionada em `.specs/codebase/CONVENTIONS.md`.
-- Bug corrigido: endpoint `GET /comentarios` não repassava `perfilUsuario` pra query (filtro de interno nunca disparava).
-- Bug corrigido: migration `AddHistoricoEntrada` estava incompleta (sem `.Designer.cs`/snapshot) — travava o startup da API. Regenerada via `dotnet ef migrations add` e sincronizada com o Postgres local (Docker).
-- Bug corrigido: histórico gravava `"Sistema"` fixo em Reatribuir/AlterarPrioridade/Resolver/Fechar/Cancelar. Adicionado `UsuarioId`/`UsuarioNome` nesses 5 commands + endpoints; frontend (`useAcoesChamado.ts`) envia `perfil.id`/`perfil.nome` do `AuthContext` automaticamente.
-- Verificado ponta a ponta via Playwright ad-hoc (script temporário, removido): reatribuir, alterar prioridade, histórico com usuário real, comentário interno oculto do Solicitante. Testes unitários (96) continuam passando.
+- Fase 6 T01-T14 completos e verificados via Playwright: reatribuir, alterar prioridade, histórico com usuário real, comentário interno oculto do Solicitante. Frontend reescrito em `frontend/src/features/chamados/`, arquivos órfãos em `src/ChamadosCamarj.Web/` apagados.
+- Bugs corrigidos: filtro de comentário interno (endpoint não repassava perfil), migration `AddHistoricoEntrada` incompleta, histórico gravando "Sistema" fixo em vez do usuário real.
+- Dashboard (Fase 5) corrigido: agora mostra Cancelados e Resolvidos (total, não só hoje), e "Abertos" detalha assumidos vs em espera.
+- 2 commits pushados em `feature/fase-6-admin-log` (`8c76baf`, `c971d0f`, `eb1dca3` — rework frontend, docs, fix dashboard).
+- Testes unitários (96) e typecheck sempre verificados após cada mudança.
 
 ## In Progress
 
-Nada em execução.
+Nada em execução. Sessão pausada a pedido do usuário antes de iniciar o Specify do Relatório Mensal.
 
 ## Pending
 
-1. Criar PR de `feature/fase-6-admin-log` → `develop`.
-2. Decidir: T09/T15 (login Google Workspace real) ou Fase 4 (Email/Storage) em seguida.
-3. Quando T09 entrar: trocar `UsuarioId`/`UsuarioNome` (hoje client-supplied, aceitável só por não haver auth real) por extração via claims do JWT no backend.
-4. "Forçar encerramento" (Admin fechar/cancelar fora do fluxo normal) — item da spec da Fase 6 ainda não abordado.
+1. **Specify do Relatório Mensal** (Fase 7, prioridade imediata): definir com o usuário — período (mês calendário fechado?), métricas exatas (totais por status/categoria/atendente, comparação com mês anterior, SLA cumprido vs estourado?), formato de exportação (PDF? CSV? os dois?), quem acessa (só Admin, ou Atendente também vê o próprio desempenho?).
+2. Depois do relatório: retomar T09/T15 (Google Workspace auth).
+3. Quando T09 entrar: trocar `UsuarioId`/`UsuarioNome` (hoje client-supplied) por claims do JWT.
+4. Criar PR de `feature/fase-6-admin-log` → `develop` (T01-T14 completos e verificados).
+5. "Forçar encerramento" (Admin fechar/cancelar fora do fluxo normal) — item da spec da Fase 6 ainda não abordado.
 
 ## Blockers
 
@@ -31,7 +30,8 @@ Nenhum.
 
 ## Context
 
-- Branch local atual: `feature/fase-6-admin-log` (checkout feito nesta sessão a partir do remoto).
-- API e frontend rodando em background durante a sessão (`dotnet run` na porta 5000, `npm run dev` na porta 5173) — confirmar se ainda estão de pé antes de continuar, ou reiniciar.
-- Banco: Postgres local via Docker (`chamados-postgres`, docker-compose.yml na raiz), não o Supabase compartilhado dev/prod mencionado nas decisões antigas — checar `dotnet user-secrets list` no `ChamadosCamarj.WebApi` se precisar confirmar a conexão ativa.
-- Decisões-chave em `.specs/project/STATE.md` (seção Aprendizados, entradas de 2026-07-13/14) e `.specs/codebase/CONVENTIONS.md` (seção Frontend, nova).
+- Branch local atual: `feature/fase-6-admin-log`, com os commits já pushados pro remoto.
+- API e frontend rodando em background (porta 5000 e 5173) — confirmar se ainda estão de pé antes de continuar, ou reiniciar.
+- Banco: Postgres local via Docker (`chamados-postgres`), não o Supabase compartilhado dev/prod das decisões antigas.
+- Decisões-chave em `.specs/project/STATE.md` (seção Decisões: "Ordem Fase 6 vs Fase 7", "Relatório mensal") e `ROADMAP.md` (Fase 7 marcada EM ANDAMENTO).
+- Push feito manualmente pelo usuário no terminal real dele — este ambiente (Claude Code) não tem credenciais do GitHub configuradas, sempre vai falhar `git push` aqui.

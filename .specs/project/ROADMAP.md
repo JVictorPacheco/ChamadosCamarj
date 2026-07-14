@@ -1,6 +1,6 @@
 # Roadmap — ChamadosCamarj
 
-> Última atualização: 2026-07-13
+> Última atualização: 2026-07-14
 
 ## ✅ Fase 0 — Setup
 
@@ -72,6 +72,7 @@
 - [x] RBAC de UI: atendentes/admin veem ações corretas, solicitante só vê o que é seu
 - [x] "Meus Chamados" diferenciado por perfil (Admin=todos, Atendente=responsavelId, Solicitante=solicitanteEmail)
 - [x] Bug fix: Link aninhado no card da Fila eliminado
+- [x] Bug fix (2026-07-14): Dashboard não mostrava Cancelados/Resolvidos (só "hoje"); card "Abertos" agora detalha assumidos vs em espera
 
 ## 📧 Fase 4 — Integração Email + Storage
 
@@ -83,7 +84,9 @@
 - [ ] `StorageService` (Supabase Storage S3)
 - [ ] Upload/download de anexos no portal
 
-## 🔐 Fase 6 — Admin Completo + Log + Google Workspace (EM ANDAMENTO)
+## 🔐 Fase 6 — Admin Completo + Log + Google Workspace (PAUSADA em T09)
+
+> **Pausada em 2026-07-14** a pedido do usuário — Fase 7 (Relatório Mensal) antecipada por ter prazo real (fechamento mensal pra superintendência). Retomar T09/T15 depois.
 
 > Corrigido em 2026-06-25: Camarj usa Google Workspace (Gmail corporativo), não Azure AD.
 > Planejado em 2026-07-01: features de Admin e auditoria.
@@ -108,9 +111,12 @@
 - [ ] RBAC real (baseado em claims do token Google)
 - [ ] Admin: gerenciar categorias, usuários e configurações do sistema
 
-## 📈 Fase 7 — Relatórios + SLA
+## 📈 Fase 7 — Relatórios + SLA (EM ANDAMENTO — antecipada)
 
-- [ ] Relatórios por período/categoria/atendente
+> **Antecipada em 2026-07-14** na frente de T09/T15 — usuário precisa de um relatório mensal de andamento dos chamados pra apresentar à superintendência todo fim de mês. Em fase de Specify.
+
+- [ ] **Relatório mensal** (prioridade imediata) — período fechado, totais por status/categoria/atendente, comparação com mês anterior, exportação PDF/CSV
+- [ ] Relatórios por período/categoria/atendente (granularidade livre, não só mensal)
 - [ ] SLA tracking com alertas de vencimento
 - [ ] Exportação CSV/PDF
 - [ ] Dashboard de carga por atendente

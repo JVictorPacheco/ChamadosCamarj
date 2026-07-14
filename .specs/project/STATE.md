@@ -6,9 +6,13 @@
 
 ## 📍 Onde estamos
 
-**Fase 5 concluída** — Kanban + Dashboard + SignalR + Fila de Atendimento + Ações de Atendente. Mergeada em `develop`/`main` (2026-06-30).
+**Fase 5 concluída** — Kanban + Dashboard + SignalR + Fila de Atendimento + Ações de Atendente. Mergeada em `develop`/`main` (2026-06-30). Dashboard corrigido nesta sessão (ver abaixo).
 
-**Fase 6 — T01-T08 e T10-T14 concluídos e verificados nesta sessão (2026-07-13/14)**, branch `feature/fase-6-admin-log` (checkout local, ainda não mergeada em `develop`). Faltam T09/T15 (login Google Workspace).
+**Fase 6 — T01-T08 e T10-T14 concluídos e verificados nesta sessão (2026-07-13/14)**, branch `feature/fase-6-admin-log` (checkout local, ainda não mergeada em `develop`). Faltam T09/T15 (login Google Workspace) — **pausados a pedido do usuário** pra adiantar o relatório mensal (Fase 7), que tem prazo real (fechamento mensal pra superintendência). Retomar T09/T15 depois da Fase 7.
+
+**Fase 7 (Relatórios) antecipada em 2026-07-14** — motivo: usuário precisa apresentar um relatório mensal de andamento dos chamados pra superintendência todo fim de mês. Ainda em fase de Specify (não iniciado o Design/Tasks/Execute).
+
+**Dashboard (Fase 5) corrigido em 2026-07-14:** não mostrava total de Cancelados nem Resolvidos (só "resolvidos hoje"), e "Abertos" não deixava claro quantos já tinham sido assumidos vs quantos aguardavam. Agora mostra "Abertos no momento" (Aberto+EmAndamento, com subtexto "X assumidos · Y em espera"), "Resolvidos" (com "Hoje: N"), "Cancelados" e "Tempo Médio". Backend reaproveitou `ContarPorStatusAsync` (já genérico) pra Resolvido/Cancelado — nenhum método novo no repositório.
 
 O que foi corrigido/concluído nesta sessão:
 - Frontend da Fase 6 (T10-T14) estava commitado no lugar errado (`src/ChamadosCamarj.Web/...`) e não-funcional (axios, toast, componentes shadcn não instalados, tema claro) — **reescrito do zero** em `frontend/src/features/chamados/`, seguindo os padrões reais do projeto. Arquivos órfãos apagados.
@@ -22,7 +26,7 @@ O que foi corrigido/concluído nesta sessão:
 
 **Também descoberto em 2026-07-13:** os documentos de estado (`STATE.md`/`ROADMAP.md`/`HANDOFF.md`) na branch `develop` estavam desatualizados — diziam "próximo é Fase 4" quando na verdade Fase 5 e boa parte da Fase 6 já tinham sido feitas em branches não mergeadas.
 
-**Próximo:** decidir entre T09/T15 (Google Workspace auth, incluindo trocar o `UsuarioId`/`UsuarioNome` client-supplied por claims de JWT) ou Fase 4 (Email/Storage, ainda não iniciada).
+**Próximo:** Specify do Relatório Mensal (Fase 7) — período fechado, totais, comparação com mês anterior, exportação. Depois: retomar T09/T15 (Google Workspace auth). Fase 4 (Email/Storage) segue sem data.
 
 ---
 
@@ -48,6 +52,8 @@ O que foi corrigido/concluído nesta sessão:
 | Filtragem "Meus Chamados" | Admin=todos os chamados, Atendente=chamados onde é responsável (`responsavelId`), Solicitante=chamados que abriu (`solicitanteEmail`) — decidido em 2026-07-01 |
 | Log de histórico | Entidade `HistoricoEntrada` para auditoria completa do fluxo de cada chamado — planejado para Fase 6 |
 | Reatribuição Admin | Admin pode mover chamado entre atendentes mesmo em `EmAndamento` via endpoint `/reatribuir` separado do `/atribuir` — planejado para Fase 6 |
+| Ordem Fase 6 vs Fase 7 | Fase 7 (Relatório Mensal) antecipada na frente de T09/T15 (Google auth) — decisão de 2026-07-14, motivada por prazo real de fechamento mensal pra superintendência |
+| Relatório mensal | É um documento de período fechado (mês), não uma view "semanal" do dashboard operacional — dashboard fica com números em tempo real, relatório é outra tela/exportação (Fase 7) |
 
 ---
 
@@ -68,13 +74,15 @@ Nenhum.
 
 ## 📋 TODOs (ordenados por prioridade)
 
-1. Decidir: T09/T15 (Google Workspace auth) ou Fase 4 (Email/Storage) em seguida
-2. Quando T09 entrar: trocar `UsuarioId`/`UsuarioNome` (hoje enviados pelo cliente, aceitáveis só por não haver auth real) por extração via claims do JWT no backend
-3. Criar PR de `feature/fase-6-admin-log` → `develop` (T01-T14 completos e verificados)
-4. "Forçar encerramento" (Admin fechar/cancelar fora do fluxo normal) — item da spec da Fase 6 ainda não abordado
+1. Specify do Relatório Mensal (Fase 7): definir período, métricas (totais por status/categoria/atendente, comparação com mês anterior), formato de exportação (PDF/CSV), quem acessa (provavelmente só Admin)
+2. Depois do relatório: retomar T09/T15 (Google Workspace auth)
+3. Quando T09 entrar: trocar `UsuarioId`/`UsuarioNome` (hoje enviados pelo cliente, aceitáveis só por não haver auth real) por extração via claims do JWT no backend
+4. Criar PR de `feature/fase-6-admin-log` → `develop` (T01-T14 completos e verificados)
+5. "Forçar encerramento" (Admin fechar/cancelar fora do fluxo normal) — item da spec da Fase 6 ainda não abordado
 
 ## ✅ Concluído recentemente
 
+- Dashboard corrigido: totais de Cancelados/Resolvidos adicionados, "Abertos" detalhado em assumidos/em espera — 2026-07-14
 - Fase 6 T01-T14 completos e verificados via Playwright (reatribuir, alterar prioridade, histórico com usuário real, comentário interno) — 2026-07-14
 - Backend completo da Fase 6 (T01-T08): `HistoricoEntrada`, `ReatribuirChamadoCommand`, `AlterarPrioridadeChamadoCommand`, endpoints correspondentes, filtro de comentário interno — branch `feature/fase-6-admin-log`, até 2026-07-12
 - Fase 5 (`feature/fase-5-kanban-dashboard`) mergeada em `develop` e `main` (2026-06-30) — Kanban, Dashboard, SignalR, Fila de Atendimento
