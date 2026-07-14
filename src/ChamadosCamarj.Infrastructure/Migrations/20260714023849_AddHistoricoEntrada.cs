@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -29,12 +29,6 @@ namespace ChamadosCamarj.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_HistoricoEntradas", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_HistoricoEntradas_Chamados_ChamadoId",
-                        column: x => x.ChamadoId,
-                        principalTable: "Chamados",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(

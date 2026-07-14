@@ -1,6 +1,15 @@
 export type StatusChamado = "Aberto" | "EmAndamento" | "Resolvido" | "Fechado" | "Cancelado";
 export type PrioridadeChamado = "Baixa" | "Media" | "Alta" | "Urgente";
 export type TipoComentario = "Publico" | "Interno";
+export type AcaoHistorico =
+  | "Criado"
+  | "Assumido"
+  | "Reatribuido"
+  | "Resolvido"
+  | "Fechado"
+  | "Cancelado"
+  | "ComentarioAdicionado"
+  | "PrioridadeAlterada";
 
 export interface ChamadoResponse {
   id: string;
@@ -60,4 +69,15 @@ export interface ComentarChamadoRequest {
   autor: string;
   conteudo: string;
   interno: boolean;
+}
+
+export interface HistoricoResponse {
+  id: string;
+  chamadoId: string;
+  usuarioNome: string;
+  usuarioId: string | null;
+  acao: AcaoHistorico;
+  detalheAnterior: string | null;
+  detalheNovo: string | null;
+  dataHora: string;
 }

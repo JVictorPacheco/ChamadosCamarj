@@ -4,5 +4,7 @@ namespace ChamadosCamarj.Application.Features.Chamados.Commands;
 
 public record AlterarPrioridadeChamadoCommand(
     Guid Id,
-    string NovaPrioridade
+    string NovaPrioridade,
+    Guid? UsuarioId = null,
+    string UsuarioNome = "Sistema"
 ) : IRequest;

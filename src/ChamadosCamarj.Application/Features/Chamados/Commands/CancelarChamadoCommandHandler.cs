@@ -32,6 +32,8 @@ public class CancelarChamadoCommandHandler : IRequestHandler<CancelarChamadoComm
             chamado.Id,
             AcaoHistorico.Cancelado,
             detalheNovo: "Chamado cancelado",
+            usuarioNome: request.UsuarioNome,
+            usuarioId: request.UsuarioId,
             cancellationToken: cancellationToken
         );
 

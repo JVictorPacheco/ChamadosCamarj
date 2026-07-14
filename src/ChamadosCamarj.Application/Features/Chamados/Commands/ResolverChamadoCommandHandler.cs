@@ -32,6 +32,8 @@ public class ResolverChamadoCommandHandler : IRequestHandler<ResolverChamadoComm
             chamado.Id,
             AcaoHistorico.Resolvido,
             detalheNovo: "Chamado resolvido",
+            usuarioNome: request.UsuarioNome,
+            usuarioId: request.UsuarioId,
             cancellationToken: cancellationToken
         );
 

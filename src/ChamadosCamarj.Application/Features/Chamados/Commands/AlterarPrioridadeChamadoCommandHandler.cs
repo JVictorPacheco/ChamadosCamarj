@@ -40,8 +40,8 @@ public class AlterarPrioridadeChamadoCommandHandler : IRequestHandler<AlterarPri
         // Gerar entrada no histórico
         var historico = HistoricoEntrada.Criar(
             chamado.Id,
-            "Sistema",
-            null,
+            request.UsuarioNome,
+            request.UsuarioId,
             AcaoHistorico.PrioridadeAlterada,
             detalheAnterior: prioridadeAnterior,
             detalheNovo: novaPrioridade.ToString()

@@ -36,8 +36,8 @@ public class ReatribuirChamadoCommandHandler : IRequestHandler<ReatribuirChamado
         // Gerar entrada no histórico
         var historico = HistoricoEntrada.Criar(
             chamado.Id,
-            "Sistema", // Será sobrescrito com usuário real depois (T05)
-            null,
+            request.UsuarioNome,
+            request.UsuarioId,
             AcaoHistorico.Reatribuido,
             detalheAnterior: responsavelAnterior,
             detalheNovo: request.NovoResponsavelNome

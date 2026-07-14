@@ -32,6 +32,8 @@ public class FecharChamadoCommandHandler : IRequestHandler<FecharChamadoCommand>
             chamado.Id,
             AcaoHistorico.Fechado,
             detalheNovo: "Chamado fechado",
+            usuarioNome: request.UsuarioNome,
+            usuarioId: request.UsuarioId,
             cancellationToken: cancellationToken
         );
 
