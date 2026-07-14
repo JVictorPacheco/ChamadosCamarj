@@ -17,6 +17,8 @@ public class ObterMetricasQueryHandler : IRequestHandler<ObterMetricasQuery, Das
     {
         var totalAbertos = await _chamadoRepository.ContarPorStatusAsync(Domain.Enums.StatusChamado.Aberto, cancellationToken);
         var totalEmAndamento = await _chamadoRepository.ContarPorStatusAsync(Domain.Enums.StatusChamado.EmAndamento, cancellationToken);
+        var totalResolvidos = await _chamadoRepository.ContarPorStatusAsync(Domain.Enums.StatusChamado.Resolvido, cancellationToken);
+        var totalCancelados = await _chamadoRepository.ContarPorStatusAsync(Domain.Enums.StatusChamado.Cancelado, cancellationToken);
         var totalResolvidosHoje = await _chamadoRepository.ContarResolvidosHojeAsync(cancellationToken);
         var tempoMedio = await _chamadoRepository.ObterTempoMedioResolucaoHorasAsync(cancellationToken);
         var porCategoria = await _chamadoRepository.ContarPorCategoriaAsync(cancellationToken);
@@ -25,6 +27,8 @@ public class ObterMetricasQueryHandler : IRequestHandler<ObterMetricasQuery, Das
         return new DashboardMetricsResponse(
             totalAbertos,
             totalEmAndamento,
+            totalResolvidos,
+            totalCancelados,
             totalResolvidosHoje,
             tempoMedio.HasValue ? Math.Round(tempoMedio.Value, 1) : null,
             porCategoria.Select(kvp => new PorCategoriaItem(kvp.Key, kvp.Value)).ToList(),

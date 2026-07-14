@@ -3,6 +3,8 @@ namespace ChamadosCamarj.Application.Features.Dashboard.DTOs;
 public record DashboardMetricsResponse(
     int TotalAbertos,
     int TotalEmAndamento,
+    int TotalResolvidos,
+    int TotalCancelados,
     int TotalResolvidosHoje,
     double? TempoMedioResolucaoHoras,
     List<PorCategoriaItem> PorCategoria,

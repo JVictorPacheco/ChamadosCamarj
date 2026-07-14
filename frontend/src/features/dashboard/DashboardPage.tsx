@@ -23,9 +23,17 @@ export function DashboardPage() {
       {!isPending && metrics && (
         <>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <DashboardKpi titulo="Abertos" valor={metrics.totalAbertos} />
-            <DashboardKpi titulo="Em Andamento" valor={metrics.totalEmAndamento} />
-            <DashboardKpi titulo="Resolvidos Hoje" valor={metrics.totalResolvidosHoje} />
+            <DashboardKpi
+              titulo="Abertos no momento"
+              valor={metrics.totalAbertos + metrics.totalEmAndamento}
+              subtexto={`${metrics.totalEmAndamento} assumidos · ${metrics.totalAbertos} em espera`}
+            />
+            <DashboardKpi
+              titulo="Resolvidos"
+              valor={metrics.totalResolvidos}
+              subtexto={`Hoje: ${metrics.totalResolvidosHoje}`}
+            />
+            <DashboardKpi titulo="Cancelados" valor={metrics.totalCancelados} />
             <DashboardKpi
               titulo="Tempo Médio"
               valor={metrics.tempoMedioResolucaoHoras != null ? `${metrics.tempoMedioResolucaoHoras}h` : '—'}
