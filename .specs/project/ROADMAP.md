@@ -1,6 +1,6 @@
 # Roadmap — ChamadosCamarj
 
-> Última atualização: 2026-07-01
+> Última atualização: 2026-07-13
 
 ## ✅ Fase 0 — Setup
 
@@ -83,18 +83,27 @@
 - [ ] `StorageService` (Supabase Storage S3)
 - [ ] Upload/download de anexos no portal
 
-## 🔐 Fase 6 — Admin Completo + Log + Google Workspace
+## 🔐 Fase 6 — Admin Completo + Log + Google Workspace (EM ANDAMENTO)
 
 > Corrigido em 2026-06-25: Camarj usa Google Workspace (Gmail corporativo), não Azure AD.
 > Planejado em 2026-07-01: features de Admin e auditoria.
 > Spec em `.specs/features/fase-6-admin-log/spec.md`.
+> Trabalho feito em `feature/fase-6-admin-log` (não mergeada em `develop`). T01-T14 concluídos e verificados via Playwright em 2026-07-14.
 
-- [ ] **Reatribuição Admin** — mover chamado entre atendentes (qualquer status não-final)
-- [ ] **Log de histórico** — entidade `HistoricoEntrada` auditando cada transição de status, atribuição, comentário
-- [ ] **Comentários internos** — visíveis só para Admin/Atendente (campo `Tipo` já existe no `Comentario`)
-- [ ] **Alterar prioridade** — Admin pode alterar prioridade de qualquer chamado
-- [ ] **Forçar encerramento** — Admin pode fechar/cancelar sem seguir o fluxo normal
-- [ ] **Login real via Google Workspace** — substitui o seletor mockado
+**Backend — completo (T01-T08), incluindo ator real na auditoria:**
+- [x] T01 `HistoricoEntrada` + enum `AcaoHistorico` + `IHistoricoRepository`
+- [x] T02 `Chamado.Reatribuir()` na domain entity
+- [x] T03/T04 `ReatribuirChamadoCommand` + endpoint `PATCH /chamados/{id}/reatribuir`
+- [x] T05 Geração de `HistoricoEntrada` integrada em todos os CommandHandlers (Abrir, Atribuir, Resolver, Fechar, Cancelar, Reatribuir, AlterarPrioridade) — `UsuarioId`/`UsuarioNome` agora vêm do `AuthContext` mockado do frontend em vez de "Sistema" fixo (ver Aprendizados)
+- [x] T06 `ListarHistoricoQuery` + endpoint `GET /chamados/{id}/historico`
+- [x] T07 endpoint `PATCH /chamados/{id}/prioridade`
+- [x] T08 Filtro de comentários internos por perfil em `ListarComentariosQueryHandler` (endpoint corrigido pra repassar `perfilUsuario`)
+- [ ] T09 Login Google Workspace (endpoint `POST /auth/google`, JWT, tabela `UsuarioPerfil`) — não iniciado. Quando entrar, trocar `UsuarioId`/`UsuarioNome` client-supplied por claims do JWT
+
+**Frontend — completo (T10-T14), reescrito e verificado em 2026-07-14:**
+- [x] T10-T14 (Reatribuir, Histórico, Alterar Prioridade, Comentário interno) — os componentes originais tinham sido commitados no caminho errado (`src/ChamadosCamarj.Web/...`) usando padrões inexistentes no projeto (axios, toast, shadcn não instalado, tema claro). Reescritos do zero em `frontend/src/features/chamados/`, seguindo os padrões reais (`apiFetch`, erro inline, shadcn via CLI, tema dark). `ComentarioForm`/`ComentarioList` estendidos em vez de duplicados.
+- [ ] **Forçar encerramento** — Admin pode fechar/cancelar sem seguir o fluxo normal (ainda não abordado)
+- [ ] **Login real via Google Workspace** — substitui o seletor mockado (T15, depende de T09)
 - [ ] Mapeamento conta→perfil no backend (tabela de usuários por setor)
 - [ ] RBAC real (baseado em claims do token Google)
 - [ ] Admin: gerenciar categorias, usuários e configurações do sistema

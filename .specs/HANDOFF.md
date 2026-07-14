@@ -1,37 +1,29 @@
 # Handoff
 
-**Date:** 2026-06-23
-**Feature:** Fase 3 — Portal do Solicitante (frontend)
-**Task:** Execute em andamento. Fases 1, 2 e 3 do `tasks.md` concluídas (T1-T9). Próxima: Fase 4 (T10, T11, T12).
+**Date:** 2026-07-14
+**Feature:** Fase 6 — Admin Completo + Log + Google Workspace
+**Task:** T01-T14 concluídos e verificados via Playwright. Falta decidir o próximo passo (T09/T15 ou Fase 4).
 
 ## Completed ✓
 
-- **Fase 1 (backend, API-01):** T1 (`ObterComentariosPorChamadoAsync`), T2 (`ComentarioResponse`/`ListarComentariosQuery`/Handler + testes), T3 (endpoint `GET /chamados/{id}/comentarios`, verificado via curl). 3 commits na branch `feature/fase3-bloco1-comentarios-api` (pushada, PR ainda não criado — `gh` CLI não disponível neste ambiente; link de criação ficou no output do push).
-- **Fase 2 (frontend foundation):** T4 (scaffold Vite+React+TS, alias `@`), T5 (TailwindCSS v4 + shadcn/ui + **tema dark Camarj**, ver decisão abaixo), T6 (React Router + TanStack Query + React Hook Form, `App.tsx` envolto nos providers).
-- **Fase 3 (infra paralela):** T7 (`types/api.ts`, conferido contra os DTOs reais do backend), T8 (`lib/api.ts` — `apiFetch`/`ApiError`, conferido contra `ExceptionHandlingMiddleware` real), T9 (`AuthContext`/`useAuth`, 3 perfis mockados).
-- Tudo commitado na branch `feature/fase3-bloco2-frontend-foundation` (branched de `origin/develop`, **não** inclui as mudanças de backend da bloco1 — só precisa delas a partir da T13). Pushada, PR ainda não criado.
-
-## Decisão de design tomada nesta sessão (2026-06-23)
-
-Usuário mandou uma imagem de referência (`Downloads\Exemplo_Imagem_Camarj_Chamado.jpeg`, dashboard interno da Camarj) e pediu pra usar a paleta de cores + o menu lateral. Isso mudou o design aprovado original:
-
-- **Tema:** dark mode único (sem toggle), paleta extraída por inspeção visual (aproximada, não pixel-perfect) registrada em `.specs/features/frontend-portal-solicitante/design.md` → seção "Tema Visual (Dark Mode)". Aplicada em `frontend/src/index.css` (bloco `.dark`), forçada via `<html class="dark">` em `index.html`.
-- **AppLayout:** trocado de header simples (design original) pra **sidebar fixa** (shadcn `Sidebar`). Documentado em `design.md` (seção AppLayout) e `tasks.md` (T11 reescrita).
-- Tipografia da referência (serifa + mono caixa-alta) ficou **fora de escopo**, registrada como ideia adiada em `STATE.md`.
-- Verificação visual do tema feita com Playwright ad-hoc (instalado num diretório `/tmp` descartável, não comitado) já que não há `chromium-cli`/MCP de browser neste ambiente: `bg #0a1413`, `fg #ededE8`, sem erros de console — confere com os tokens definidos.
+- Reescrita completa do frontend da Fase 6 (T10-T14): `ReatribuirModal`, `AlterarPrioridadeModal`, `TimelineHistorico` criados em `frontend/src/features/chamados/components/`; `ComentarioForm`/`ComentarioList` estendidos pra comentário interno. Arquivos órfãos em `src/ChamadosCamarj.Web/` apagados.
+- Componentes shadcn instalados via CLI: `dialog`, `checkbox`, `radio-group`.
+- Seção "Frontend" adicionada em `.specs/codebase/CONVENTIONS.md`.
+- Bug corrigido: endpoint `GET /comentarios` não repassava `perfilUsuario` pra query (filtro de interno nunca disparava).
+- Bug corrigido: migration `AddHistoricoEntrada` estava incompleta (sem `.Designer.cs`/snapshot) — travava o startup da API. Regenerada via `dotnet ef migrations add` e sincronizada com o Postgres local (Docker).
+- Bug corrigido: histórico gravava `"Sistema"` fixo em Reatribuir/AlterarPrioridade/Resolver/Fechar/Cancelar. Adicionado `UsuarioId`/`UsuarioNome` nesses 5 commands + endpoints; frontend (`useAcoesChamado.ts`) envia `perfil.id`/`perfil.nome` do `AuthContext` automaticamente.
+- Verificado ponta a ponta via Playwright ad-hoc (script temporário, removido): reatribuir, alterar prioridade, histórico com usuário real, comentário interno oculto do Solicitante. Testes unitários (96) continuam passando.
 
 ## In Progress
 
-- Nada em execução. Sessão pausada a pedido do usuário ("espera até amanhã") logo antes de escrever o arquivo da **T10**.
+Nada em execução.
 
 ## Pending
 
-1. **T10** (`ProfileSelector.tsx`, tela `/login`): tentativa de escrita foi **rejeitada pelo usuário** (parar antes de prosseguir) — nenhum arquivo foi criado, nada a desfazer. Recomeçar do zero amanhã. Depende de T9 (✅) e T5 (✅), ambas prontas.
-2. Depois: T11 (`AppLayout` — sidebar, já redesenhada pra usar o componente `Sidebar` do shadcn) e T12 (wiring de rotas em `App.tsx`, inclui montar `AuthProvider` que ainda não está em lugar nenhum da árvore de componentes).
-3. Dois PRs pendentes de abertura manual pelo usuário (sem `gh` CLI no ambiente):
-   - `feature/fase3-bloco1-comentarios-api` → `develop`
-   - `feature/fase3-bloco2-frontend-foundation` → `develop`
-4. Pendência antiga ainda válida: nenhuma, decisão do teste E2E (Playwright em T22) já foi confirmada e incorporada ao `tasks.md` nesta mesma sessão, antes do trabalho de Execute.
+1. Criar PR de `feature/fase-6-admin-log` → `develop`.
+2. Decidir: T09/T15 (login Google Workspace real) ou Fase 4 (Email/Storage) em seguida.
+3. Quando T09 entrar: trocar `UsuarioId`/`UsuarioNome` (hoje client-supplied, aceitável só por não haver auth real) por extração via claims do JWT no backend.
+4. "Forçar encerramento" (Admin fechar/cancelar fora do fluxo normal) — item da spec da Fase 6 ainda não abordado.
 
 ## Blockers
 
@@ -39,7 +31,7 @@ Nenhum.
 
 ## Context
 
-- Branch local atual: `feature/fase3-bloco2-frontend-foundation` (pushada). Continuar nela amanhã para T10-T12 (mesma fatia "Frontend Foundation/Shell").
-- Dev server e API ficaram rodando em background durante a sessão — **ambos finalizados** antes de pausar.
-- Sem alterações de código pendentes no working tree, só ruído de tooling não relacionado (`.agents/`, `.mcp.json`, `docs/.obsidian/workspace.json`, `skills-lock.json`, e uma diferença de line-ending em `docs/obsidian/🏗️ Arquitetura.md`) — não tocar, não fazem parte do trabalho.
-- Decisões-chave em `.specs/project/STATE.md` e `design.md` (Tema Visual + AppLayout) — ler antes de continuar T10/T11.
+- Branch local atual: `feature/fase-6-admin-log` (checkout feito nesta sessão a partir do remoto).
+- API e frontend rodando em background durante a sessão (`dotnet run` na porta 5000, `npm run dev` na porta 5173) — confirmar se ainda estão de pé antes de continuar, ou reiniciar.
+- Banco: Postgres local via Docker (`chamados-postgres`, docker-compose.yml na raiz), não o Supabase compartilhado dev/prod mencionado nas decisões antigas — checar `dotnet user-secrets list` no `ChamadosCamarj.WebApi` se precisar confirmar a conexão ativa.
+- Decisões-chave em `.specs/project/STATE.md` (seção Aprendizados, entradas de 2026-07-13/14) e `.specs/codebase/CONVENTIONS.md` (seção Frontend, nova).
