@@ -19,8 +19,9 @@ public class ObterDistribuicaoQueryHandler : IRequestHandler<ObterDistribuicaoQu
         var aguardando = await _chamadoRepository.ContarPorStatusAsync(StatusChamado.Aberto, cancellationToken);
         var assumido = await _chamadoRepository.ContarPorStatusAsync(StatusChamado.EmAndamento, cancellationToken);
         var resolvido = await _chamadoRepository.ContarPorStatusAsync(StatusChamado.Resolvido, cancellationToken);
+        var encerrado = await _chamadoRepository.ContarPorStatusAsync(StatusChamado.Fechado, cancellationToken);
         var cancelado = await _chamadoRepository.ContarPorStatusAsync(StatusChamado.Cancelado, cancellationToken);
 
-        return new DistribuicaoResponse(aguardando, assumido, resolvido, cancelado);
+        return new DistribuicaoResponse(aguardando, assumido, resolvido, encerrado, cancelado);
     }
 }

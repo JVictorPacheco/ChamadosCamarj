@@ -191,10 +191,12 @@ Uma rosca não mostra evolução por dia — só proporção de um total. A troc
 
 **Correção feita durante o Execute (2026-07-14):** a primeira versão deste adendo tentou tratar a rosca como "eventos dos últimos 7 dias" (Abertos/Resolvidos/Cancelados no período, via `HistoricoEntrada`). O usuário esclareceu que o que ele queria era a **situação atual** dos chamados (uma foto de agora, não um evento de período): quantos aguardando atendimento (`Aberto`), quantos assumidos (`EmAndamento`), quantos resolvidos e quantos cancelados. Isso é mais simples do que o planejado — os 4 números já são calculados por `IChamadoRepository.ContarPorStatusAsync`, método que já existia (usado por `ObterMetricasQueryHandler`). Não precisou de nenhum método novo de repositório; o método `ContarPorAcaoNoPeriodoAsync`/`ContarAbertosNoPeriodoAsync`/`ContarResolvidosNoPeriodoAsync` que chegaram a ser criados foram revertidos por ficarem sem uso.
 
-- **Dado necessário**: `ContarPorStatusAsync(Aberto)`, `(EmAndamento)`, `(Resolvido)`, `(Cancelado)` — 4 chamadas ao método já existente, sem novo código no repositório
+**Segunda correção (mesma sessão):** faltava distinguir "Resolvido" (atendente marcou como solucionado, `Chamado.Resolver()`) de "Encerrado" (confirmado e fechado depois de resolvido, `Chamado.Fechar()` — só possível a partir de `Resolvido`). São dois passos distintos do ciclo de vida (`Aberto → EmAndamento → Resolvido → Fechado`, com `Cancelado` como desvio a partir de `Aberto`/`EmAndamento`), não sinônimos. A rosca ganhou uma 5ª fatia.
+
+- **Dado necessário**: `ContarPorStatusAsync(Aberto)`, `(EmAndamento)`, `(Resolvido)`, `(Fechado)`, `(Cancelado)` — 5 chamadas ao método já existente, sem novo código no repositório
 - **Backend**: `ObterTendenciaQuery`/`ObterTendenciaQueryHandler`/`ChamadoRepository.ObterTendenciaAsync` são **substituídos** por `ObterDistribuicaoQuery` (sem parâmetros) `/Handler`, que só delega pro `IChamadoRepository` existente
-- **DTO novo**: `DistribuicaoResponse(int Aguardando, int Assumido, int Resolvido, int Cancelado)` substitui `TendenciaResponse`
-- **Frontend**: `TendenciaChart.tsx` (LineChart) é removido; novo `DonutChart` (componente compartilhado, ver abaixo) com 4 fatias (Aguardando=âmbar, Assumido=azul, Resolvido=verde, Cancelado=cinza). `DashboardPage.tsx` troca a seção "Tendência (7 dias)" por "Distribuição por situação"
+- **DTO novo**: `DistribuicaoResponse(int Aguardando, int Assumido, int Resolvido, int Encerrado, int Cancelado)` substitui `TendenciaResponse`
+- **Frontend**: `TendenciaChart.tsx` (LineChart) é removido; novo `DonutChart` (componente compartilhado, ver abaixo) com 5 fatias (Aguardando=âmbar, Assumido=azul, Resolvido=verde, Encerrado=roxo, Cancelado=cinza). `DashboardPage.tsx` troca a seção "Tendência (7 dias)" por "Distribuição por situação"
 
 ### Relatório Mensal — rosca de SLA
 

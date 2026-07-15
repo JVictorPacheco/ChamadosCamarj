@@ -13,5 +13,6 @@ export interface DistribuicaoResponse {
   aguardando: number
   assumido: number
   resolvido: number
+  encerrado: number
   cancelado: number
 }

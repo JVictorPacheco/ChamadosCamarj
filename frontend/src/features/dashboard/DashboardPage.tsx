@@ -44,12 +44,18 @@ export function DashboardPage() {
           <div className="rounded-lg border bg-card p-4">
             <h2 className="mb-3 text-sm font-heading">Distribuição por situação</h2>
             {distribuicao &&
-            (distribuicao.aguardando + distribuicao.assumido + distribuicao.resolvido + distribuicao.cancelado) > 0 ? (
+            (distribuicao.aguardando +
+              distribuicao.assumido +
+              distribuicao.resolvido +
+              distribuicao.encerrado +
+              distribuicao.cancelado) >
+              0 ? (
               <DonutChart
                 data={[
                   { label: 'Aguardando', value: distribuicao.aguardando, color: '#f59e0b' },
                   { label: 'Assumido', value: distribuicao.assumido, color: '#3b82f6' },
                   { label: 'Resolvido', value: distribuicao.resolvido, color: '#22c55e' },
+                  { label: 'Encerrado', value: distribuicao.encerrado, color: '#a855f7' },
                   { label: 'Cancelado', value: distribuicao.cancelado, color: '#94a3b8' },
                 ]}
               />
