@@ -27,13 +27,13 @@ public class DashboardController : ControllerBase
     }
 
     /// <summary>
-    /// Retorna tendência diária de chamados abertos vs resolvidos.
+    /// Retorna a distribuição atual dos chamados por situação (Aguardando, Assumido, Resolvido, Cancelado).
     /// </summary>
-    [HttpGet("tendencia")]
+    [HttpGet("distribuicao")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<IActionResult> ObterTendencia([FromQuery] int dias = 7, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> ObterDistribuicao(CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(new ObterTendenciaQuery(dias), cancellationToken);
+        var result = await _mediator.Send(new ObterDistribuicaoQuery(), cancellationToken);
         return Ok(result);
     }
 }

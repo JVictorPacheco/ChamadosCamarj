@@ -9,12 +9,9 @@ export interface DashboardMetrics {
   porPrioridade: { prioridade: string; quantidade: number }[]
 }
 
-export interface TendenciaItem {
-  data: string
-  abertos: number
-  resolvidos: number
-}
-
-export interface TendenciaResponse {
-  items: TendenciaItem[]
+export interface DistribuicaoResponse {
+  aguardando: number
+  assumido: number
+  resolvido: number
+  cancelado: number
 }

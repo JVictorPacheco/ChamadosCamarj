@@ -213,31 +213,4 @@ public class ChamadoRepository : IChamadoRepository
             .ToDictionaryAsync(x => x.Prioridade, x => x.Quantidade, cancellationToken);
     }
 
-    public async Task<List<(DateTime Data, int Abertos, int Resolvidos)>> ObterTendenciaAsync(int dias, CancellationToken cancellationToken = default)
-    {
-        var inicio = DateTime.UtcNow.Date.AddDays(-dias + 1);
-        var fim = DateTime.UtcNow.Date.AddDays(1);
-
-        // Abertos e Resolvidos são contados cada um pela sua própria data de evento
-        // (DataCriacao vs DataConclusao) — nunca os dois pela DataCriacao, senão um
-        // chamado aberto num dia e resolvido em outro aparece "resolvido" no dia errado.
-        var datasAbertura = await _dbSet
-            .Where(c => c.DataCriacao >= inicio && c.DataCriacao < fim)
-            .Select(c => c.DataCriacao.Date)
-            .ToListAsync(cancellationToken);
-
-        var datasConclusao = await _dbSet
-            .Where(c => c.DataConclusao.HasValue && c.DataConclusao.Value >= inicio && c.DataConclusao.Value < fim)
-            .Select(c => c.DataConclusao!.Value.Date)
-            .ToListAsync(cancellationToken);
-
-        return Enumerable.Range(0, dias)
-            .Select(d => inicio.AddDays(d))
-            .Select(data => (
-                Data: data,
-                Abertos: datasAbertura.Count(d => d == data),
-                Resolvidos: datasConclusao.Count(d => d == data)
-            ))
-            .ToList();
-    }
 }

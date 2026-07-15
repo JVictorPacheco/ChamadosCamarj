@@ -5,6 +5,8 @@
 
 **Execução:** direta (sem sub-agentes paralelos) — a Fase 0 e a Fase 1 mexem no mesmo arquivo de interface (`IHistoricoRepository`), então rodam em sequência apesar de serem conceitualmente independentes.
 
+**Correção feita durante o Execute (2026-07-14):** T1-T3 abaixo descrevem a Distribuição como "eventos dos últimos 7 dias" via `HistoricoEntrada` — o usuário corrigiu isso durante a implementação: a rosca é a **situação atual** (Aguardando/Assumido/Resolvido/Cancelado), não um evento de período. Isso simplificou T1-T3: nenhum método novo de repositório foi necessário, só reaproveitar `ContarPorStatusAsync` (já existia). Ver detalhes em `design.md`, seção "Adendo".
+
 ---
 
 ## Execution Plan

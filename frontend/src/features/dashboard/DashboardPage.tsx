@@ -1,12 +1,12 @@
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { useDashboardMetrics, useDashboardTendencia } from './hooks'
+import { useDashboardMetrics, useDashboardDistribuicao } from './hooks'
 import { DashboardKpi } from './DashboardKpi'
-import { TendenciaChart } from './TendenciaChart'
 import { CategoriaChart } from './CategoriaChart'
+import { DonutChart } from '@/components/charts/DonutChart'
 
 export function DashboardPage() {
   const { data: metrics, isPending, isError } = useDashboardMetrics()
-  const { data: tendencia } = useDashboardTendencia(7)
+  const { data: distribuicao } = useDashboardDistribuicao()
 
   return (
     <div className="flex flex-col gap-4 p-4">
@@ -42,11 +42,19 @@ export function DashboardPage() {
           </div>
 
           <div className="rounded-lg border bg-card p-4">
-            <h2 className="mb-3 text-sm font-heading">Tendência (7 dias)</h2>
-            {tendencia && tendencia.items.length > 0 ? (
-              <TendenciaChart data={tendencia.items} />
+            <h2 className="mb-3 text-sm font-heading">Distribuição por situação</h2>
+            {distribuicao &&
+            (distribuicao.aguardando + distribuicao.assumido + distribuicao.resolvido + distribuicao.cancelado) > 0 ? (
+              <DonutChart
+                data={[
+                  { label: 'Aguardando', value: distribuicao.aguardando, color: '#f59e0b' },
+                  { label: 'Assumido', value: distribuicao.assumido, color: '#3b82f6' },
+                  { label: 'Resolvido', value: distribuicao.resolvido, color: '#22c55e' },
+                  { label: 'Cancelado', value: distribuicao.cancelado, color: '#94a3b8' },
+                ]}
+              />
             ) : (
-              <p className="py-8 text-center text-sm text-muted-foreground">Sem dados no período.</p>
+              <p className="py-8 text-center text-sm text-muted-foreground">Nenhum chamado no sistema.</p>
             )}
           </div>
 

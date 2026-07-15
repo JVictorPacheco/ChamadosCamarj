@@ -39,5 +39,4 @@ public interface IChamadoRepository
     Task<double?> ObterTempoMedioResolucaoHorasAsync(CancellationToken cancellationToken = default);
     Task<Dictionary<string, int>> ContarPorCategoriaAsync(CancellationToken cancellationToken = default);
     Task<Dictionary<string, int>> ContarPorPrioridadeAsync(CancellationToken cancellationToken = default);
-    Task<List<(DateTime Data, int Abertos, int Resolvidos)>> ObterTendenciaAsync(int dias, CancellationToken cancellationToken = default);
 }
