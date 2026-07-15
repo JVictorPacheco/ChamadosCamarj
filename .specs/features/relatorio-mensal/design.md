@@ -181,6 +181,27 @@ public record ComparacaoMesAnteriorResponse(
 
 ---
 
+## Adendo (2026-07-14): gráficos de pizza/rosca
+
+Decisão do usuário: trocar o gráfico de linha "Tendência" do Dashboard operacional por uma rosca, e adicionar uma rosca de SLA no Relatório Mensal.
+
+### Dashboard — "Tendência" (linha) → "Distribuição (últimos 7 dias)" (rosca)
+
+Uma rosca não mostra evolução por dia — só proporção de um total. A troca perde a granularidade diária que o gráfico de linha tinha, mas ganha leitura mais rápida da proporção geral. Substituição, não adição (o gráfico de linha sai de cena).
+
+- **Dado necessário**: totais de Abertos, Resolvidos e **Cancelados** nos últimos N dias (hoje N=7, mesmo período já usado). `Cancelados` não existia na métrica de tendência antiga — usar `HistoricoEntrada` (`AcaoHistorico.Cancelado`, `DataHora` no período), consistente com o princípio de REL-10 de nunca inferir "quando" a partir de campo mutável do `Chamado`
+- **Backend**: `ObterTendenciaQuery`/`ObterTendenciaQueryHandler`/`ChamadoRepository.ObterTendenciaAsync` são **substituídos** por `ObterDistribuicaoQuery`/`Handler` + `IHistoricoRepository.ContarPorAcaoNoPeriodoAsync(acoes, inicio, fim)` (conta eventos `Criado`/`Resolvido`/`Cancelado` no período — reaproveita a mesma tabela/índice que o relatório mensal vai usar, sem duplicar lógica de agregação)
+- **DTO novo**: `DistribuicaoResponse(int Abertos, int Resolvidos, int Cancelados)` substitui `TendenciaResponse`
+- **Frontend**: `TendenciaChart.tsx` (LineChart) é removido; novo `DistribuicaoDonutChart.tsx` usando `PieChart`/`Pie` do Recharts com `innerRadius` (formato rosca), 3 fatias coloridas (mesma paleta já usada: vermelho=abertos, verde=resolvidos, + cor nova pra cancelados). `DashboardPage.tsx` troca a seção "Tendência (7 dias)" por "Distribuição (últimos 7 dias)"
+
+### Relatório Mensal — rosca de SLA
+
+Já estava nos dados planejados (`SlaResponse` no design original) — a mudança é só visual: em vez de só números, uma rosca com 2 fatias (Dentro do Prazo / Estourado), usando o mesmo componente `PieChart`/`Pie` com `innerRadius`, para reaproveitar o mesmo padrão visual do gráfico novo do Dashboard.
+
+- **Componente novo (compartilhado entre as duas telas)**: `DonutChart.tsx` genérico em `frontend/src/components/charts/DonutChart.tsx` (recebe `data: { label: string; value: number; color: string }[]`), usado tanto pela Distribuição do Dashboard quanto pelo SLA do Relatório Mensal — evita duplicar a configuração do Recharts em dois lugares
+
+---
+
 ## Confirmação necessária
 
 Este design assume que dá pra fazer `JOIN` de `HistoricoEntrada` com `Chamados`/`Categorias` numa única query eficiente (ambos já existem e têm FK configurada desde a Fase 6). Não encontrei nenhum impeditivo no schema atual. Pronto pra seguir pra Tasks, a menos que você quera ajustar algo aqui antes.
