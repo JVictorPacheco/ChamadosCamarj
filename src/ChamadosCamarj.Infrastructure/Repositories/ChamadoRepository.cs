@@ -218,21 +218,25 @@ public class ChamadoRepository : IChamadoRepository
         var inicio = DateTime.UtcNow.Date.AddDays(-dias + 1);
         var fim = DateTime.UtcNow.Date.AddDays(1);
 
-        var chamadosNoPeriodo = await _dbSet
+        // Abertos e Resolvidos são contados cada um pela sua própria data de evento
+        // (DataCriacao vs DataConclusao) — nunca os dois pela DataCriacao, senão um
+        // chamado aberto num dia e resolvido em outro aparece "resolvido" no dia errado.
+        var datasAbertura = await _dbSet
             .Where(c => c.DataCriacao >= inicio && c.DataCriacao < fim)
-            .Select(c => new
-            {
-                Data = c.DataCriacao.Date,
-                FoiResolvido = c.Status == Domain.Enums.StatusChamado.Resolvido && c.DataConclusao.HasValue
-            })
+            .Select(c => c.DataCriacao.Date)
+            .ToListAsync(cancellationToken);
+
+        var datasConclusao = await _dbSet
+            .Where(c => c.DataConclusao.HasValue && c.DataConclusao.Value >= inicio && c.DataConclusao.Value < fim)
+            .Select(c => c.DataConclusao!.Value.Date)
             .ToListAsync(cancellationToken);
 
         return Enumerable.Range(0, dias)
             .Select(d => inicio.AddDays(d))
             .Select(data => (
                 Data: data,
-                Abertos: chamadosNoPeriodo.Count(c => c.Data == data),
-                Resolvidos: chamadosNoPeriodo.Count(c => c.Data == data && c.FoiResolvido)
+                Abertos: datasAbertura.Count(d => d == data),
+                Resolvidos: datasConclusao.Count(d => d == data)
             ))
             .ToList();
     }
