@@ -73,6 +73,7 @@
 - [x] "Meus Chamados" diferenciado por perfil (Admin=todos, Atendente=responsavelId, Solicitante=solicitanteEmail)
 - [x] Bug fix: Link aninhado no card da Fila eliminado
 - [x] Bug fix (2026-07-14): Dashboard não mostrava Cancelados/Resolvidos (só "hoje"); card "Abertos" agora detalha assumidos vs em espera
+- [x] Retrabalho (2026-07-14/15): gráfico de Tendência (linha, 7 dias) substituído por rosca "Distribuição por situação" (Aguardando/Assumido/Resolvido/Encerrado/Cancelado, foto do momento); KPIs simplificados pra só Resolvidos Hoje + Tempo Médio, já que a rosca cobre o resto
 
 ## 📧 Fase 4 — Integração Email + Storage
 
@@ -111,12 +112,16 @@
 - [ ] RBAC real (baseado em claims do token Google)
 - [ ] Admin: gerenciar categorias, usuários e configurações do sistema
 
-## 📈 Fase 7 — Relatórios + SLA (EM ANDAMENTO — antecipada)
+## 📈 Fase 7 — Relatório Mensal (CONCLUÍDA — antecipada)
 
-> **Antecipada em 2026-07-14** na frente de T09/T15 — usuário precisa de um relatório mensal de andamento dos chamados pra apresentar à superintendência todo fim de mês. Em fase de Specify.
+> **Antecipada em 2026-07-14** na frente de T09/T15 — usuário precisa de um relatório mensal de andamento dos chamados pra apresentar à superintendência todo fim de mês. Spec completo em `.specs/features/relatorio-mensal/` (spec → design → tasks → execute).
 
-- [ ] **Relatório mensal** (prioridade imediata) — período fechado, totais por status/categoria/atendente, comparação com mês anterior, exportação PDF/CSV
-- [ ] Relatórios por período/categoria/atendente (granularidade livre, não só mensal)
-- [ ] SLA tracking com alertas de vencimento
+- [x] **Relatório mensal**: seletor de mês, totais (abertos/resolvidos/cancelados + variação % vs mês anterior), quebra por categoria e por atendente, cumprimento de SLA (rosca), tempo médio de resolução
+- [x] Dados vindos de `HistoricoEntrada` (data real de cada evento — REL-10), não do status atual do chamado
+- [x] Exportação CSV (client-side) e PDF (via impressão, `@media print` dedicado) — sem bibliotecas novas
+- [x] RBAC: Admin vê tudo, Atendente só os próprios números (sem quebra por atendente), Solicitante bloqueado de verdade (não só link escondido)
+- [x] Bug corrigido de quebra: Dashboard tinha `ObterTendenciaAsync` contando "resolvidos" pela data de criação, não de resolução
+- [ ] Relatórios por período livre (granularidade além do mês fechado) — fora de escopo por ora
+- [ ] SLA tracking com alertas de vencimento (tempo real — diferente do relatório, que é histórico)
 - [ ] Exportação CSV/PDF
 - [ ] Dashboard de carga por atendente

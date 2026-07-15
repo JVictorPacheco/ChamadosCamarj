@@ -1,7 +1,7 @@
 # Relatório Mensal — Design
 
 **Spec**: `.specs/features/relatorio-mensal/spec.md`
-**Status**: Draft
+**Status**: Concluído (verificado em 2026-07-15)
 
 ---
 

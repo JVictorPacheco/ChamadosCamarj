@@ -1,7 +1,7 @@
 # Relatório Mensal + Rosca no Dashboard — Tasks
 
 **Design**: `.specs/features/relatorio-mensal/design.md`
-**Status**: Approved
+**Status**: Concluído — T1-T20 executados e verificados em 2026-07-15 (109 testes unitários passando, verificação manual/Playwright dos 3 perfis, CSV exportado conferido, RBAC do Solicitante corrigido pra bloqueio real)
 
 **Execução:** direta (sem sub-agentes paralelos) — a Fase 0 e a Fase 1 mexem no mesmo arquivo de interface (`IHistoricoRepository`), então rodam em sequência apesar de serem conceitualmente independentes.
 

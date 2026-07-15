@@ -1,6 +1,6 @@
 # Spec — Relatório Mensal (Fase 7 antecipada)
 
-> Status: PLANEJADO
+> Status: CONCLUÍDO (verificado em 2026-07-15)
 > Criado em: 2026-07-14
 > Decisões de negócio capturadas via discuss em 2026-07-14 (ver seção Contexto)
 
