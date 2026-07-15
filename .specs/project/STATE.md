@@ -8,9 +8,11 @@
 
 **Fase 5 concluída** — Kanban + Dashboard + SignalR + Fila de Atendimento + Ações de Atendente. Mergeada em `develop`/`main` (2026-06-30). Dashboard bastante retrabalhado nesta sessão (ver abaixo).
 
-**Fase 6 — T01-T08 e T10-T14 concluídos e verificados**, branch `feature/fase-6-admin-log` (checkout local, ainda não mergeada em `develop`, commits já pushados). Faltam T09/T15 (login Google Workspace) — **pausados a pedido do usuário** pra adiantar o relatório mensal (Fase 7). Retomar T09/T15 a seguir.
+**Fase 6 — T01-T08 e T10-T14 concluídos, verificados e MERGEADOS em `develop`** via PR #13 ("Feature/fase 6 admin log"), mergeado em 2026-07-15T03:05Z. Faltam T09/T15 (login Google Workspace) — **pausados a pedido do usuário** pra adiantar o relatório mensal (Fase 7). **Retomar T09/T15 é o próximo passo.**
 
-**Fase 7 (Relatório Mensal) CONCLUÍDA e verificada em 2026-07-14/15** — Specify → Design → Tasks → Execute completos (`.specs/features/relatorio-mensal/`). Endpoint `GET /api/relatorios/mensal`, página `/atendimento/relatorio-mensal` com seletor de mês, KPIs com variação % vs mês anterior, rosca de SLA, quebra por categoria e por atendente, exportação CSV e PDF (via impressão). RBAC: Admin vê tudo, Atendente só os próprios números, Solicitante bloqueado (bloqueio de verdade, não só link escondido — ver Aprendizados).
+**Fase 7 (Relatório Mensal) CONCLUÍDA, verificada e também já em `develop`** (mesmo PR #13). Specify → Design → Tasks → Execute completos (`.specs/features/relatorio-mensal/`). Endpoint `GET /api/relatorios/mensal`, página `/atendimento/relatorio-mensal` com seletor de mês, KPIs com variação % vs mês anterior, rosca de SLA, quebra por categoria e por atendente, exportação CSV e PDF (via impressão). RBAC: Admin vê tudo, Atendente só os próprios números, Solicitante bloqueado (bloqueio de verdade, não só link escondido — ver Aprendizados).
+
+**IMPORTANTE pra retomar:** o checkout local ficou na branch `feature/fase-6-admin-log` (já mergeada, pode ser deletada/arquivada). Ao voltar, faça checkout em `develop` e dê `git pull` antes de continuar — é lá que está tudo agora.
 
 **Dashboard (Fase 5) retrabalhado em 2026-07-14/15:**
 - Cards de KPI simplificados: só "Resolvidos Hoje" e "Tempo Médio" (o resto virou redundante com a rosca)
@@ -20,7 +22,7 @@
 
 **Também descoberto em 2026-07-13:** os documentos de estado (`STATE.md`/`ROADMAP.md`/`HANDOFF.md`) na branch `develop` estavam desatualizados — diziam "próximo é Fase 4" quando na verdade Fase 5 e boa parte da Fase 6 já tinham sido feitas em branches não mergeadas.
 
-**Próximo:** retomar T09/T15 (Google Workspace auth). Fase 4 (Email/Storage) segue sem data. Criar PR de `feature/fase-6-admin-log` → `develop`.
+**Próximo:** retomar T09/T15 (Google Workspace auth) — a partir da `develop`, não mais da branch de feature (já mergeada). Fase 4 (Email/Storage) segue sem data.
 
 ---
 
@@ -68,14 +70,15 @@ Nenhum.
 
 ## 📋 TODOs (ordenados por prioridade)
 
-1. Retomar T09/T15 (Google Workspace auth)
-2. Quando T09 entrar: trocar `UsuarioId`/`UsuarioNome` (hoje enviados pelo cliente, aceitáveis só por não haver auth real) por extração via claims do JWT no backend
-3. Criar PR de `feature/fase-6-admin-log` → `develop` (T01-T14 da Fase 6 + Fase 7 completa, tudo verificado)
+1. Ao retomar: `git checkout develop && git pull` (a branch de feature já foi mergeada, não usar mais)
+2. Retomar T09/T15 (Google Workspace auth)
+3. Quando T09 entrar: trocar `UsuarioId`/`UsuarioNome` (hoje enviados pelo cliente, aceitáveis só por não haver auth real) por extração via claims do JWT no backend
 4. "Forçar encerramento" (Admin fechar/cancelar fora do fluxo normal) — item da spec da Fase 6 ainda não abordado
 5. Revisar se as outras telas com soft-RBAC (Dashboard/Kanban/Fila — só escondem o link, sem bloqueio de rota) precisam do mesmo tratamento que o Relatório Mensal recebeu, ou se ficam assim até o login real (T09) trazer autenticação de verdade
 
 ## ✅ Concluído recentemente
 
+- **PR #13 mergeado em `develop`** (2026-07-15T03:05Z) — Fase 6 completa (T01-T14) + Fase 7 (Relatório Mensal) inteira, 42 commits
 - Fase 7 (Relatório Mensal) completa: backend (endpoint + agregação via HistoricoEntrada + SLA + comparação mês anterior) e frontend (página + exportação CSV/PDF), RBAC com bloqueio real pro Solicitante — 2026-07-14/15
 - Dashboard: rosca "Distribuição por situação" substitui gráfico de Tendência; KPIs simplificados; distinção Resolvido vs Encerrado — 2026-07-14/15
 - Fase 6 T01-T14 completos e verificados via Playwright (reatribuir, alterar prioridade, histórico com usuário real, comentário interno) — 2026-07-14

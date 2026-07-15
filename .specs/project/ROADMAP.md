@@ -92,7 +92,7 @@
 > Corrigido em 2026-06-25: Camarj usa Google Workspace (Gmail corporativo), não Azure AD.
 > Planejado em 2026-07-01: features de Admin e auditoria.
 > Spec em `.specs/features/fase-6-admin-log/spec.md`.
-> Trabalho feito em `feature/fase-6-admin-log` (não mergeada em `develop`). T01-T14 concluídos e verificados via Playwright em 2026-07-14.
+> Trabalho feito em `feature/fase-6-admin-log`, **mergeada em `develop` via PR #13 em 2026-07-15**. T01-T14 concluídos e verificados via Playwright.
 
 **Backend — completo (T01-T08), incluindo ator real na auditoria:**
 - [x] T01 `HistoricoEntrada` + enum `AcaoHistorico` + `IHistoricoRepository`
@@ -114,7 +114,7 @@
 
 ## 📈 Fase 7 — Relatório Mensal (CONCLUÍDA — antecipada)
 
-> **Antecipada em 2026-07-14** na frente de T09/T15 — usuário precisa de um relatório mensal de andamento dos chamados pra apresentar à superintendência todo fim de mês. Spec completo em `.specs/features/relatorio-mensal/` (spec → design → tasks → execute).
+> **Antecipada em 2026-07-14** na frente de T09/T15 — usuário precisa de um relatório mensal de andamento dos chamados pra apresentar à superintendência todo fim de mês. Spec completo em `.specs/features/relatorio-mensal/` (spec → design → tasks → execute). **Mergeada em `develop` via PR #13 em 2026-07-15.**
 
 - [x] **Relatório mensal**: seletor de mês, totais (abertos/resolvidos/cancelados + variação % vs mês anterior), quebra por categoria e por atendente, cumprimento de SLA (rosca), tempo médio de resolução
 - [x] Dados vindos de `HistoricoEntrada` (data real de cada evento — REL-10), não do status atual do chamado
