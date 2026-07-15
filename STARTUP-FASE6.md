@@ -1,44 +1,22 @@
 # 🚀 FASE 6 — INSTRUÇÕES DE STARTUP
 
+> ⚠️ **Este guia foi escrito num estágio intermediário da Fase 6 e ficou desatualizado.** Hoje o frontend da Fase 6 (T10-T14) está **100% integrado e verificado via Playwright** — não há mais nada "pra você fazer". A Fase 7 (Relatório Mensal) também já foi entregue. Ver `.specs/project/STATE.md` para o estado real.
+>
+> O caminho `src/ChamadosCamarj.Web/` citado abaixo **está errado** — foi o local onde uma versão inicial dos componentes acabou sendo commitada por engano; eles foram descartados e reescritos do zero em `frontend/src/features/chamados/` (a localização correta do frontend, na raiz do repo). Ver `.specs/project/STATE.md` (Aprendizados).
+
 ## 📋 Pré-requisitos
 
-- ✅ .NET 9+ instalado
-- ✅ Node.js + npm instalado
-- ✅ Você está no branch `feature/fase-6-admin-log`
-- ✅ Dependências restauradas (`dotnet restore`, `npm install`)
+- .NET 9+ instalado
+- Node.js + npm instalado
+- Branch `feature/fase-6-admin-log` (contém Fase 6 completa T01-T14 + Fase 7 completa)
+- Dependências restauradas (`dotnet restore`, `npm install` dentro de `frontend/`)
 
 ---
 
 ## 🎯 Como Rodar
 
-### **Opção 1: Script Automático (MacBook/Linux)**
-
+### Terminal 1 — Backend
 ```bash
-chmod +x start-fase6.sh
-./start-fase6.sh
-```
-
-✅ Abre o **Backend** automaticamente
-⚠️ Você precisa abrir **Frontend** em outro terminal
-
----
-
-### **Opção 2: Script Automático (Windows)**
-
-```powershell
-.\start-fase6.ps1
-```
-
-✅ Abre o **Backend** em nova janela
-⚠️ Você precisa abrir **Frontend** em outro terminal
-
----
-
-### **Opção 3: Manual (Recomendado para Debug)**
-
-#### Terminal 1 — Backend
-```bash
-cd /opt/data/ChamadosCamarj
 dotnet run --project src/ChamadosCamarj.WebApi
 ```
 
@@ -48,18 +26,16 @@ info: Microsoft.Hosting.Lifetime[14]
       Now listening on: http://localhost:5000
 ```
 
----
-
-#### Terminal 2 — Frontend
+### Terminal 2 — Frontend
 ```bash
-cd /opt/data/ChamadosCamarj/src/ChamadosCamarj.Web
+cd frontend
 npm run dev
 ```
 
 Aguarde até ver:
 ```
-  VITE v5.x.x  ready in xxx ms
-  Local:  http://localhost:3000
+  VITE v6.x.x  ready in xxx ms
+  Local:  http://localhost:5173
 ```
 
 ---
@@ -68,55 +44,51 @@ Aguarde até ver:
 
 | Serviço | URL | Descrição |
 |---------|-----|-----------|
-| **Frontend** | http://localhost:3000 | Interface da aplicação |
+| **Frontend** | http://localhost:5173 | Interface da aplicação |
 | **Backend API** | http://localhost:5000 | API REST |
-| **Swagger/Docs** | http://localhost:5000/swagger | Documentação interativa |
+| **Scalar (docs interativa)** | http://localhost:5000/scalar | Ambiente Development |
 
 ---
 
-## 🔐 Dados de Teste
+## 🔐 Login
 
-### Usuários Pré-cadastrados
+Não existe login por email/senha — a autenticação é um **seletor de perfil mockado** salvo em `localStorage`:
 
-| Email | Senha | Perfil | Uso |
-|-------|-------|--------|-----|
-| `joão@camarj.com.br` | `senha123` | Cliente | Criar chamados |
-| `victor@camarj.com.br` | `senha123` | Atendente | Assumir, reatribuir |
-| `fábio@camarj.com.br` | `senha123` | Gerente/Admin | Alterar prioridade, ver interno |
+| Perfil | Nome | Uso |
+|--------|------|-----|
+| Solicitante | Ana Colaboradora | Abrir chamados, comentar publicamente |
+| Atendente | Fábio | Assumir, resolver, alterar prioridade, comentário interno |
+| Admin | Victor | Tudo do Atendente + reatribuir, ver todos os chamados, Relatório Mensal completo |
+
+O login Google Workspace real (T09/T15) ainda está pendente — ver [[🔐 Google Workspace]] / `.specs/project/STATE.md`.
 
 ---
 
-## 🧪 Guia de Testes (6 Testes Completos)
+## 🧪 O que testar
 
-Abra o arquivo de testes:
-
-```bash
-cat .specs/FRONTEND-FASE-6-TESTES.md
-```
-
-Ou leia direto em: `.specs/FRONTEND-FASE-6-TESTES.md`
-
-### Quick Reference
+As features da Fase 6 já estão implementadas e verificadas, mas se quiser reproduzir manualmente:
 
 ```
 [T1] Reatribuição de Chamado
-     → Dashboard → Meus Chamados → Clicar → Botão "Reatribuir" → Modal
+     → Detalhe do chamado → Botão "Reatribuir" → selecionar novo responsável
 
 [T2] Alterar Prioridade
-     → Dashboard → Chamado → Badge Prioridade → Editar → Modal
+     → Detalhe do chamado → Badge de Prioridade → editar
 
 [T3] Histórico (Timeline)
-     → Chamado → Scroll down → Seção "Histórico" com timeline
+     → Detalhe do chamado → seção "Histórico" com timeline
 
 [T4] Comentários Internos
-     → Chamado → Seção "Comentários" → Checkbox "Interno"
+     → Detalhe do chamado → seção "Comentários" → toggle público/interno
 
 [T5] Filtro por Perfil
-     → Login Cliente vs Admin → Diferentes comentários vistos
+     → Logar como Solicitante vs. Admin → comentários internos não aparecem pro Solicitante
 
 [T6] Tempo Real (SignalR)
-     → 2 navegadores → Um faz mudança → Outro vê instantaneamente
+     → 2 abas/navegadores → uma faz uma mudança → a outra atualiza sozinha
 ```
+
+> Não usar `.specs/FASE-6-TESTES.md` ou `.specs/FRONTEND-FASE-6-TESTES.md` como guia — descrevem a versão obsoleta do frontend (caminho errado, componentes descartados).
 
 ---
 
@@ -124,7 +96,6 @@ Ou leia direto em: `.specs/FRONTEND-FASE-6-TESTES.md`
 
 ### Backend não inicia
 ```bash
-# Limpar e rebuildar
 dotnet clean
 dotnet restore
 dotnet build
@@ -133,95 +104,43 @@ dotnet run --project src/ChamadosCamarj.WebApi
 
 ### Frontend não inicia
 ```bash
-# Limpar node_modules e reinstalar
+cd frontend
 rm -rf node_modules package-lock.json
 npm install
 npm run dev
 ```
 
-### Porta 5000 ou 3000 já em uso
+### Porta 5000 ou 5173 já em uso
 ```bash
-# Encontrar processo usando a porta
 lsof -i :5000  # Backend
-lsof -i :3000  # Frontend
-
-# Matar o processo (Linux/Mac)
+lsof -i :5173  # Frontend
 kill -9 <PID>
 ```
 
 ---
 
-## 📊 Status da Implementação
+## 📊 Status real da implementação
 
-### Backend ✅
-- [x] 28 testes unitários passando
-- [x] Endpoints implementados
-- [x] Database migrations prontas
-- [x] Histórico registrando corretamente
-- [x] Comentários filtrando por perfil
+Ver `.specs/project/ROADMAP.md` para o detalhamento tarefa a tarefa. Resumo:
 
-### Frontend 🚀
-- [x] Componentes criados (ReatribuirModal, AlterarPrioridadeModal, TimelineHistorico, Comentarios)
-- [ ] Integrado em ChamadoDetalhes (você precisa fazer!)
-- [ ] SignalR conectado (você precisa verificar!)
-- [ ] Testes passando
+### Backend — completo (T01-T08)
+- [x] `HistoricoEntrada` + `IHistoricoRepository`
+- [x] Reatribuição, Alterar Prioridade — endpoints e commands
+- [x] Histórico integrado em todos os CommandHandlers
+- [x] Comentários internos filtrados por perfil
+- [ ] Login Google Workspace (T09) — pendente
 
----
-
-## 📝 Próximas Etapas
-
-### 1. Integrar Componentes
-No arquivo `src/ChamadosCamarj.Web/src/pages/ChamadoDetalhes.tsx`, adicione:
-
-```tsx
-import { ReatribuirModal } from '@/components/Chamados/ReatribuirModal';
-import { AlterarPrioridadeModal } from '@/components/Chamados/AlterarPrioridadeModal';
-import { TimelineHistorico } from '@/components/Chamados/TimelineHistorico';
-import { Comentarios } from '@/components/Chamados/Comentarios';
-
-export function ChamadoDetalhes() {
-  // ... seu código
-  return (
-    <>
-      <ReatribuirModal {...props} />
-      <AlterarPrioridadeModal {...props} />
-      <TimelineHistorico chamadoId={chamadoId} />
-      <Comentarios chamadoId={chamadoId} perfilUsuario={userProfile} />
-    </>
-  );
-}
-```
-
-### 2. Rodar Testes
-```bash
-npm run test  # Frontend
-dotnet test   # Backend (opcional, já testado)
-```
-
-### 3. Testar Manualmente
-Siga o guia em `.specs/FRONTEND-FASE-6-TESTES.md`
+### Frontend — completo (T10-T14)
+- [x] Reatribuir, Alterar Prioridade, Timeline de Histórico, Comentário interno — todos integrados em `frontend/src/features/chamados/` e verificados via Playwright
+- [ ] Login Google Workspace real (T15, depende de T09) — pendente
+- [ ] "Forçar encerramento" — ainda não abordado
 
 ---
 
-## 🚨 Troubleshooting
+## 💬 Próximos Passos Reais
 
-| Problema | Solução |
-|----------|---------|
-| **"Port 5000 already in use"** | `kill -9 $(lsof -t -i:5000)` |
-| **"Cannot find module"** | `npm install` no diretório Web |
-| **"Build failed"** | `dotnet clean && dotnet build` |
-| **"Histórico vazio"** | Faça uma ação (reatribuir/mudar prioridade) |
-| **"Comentários não aparecem"** | Atualize a página (F5) |
+1. Retomar T09/T15 (login Google Workspace)
+2. Abrir PR de `feature/fase-6-admin-log` → `develop`
+3. "Forçar encerramento" (item pendente da Fase 6)
 
----
-
-## 💬 Quando Tiver Dúvidas
-
-1. Verifique os **logs** (Terminal/Console)
-2. Leia o **guia de testes** (`.specs/FRONTEND-FASE-6-TESTES.md`)
-3. Cheque se **Backend tá rodando** (curl http://localhost:5000/swagger)
-4. Cheque se **Frontend tá rodando** (http://localhost:3000)
-
----
-
-**Pronto! Agora pode começar os testes! 🎯**
+Ver `.specs/project/STATE.md` (seção TODOs) para a lista completa e priorizada.

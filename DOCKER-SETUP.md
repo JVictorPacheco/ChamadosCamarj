@@ -1,51 +1,34 @@
-# 🐳 GUIA DOCKER — FASE 6
+# 🐳 GUIA DOCKER (opcional)
+
+> ⚠️ **Este não é o fluxo de desenvolvimento padrão do projeto.** O `docker-compose.yml` sobe um **PostgreSQL local isolado**, mas dev e produção hoje apontam para o **mesmo banco Supabase** (ver `.specs/codebase/STACK.md` e `.specs/project/STATE.md`). Rodar via Docker significa trabalhar com dados que não são os dados reais do Supabase. Para o fluxo real, veja o `README.md` (rodar API com `dotnet run` + frontend com `npm run dev`, ambos contra o Supabase).
+>
+> Use este guia só se quiser um ambiente local isolado (ex: testar migrations sem afetar o banco real).
 
 ## ✅ Pré-requisitos
 
-- ✅ Docker Desktop instalado no MacBook
-- ✅ Docker rodando (abra Docker Desktop)
+- Docker Desktop instalado e rodando
 
-## 🚀 Como Rodar Tudo
-
-**1 comando = Backend + Frontend rodando!**
+## 🚀 Como Rodar
 
 ```bash
-cd /Users/joaopacheco/Desktop/C#-.net/ChamadosCamarj
 docker-compose up
 ```
+
+Sobe 3 serviços: `postgres` (local, efêmero), `backend` (.NET API, conectado ao postgres local do compose, **não** ao Supabase) e `frontend` (Vite dev server).
 
 Aguarde ~2-3 minutos na primeira vez (build das imagens).
 
 ## 🌐 URLs de Acesso
 
-Quando ver "ready in xxx ms", abra no navegador:
-
 | Serviço | URL |
 |---------|-----|
-| **Frontend** | http://localhost:3000 |
+| **Frontend** | http://localhost:3000 (mapeado do 5173 do container) |
 | **Backend** | http://localhost:5000 |
-| **Swagger** | http://localhost:5000/swagger |
+| **Swagger/Scalar** | http://localhost:5000/scalar |
 
-## 🔐 Credenciais de Teste
+## 🔐 Login
 
-| Email | Senha | Perfil |
-|-------|-------|--------|
-| joão@camarj.com.br | senha123 | Cliente |
-| victor@camarj.com.br | senha123 | Atendente |
-| fábio@camarj.com.br | senha123 | Gerente |
-
-## 🧪 6 Testes
-
-Leia: `.specs/FRONTEND-FASE-6-TESTES.md`
-
-```
-[T1] Reatribuição de Chamado
-[T2] Alterar Prioridade
-[T3] Histórico (Timeline)
-[T4] Comentários Internos
-[T5] Filtro por Perfil
-[T6] Tempo Real (SignalR)
-```
+Não existe login por email/senha no sistema — a autenticação é um **seletor de perfil mockado** (Admin/Atendente/Solicitante) salvo em `localStorage`. Perfis atuais: Victor (Admin), Fábio (Atendente). O login Google Workspace real ainda está pendente (Fase 6, T09/T15) — ver `.specs/project/STATE.md`.
 
 ## 🛑 Parar os Containers
 
@@ -78,7 +61,3 @@ docker-compose up
 docker-compose logs -f frontend
 docker-compose logs -f backend
 ```
-
----
-
-**Pronto! Agora é só rodar! 🚀**

@@ -19,13 +19,18 @@
 | SLA Alto | 24h | — |
 | SLA Urgente | 8h | — |
 | Anexos | [[📦 Supabase Storage]] (bucket S3) | — |
-| Dashboard | Métricas na home (Fase 5 ✅) + relatórios avançados (Fase 7) | — |
+| Dashboard | Métricas em tempo real na home (Fase 5 ✅, retrabalhado 07-14/15) + Relatório Mensal separado (Fase 7 ✅) | — |
 | Mobile | Futuro (web primeiro) | — |
 | Notificações | SignalR real-time (Fase 5 ✅) + Push navegador/Desktop futuro | — |
 | "Meus Chamados" | Admin=todos, Atendente=responsavelId, Solicitante=solicitanteEmail | 2026-07-01 |
-| Log de histórico | Entidade `HistoricoEntrada` — auditoria de cada transição do chamado | 2026-07-01 |
-| Reatribuição Admin | Endpoint `/reatribuir` separado, sem restrição de status (Admin move entre atendentes) | 2026-07-01 |
-| Auth mockada | `localStorage` com seletor de perfil — substituído na Fase 6 pelo Google real | 2026-06-23 |
+| Log de histórico | Entidade `HistoricoEntrada` — auditoria de cada transição do chamado — ✅ implementado (Fase 6) | 2026-07-01 |
+| Reatribuição Admin | Endpoint `/reatribuir` separado, sem restrição de status (Admin move entre atendentes) — ✅ implementado (Fase 6) | 2026-07-01 |
+| Auth mockada | `localStorage` com seletor de perfil — substituído na Fase 6 pelo Google real (T09/T15, ainda pendente) | 2026-06-23 |
+| Ordem Fase 6 vs Fase 7 | Fase 7 (Relatório Mensal) antecipada na frente de T09/T15 — motivada por prazo real de fechamento mensal pra superintendência | 2026-07-14 |
+| Relatório Mensal | Documento de período fechado (mês), não uma view "semanal" do dashboard — dashboard fica com números em tempo real, relatório é outra tela/exportação | 2026-07-14 |
+| Dashboard — gráfico "Distribuição" | Rosca de situação **atual** dos chamados (Aguardando/Assumido/Resolvido/Encerrado/Cancelado), não uma janela de tempo — substituiu o gráfico de Tendência (linha, 7 dias) | 2026-07-14/15 |
+| Resolvido vs. Encerrado | Passos distintos do ciclo de vida: `Resolver()` marca como solucionado, `Fechar()` confirma e arquiva (só a partir de Resolvido) — não são sinônimos em métricas/relatórios | 2026-07-14/15 |
+| RBAC do Relatório Mensal | Bloqueio real (redirect) para Solicitante, diferente do RBAC "soft" (só esconde link) do resto do app — por expor dado mais sensível (desempenho por atendente) | 2026-07-14/15 |
 
 ---
 
@@ -36,3 +41,5 @@
 | Azure AD (Microsoft) | **Google Workspace** — Camarj usa Gmail corporativo, não Microsoft | 2026-06-25 |
 | Contas por analista | **Contas por setor** (ex: autorizacao@camarj.com.br) — perfil derivado de mapeamento conta→perfil | 2026-06-25 |
 | Fase 5 como próximo passo | Fase 5 concluída, próximo é Fase 6 | 2026-07-01 |
+| Fase 6 como próximo passo | Fase 6 quase completa (T01-T14); Fase 7 (Relatório Mensal) antecipada na frente de T09/T15 | 2026-07-14 |
+| Rosca do Dashboard como "eventos dos últimos 7 dias" | Corrigido para "foto do momento" (situação atual via `ContarPorStatusAsync`) — primeira tentativa usou `HistoricoEntrada`/período por engano | 2026-07-14/15 |

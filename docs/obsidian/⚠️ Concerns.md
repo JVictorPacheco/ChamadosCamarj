@@ -17,9 +17,9 @@
 | C-06 | Fechar/Cancelar sem Command/Endpoint | ✅ Implementados |
 | C-07 | `ComentarioId` ausente na migration | ✅ FK adicionada |
 | C-08 | IDs de seed hardcoded em dois lugares | ✅ Seed inline removido |
-| C-09 | Sem testes | ✅ 48 testes (Domain + Application) |
+| C-09 | Sem testes | ✅ 48 testes na criação do projeto (Domain + Application); 109 testes unitários de backend em 2026-07-15, ver `.specs/HANDOFF.md` para a contagem mais recente |
 | C-10 | `EnsureCreated()` em dev | ✅ Substituído por `MigrateAsync()` |
 
 ---
 
-> *Nenhum débito técnico crítico pendente. Próximo passo: Frontend (Fase 3).* 🚀
+> *Nenhum débito técnico crítico pendente. Lista completa e sempre atualizada em `.specs/codebase/CONCERNS.md`.* 🚀

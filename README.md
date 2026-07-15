@@ -6,10 +6,10 @@ Sistema de gestão de chamados corporativos da CAMARJ.
 
 - **Backend:** .NET 9 + Clean Architecture + CQRS (MediatR)
 - **Frontend:** React + TypeScript + Vite + TailwindCSS + Shadcn/ui
-- **Banco:** PostgreSQL (Supabase)
-- **Auth:** Azure AD
-- **Email:** MailKit (IMAP)
-- **Anexos:** Supabase Storage (S3)
+- **Banco:** PostgreSQL (Supabase) — dev e prod na mesma instância
+- **Auth:** Google Workspace (Sign in with Google) — mockada até a Fase 6 (T09/T15)
+- **Email:** MailKit (IMAP) — Fase 4, ainda não implementado
+- **Anexos:** Supabase Storage (S3) — Fase 4, ainda não implementado
 
 ## Estrutura
 
@@ -19,16 +19,24 @@ src/
 ├── ChamadosCamarj.Application/     # Commands, Queries, Validators, DTOs
 ├── ChamadosCamarj.Infrastructure/  # EF Core, Repositories, Email
 ├── ChamadosCamarj.WebApi/          # Controllers, Program.cs
+frontend/                           # React 19 + TS + Vite + TailwindCSS v4 + Shadcn/ui
+├── src/
+│   ├── features/                   # Telas e componentes por domínio (chamados, dashboard, kanban...)
+│   └── ...
 docs/
-├── SPEC.md                         # Spec-Driven Development
+├── SPEC.md                         # Spec original (snapshot histórico — ver .specs/ para o estado atual)
 └── obsidian/                       # Notas para Obsidian
+.specs/                             # Documentação viva (Spec-Driven Development) — fonte da verdade do estado atual
+├── project/                        # PROJECT.md, ROADMAP.md, STATE.md
+├── codebase/                       # ARCHITECTURE.md, STACK.md, STRUCTURE.md, CONVENTIONS.md...
+└── features/                       # spec/design/tasks por feature
 tests/
 └── ChamadosCamarj.UnitTests/
 ```
 
 ## Como rodar
 
-1. Pré-requisitos: .NET 9 SDK, acesso ao projeto Supabase (`oxiqutweuejvopofbkoy`).
+1. Pré-requisitos: .NET 9 SDK, Node.js, acesso ao projeto Supabase (`oxiqutweuejvopofbkoy`).
 2. Configure a connection string do banco via `user-secrets` (nunca em `appsettings.json`):
    ```bash
    cd src/ChamadosCamarj.WebApi
@@ -41,5 +49,14 @@ tests/
    ```
    As migrations e o seed das categorias rodam automaticamente na primeira execução.
 4. Acesse `http://localhost:5000/scalar` (ambiente Development) para testar os endpoints.
+5. Rode o frontend:
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+   Acesse `http://localhost:5173`. O login é um seletor de perfil mockado (Admin/Atendente/Solicitante) salvo em `localStorage` — ainda não há login Google real.
 
 > Dev e produção apontam para o **mesmo banco Supabase** — qualquer requisição feita localmente grava dados reais.
+
+> Para o estado atual do projeto (fases concluídas, decisões, pendências), veja `.specs/project/STATE.md`.

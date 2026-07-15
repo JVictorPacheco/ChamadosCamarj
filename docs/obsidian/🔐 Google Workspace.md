@@ -12,8 +12,8 @@
 
 ## Status atual
 
-**Mockada (Fases 3–5):** seletor de perfil em `localStorage` (Admin/Atendente/Solicitante).
-**Real (Fase 6):** "Sign in with Google" substitui o seletor mockado.
+**Mockada (Fases 3-6):** seletor de perfil em `localStorage` (Admin/Atendente/Solicitante) — segue em uso.
+**Real (Fase 6, T09/T15):** "Sign in with Google" substitui o seletor mockado — **único item pendente** da Fase 6 (T01-T08 backend e T10-T14 frontend já concluídos e verificados). Pausado em 2026-07-14 a pedido do usuário para dar lugar ao Relatório Mensal (Fase 7, já entregue); próximo passo é retomar T09/T15.
 
 ## Como vai funcionar (Fase 6)
 

@@ -32,18 +32,18 @@
 | Tipo | enum | **Interno** (Admin/Atendente) ou **Publico** (todos) |
 | DataCriacao | DateTime | |
 
-> Comentários `Interno` ainda não filtrados na UI — planejado para Fase 6.
+> Comentários `Interno` ✅ filtrados na UI por perfil desde a Fase 6 (`ListarComentariosQueryHandler` recebe `perfilUsuario`).
 
-### 📋 HistoricoEntrada *(planejado — Fase 6)*
+### 📋 HistoricoEntrada — ✅ implementado (Fase 6)
 
-> Auditoria completa do fluxo de cada chamado.
+> Auditoria completa do fluxo de cada chamado. Também é a fonte de dados do [[📈 Relatório Mensal]] (Fase 7) — usa a data real de cada evento, não o status atual do chamado.
 
 | Campo | Tipo | Descrição |
 |-------|------|-----------|
 | Id | Guid | PK |
 | ChamadoId | Guid (FK) | Chamado relacionado |
 | UsuarioNome | string | Quem realizou a ação |
-| UsuarioId | Guid? | ID do usuário (quando auth real) |
+| UsuarioId | Guid? | ID do usuário — hoje enviado pelo próprio cliente (`AuthContext` mockado do frontend), pois não há auth real; passa a vir de claims do JWT quando o login Google (T09) entrar |
 | Acao | enum | Criado, Assumido, Reatribuido, Resolvido, Fechado, Cancelado, ComentarioAdicionado, PrioridadeAlterada |
 | DetalheAnterior | string? | Estado anterior (ex: responsável anterior na reatribuição) |
 | DetalheNovo | string? | Estado novo |
@@ -105,7 +105,7 @@ Email | Portal | API
 Publico | Interno
 ```
 
-### AcaoHistorico *(Fase 6)*
+### AcaoHistorico — ✅ implementado (Fase 6)
 ```
 Criado | Assumido | Reatribuido | Resolvido | Fechado | Cancelado | ComentarioAdicionado | PrioridadeAlterada
 ```
@@ -136,7 +136,7 @@ Cancelado ← de Aberto ou EmAndamento (qualquer perfil com acesso)
 
 ---
 
-## Perfis Mock (Fase 3-5 — substituídos na Fase 6)
+## Perfis Mock (Fase 3+ — login Google real ainda pendente, ver T09/T15 em [[🗺️ Roadmap]])
 
 | Perfil | ID Mock | Nome | Email |
 |--------|---------|------|-------|

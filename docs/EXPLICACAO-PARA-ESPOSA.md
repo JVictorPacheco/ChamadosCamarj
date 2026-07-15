@@ -285,13 +285,13 @@ HISTÓRICO (Automático)
 ```
 ✅ Fase 1: Estrutura básica (.NET + React)
 ✅ Fase 2: CRUD de Chamados (Criar, Ler, Editar, Deletar)
-✅ Fase 3: Dashboard com gráficos
-✅ Fase 4: Email e Storage (não é crítico agora)
-✅ Fase 5: Kanban drag-drop + Fila de atendimento + SignalR
-🚀 Fase 6: Admin + Histórico + Comentários internos + Reatribuição (AGORA!)
-⏳ Fase 7: Relatórios avançados
+✅ Fase 3: Portal do solicitante (abertura, lista, detalhe)
+⏳ Fase 4: Email e Storage (não é crítico agora, ainda não começou)
+✅ Fase 5: Kanban drag-drop + Dashboard + Fila de atendimento + SignalR
+🚀 Fase 6: Admin + Histórico + Comentários internos + Reatribuição (quase pronta — só falta o login Google de verdade)
+✅ Fase 7: Relatório Mensal (entregue! adiantado na frente do login Google porque tinha prazo real com a superintendência)
 
-Total: ~2-3 meses de desenvolvimento solo
+Total: ~1 mês de desenvolvimento solo até aqui
 ```
 
 ---

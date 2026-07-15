@@ -1,5 +1,7 @@
 # 📦 Supabase Storage — Anexos
 
+> ⏳ Fase 4 — ainda não implementado.
+
 ## Decisão
 
 Usar **Supabase Storage** (bucket S3-compatible) para armazenar anexos.
@@ -26,7 +28,7 @@ chamados-anexos/
 - Máx 10MB por arquivo
 - Tipos permitidos: PDF, imagens, .doc, .xls, .zip
 - URLs assinadas expiram em 1 hora
-- Apenas autenticados via [[🔐 Azure AD]] podem acessar
+- Apenas autenticados via [[🔐 Google Workspace]] podem acessar
 
 ## Tecnologia
 
