@@ -13,6 +13,7 @@ public class AbrirChamadoHandlerTests
 {
     private readonly Mock<IChamadoRepository> _repositoryMock = new();
     private readonly Mock<ICategoriaRepository> _categoriaRepositoryMock = new();
+    private readonly Mock<IHistoricoRepository> _historicoRepositoryMock = new();
     private readonly Mock<IPublisher> _publisherMock = new();
     private readonly AbrirChamadoCommandHandler _handler;
 
@@ -29,6 +30,7 @@ public class AbrirChamadoHandlerTests
         _handler = new AbrirChamadoCommandHandler(
             _repositoryMock.Object,
             _categoriaRepositoryMock.Object,
+            _historicoRepositoryMock.Object,
             _publisherMock.Object);
     }
 

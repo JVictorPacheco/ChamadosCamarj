@@ -110,14 +110,48 @@ public class ChamadosController : ControllerBase
     }
 
     /// <summary>
+    /// Reatribui um chamado para outro atendente (Admin)
+    /// </summary>
+    [HttpPatch("{id:guid}/reatribuir")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Reatribuir(
+        Guid id,
+        [FromBody] ReatribuirRequest request,
+        CancellationToken cancellationToken)
+    {
+        var command = new ReatribuirChamadoCommand(id, request.NovoResponsavelId, request.NovoResponsavelNome, request.UsuarioId, request.UsuarioNome);
+        await _mediator.Send(command, cancellationToken);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Altera a prioridade de um chamado (Admin)
+    /// </summary>
+    [HttpPatch("{id:guid}/prioridade")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> AlterarPrioridade(
+        Guid id,
+        [FromBody] AlterarPrioridadeRequest request,
+        CancellationToken cancellationToken)
+    {
+        var command = new AlterarPrioridadeChamadoCommand(id, request.NovaPrioridade, request.UsuarioId, request.UsuarioNome);
+        await _mediator.Send(command, cancellationToken);
+        return NoContent();
+    }
+
+    /// <summary>
     /// Marca um chamado como resolvido
     /// </summary>
     [HttpPatch("{id:guid}/resolver")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Resolver(Guid id, CancellationToken cancellationToken)
+    public async Task<IActionResult> Resolver(Guid id, [FromBody] AtorRequest? request, CancellationToken cancellationToken)
     {
-        await _mediator.Send(new ResolverChamadoCommand(id), cancellationToken);
+        await _mediator.Send(new ResolverChamadoCommand(id, request?.UsuarioId, request?.UsuarioNome ?? "Sistema"), cancellationToken);
         return NoContent();
     }
 
@@ -127,9 +161,9 @@ public class ChamadosController : ControllerBase
     [HttpPatch("{id:guid}/fechar")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Fechar(Guid id, CancellationToken cancellationToken)
+    public async Task<IActionResult> Fechar(Guid id, [FromBody] AtorRequest? request, CancellationToken cancellationToken)
     {
-        await _mediator.Send(new FecharChamadoCommand(id), cancellationToken);
+        await _mediator.Send(new FecharChamadoCommand(id, request?.UsuarioId, request?.UsuarioNome ?? "Sistema"), cancellationToken);
         return NoContent();
     }
 
@@ -139,9 +173,9 @@ public class ChamadosController : ControllerBase
     [HttpPatch("{id:guid}/cancelar")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Cancelar(Guid id, CancellationToken cancellationToken)
+    public async Task<IActionResult> Cancelar(Guid id, [FromBody] AtorRequest? request, CancellationToken cancellationToken)
     {
-        await _mediator.Send(new CancelarChamadoCommand(id), cancellationToken);
+        await _mediator.Send(new CancelarChamadoCommand(id, request?.UsuarioId, request?.UsuarioNome ?? "Sistema"), cancellationToken);
         return NoContent();
     }
 
@@ -163,9 +197,24 @@ public class ChamadosController : ControllerBase
     /// </summary>
     [HttpGet("{id:guid}/comentarios")]
     [ProducesResponseType(typeof(IEnumerable<ComentarioResponse>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<ComentarioResponse>>> ListarComentarios(Guid id, CancellationToken cancellationToken)
+    public async Task<ActionResult<IEnumerable<ComentarioResponse>>> ListarComentarios(
+        Guid id,
+        [FromQuery] string? perfilUsuario,
+        CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(new ListarComentariosQuery(id), cancellationToken);
+        var result = await _mediator.Send(new ListarComentariosQuery(id, perfilUsuario), cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Lista o histórico de ações de um chamado
+    /// </summary>
+    [HttpGet("{id:guid}/historico")]
+    [ProducesResponseType(typeof(IEnumerable<HistoricoResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<IEnumerable<HistoricoResponse>>> ListarHistorico(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new ListarHistoricoQuery(id), cancellationToken);
         return Ok(result);
     }
 

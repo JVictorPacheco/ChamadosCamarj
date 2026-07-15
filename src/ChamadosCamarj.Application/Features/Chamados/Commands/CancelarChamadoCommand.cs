@@ -2,4 +2,4 @@ using MediatR;
 
 namespace ChamadosCamarj.Application.Features.Chamados.Commands;
 
-public record CancelarChamadoCommand(Guid Id) : IRequest;
+public record CancelarChamadoCommand(Guid Id, Guid? UsuarioId = null, string UsuarioNome = "Sistema") : IRequest;

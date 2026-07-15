@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -8,6 +9,9 @@ import { PrioridadeBadge } from './components/PrioridadeBadge'
 import { SlaBadge } from './components/SlaBadge'
 import { ComentarioList } from './components/ComentarioList'
 import { ComentarioForm } from './components/ComentarioForm'
+import { ReatribuirModal } from './components/ReatribuirModal'
+import { AlterarPrioridadeModal } from './components/AlterarPrioridadeModal'
+import { TimelineHistorico } from './components/TimelineHistorico'
 import { useChamado } from './hooks/useChamado'
 import {
   useAtribuirChamado,
@@ -23,10 +27,14 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
   const resolver = useResolverChamado(chamado.id)
   const fechar = useFecharChamado(chamado.id)
   const cancelar = useCancelarChamado(chamado.id)
+  const [reatribuirAberto, setReatribuirAberto] = useState(false)
+  const [prioridadeAberto, setPrioridadeAberto] = useState(false)
 
+  const isAdmin = perfil?.tipo === 'Admin'
   const isAtendente = perfil?.tipo === 'Admin' || perfil?.tipo === 'Atendente'
   const isSolicitante = perfil?.tipo === 'Solicitante'
   const status = chamado.status
+  const statusFinal = status === 'Fechado' || status === 'Cancelado'
 
   const isPending =
     atribuir.isPending || resolver.isPending || fechar.isPending || cancelar.isPending
@@ -79,6 +87,18 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
         </Button>
       )}
 
+      {isAdmin && !statusFinal && (
+        <Button size="sm" variant="outline" onClick={() => setReatribuirAberto(true)}>
+          Reatribuir
+        </Button>
+      )}
+
+      {isAdmin && !statusFinal && (
+        <Button size="sm" variant="outline" onClick={() => setPrioridadeAberto(true)}>
+          Alterar prioridade
+        </Button>
+      )}
+
       {(atribuir.isError || resolver.isError || fechar.isError || cancelar.isError) && (
         <Alert variant="destructive" className="w-full">
           <AlertDescription>
@@ -87,6 +107,19 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
           </AlertDescription>
         </Alert>
       )}
+
+      <ReatribuirModal
+        open={reatribuirAberto}
+        onOpenChange={setReatribuirAberto}
+        chamadoId={chamado.id}
+        responsavelAtualId={chamado.responsavelId}
+      />
+      <AlterarPrioridadeModal
+        open={prioridadeAberto}
+        onOpenChange={setPrioridadeAberto}
+        chamadoId={chamado.id}
+        prioridadeAtual={chamado.prioridade}
+      />
     </div>
   )
 }
@@ -178,6 +211,9 @@ export function ChamadoDetailPage() {
       <h2 className="text-base font-heading">Comentários</h2>
       <ComentarioList chamadoId={chamado.id} />
       <ComentarioForm chamadoId={chamado.id} autor={perfil?.nome ?? ''} />
+
+      <h2 className="text-base font-heading">Histórico</h2>
+      <TimelineHistorico chamadoId={chamado.id} />
     </div>
   )
 }

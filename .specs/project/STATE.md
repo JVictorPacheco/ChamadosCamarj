@@ -1,16 +1,26 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-07-01
+> Atualizado em: 2026-07-15
 
 ---
 
 ## 📍 Onde estamos
 
-**Fase 5 concluída** — Kanban + Dashboard + SignalR + Fila de Atendimento + Ações de Atendente (Assumir/Resolver/Fechar/Cancelar na UI). Branch `feature/fase-5-kanban-dashboard` mergeada em `develop` e `main` (2026-06-30). Bugs corrigidos pós-merge: botão Assumir na Fila (Link aninhado causava navegação conflitante), "Meus Chamados" diferenciado por perfil.
+**Fase 5 concluída** — Kanban + Dashboard + SignalR + Fila de Atendimento + Ações de Atendente. Mergeada em `develop`/`main` (2026-06-30). Dashboard bastante retrabalhado nesta sessão (ver abaixo).
 
-**Verificado manualmente pelo usuário** (2026-07-01): fluxo completo funcionando — Assumir na Fila, Resolver/Fechar/Cancelar no Detalhe, Kanban drag & drop, Dashboard com métricas.
+**Fase 6 — T01-T08 e T10-T14 concluídos e verificados**, branch `feature/fase-6-admin-log` (checkout local, ainda não mergeada em `develop`, commits já pushados). Faltam T09/T15 (login Google Workspace) — **pausados a pedido do usuário** pra adiantar o relatório mensal (Fase 7). Retomar T09/T15 a seguir.
 
-**Próximo:** Fase 6 — Admin completo (Reatribuição entre atendentes, Log de histórico/auditoria, Comentários internos) + Google Workspace auth.
+**Fase 7 (Relatório Mensal) CONCLUÍDA e verificada em 2026-07-14/15** — Specify → Design → Tasks → Execute completos (`.specs/features/relatorio-mensal/`). Endpoint `GET /api/relatorios/mensal`, página `/atendimento/relatorio-mensal` com seletor de mês, KPIs com variação % vs mês anterior, rosca de SLA, quebra por categoria e por atendente, exportação CSV e PDF (via impressão). RBAC: Admin vê tudo, Atendente só os próprios números, Solicitante bloqueado (bloqueio de verdade, não só link escondido — ver Aprendizados).
+
+**Dashboard (Fase 5) retrabalhado em 2026-07-14/15:**
+- Cards de KPI simplificados: só "Resolvidos Hoje" e "Tempo Médio" (o resto virou redundante com a rosca)
+- Gráfico de "Tendência" (linha, 7 dias) substituído por rosca "Distribuição por situação": Aguardando/Assumido/Resolvido/Encerrado/Cancelado — é a situação **atual** dos chamados, não uma janela de tempo (decisão do usuário, corrigida depois de uma primeira tentativa errada baseada em `HistoricoEntrada`/período — ver Aprendizados)
+- Distingue **Resolvido** (`Chamado.Resolver()`, marcado como solucionado) de **Encerrado** (`Chamado.Fechar()`, confirmado e arquivado — só possível a partir de Resolvido) — antes só existia "Resolvido"
+- Endpoint `GET /api/dashboard/tendencia` virou `GET /api/dashboard/distribuicao` (sem parâmetro `dias`, é uma foto do momento)
+
+**Também descoberto em 2026-07-13:** os documentos de estado (`STATE.md`/`ROADMAP.md`/`HANDOFF.md`) na branch `develop` estavam desatualizados — diziam "próximo é Fase 4" quando na verdade Fase 5 e boa parte da Fase 6 já tinham sido feitas em branches não mergeadas.
+
+**Próximo:** retomar T09/T15 (Google Workspace auth). Fase 4 (Email/Storage) segue sem data. Criar PR de `feature/fase-6-admin-log` → `develop`.
 
 ---
 
@@ -36,6 +46,8 @@
 | Filtragem "Meus Chamados" | Admin=todos os chamados, Atendente=chamados onde é responsável (`responsavelId`), Solicitante=chamados que abriu (`solicitanteEmail`) — decidido em 2026-07-01 |
 | Log de histórico | Entidade `HistoricoEntrada` para auditoria completa do fluxo de cada chamado — planejado para Fase 6 |
 | Reatribuição Admin | Admin pode mover chamado entre atendentes mesmo em `EmAndamento` via endpoint `/reatribuir` separado do `/atribuir` — planejado para Fase 6 |
+| Ordem Fase 6 vs Fase 7 | Fase 7 (Relatório Mensal) antecipada na frente de T09/T15 (Google auth) — decisão de 2026-07-14, motivada por prazo real de fechamento mensal pra superintendência |
+| Relatório mensal | É um documento de período fechado (mês), não uma view "semanal" do dashboard operacional — dashboard fica com números em tempo real, relatório é outra tela/exportação (Fase 7) |
 
 ---
 
@@ -56,14 +68,18 @@ Nenhum.
 
 ## 📋 TODOs (ordenados por prioridade)
 
-1. Implementar Reatribuição Admin — backend (`Chamado.Reatribuir()` + `ReatribuirChamadoCommand` + endpoint) + frontend (botão + select de atendente no detalhe)
-2. Implementar Log de Histórico — entidade `HistoricoEntrada`, registrar em cada transição de status/atribuição
-3. Comentários internos — visíveis só para Admin/Atendente (campo `Tipo` já existe no `Comentario`)
-4. Alterar prioridade — Admin pode alterar prioridade de qualquer chamado
-5. Login Google Workspace real (Fase 6) — substituir seletor mockado
+1. Retomar T09/T15 (Google Workspace auth)
+2. Quando T09 entrar: trocar `UsuarioId`/`UsuarioNome` (hoje enviados pelo cliente, aceitáveis só por não haver auth real) por extração via claims do JWT no backend
+3. Criar PR de `feature/fase-6-admin-log` → `develop` (T01-T14 da Fase 6 + Fase 7 completa, tudo verificado)
+4. "Forçar encerramento" (Admin fechar/cancelar fora do fluxo normal) — item da spec da Fase 6 ainda não abordado
+5. Revisar se as outras telas com soft-RBAC (Dashboard/Kanban/Fila — só escondem o link, sem bloqueio de rota) precisam do mesmo tratamento que o Relatório Mensal recebeu, ou se ficam assim até o login real (T09) trazer autenticação de verdade
 
 ## ✅ Concluído recentemente
 
+- Fase 7 (Relatório Mensal) completa: backend (endpoint + agregação via HistoricoEntrada + SLA + comparação mês anterior) e frontend (página + exportação CSV/PDF), RBAC com bloqueio real pro Solicitante — 2026-07-14/15
+- Dashboard: rosca "Distribuição por situação" substitui gráfico de Tendência; KPIs simplificados; distinção Resolvido vs Encerrado — 2026-07-14/15
+- Fase 6 T01-T14 completos e verificados via Playwright (reatribuir, alterar prioridade, histórico com usuário real, comentário interno) — 2026-07-14
+- Backend completo da Fase 6 (T01-T08): `HistoricoEntrada`, `ReatribuirChamadoCommand`, `AlterarPrioridadeChamadoCommand`, endpoints correspondentes, filtro de comentário interno — branch `feature/fase-6-admin-log`, até 2026-07-12
 - Fase 5 (`feature/fase-5-kanban-dashboard`) mergeada em `develop` e `main` (2026-06-30) — Kanban, Dashboard, SignalR, Fila de Atendimento
 - Ações de Atendente implementadas na UI: botões Assumir/Resolver/Fechar/Cancelar no detalhe do chamado + Assumir na Fila de Atendimento
 - Bug fix: botão Assumir na Fila (Link aninhado causava navegação conflitante — eliminado, card e botões agora são elementos independentes)
@@ -102,3 +118,12 @@ Nenhum.
 - Branches criadas a partir de `develop` ANTES de um PR anterior ser mergeado não herdam commits desse PR — decisões de design/spec registradas só numa branch precisam ser replicadas manualmente
 - Link aninhado (`<a>` dentro de `<a>`) é HTML inválido e causa comportamento imprevisível nos eventos de clique — nunca envolver botões de ação em um `<Link>` pai; usar `useNavigate()` programaticamente no elemento clicável do card
 - `localStorage` persiste entre sessões — em auth mockada, o perfil anterior fica salvo; sempre confirmar qual perfil está ativo no footer da sidebar antes de testar
+- STATE.md/ROADMAP.md são só tão confiáveis quanto a branch em que foram lidos — uma branch de feature pode ficar muito à frente da `develop` sem que ninguém perceba, porque as docs só são atualizadas na branch onde o trabalho acontece. Ao retomar um projeto depois de um tempo, checar `git log`/branches remotas antes de confiar cegamente no STATE.md da branch atual
+- Arquivos gerados numa sessão anterior podem acabar no caminho errado (ex: dentro de `src/<ProjName>.Web/` em vez de `frontend/`) e usando convenções de um stack genérico (axios, toast, shadcn não instalado) em vez das reais do projeto — sempre conferir se um componente "pronto" está de fato no diretório certo e compila contra as libs realmente instaladas antes de assumir que uma tarefa está concluída
+- Uma migration EF Core só é válida com os 3 artefatos em sincronia: arquivo `.cs` (Up/Down), `.Designer.cs` e `ApplicationDbContextModelSnapshot.cs`. Se só o primeiro existe, `dotnet ef migrations list` nem reconhece a migration, e o app trava no startup com "pending model changes" — mesmo a tabela já existindo fisicamente no banco (criada manualmente numa sessão anterior). Sinal de alerta: `git log` de um arquivo de migration mostra só 1 commit em vez dos 3 arquivos de costume
+- Sem autenticação real, comandos que alteram estado (Reatribuir, AlterarPrioridade, Resolver, Fechar, Cancelar) não têm de onde tirar "quem está fazendo isso" — se o command só recebe `Guid Id`, o handler não tem escolha a não ser hardcodar um valor fixo ("Sistema") no histórico/auditoria. Ao adicionar auditoria numa feature, checar se o command carrega identidade de ator, não só o dado da ação em si
+- `ObterTendenciaAsync` (Dashboard, Fase 5) tinha um bug sutil de data: contava "resolvidos" usando a data de **criação** do chamado, não a de resolução (`DataConclusao`) — um chamado aberto num dia e resolvido em outro aparecia "resolvido" no dia errado. Corrigido junto com a Fase 7 por estar diretamente ligado ao requisito de dados verdadeiros do usuário
+- Nem toda "métrica de gráfico" deve virar "métrica de período" só porque outra parte do sistema (o Relatório Mensal, nesse caso) trabalha com período — perguntar explicitamente se o gráfico é uma foto do momento (snapshot) ou uma janela de tempo (eventos) antes de desenhar a query. Uma primeira tentativa da rosca do Dashboard assumiu "eventos dos últimos 7 dias" via `HistoricoEntrada` quando o usuário só queria a situação atual (`ContarPorStatusAsync`, já existente) — retrabalho evitável se a pergunta tivesse sido feita antes de implementar
+- `Resolvido` e `Encerrado/Fechado` são passos distintos do ciclo de vida do chamado (`Resolver()` marca como solucionado; `Fechar()` confirma e arquiva, só a partir de `Resolvido`) — não tratar como sinônimos em métricas/relatórios
+- RBAC de UI neste projeto é "soft" por padrão (só esconde o link da sidebar, não bloqueia a rota) — aceitável pra telas com dado já visível em outro lugar (Dashboard, Kanban), mas uma tela nova que expõe dado mais sensível (ex: desempenho individual por atendente no Relatório Mensal) pode precisar de bloqueio de verdade (redirect/alerta), mesmo destoando do padrão das telas mais antigas — avaliar caso a caso, não copiar o padrão automaticamente
+- EF Core: dá pra fazer `JOIN` direto em LINQ (`from x in a join y in b on x.FkId equals y.Id select ...`) contra outro `DbSet` do mesmo `DbContext` sem precisar de navigation property configurada na entidade — útil quando a entidade (ex: `HistoricoEntrada`) foi desenhada sem relacionamento de navegação pro que ela referencia

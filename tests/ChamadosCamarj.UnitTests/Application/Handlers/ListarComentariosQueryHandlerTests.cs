@@ -27,11 +27,29 @@ public class ListarComentariosQueryHandlerTests
         _repositoryMock.Setup(r => r.ObterComentariosPorChamadoAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new[] { comentario1, comentario2 });
 
-        var resultado = await _handler.Handle(new ListarComentariosQuery(chamadoId), CancellationToken.None);
+        // Query com perfil "Admin" para ver comentários internos também
+        var resultado = await _handler.Handle(new ListarComentariosQuery(chamadoId, "Admin"), CancellationToken.None);
 
         resultado.Should().HaveCount(2);
         resultado.Should().ContainSingle(r => r.Autor == "Victor" && r.Tipo == TipoComentario.Publico);
         resultado.Should().ContainSingle(r => r.Autor == "Fábio" && r.Tipo == TipoComentario.Interno);
+    }
+
+    [Fact]
+    public async Task Handle_QuandoClienteComum_DeveRetornarApenasComentariosPublicos()
+    {
+        var chamadoId = Guid.NewGuid();
+        var comentario1 = new Comentario(chamadoId, "Victor", "Primeiro comentário.", TipoComentario.Publico);
+        var comentario2 = new Comentario(chamadoId, "Fábio", "Nota interna.", TipoComentario.Interno);
+
+        _repositoryMock.Setup(r => r.ObterComentariosPorChamadoAsync(chamadoId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new[] { comentario1, comentario2 });
+
+        // Query sem perfil (cliente comum) só vê públicos
+        var resultado = await _handler.Handle(new ListarComentariosQuery(chamadoId), CancellationToken.None);
+
+        resultado.Should().HaveCount(1);
+        resultado.Should().ContainSingle(r => r.Autor == "Victor" && r.Tipo == TipoComentario.Publico);
     }
 
     [Fact]

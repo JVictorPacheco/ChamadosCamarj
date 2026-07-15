@@ -213,27 +213,4 @@ public class ChamadoRepository : IChamadoRepository
             .ToDictionaryAsync(x => x.Prioridade, x => x.Quantidade, cancellationToken);
     }
 
-    public async Task<List<(DateTime Data, int Abertos, int Resolvidos)>> ObterTendenciaAsync(int dias, CancellationToken cancellationToken = default)
-    {
-        var inicio = DateTime.UtcNow.Date.AddDays(-dias + 1);
-        var fim = DateTime.UtcNow.Date.AddDays(1);
-
-        var chamadosNoPeriodo = await _dbSet
-            .Where(c => c.DataCriacao >= inicio && c.DataCriacao < fim)
-            .Select(c => new
-            {
-                Data = c.DataCriacao.Date,
-                FoiResolvido = c.Status == Domain.Enums.StatusChamado.Resolvido && c.DataConclusao.HasValue
-            })
-            .ToListAsync(cancellationToken);
-
-        return Enumerable.Range(0, dias)
-            .Select(d => inicio.AddDays(d))
-            .Select(data => (
-                Data: data,
-                Abertos: chamadosNoPeriodo.Count(c => c.Data == data),
-                Resolvidos: chamadosNoPeriodo.Count(c => c.Data == data && c.FoiResolvido)
-            ))
-            .ToList();
-    }
 }

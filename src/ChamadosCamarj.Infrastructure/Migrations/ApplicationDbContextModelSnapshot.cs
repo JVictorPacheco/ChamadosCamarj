@@ -214,6 +214,54 @@ namespace ChamadosCamarj.Infrastructure.Migrations
                     b.ToTable("Comentarios", (string)null);
                 });
 
+            modelBuilder.Entity("ChamadosCamarj.Domain.Entities.HistoricoEntrada", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Acao")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<Guid>("ChamadoId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DataAtualizacao")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DataCriacao")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DataHora")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DetalheAnterior")
+                        .HasColumnType("text");
+
+                    b.Property<string>("DetalheNovo")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("UsuarioId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UsuarioNome")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChamadoId")
+                        .HasDatabaseName("IX_HistoricoEntradas_ChamadoId");
+
+                    b.HasIndex("DataHora")
+                        .HasDatabaseName("IX_HistoricoEntradas_DataHora");
+
+                    b.ToTable("HistoricoEntradas", (string)null);
+                });
+
             modelBuilder.Entity("ChamadosCamarj.Domain.Entities.Anexo", b =>
                 {
                     b.HasOne("ChamadosCamarj.Domain.Entities.Chamado", "Chamado")

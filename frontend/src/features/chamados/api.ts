@@ -5,6 +5,7 @@ import type {
   ChamadoResponse,
   ComentarChamadoRequest,
   ComentarioResponse,
+  HistoricoResponse,
   PagedResult,
   PrioridadeChamado,
   StatusChamado,
@@ -47,8 +48,10 @@ export function abrirChamado(dados: AbrirChamadoRequest): Promise<ChamadoRespons
   })
 }
 
-export function listarComentarios(chamadoId: string): Promise<ComentarioResponse[]> {
-  return apiFetch<ComentarioResponse[]>(`/chamados/${chamadoId}/comentarios`)
+export function listarComentarios(chamadoId: string, perfilUsuario?: string): Promise<ComentarioResponse[]> {
+  return apiFetch<ComentarioResponse[]>(
+    `/chamados/${chamadoId}/comentarios${buildQueryString({ perfilUsuario })}`,
+  )
 }
 
 export function comentar(chamadoId: string, dados: ComentarChamadoRequest): Promise<void> {
@@ -85,14 +88,55 @@ export function atribuirChamado(chamadoId: string, dados: AtribuirRequest): Prom
   })
 }
 
-export function resolverChamado(chamadoId: string): Promise<void> {
-  return apiFetch<void>(`/chamados/${chamadoId}/resolver`, { method: 'PATCH' })
+export interface AtorRequest {
+  usuarioId: string
+  usuarioNome: string
 }
 
-export function fecharChamado(chamadoId: string): Promise<void> {
-  return apiFetch<void>(`/chamados/${chamadoId}/fechar`, { method: 'PATCH' })
+export function resolverChamado(chamadoId: string, ator: AtorRequest): Promise<void> {
+  return apiFetch<void>(`/chamados/${chamadoId}/resolver`, {
+    method: 'PATCH',
+    body: JSON.stringify(ator),
+  })
 }
 
-export function cancelarChamado(chamadoId: string): Promise<void> {
-  return apiFetch<void>(`/chamados/${chamadoId}/cancelar`, { method: 'PATCH' })
+export function fecharChamado(chamadoId: string, ator: AtorRequest): Promise<void> {
+  return apiFetch<void>(`/chamados/${chamadoId}/fechar`, {
+    method: 'PATCH',
+    body: JSON.stringify(ator),
+  })
+}
+
+export function cancelarChamado(chamadoId: string, ator: AtorRequest): Promise<void> {
+  return apiFetch<void>(`/chamados/${chamadoId}/cancelar`, {
+    method: 'PATCH',
+    body: JSON.stringify(ator),
+  })
+}
+
+export interface ReatribuirRequest {
+  novoResponsavelId: string
+  novoResponsavelNome: string
+}
+
+export function reatribuirChamado(chamadoId: string, dados: ReatribuirRequest, ator: AtorRequest): Promise<void> {
+  return apiFetch<void>(`/chamados/${chamadoId}/reatribuir`, {
+    method: 'PATCH',
+    body: JSON.stringify({ ...dados, ...ator }),
+  })
+}
+
+export function alterarPrioridade(
+  chamadoId: string,
+  novaPrioridade: PrioridadeChamado,
+  ator: AtorRequest,
+): Promise<void> {
+  return apiFetch<void>(`/chamados/${chamadoId}/prioridade`, {
+    method: 'PATCH',
+    body: JSON.stringify({ novaPrioridade, ...ator }),
+  })
+}
+
+export function listarHistorico(chamadoId: string): Promise<HistoricoResponse[]> {
+  return apiFetch<HistoricoResponse[]>(`/chamados/${chamadoId}/historico`)
 }

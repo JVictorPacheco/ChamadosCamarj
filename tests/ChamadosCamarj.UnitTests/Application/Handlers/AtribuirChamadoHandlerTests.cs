@@ -12,12 +12,13 @@ namespace ChamadosCamarj.UnitTests.Application.Handlers;
 public class AtribuirChamadoHandlerTests
 {
     private readonly Mock<IChamadoRepository> _repositoryMock = new();
+    private readonly Mock<IHistoricoRepository> _historicoRepositoryMock = new();
     private readonly Mock<IPublisher> _publisherMock = new();
     private readonly AtribuirChamadoCommandHandler _handler;
 
     public AtribuirChamadoHandlerTests()
     {
-        _handler = new AtribuirChamadoCommandHandler(_repositoryMock.Object, _publisherMock.Object);
+        _handler = new AtribuirChamadoCommandHandler(_repositoryMock.Object, _historicoRepositoryMock.Object, _publisherMock.Object);
     }
 
     [Fact]

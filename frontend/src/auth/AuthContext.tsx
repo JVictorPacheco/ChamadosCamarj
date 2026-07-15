@@ -15,6 +15,10 @@ const PERFIS: Record<TipoPerfil, Perfil> = {
   Solicitante: { tipo: 'Solicitante', id: 'a3000000-0000-0000-0000-000000000003', nome: 'Ana Colaboradora', email: 'ana.colaboradora@camarj.com.br' },
 }
 
+// Fonte única dos atendentes mockados (até o mapeamento conta→perfil real da Fase 6/T09).
+// Reatribuição usa essa lista em vez de uma tabela de usuários, que ainda não existe.
+export const ATENDENTES: Perfil[] = [PERFIS.Admin, PERFIS.Atendente]
+
 const STORAGE_KEY = 'chamados-camarj:perfil'
 
 interface AuthContextValue {

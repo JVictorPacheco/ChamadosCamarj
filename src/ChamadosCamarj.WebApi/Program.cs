@@ -49,6 +49,7 @@ builder.Services.AddValidatorsFromAssembly(Assembly.Load("ChamadosCamarj.Applica
 // ─────────────────────────────
 builder.Services.AddScoped<IChamadoRepository, ChamadoRepository>();
 builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
+builder.Services.AddScoped<IHistoricoRepository, HistoricoRepository>();
 
 // ─────────────────────────────
 // OpenAPI (nativo .NET 10)
