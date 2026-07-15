@@ -13,7 +13,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { useAuth } from '@/auth/AuthContext'
-import { Kanban, LayoutDashboard, Inbox } from 'lucide-react'
+import { Kanban, LayoutDashboard, Inbox, FileBarChart } from 'lucide-react'
 
 export function AppLayout() {
   const { perfil, logout } = useAuth()
@@ -71,6 +71,17 @@ export function AppLayout() {
                     <Link to="/atendimento/fila">
                       <Inbox className="h-4 w-4" />
                       Fila
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={location.pathname === '/atendimento/relatorio-mensal'}
+                  >
+                    <Link to="/atendimento/relatorio-mensal">
+                      <FileBarChart className="h-4 w-4" />
+                      Relatório Mensal
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

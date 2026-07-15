@@ -129,3 +129,29 @@
     @apply font-sans;
     }
 }
+
+@media print {
+  [data-slot="sidebar"],
+  [data-slot="sidebar-rail"],
+  [data-slot="sidebar-gap"],
+  .print\:hidden {
+    display: none !important;
+  }
+
+  [data-slot="sidebar-inset"] {
+    margin: 0 !important;
+    width: 100% !important;
+  }
+
+  body,
+  #relatorio-mensal-conteudo {
+    background: white !important;
+    color: black !important;
+  }
+
+  #relatorio-mensal-conteudo * {
+    color: black !important;
+    border-color: #d1d5db !important;
+    background: white !important;
+  }
+}
