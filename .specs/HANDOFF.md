@@ -1,18 +1,17 @@
 # Handoff
 
 **Date:** 2026-07-15
-**Feature:** Fase 7 — Relatório Mensal (concluída) + retrabalho do Dashboard
-**Task:** Fase 7 100% completa e verificada. Próximo: retomar T09/T15 (Google auth) da Fase 6.
+**Feature:** Fase 6 (Admin/Log) + Fase 7 (Relatório Mensal) — ambas concluídas e MERGEADAS em `develop`
+**Task:** Nada pendente de merge. Próximo: iniciar T09/T15 (login Google Workspace real).
 
 ## Completed ✓
 
-- **Relatório Mensal (Fase 7) completo**: spec → design → tasks → execute (`.specs/features/relatorio-mensal/`). Backend (`GET /api/relatorios/mensal`, agregação via `HistoricoEntrada`, SLA, comparação com mês anterior) + frontend (página com seletor de mês, KPIs, rosca de SLA, quebra por categoria/atendente, exportação CSV/PDF).
-- **Dashboard retrabalhado**: gráfico de Tendência (linha) virou rosca "Distribuição por situação" (Aguardando/Assumido/Resolvido/Encerrado/Cancelado — situação atual, não período). KPIs simplificados. Distinção Resolvido vs Encerrado adicionada (antes só existia Resolvido).
-- **Bug corrigido**: `ObterTendenciaAsync` contava "resolvidos" pela data de criação do chamado, não de resolução.
-- **RBAC corrigido**: Relatório Mensal bloqueia de verdade o Solicitante (não só esconde o link, como o resto do app faz) — expõe dado mais sensível (desempenho por atendente) que justificou o tratamento diferente.
-- Verificado via Playwright ad-hoc (scripts temporários, removidos): números batendo em 2 meses (julho com dados, junho vazio), RBAC dos 3 perfis, CSV exportado com conteúdo correto.
-- 109 testes unitários de backend passando. `npm run build` e `dotnet build` limpos.
-- 9 commits nesta sessão, todos pushados em `feature/fase-6-admin-log` (branch segue com nome da Fase 6 por não ter sido renomeada, mas já contém Fase 6 completa T01-T14 + Fase 7 completa).
+- **PR #13 mergeado em `develop`** (2026-07-15T03:05Z) — "Feature/fase 6 admin log". Contém:
+  - Fase 6 completa: T01-T14 (Reatribuir, Histórico/auditoria, Alterar Prioridade, Comentário interno), com correção de bugs (filtro de comentário interno, migration incompleta, histórico gravando "Sistema" fixo)
+  - Fase 7 completa: Relatório Mensal (backend + frontend + exportação CSV/PDF + RBAC)
+  - Retrabalho do Dashboard: rosca "Distribuição por situação" no lugar do gráfico de Tendência, KPIs simplificados, distinção Resolvido vs Encerrado, bug de data corrigido (`ObterTendenciaAsync` contava resolvidos pela data errada)
+- 109 testes unitários de backend passando. `npm run build` e `dotnet build` limpos. Verificado manualmente/via Playwright ad-hoc nos 3 perfis (Admin/Atendente/Solicitante).
+- Toda a documentação (`STATE.md`, `ROADMAP.md`, specs de `relatorio-mensal/`) atualizada e commitada.
 
 ## In Progress
 
@@ -20,19 +19,22 @@ Nada em execução.
 
 ## Pending
 
-1. Retomar T09/T15 (login Google Workspace real) — próxima prioridade.
-2. Quando T09 entrar: trocar `UsuarioId`/`UsuarioNome` (hoje client-supplied) por claims do JWT no backend.
-3. Criar PR de `feature/fase-6-admin-log` → `develop`.
+1. **T09** — Login real via Google Workspace: endpoint `POST /auth/google`, JWT, tabela `UsuarioPerfil` (mapeamento conta→perfil). Ver spec em `.specs/features/fase-6-admin-log/spec.md`.
+2. **T15** — Frontend: substituir `ProfileSelector`/`AuthContext` mockado pelo fluxo OAuth real. Depende de T09.
+3. Quando T09 entrar: trocar `UsuarioId`/`UsuarioNome` (hoje enviados pelo cliente nos commands de Reatribuir/AlterarPrioridade/Resolver/Fechar/Cancelar) por extração via claims do JWT no backend — está documentado como pendência técnica no `STATE.md`.
 4. "Forçar encerramento" (Admin fechar/cancelar fora do fluxo normal) — item da spec da Fase 6 ainda não abordado.
-5. Considerar se Dashboard/Kanban/Fila (soft-RBAC, só escondem o link) precisam do mesmo bloqueio real que o Relatório Mensal recebeu, ou se ficam assim até o T09 trazer auth de verdade.
+5. Revisar se Dashboard/Kanban/Fila (soft-RBAC — só escondem o link da sidebar, sem bloqueio de rota) precisam do mesmo bloqueio real que o Relatório Mensal recebeu nesta sessão, ou se ficam assim até T09 trazer autenticação de verdade.
+6. Fase 4 (Email/Storage) segue sem data — só entra se for repriorizada.
 
 ## Blockers
 
 Nenhum.
 
-## Context
+## Context — MUITO IMPORTANTE PRA RETOMAR
 
-- Branch local atual: `feature/fase-6-admin-log`, todos os commits pushados.
-- API e frontend rodando em background (porta 5000 e 5173) — confirmar se ainda estão de pé antes de continuar, ou reiniciar.
-- Banco: Postgres local via Docker (`chamados-postgres`), não o Supabase compartilhado dev/prod das decisões antigas.
-- Decisões-chave em `.specs/project/STATE.md` (Decisões + Aprendizados, entradas de 2026-07-14/15) e `.specs/features/relatorio-mensal/` (spec/design/tasks completos, úteis se for expandir o relatório no futuro).
+- **A branch local pode estar em `feature/fase-6-admin-log` — essa branch JÁ FOI MERGEADA e não deve mais ser usada.** Ao retomar: `cd /Users/joaopacheco/ChamadosCamarj && git checkout develop && git pull`. Todo o trabalho descrito acima já está na `develop`.
+- API e frontend rodando em background numa sessão anterior foram encerrados — reiniciar se for testar (`dotnet run --project src/ChamadosCamarj.WebApi`, `npm run dev` dentro de `frontend/`).
+- Banco: Postgres local via Docker (`chamados-postgres`, `docker-compose.yml` na raiz) — não o Supabase compartilhado dev/prod mencionado em decisões mais antigas.
+- Push/PR precisam ser feitos manualmente pelo usuário no terminal real dele — o ambiente do Claude Code não tem credenciais do GitHub configuradas (`git push` sempre falha aqui, mesmo com a branch trackeada corretamente).
+- Decisões e aprendizados completos em `.specs/project/STATE.md` (seções Decisões e Aprendizados — muita coisa relevante registrada lá, ler antes de mexer em auditoria/histórico, RBAC ou métricas de dashboard/relatório).
+- Spec/design/tasks completos do Relatório Mensal em `.specs/features/relatorio-mensal/` — úteis de referência se a Fase 7 for expandida (período livre, SLA em tempo real, etc.)
