@@ -58,6 +58,7 @@ public class HistoricoRepository : IHistoricoRepository
                 c.Categoria != null ? c.Categoria.Nome : "Sem categoria",
                 c.ResponsavelId,
                 c.ResponsavelNome,
+                c.DataCriacao,
                 c.DataConclusao,
                 c.DataLimite
             )

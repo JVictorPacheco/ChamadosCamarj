@@ -10,6 +10,7 @@ public record EventoRelatorioItem(
     string CategoriaNome,
     Guid? ResponsavelId,
     string? ResponsavelNome,
+    DateTime DataCriacao,
     DateTime? DataConclusao,
     DateTime? DataLimite
 );
