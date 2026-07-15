@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/auth/AuthContext'
@@ -21,12 +22,26 @@ export function RelatorioMensalPage() {
   const [ano, setAno] = useState(agora.getFullYear())
   const [mes, setMes] = useState(agora.getMonth() + 1)
 
+  const isSolicitante = perfil?.tipo === 'Solicitante'
   const responsavelId = perfil?.tipo === 'Atendente' ? perfil.id : undefined
-  const { data: relatorio, isPending, isError } = useRelatorioMensal(ano, mes, responsavelId)
+  const { data: relatorio, isPending, isError } = useRelatorioMensal(ano, mes, responsavelId, !isSolicitante)
 
   const totalGeral = relatorio
     ? relatorio.totalAbertos + relatorio.totalResolvidos + relatorio.totalCancelados
     : 0
+
+  if (isSolicitante) {
+    return (
+      <div className="flex flex-col items-center gap-3 p-8 text-center">
+        <Alert variant="destructive" className="max-w-md">
+          <AlertDescription>Este relatório não está disponível para o seu perfil.</AlertDescription>
+        </Alert>
+        <Button asChild variant="outline">
+          <Link to="/chamados">Voltar para a lista</Link>
+        </Button>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col gap-4 p-4">
