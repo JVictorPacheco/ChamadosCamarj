@@ -75,7 +75,7 @@
 ### 🔐 Fase 6 — Admin Completo + Log + Google Workspace (PAUSADA em T09)
 
 > ⚠️ **Corrigido em 2026-06-25:** Camarj usa **Google Workspace** (Gmail corporativo), não Azure AD.
-> **Pausada em 2026-07-14** a pedido do usuário — Fase 7 (Relatório Mensal) antecipada por ter prazo real (fechamento mensal pra superintendência). Trabalho feito em `feature/fase-6-admin-log` (ainda não mergeada em `develop`, commits pushados). T01-T08 (backend) e T10-T14 (frontend) concluídos e verificados via Playwright em 2026-07-14.
+> **Pausada em 2026-07-14** a pedido do usuário — Fase 7 (Relatório Mensal) antecipada por ter prazo real (fechamento mensal pra superintendência). Trabalho feito em `feature/fase-6-admin-log`, **mergeado em `develop` via PR #13 em 2026-07-15**. T01-T08 (backend) e T10-T14 (frontend) concluídos e verificados via Playwright.
 
 **Backend — completo:**
 - [x] **Log de histórico** — entidade `HistoricoEntrada` + `IHistoricoRepository`, ver [[📋 Histórico de Chamados]]
@@ -109,4 +109,4 @@
 
 ---
 
-> **Progresso atual:** ✅ Fases 0-3 e 5 concluídas, ✅ Fase 7 (Relatório Mensal) concluída, 🔐 Fase 6 quase completa (só falta T09/T15 — login Google real). Próximo passo: retomar T09/T15 e abrir PR de `feature/fase-6-admin-log` → `develop`.
+> **Progresso atual:** ✅ Fases 0-3 e 5 concluídas, ✅ Fase 7 (Relatório Mensal) concluída, 🔐 Fase 6 quase completa (só falta T09/T15 — login Google real). ✅ PR #13 mergeado em `develop` (2026-07-15). Próximo passo: retomar T09/T15.

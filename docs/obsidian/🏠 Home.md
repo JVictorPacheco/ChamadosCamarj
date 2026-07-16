@@ -39,7 +39,8 @@ Sistema interno para **gestão de chamados corporativos** da CAMARJ. Colaborador
 - ✅ **Fase 5 concluída** — Kanban, Dashboard, SignalR, Fila de Atendimento, Ações de Atendente (Assumir/Resolver/Fechar/Cancelar). Dashboard retrabalhado em 2026-07-14/15 (ver abaixo)
 - 🔐 **Fase 6 quase completa** — Reatribuição Admin, Log de Histórico, Alterar Prioridade e Comentários Internos implementados e verificados (T01-T14). Falta só o login Google real (T09/T15), pausado a pedido do usuário para dar lugar à Fase 7
 - ✅ **Fase 7 concluída (antecipada)** — Relatório Mensal: seletor de mês, KPIs com variação vs. mês anterior, rosca de SLA, quebra por categoria/atendente, exportação CSV/PDF
-- ⏭️ **Próximo:** retomar T09/T15 (login Google Workspace real) e abrir PR de `feature/fase-6-admin-log` → `develop`
+- ✅ **PR #13 mergeado em `develop`** (2026-07-15) — Fase 6 (T01-T14) + Fase 7 completas
+- ⏭️ **Próximo:** retomar T09/T15 (login Google Workspace real)
 
 ### Features implementadas na Fase 5 (e retrabalho de 2026-07-14/15)
 - Kanban com drag & drop (dnd-kit) entre status
@@ -58,4 +59,4 @@ Sistema interno para **gestão de chamados corporativos** da CAMARJ. Colaborador
 
 ---
 
-> *Última atualização: 2026-07-15 — Fase 6 quase completa (falta login Google real), Fase 7 (Relatório Mensal) concluída. Ver [[🗺️ Roadmap]] para detalhes.*
+> *Última atualização: 2026-07-15 — PR #13 mergeado em `develop` (Fase 6 quase completa, falta login Google real; Fase 7 Relatório Mensal concluída). Ver [[🗺️ Roadmap]] para detalhes.*

@@ -19,12 +19,13 @@ Nada em execução.
 
 ## Pending
 
-1. **T09** — Login real via Google Workspace: endpoint `POST /auth/google`, JWT, tabela `UsuarioPerfil` (mapeamento conta→perfil). Ver spec em `.specs/features/fase-6-admin-log/spec.md`.
-2. **T15** — Frontend: substituir `ProfileSelector`/`AuthContext` mockado pelo fluxo OAuth real. Depende de T09.
-3. Quando T09 entrar: trocar `UsuarioId`/`UsuarioNome` (hoje enviados pelo cliente nos commands de Reatribuir/AlterarPrioridade/Resolver/Fechar/Cancelar) por extração via claims do JWT no backend — está documentado como pendência técnica no `STATE.md`.
-4. "Forçar encerramento" (Admin fechar/cancelar fora do fluxo normal) — item da spec da Fase 6 ainda não abordado.
-5. Revisar se Dashboard/Kanban/Fila (soft-RBAC — só escondem o link da sidebar, sem bloqueio de rota) precisam do mesmo bloqueio real que o Relatório Mensal recebeu nesta sessão, ou se ficam assim até T09 trazer autenticação de verdade.
-6. Fase 4 (Email/Storage) segue sem data — só entra se for repriorizada.
+1. **⚠️ Reconectar ao Supabase** — o `user-secrets` local ficou temporariamente apontando pro Postgres local (Docker) durante a sessão de 2026-07-14/15. Confirmado com o usuário: era só temporário. Restaurar a connection string do Supabase (ver README) antes de continuar — e se der erro de "pending model changes" no restart da API, aplicar o mesmo tratamento de migration que foi feito no banco local (ver `STATE.md` → Aprendizados). Depois de reconectar, o ideal é reverificar rapidamente que Reatribuir/Histórico/Relatório Mensal continuam batendo com dados reais do Supabase.
+2. **T09** — Login real via Google Workspace: endpoint `POST /auth/google`, JWT, tabela `UsuarioPerfil` (mapeamento conta→perfil). Ver spec em `.specs/features/fase-6-admin-log/spec.md`.
+3. **T15** — Frontend: substituir `ProfileSelector`/`AuthContext` mockado pelo fluxo OAuth real. Depende de T09.
+4. Quando T09 entrar: trocar `UsuarioId`/`UsuarioNome` (hoje enviados pelo cliente nos commands de Reatribuir/AlterarPrioridade/Resolver/Fechar/Cancelar) por extração via claims do JWT no backend — está documentado como pendência técnica no `STATE.md`.
+5. "Forçar encerramento" (Admin fechar/cancelar fora do fluxo normal) — item da spec da Fase 6 ainda não abordado.
+6. Revisar se Dashboard/Kanban/Fila (soft-RBAC — só escondem o link da sidebar, sem bloqueio de rota) precisam do mesmo bloqueio real que o Relatório Mensal recebeu nesta sessão, ou se ficam assim até T09 trazer autenticação de verdade.
+7. Fase 4 (Email/Storage) segue sem data — só entra se for repriorizada.
 
 ## Blockers
 
@@ -34,7 +35,7 @@ Nenhum.
 
 - **A branch local pode estar em `feature/fase-6-admin-log` — essa branch JÁ FOI MERGEADA e não deve mais ser usada.** Ao retomar: `cd /Users/joaopacheco/ChamadosCamarj && git checkout develop && git pull`. Todo o trabalho descrito acima já está na `develop`.
 - API e frontend rodando em background numa sessão anterior foram encerrados — reiniciar se for testar (`dotnet run --project src/ChamadosCamarj.WebApi`, `npm run dev` dentro de `frontend/`).
-- Banco: Postgres local via Docker (`chamados-postgres`, `docker-compose.yml` na raiz) — não o Supabase compartilhado dev/prod mencionado em decisões mais antigas.
+- **Banco: `user-secrets` local está temporariamente no Postgres local via Docker (`chamados-postgres`), não no Supabase.** Isso foi confirmado com o usuário como temporário (pendência #1 acima) — reconectar ao Supabase é prioridade antes de qualquer outra coisa.
 - Push/PR precisam ser feitos manualmente pelo usuário no terminal real dele — o ambiente do Claude Code não tem credenciais do GitHub configuradas (`git push` sempre falha aqui, mesmo com a branch trackeada corretamente).
 - Decisões e aprendizados completos em `.specs/project/STATE.md` (seções Decisões e Aprendizados — muita coisa relevante registrada lá, ler antes de mexer em auditoria/histórico, RBAC ou métricas de dashboard/relatório).
 - Spec/design/tasks completos do Relatório Mensal em `.specs/features/relatorio-mensal/` — úteis de referência se a Fase 7 for expandida (período livre, SLA em tempo real, etc.)
