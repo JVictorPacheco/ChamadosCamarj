@@ -1,10 +1,12 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-07-15
+> Atualizado em: 2026-07-16
 
 ---
 
 ## 📍 Onde estamos
+
+**Sessão de 2026-07-16:** usuário testou a aplicação localmente pela primeira vez contra o Supabase real (reconectado com sucesso, ver Aprendizados sobre o bug do reset de senha). Aprovou o resultado da Fase 6/7 e pediu duas coisas: (1) uma tela nova pra chamados finalizados, sem apagar dados — spec criada em `.specs/features/arquivo-de-chamados/spec.md`, ainda **não implementada**; (2) revisão de dev sênior nas visualizações de Dashboard/Relatório Mensal — 4 melhorias **já implementadas e testadas** (tokens de cor do tema, labels diretos na rosca, cor de sinal na variação %, correção de um bug de cor cinza-puro no tema claro). Detalhes completos em `.specs/HANDOFF.md`. **Falta comitar e pushar essas mudanças de frontend.**
 
 **Fase 5 concluída** — Kanban + Dashboard + SignalR + Fila de Atendimento + Ações de Atendente. Mergeada em `develop`/`main` (2026-06-30). Dashboard bastante retrabalhado nesta sessão (ver abaixo).
 
@@ -50,6 +52,8 @@
 | Reatribuição Admin | Admin pode mover chamado entre atendentes mesmo em `EmAndamento` via endpoint `/reatribuir` separado do `/atribuir` — planejado para Fase 6 |
 | Ordem Fase 6 vs Fase 7 | Fase 7 (Relatório Mensal) antecipada na frente de T09/T15 (Google auth) — decisão de 2026-07-14, motivada por prazo real de fechamento mensal pra superintendência |
 | Relatório mensal | É um documento de período fechado (mês), não uma view "semanal" do dashboard operacional — dashboard fica com números em tempo real, relatório é outra tela/exportação (Fase 7) |
+| Chamados finalizados nunca são apagados | Pedido do usuário era "remover" chamados Resolvidos/Cancelados da vista — decidido que a solução é uma tela separada de leitura filtrada (`.specs/features/arquivo-de-chamados/`), não exclusão. Apagar quebraria `HistoricoEntrada` e os números já fechados do Relatório Mensal | 2026-07-16 |
+| Cores de gráfico usam tokens do tema | `DonutChart`/`CategoriaChart` passaram a usar `var(--chart-1..5)` e `var(--status-good/critical)` (definidos em `frontend/src/index.css`) em vez de hex fixo por chamada — validado com a skill `dataviz` (`validate_palette.js`) contra as superfícies reais do app (branco no claro, `#0f1c1a` no escuro) | 2026-07-16 |
 
 ---
 
@@ -65,20 +69,24 @@ Nenhum.
 |-----------|---------|
 | Hospedagem em produção | Onde a API vai rodar (VM, Docker, Azure App Service etc.) e como a connection string será injetada |
 | Fase 4 | Email + Storage ainda não implementados — aguardando priorização |
-| **⚠️ Reconectar ao Supabase e revalidar Fase 6/Fase 7** | Durante a sessão de 2026-07-14/15, o `user-secrets` local ficou temporariamente apontando pro Postgres local (Docker, `chamados-postgres`) em vez do Supabase — toda a verificação de Reatribuir/Histórico/Alterar Prioridade/Comentário Interno/Relatório Mensal rodou contra o banco local. Confirmado com o usuário: era só temporário, Supabase continua sendo o banco real. **Antes de considerar essas features validadas em definitivo:** restaurar `dotnet user-secrets set "ConnectionStrings:DefaultConnection" "..."` com a connection string do Supabase (ver README) e rodar a API — se aparecer erro de "pending model changes" no startup, é sinal de que a migration `AddHistoricoEntrada` precisa do mesmo tratamento que recebeu no banco local (ver Aprendizados: migration incompleta/tabela já existente sem registro em `__EFMigrationsHistory`) |
+| **Commitar/pushar mudanças de dataviz** | 6 arquivos de frontend alterados em 2026-07-16 (ver `.specs/HANDOFF.md`) ainda não commitados/pushados pra `develop` |
+| **Implementar spec `arquivo-de-chamados`** | Spec pronta (`.specs/features/arquivo-de-chamados/spec.md`), falta Design → Tasks → Execute |
 
 ---
 
 ## 📋 TODOs (ordenados por prioridade)
 
-1. Ao retomar: `git checkout develop && git pull` (a branch de feature já foi mergeada, não usar mais)
+1. Commitar e pushar as mudanças de dataviz de 2026-07-16 pra `develop`
 2. Retomar T09/T15 (Google Workspace auth)
 3. Quando T09 entrar: trocar `UsuarioId`/`UsuarioNome` (hoje enviados pelo cliente, aceitáveis só por não haver auth real) por extração via claims do JWT no backend
 4. "Forçar encerramento" (Admin fechar/cancelar fora do fluxo normal) — item da spec da Fase 6 ainda não abordado
 5. Revisar se as outras telas com soft-RBAC (Dashboard/Kanban/Fila — só escondem o link, sem bloqueio de rota) precisam do mesmo tratamento que o Relatório Mensal recebeu, ou se ficam assim até o login real (T09) trazer autenticação de verdade
+6. Implementar `arquivo-de-chamados` (Design → Tasks → Execute) a partir da spec já pronta
 
 ## ✅ Concluído recentemente
 
+- **Melhorias de visualização de dados no Dashboard e Relatório Mensal** (2026-07-16): cores de gráfico migradas pra tokens do tema (`--chart-1..5`, `--status-good/critical`), bug de cor cinza-puro corrigido no modo claro, labels diretos nas fatias da rosca (resolve ilegibilidade no PDF exportado), cor de sinal na variação % do Relatório Mensal. Detalhes técnicos completos em `.specs/HANDOFF.md`
+- **Spec criada:** `.specs/features/arquivo-de-chamados/spec.md` — tela de chamados finalizados com filtro por período/prioridade, sem exclusão de dados (2026-07-16)
 - **PR #13 mergeado em `develop`** (2026-07-15T03:05Z) — Fase 6 completa (T01-T14) + Fase 7 (Relatório Mensal) inteira, 42 commits
 - Fase 7 (Relatório Mensal) completa: backend (endpoint + agregação via HistoricoEntrada + SLA + comparação mês anterior) e frontend (página + exportação CSV/PDF), RBAC com bloqueio real pro Solicitante — 2026-07-14/15
 - Dashboard: rosca "Distribuição por situação" substitui gráfico de Tendência; KPIs simplificados; distinção Resolvido vs Encerrado — 2026-07-14/15
@@ -132,3 +140,5 @@ Nenhum.
 - RBAC de UI neste projeto é "soft" por padrão (só esconde o link da sidebar, não bloqueia a rota) — aceitável pra telas com dado já visível em outro lugar (Dashboard, Kanban), mas uma tela nova que expõe dado mais sensível (ex: desempenho individual por atendente no Relatório Mensal) pode precisar de bloqueio de verdade (redirect/alerta), mesmo destoando do padrão das telas mais antigas — avaliar caso a caso, não copiar o padrão automaticamente
 - EF Core: dá pra fazer `JOIN` direto em LINQ (`from x in a join y in b on x.FkId equals y.Id select ...`) contra outro `DbSet` do mesmo `DbContext` sem precisar de navigation property configurada na entidade — útil quando a entidade (ex: `HistoricoEntrada`) foi desenhada sem relacionamento de navegação pro que ela referencia
 - Sempre conferir `dotnet user-secrets list` no início de uma sessão antes de rodar/testar a API — o `user-secrets` local pode estar apontando pro banco errado (ex: Postgres local via Docker em vez do Supabase real) por causa de troubleshooting de uma sessão anterior, e isso não aparece em lugar nenhum do código/git (user-secrets não é versionado). Toda "verificação com dados reais" feita nessas condições precisa ser refeita contra o banco real antes de dar como definitiva
+- **Reset de senha do Supabase:** no dashboard, o campo que mostra uma senha "gerada" não a aplica de verdade até o botão de confirmar/reset ser clicado — copiar a sugestão sem confirmar deixa a senha antiga válida, e a conexão falha com `28P01: password authentication failed` mesmo com a senha "certa". Pra isolar esse tipo de problema rápido: testar a connection string fora do `dotnet run` (ex: script `.cs` de arquivo único com `#:package Npgsql@...`) e comparar o erro com um projeto/usuário propositalmente inválido — `tenant/user not found` confirma que a connection string está certa e sobrou só a senha; `password authentication failed` com o projeto certo confirma que é mesmo a senha
+- Recharts v3 (`Pie` com `label` customizado): os labels só aparecem depois que a animação de entrada termina (`showLabels: !isAnimating` no código-fonte) — num teste automatizado ou num print disparado cedo demais, os labels simplesmente não existem no DOM ainda. Setar `isAnimationActive={false}` na `Pie` quando o gráfico precisa ter os valores sempre visíveis (ex: relatório exportável em PDF) resolve de forma determinística, em vez de torcer pro timing dar certo

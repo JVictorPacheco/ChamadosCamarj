@@ -1,6 +1,6 @@
 # Roadmap — ChamadosCamarj
 
-> Última atualização: 2026-07-14
+> Última atualização: 2026-07-16
 
 ## ✅ Fase 0 — Setup
 
@@ -125,3 +125,15 @@
 - [ ] SLA tracking com alertas de vencimento (tempo real — diferente do relatório, que é histórico)
 - [ ] Exportação CSV/PDF
 - [ ] Dashboard de carga por atendente
+
+**Retrabalho de visualização de dados (2026-07-16):** Dashboard e Relatório Mensal revisados como um review de dev sênior — cores de gráfico migradas de hex fixo pra tokens do tema (`--chart-1..5`, `--status-good/critical` em `frontend/src/index.css`, validados com a skill `dataviz`), bug de cor cinza-puro corrigido no tema claro, labels diretos nas fatias da rosca (o hover não existe no PDF exportado), cor de sinal (verde/vermelho) na variação % do Relatório Mensal. Detalhes em `.specs/HANDOFF.md`.
+
+## 🗄️ Fase 8 — Arquivo de Chamados (SPEC PRONTA — não iniciada)
+
+> Pedido pelo usuário em 2026-07-16 ao testar a aplicação: chamados finalizados (Resolvido/Fechado/Cancelado) misturados com os ativos nas telas do dia a dia. Decisão explícita: **nunca apagar chamados** (quebraria `HistoricoEntrada`/Relatório Mensal) — solução é uma tela separada de leitura filtrada. Spec completa em `.specs/features/arquivo-de-chamados/spec.md`.
+
+- [ ] Listar só chamados finalizados, paginado, reaproveitando `GET /api/chamados`
+- [ ] Filtro por período (`DataCriacao`)
+- [ ] Filtro por prioridade (backend já suporta, falta UI)
+- [ ] Filtro por status/categoria/busca (reaproveitar `FiltroChamados.tsx`)
+- [ ] RBAC igual ao padrão de "Meus Chamados" (Admin=todos, Atendente=responsavelId, Solicitante=solicitanteEmail)
