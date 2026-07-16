@@ -16,6 +16,18 @@ function formatarVariacao(percentual: number | null): string | undefined {
   return `${sinal}${percentual}% vs mês anterior`
 }
 
+// Só metrificamos tom quando a direção é inequívoca. "Abertos" subir não é
+// claramente bom nem ruim (pode só ser mais demanda) — fica sem tom.
+function tomVariacaoResolvidos(percentual: number | null): 'bom' | undefined {
+  if (percentual === null || percentual <= 0) return undefined
+  return 'bom'
+}
+
+function tomVariacaoCancelados(percentual: number | null): 'bom' | 'ruim' | undefined {
+  if (percentual === null || percentual === 0) return undefined
+  return percentual > 0 ? 'ruim' : 'bom'
+}
+
 export function RelatorioMensalPage() {
   const { perfil } = useAuth()
   const agora = new Date()
@@ -93,11 +105,13 @@ export function RelatorioMensalPage() {
               titulo="Resolvidos"
               valor={relatorio.totalResolvidos}
               subtexto={formatarVariacao(relatorio.comparacao?.variacaoResolvidosPercentual ?? null)}
+              subtextoTom={tomVariacaoResolvidos(relatorio.comparacao?.variacaoResolvidosPercentual ?? null)}
             />
             <DashboardKpi
               titulo="Cancelados"
               valor={relatorio.totalCancelados}
               subtexto={formatarVariacao(relatorio.comparacao?.variacaoCanceladosPercentual ?? null)}
+              subtextoTom={tomVariacaoCancelados(relatorio.comparacao?.variacaoCanceladosPercentual ?? null)}
             />
             <DashboardKpi
               titulo="Tempo Médio"
@@ -111,8 +125,8 @@ export function RelatorioMensalPage() {
             {relatorio.sla.totalComPrazo > 0 ? (
               <DonutChart
                 data={[
-                  { label: 'Dentro do prazo', value: relatorio.sla.dentroDoPrazo, color: '#22c55e' },
-                  { label: 'Estourado', value: relatorio.sla.estourados, color: '#ef4444' },
+                  { label: 'Dentro do prazo', value: relatorio.sla.dentroDoPrazo, color: 'var(--status-good)' },
+                  { label: 'Estourado', value: relatorio.sla.estourados, color: 'var(--status-critical)' },
                 ]}
               />
             ) : (

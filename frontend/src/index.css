@@ -67,11 +67,14 @@
     --border: oklch(0.922 0 0);
     --input: oklch(0.922 0 0);
     --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
+    /* Paleta categórica validada (dataviz skill, node scripts/validate_palette.js — ALL CHECKS PASS contra superfície #ffffff) */
+    --chart-1: #2a78d6;
+    --chart-2: #1baf7a;
+    --chart-3: #eda100;
+    --chart-4: #008300;
+    --chart-5: #4a3aa7;
+    --status-good: #0ca30c;
+    --status-critical: #d03b3b;
     --radius: 0.625rem;
     --sidebar: oklch(0.985 0 0);
     --sidebar-foreground: oklch(0.145 0 0);
@@ -108,6 +111,8 @@
     --chart-3: #fb923c;
     --chart-4: #a78bfa;
     --chart-5: #34d399;
+    --status-good: #0ca30c;
+    --status-critical: #d03b3b;
     --sidebar: #0a1413;
     --sidebar-foreground: #8b9c97;
     --sidebar-primary: #5eead4;

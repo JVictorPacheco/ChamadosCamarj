@@ -42,11 +42,11 @@ export function DashboardPage() {
               0 ? (
               <DonutChart
                 data={[
-                  { label: 'Aguardando', value: distribuicao.aguardando, color: '#f59e0b' },
-                  { label: 'Assumido', value: distribuicao.assumido, color: '#3b82f6' },
-                  { label: 'Resolvido', value: distribuicao.resolvido, color: '#22c55e' },
-                  { label: 'Encerrado', value: distribuicao.encerrado, color: '#a855f7' },
-                  { label: 'Cancelado', value: distribuicao.cancelado, color: '#94a3b8' },
+                  { label: 'Aguardando', value: distribuicao.aguardando, color: 'var(--chart-3)' },
+                  { label: 'Assumido', value: distribuicao.assumido, color: 'var(--chart-1)' },
+                  { label: 'Resolvido', value: distribuicao.resolvido, color: 'var(--chart-4)' },
+                  { label: 'Encerrado', value: distribuicao.encerrado, color: 'var(--chart-5)' },
+                  { label: 'Cancelado', value: distribuicao.cancelado, color: 'var(--chart-2)' },
                 ]}
               />
             ) : (
