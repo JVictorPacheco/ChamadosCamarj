@@ -1,8 +1,8 @@
 # Handoff
 
 **Date:** 2026-07-16
-**Feature:** Melhorias de visualização de dados (Dashboard + Relatório Mensal) + spec nova (Arquivo de Chamados) + decisão de arquitetura pro login (F5a/F5b)
-**Task:** Sessão de 2026-07-15 decidiu dividir o login em F5a (mock por e-mail + cadastro de usuários, não implementado ainda) e F5b (Google real). Sessão de 2026-07-16 (ambiente separado) reconectou ao Supabase, aplicou 4 melhorias de dataviz e criou a spec `arquivo-de-chamados`. Ambas já commitadas/pushadas em `develop`. Próximo passo de código: T09a-T09e (F5a).
+**Feature:** F5a implementada e pushada (login mockado por e-mail + cadastro de usuários) + melhorias de dataviz + spec nova (Arquivo de Chamados)
+**Task:** Nada pendente de commit/push — tudo que está descrito abaixo já está em `develop` no remoto. Próximo passo é escolher entre: débito técnico da revisão sênior, `arquivo-de-chamados`, ou documento pra TI (Google OAuth). Nenhum ainda decidido.
 
 ## Completed ✓
 
@@ -16,6 +16,7 @@
   4. **Variação % do Relatório Mensal agora tem cor de sinal** — `DashboardKpi` ganhou prop `subtextoTom?: 'bom' | 'ruim'`. Mais Resolvidos = verde; mais Cancelados = vermelho, menos Cancelados = verde. "Abertos" ficou sem tom.
   - `npm run build`/`npm run lint` limpos. Usuário concordou explicitamente com o diagnóstico e as 4 mudanças antes da implementação.
 - **F5a/F5b especificadas** (sessão 2026-07-15): spec de `fase-6-admin-log` dividida — F5a (login mockado por e-mail + `UsuarioPerfil` + cadastro de usuários pelo Admin) como passo intermediário não descartável, F5b (Google OAuth real) reaproveitando a mesma tabela depois. `design.md` e `tasks.md` (T09a-T09e) criados em `.specs/features/fase-6-admin-log/`.
+- **F5a IMPLEMENTADA, revisada e PUSHADA em `develop`** (sessão seguinte, mesmo dia 2026-07-16): T09a-T09e completas via Execute do skill spec-driven — enum `Perfil`, entidade/tabela `UsuarioPerfil`, `UsuariosController` (4 endpoints), `AuthContext`/`LoginPage` reescritos, tela `Admin > Usuários` com botão de Desativar/Reativar e bloqueio real de RBAC. Usuários de teste: Victor (Admin), Fábio (Atendente), Ana Colaboradora (Solicitante). Antes do commit, uma revisão de code review sênior (backend + frontend, pedida explicitamente pelo usuário) encontrou 19 itens — os 4 de severidade Alta foram corrigidos na hora (reativação de e-mail desativado quebrando com 500; três casos de erro engolido em silêncio no frontend: desativar usuário, assumir chamado na fila, carregar atendentes pra reatribuir). Os outros 15 (Médio/Baixo) foram documentados em `.specs/codebase/CONCERNS.md` (seção "EM ABERTO") — **usuário pediu explicitamente pra não esquecer de tratá-los depois.** Commitado (`76ce0d1` + `a0747a7`, o segundo corrigindo um arquivo esquecido no primeiro) e confirmado pushado pelo usuário no terminal dele.
 
 ## In Progress
 
@@ -23,16 +24,18 @@ Nada em execução.
 
 ## Pending
 
-1. **Implementar a spec `arquivo-de-chamados`** (Design → Tasks → Execute) — está só no estágio de Spec. Ver notas técnicas na própria spec: estender `ListarChamadosQuery.Status` pra aceitar lista (ou um novo parâmetro `Finalizados=true`), e adicionar o filtro de prioridade que já existe no backend mas não no componente `FiltroChamados.tsx` do frontend.
-2. **F5a (T09a-T09e)** — Login mockado por e-mail + cadastro de usuários (Admin). Entidade `UsuarioPerfil`, `UsuariosController` CRUD, tela `Admin > Usuários`, `LoginPage` substitui `ProfileSelector`. Nada implementado ainda — só spec/design/tasks em `.specs/features/fase-6-admin-log/`. **Próximo passo de código relacionado a login.**
-3. **T09 (F5b)** — Login real via Google Workspace: endpoint `POST /auth/google`, JWT. Depende de F5a estar pronta.
-4. **T15** — Frontend: substituir `LoginPage` (F5a) pelo fluxo OAuth real. Depende de T09.
-5. **Documento pra TI** — usuário pediu um texto explicando os pré-requisitos de infra pro Google Workspace OAuth (Client ID, domínio autorizado, redirect URIs, Workspace admin console). Ainda não escrito.
+1. **⚠️ Débito técnico da revisão sênior de 2026-07-16 (15 itens, Médio/Baixo)** — documentados em `.specs/codebase/CONCERNS.md` (seção "EM ABERTO", D-01 a D-15). Destaques: D-01 (Kanban não gera histórico/auditoria), D-02 (nada impede autodesativar o último Admin), D-03 (paginação de chamados sem limite). **O usuário pediu explicitamente pra não esquecer disso** — não tratar como "nice to have" descartável.
+2. **Implementar a spec `arquivo-de-chamados`** (Design → Tasks → Execute) — está só no estágio de Spec. Ver notas técnicas na própria spec: estender `ListarChamadosQuery.Status` pra aceitar lista (ou um novo parâmetro `Finalizados=true`), e adicionar o filtro de prioridade que já existe no backend mas não no componente `FiltroChamados.tsx` do frontend.
+3. **Documento pra TI** — usuário pediu um texto explicando os pré-requisitos de infra pro Google Workspace OAuth (Client ID, domínio autorizado, redirect URIs, Workspace admin console). Ainda não escrito. Pré-requisito pra retomar T09/T15.
+4. **T09 (F5b)** — Login real via Google Workspace: endpoint `POST /auth/google`, JWT. Depende do documento de TI (item 3) pra ter os dados de configuração reais.
+5. **T15** — Frontend: substituir `LoginPage` (F5a, já em produção) pelo fluxo OAuth real. Depende de T09.
 6. Quando T09 (real) entrar: trocar `UsuarioId`/`UsuarioNome` (hoje enviados pelo cliente nos commands de Reatribuir/AlterarPrioridade/Resolver/Fechar/Cancelar) por extração via claims do JWT no backend.
 7. "Forçar encerramento" (Admin fechar/cancelar fora do fluxo normal) — item da spec da Fase 6 ainda não abordado.
-8. Revisar se Dashboard/Kanban/Fila (soft-RBAC) precisam do mesmo bloqueio real que o Relatório Mensal recebeu, ou se ficam assim até T09. A nova tela `Admin > Usuários` (F5a) também precisa dessa decisão no Execute.
+8. Revisar se Dashboard/Kanban/Fila (soft-RBAC) precisam do mesmo bloqueio real que o Relatório Mensal e o `Admin > Usuários` já receberam, ou se ficam assim até T09.
 9. Fase 4 (Email/Storage) segue sem data.
 10. **Menor:** os tokens `--chart-1..5` do modo **escuro** passam em contraste/CVD/chroma no validador de paleta, mas falham no check de "lightness band" (ficam um pouco claros/vibrantes demais pra uma superfície escura). Não é urgente — visualmente aprovado pelo usuário.
+
+**Nenhum destes está priorizado ainda — decisão em aberto do usuário sobre o que vem a seguir.**
 
 ## Blockers
 

@@ -22,7 +22,7 @@ Outros 15 itens (6 Médio + 9 Baixo) **documentados em `.specs/codebase/CONCERNS
 
 **Bloqueio real de RBAC implementado em `/admin/usuarios`** (2026-07-16, mesmo padrão do Relatório Mensal): não-Admin que acessar a rota direto vê alerta de bloqueio + botão "Voltar", não só link escondido na sidebar — pendência do `tasks.md` resolvida.
 
-143 testes de backend passando, `npm run build` limpo nos dois lados. **Pronto para commit.**
+143 testes de backend passando, `npm run build` limpo nos dois lados. **Commitada e pushada em `develop`** (commits `76ce0d1` feat + `a0747a7` fix de um arquivo esquecido no primeiro commit — `UsuarioPerfilConfiguration.cs`). F5a está oficialmente em `develop`.
 
 **Fase 5 concluída** — Kanban + Dashboard + SignalR + Fila de Atendimento + Ações de Atendente. Mergeada em `develop`/`main` (2026-06-30). Dashboard bastante retrabalhado nesta sessão (ver abaixo).
 
@@ -42,7 +42,7 @@ Outros 15 itens (6 Médio + 9 Baixo) **documentados em `.specs/codebase/CONCERNS
 
 **Decisão de 2026-07-15 (sessão atual):** antes do T09/T15 real (Google Workspace), criar um passo intermediário **F5a** — não descartável, adianta o T09 de verdade: tabela `UsuarioPerfil` (e-mail→perfil), tela de Admin pra cadastrar usuários (email+nome+perfil), e login mockado por e-mail (sem senha) substituindo o `ProfileSelector` atual. O F5b (Google OAuth real) só troca depois a *fonte* do e-mail (digitado → vindo do token do Google) — reaproveita a mesma tabela sem mudança de schema. Detalhado em `.specs/features/fase-6-admin-log/spec.md` (F5a/F5b) + `design.md` + `tasks.md` (T09a-T09e).
 
-**Próximo:** executar T09a-T09e (F5a — ver `tasks.md`). Depois, T09/T15 reais (Google OAuth) e um documento à parte pro time de TI com os pré-requisitos de infra (OAuth Client ID, domínio autorizado, etc.) — pedido pelo usuário, ainda não escrito. Fase 4 (Email/Storage) segue sem data.
+**Próximo (atualizado após push de 2026-07-16):** com F5a em `develop`, os próximos passos possíveis são (nenhum ainda escolhido): (1) resolver o débito técnico da revisão sênior (`CONCERNS.md`, 15 itens); (2) implementar `arquivo-de-chamados` (spec pronta, falta Design/Tasks/Execute); (3) escrever o documento pra TI sobre pré-requisitos do Google OAuth, pré-requisito pra retomar T09/T15 reais. Fase 4 (Email/Storage) segue sem data.
 
 ---
 
@@ -100,11 +100,12 @@ Nenhum.
 3. Escrever documento pro time de TI com os pré-requisitos de infra do Google Workspace OAuth (Client ID, domínio autorizado, redirect URIs) — pedido pelo usuário em 2026-07-15, ainda não feito
 4. Retomar T09/T15 reais (Google Workspace OAuth) — depende de 3
 5. Quando T09 (real) entrar: trocar `UsuarioId`/`UsuarioNome` (hoje enviados pelo cliente, aceitáveis só por não haver auth real) por extração via claims do JWT no backend
-7. "Forçar encerramento" (Admin fechar/cancelar fora do fluxo normal) — item da spec da Fase 6 ainda não abordado
-8. Revisar se as outras telas com soft-RBAC (Dashboard/Kanban/Fila — só escondem o link, sem bloqueio de rota) precisam do mesmo tratamento que o Relatório Mensal recebeu, ou se ficam assim até o login real (T09) trazer autenticação de verdade
+6. "Forçar encerramento" (Admin fechar/cancelar fora do fluxo normal) — item da spec da Fase 6 ainda não abordado
+7. Revisar se as outras telas com soft-RBAC (Dashboard/Kanban/Fila — só escondem o link, sem bloqueio de rota) precisam do mesmo tratamento que o Relatório Mensal e o `Admin > Usuários` receberam, ou se ficam assim até o login real (T09) trazer autenticação de verdade
 
 ## ✅ Concluído recentemente
 
+- **F5a commitada e pushada em `develop`** (2026-07-16, commits `76ce0d1`/`a0747a7`): login mockado por e-mail + cadastro de usuários pelo Admin (T09a-T09e), revisão sênior com 4 bugs Altos corrigidos antes do commit, bloqueio real de RBAC em `/admin/usuarios`. Débito técnico remanescente em `CONCERNS.md`
 - **Melhorias de visualização de dados no Dashboard e Relatório Mensal** (2026-07-16): cores de gráfico migradas pra tokens do tema (`--chart-1..5`, `--status-good/critical`), bug de cor cinza-puro corrigido no modo claro, labels diretos nas fatias da rosca (resolve ilegibilidade no PDF exportado), cor de sinal na variação % do Relatório Mensal. Detalhes técnicos completos em `.specs/HANDOFF.md`
 - **Spec criada:** `.specs/features/arquivo-de-chamados/spec.md` — tela de chamados finalizados com filtro por período/prioridade, sem exclusão de dados (2026-07-16)
 - **PR #13 mergeado em `develop`** (2026-07-15T03:05Z) — Fase 6 completa (T01-T14) + Fase 7 (Relatório Mensal) inteira, 42 commits
@@ -162,3 +163,4 @@ Nenhum.
 - Sempre conferir `dotnet user-secrets list` no início de uma sessão antes de rodar/testar a API — o `user-secrets` local pode estar apontando pro banco errado (ex: Postgres local via Docker em vez do Supabase real) por causa de troubleshooting de uma sessão anterior, e isso não aparece em lugar nenhum do código/git (user-secrets não é versionado). Toda "verificação com dados reais" feita nessas condições precisa ser refeita contra o banco real antes de dar como definitiva
 - **Reset de senha do Supabase:** no dashboard, o campo que mostra uma senha "gerada" não a aplica de verdade até o botão de confirmar/reset ser clicado — copiar a sugestão sem confirmar deixa a senha antiga válida, e a conexão falha com `28P01: password authentication failed` mesmo com a senha "certa". Pra isolar esse tipo de problema rápido: testar a connection string fora do `dotnet run` (ex: script `.cs` de arquivo único com `#:package Npgsql@...`) e comparar o erro com um projeto/usuário propositalmente inválido — `tenant/user not found` confirma que a connection string está certa e sobrou só a senha; `password authentication failed` com o projeto certo confirma que é mesmo a senha
 - Recharts v3 (`Pie` com `label` customizado): os labels só aparecem depois que a animação de entrada termina (`showLabels: !isAnimating` no código-fonte) — num teste automatizado ou num print disparado cedo demais, os labels simplesmente não existem no DOM ainda. Setar `isAnimationActive={false}` na `Pie` quando o gráfico precisa ter os valores sempre visíveis (ex: relatório exportável em PDF) resolve de forma determinística, em vez de torcer pro timing dar certo
+- Ao commitar uma feature grande implementada por múltiplos subagentes em paralelo/sequência (caso da F5a), `git add` com uma lista explícita de caminhos é mais arriscado que parece — um arquivo criado por um subagente (`UsuarioPerfilConfiguration.cs`, criado no T09a) ficou de fora da lista e só foi percebido depois do commit, num `git status` de checagem. `dotnet build` não pega isso porque o arquivo existe no disco, só não está no commit — a lacuna só aparece num clone limpo. Depois de um `git add` explícito em cenário assim, rodar `git status -s` de novo ANTES do commit e comparar contra a lista de arquivos que os subagentes relataram ter criado

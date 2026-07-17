@@ -102,7 +102,7 @@
 - [x] T06 `ListarHistoricoQuery` + endpoint `GET /chamados/{id}/historico`
 - [x] T07 endpoint `PATCH /chamados/{id}/prioridade`
 - [x] T08 Filtro de comentários internos por perfil em `ListarComentariosQueryHandler` (endpoint corrigido pra repassar `perfilUsuario`)
-- [x] **F5a (decidido em 2026-07-15, IMPLEMENTADO em 2026-07-16):** Login mockado por e-mail + cadastro de usuários (Admin) — tabela `UsuarioPerfil`, `UsuariosController` (CRUD), tela `Admin > Usuários`, `LoginPage` substitui `ProfileSelector`. T09a-T09e completas, testadas contra o Supabase real. Aguardando validação do usuário e commit/push. Não é descartável: a tabela `UsuarioPerfil` é reaproveitada sem mudança pelo T09 real
+- [x] **F5a (decidido em 2026-07-15, IMPLEMENTADO e MERGEADO em `develop` em 2026-07-16):** Login mockado por e-mail + cadastro de usuários (Admin) — tabela `UsuarioPerfil`, `UsuariosController` (CRUD), tela `Admin > Usuários` com bloqueio real de RBAC, `LoginPage` substitui `ProfileSelector`. T09a-T09e completas, testadas contra o Supabase real, revisadas por um code review sênior (4 bugs Altos corrigidos antes do commit), validadas pelo usuário e pushadas (commits `76ce0d1`/`a0747a7`). Não é descartável: a tabela `UsuarioPerfil` é reaproveitada sem mudança pelo T09 real. 15 itens de débito técnico (Médio/Baixo) da revisão ficaram documentados em `.specs/codebase/CONCERNS.md`, ainda pendentes
 - [ ] T09 (F5b) Login Google Workspace real (endpoint `POST /auth/google`, JWT) — depende de F5a. Quando entrar, trocar `UsuarioId`/`UsuarioNome` client-supplied por claims do JWT
 - [ ] Documento pra TI com pré-requisitos de infra (OAuth Client ID, domínio autorizado, redirect URIs) — pedido pelo usuário em 2026-07-15, ainda não escrito
 
