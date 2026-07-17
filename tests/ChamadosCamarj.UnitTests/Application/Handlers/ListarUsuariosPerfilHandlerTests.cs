@@ -1,3 +1,4 @@
+using ChamadosCamarj.Application.Common.Exceptions;
 using ChamadosCamarj.Application.Features.Usuarios.Queries;
 using ChamadosCamarj.Domain.Entities;
 using ChamadosCamarj.Domain.Enums;
@@ -26,7 +27,7 @@ public class ListarUsuariosPerfilHandlerTests
         _repositoryMock.Setup(r => r.ListarAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<UsuarioPerfil> { vitor, fabio });
 
-        var resultado = (await _handler.Handle(new ListarUsuariosPerfilQuery(), CancellationToken.None)).ToList();
+        var resultado = (await _handler.Handle(new ListarUsuariosPerfilQuery("Admin"), CancellationToken.None)).ToList();
 
         resultado.Should().HaveCount(2);
         resultado[0].Nome.Should().Be("Fábio");
@@ -39,8 +40,24 @@ public class ListarUsuariosPerfilHandlerTests
         _repositoryMock.Setup(r => r.ListarAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<UsuarioPerfil>());
 
-        var resultado = await _handler.Handle(new ListarUsuariosPerfilQuery(), CancellationToken.None);
+        var resultado = await _handler.Handle(new ListarUsuariosPerfilQuery("Admin"), CancellationToken.None);
 
         resultado.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Handle_QuandoRequisitanteNaoEhAdmin_DeveLancarForbiddenException()
+    {
+        var act = async () => await _handler.Handle(new ListarUsuariosPerfilQuery("Atendente"), CancellationToken.None);
+        await act.Should().ThrowAsync<ForbiddenException>();
+
+        _repositoryMock.Verify(r => r.ListarAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_QuandoRequisitanteNulo_DeveLancarForbiddenException()
+    {
+        var act = async () => await _handler.Handle(new ListarUsuariosPerfilQuery(), CancellationToken.None);
+        await act.Should().ThrowAsync<ForbiddenException>();
     }
 }

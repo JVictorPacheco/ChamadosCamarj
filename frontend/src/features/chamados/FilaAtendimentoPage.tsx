@@ -34,8 +34,8 @@ function LinhaFila({ chamado }: { chamado: ChamadoResponse }) {
               onClick={() =>
                 atribuir.mutate(
                   {
-                    responsavelId: perfil!.id,
-                    responsavelNome: perfil!.nome,
+                    responsavelId: perfil?.id ?? '',
+                    responsavelNome: perfil?.nome ?? '',
                   },
                   {
                     // Se outro atendente já assumiu o chamado quase ao mesmo tempo, o backend

@@ -8,5 +8,6 @@ public record AtualizarUsuarioPerfilCommand(
     Guid Id,
     string Nome,
     Perfil Perfil,
-    bool Ativo
+    bool Ativo,
+    string? PerfilRequisitante = null
 ) : IRequest<UsuarioPerfilResponse?>;

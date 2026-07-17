@@ -1,10 +1,12 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-07-16
+> Atualizado em: 2026-07-17
 
 ---
 
 ## 📍 Onde estamos
+
+**Sessão de 2026-07-17: passo 1 dos 3 confirmados concluído — débito técnico resolvido.** Os 15 itens (D-01 a D-15) documentados em `.specs/codebase/CONCERNS.md` foram todos corrigidos (backend e frontend em paralelo, via 2 agentes + 1 correção manual complementar). Destaques: Kanban agora gera `HistoricoEntrada` (D-01, incluindo o `usuarioId`/`usuarioNome` reais no frontend, que tinha ficado faltando na primeira passada do agente); guarda contra autodesativar o último Admin (D-02); paginação de chamados validada (D-03); checagem de Admin movida pra dentro dos Handlers de Usuarios com um `PerfilRequisitanteGuard` compartilhado (D-09); mais 11 itens de consistência/qualidade menores. 2 decisões de design foram confirmadas explicitamente com o usuário (enum `AcaoHistorico.StatusAlterado` novo, e o guard compartilhado). 169 testes de backend passando, builds limpos nos dois lados. `CONCERNS.md` agora só tem os itens antigos (todos resolvidos) — nada em aberto. **Próximo: passo 2, implementar `arquivo-de-chamados` "com tudo certinho" (Design → Tasks → Execute completos).**
 
 **Sessão de 2026-07-16:** usuário testou a aplicação localmente pela primeira vez contra o Supabase real (reconectado com sucesso, ver Aprendizados sobre o bug do reset de senha). Aprovou o resultado da Fase 6/7 e pediu duas coisas: (1) uma tela nova pra chamados finalizados, sem apagar dados — spec criada em `.specs/features/arquivo-de-chamados/spec.md`, ainda **não implementada**; (2) revisão de dev sênior nas visualizações de Dashboard/Relatório Mensal — 4 melhorias **já implementadas, testadas e já commitadas/pushadas em `develop`** (tokens de cor do tema, labels diretos na rosca, cor de sinal na variação %, correção de um bug de cor cinza-puro no tema claro). Detalhes completos em `.specs/HANDOFF.md`.
 
@@ -89,14 +91,13 @@ Nenhum.
 | Hospedagem em produção | Onde a API vai rodar (VM, Docker, Azure App Service etc.) e como a connection string será injetada |
 | Fase 4 | Email + Storage ainda não implementados — aguardando priorização |
 | **Implementar spec `arquivo-de-chamados`** | Spec pronta (`.specs/features/arquivo-de-chamados/spec.md`), falta Design → Tasks → Execute |
-| **⚠️ Débito técnico da revisão sênior (2026-07-16)** | 15 itens (Médio/Baixo) documentados em `.specs/codebase/CONCERNS.md` — usuário pediu explicitamente pra não esquecer de tratá-los numa sessão futura |
 
 ---
 
 ## 📋 TODOs (ordenados por prioridade — ordem CONFIRMADA explicitamente pelo usuário em 2026-07-16, não repriorizar sem checar de novo)
 
-1. **⚠️ Resolver o débito técnico documentado em `CONCERNS.md` (15 itens da revisão de 2026-07-16)** — usuário pediu explicitamente para não esquecer. Prioridade dentro do grupo: D-01 (auditoria do Kanban) e D-02 (auto-lockout de Admin) são os mais importantes dos Médios
-2. Implementar `arquivo-de-chamados` "com tudo certinho" (Design → Tasks → Execute completos, sem pular etapas) a partir da spec já pronta
+1. ~~Resolver o débito técnico documentado em `CONCERNS.md`~~ ✅ **CONCLUÍDO em 2026-07-17** — 15 itens (D-01 a D-15) corrigidos, ver "Onde estamos"
+2. **Implementar `arquivo-de-chamados` "com tudo certinho"** (Design → Tasks → Execute completos, sem pular etapas) a partir da spec já pronta — **próximo passo agora**
 3. Escrever documento pro time de TI com os pré-requisitos de infra do Google Workspace OAuth (Client ID, domínio autorizado, redirect URIs) — pedido pelo usuário em 2026-07-15, ainda não feito
 4. Retomar T09/T15 reais (Google Workspace OAuth) — depende de 3
 5. Quando T09 (real) entrar: trocar `UsuarioId`/`UsuarioNome` (hoje enviados pelo cliente, aceitáveis só por não haver auth real) por extração via claims do JWT no backend
@@ -105,7 +106,8 @@ Nenhum.
 
 ## ✅ Concluído recentemente
 
-- **F5a commitada e pushada em `develop`** (2026-07-16, commits `76ce0d1`/`a0747a7`): login mockado por e-mail + cadastro de usuários pelo Admin (T09a-T09e), revisão sênior com 4 bugs Altos corrigidos antes do commit, bloqueio real de RBAC em `/admin/usuarios`. Débito técnico remanescente em `CONCERNS.md`
+- **Débito técnico da revisão sênior resolvido** (2026-07-17): 15 itens (D-01 a D-15) de `CONCERNS.md` corrigidos — auditoria do Kanban, guarda contra autodesativar o último Admin, validação de paginação, `HistoricoEntrada` com ctor privado, dashboard com query unificada, checagem de Admin movida pra Handlers (`PerfilRequisitanteGuard`), indentação, reconexão do SignalR, cores hardcoded no Kanban, arquivo morto removido, consistência de non-null assertion, race condition no Dashboard. 169 testes passando, builds limpos
+- **F5a commitada e pushada em `develop`** (2026-07-16, commits `76ce0d1`/`a0747a7`): login mockado por e-mail + cadastro de usuários pelo Admin (T09a-T09e), revisão sênior com 4 bugs Altos corrigidos antes do commit, bloqueio real de RBAC em `/admin/usuarios`
 - **Melhorias de visualização de dados no Dashboard e Relatório Mensal** (2026-07-16): cores de gráfico migradas pra tokens do tema (`--chart-1..5`, `--status-good/critical`), bug de cor cinza-puro corrigido no modo claro, labels diretos nas fatias da rosca (resolve ilegibilidade no PDF exportado), cor de sinal na variação % do Relatório Mensal. Detalhes técnicos completos em `.specs/HANDOFF.md`
 - **Spec criada:** `.specs/features/arquivo-de-chamados/spec.md` — tela de chamados finalizados com filtro por período/prioridade, sem exclusão de dados (2026-07-16)
 - **PR #13 mergeado em `develop`** (2026-07-15T03:05Z) — Fase 6 completa (T01-T14) + Fase 7 (Relatório Mensal) inteira, 42 commits

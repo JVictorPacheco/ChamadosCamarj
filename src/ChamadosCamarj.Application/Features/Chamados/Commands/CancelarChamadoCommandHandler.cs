@@ -28,7 +28,7 @@ public class CancelarChamadoCommandHandler : IRequestHandler<CancelarChamadoComm
         chamado.Cancelar();
         await _chamadoRepository.AtualizarAsync(chamado, cancellationToken);
 
-                await _historicoRepository.RegistrarHistoricoAsync(
+        await _historicoRepository.RegistrarHistoricoAsync(
             chamado.Id,
             AcaoHistorico.Cancelado,
             detalheNovo: "Chamado cancelado",

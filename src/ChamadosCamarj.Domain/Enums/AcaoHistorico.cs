@@ -12,5 +12,6 @@ public enum AcaoHistorico
     Fechado = 5,
     Cancelado = 6,
     ComentarioAdicionado = 7,
-    PrioridadeAlterada = 8
+    PrioridadeAlterada = 8,
+    StatusAlterado = 9
 }

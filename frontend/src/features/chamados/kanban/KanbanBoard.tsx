@@ -3,14 +3,17 @@ import { DndContext, type DragEndEvent, type DragStartEvent, PointerSensor, useS
 import { useQueryClient } from '@tanstack/react-query'
 import type { ChamadoResponse, StatusChamado } from '@/types/api'
 import { alterarStatus } from '@/features/chamados/api'
+import { useAuth } from '@/auth/AuthContext'
 import { KanbanColumn } from './KanbanColumn'
 
+// Cores com sentido: Resolvido usa o token semântico "bom", Cancelado usa "crítico";
+// os demais status usam tokens neutros --chart-* (mesma paleta do Dashboard/Relatório Mensal).
 const COLUNAS: { status: StatusChamado; titulo: string; cor: string }[] = [
-  { status: 'Aberto', titulo: 'Aberto', cor: 'bg-red-500' },
-  { status: 'EmAndamento', titulo: 'Em Andamento', cor: 'bg-yellow-500' },
-  { status: 'Resolvido', titulo: 'Resolvido', cor: 'bg-green-500' },
-  { status: 'Fechado', titulo: 'Fechado', cor: 'bg-gray-500' },
-  { status: 'Cancelado', titulo: 'Cancelado', cor: 'bg-purple-500' },
+  { status: 'Aberto', titulo: 'Aberto', cor: 'bg-chart-1' },
+  { status: 'EmAndamento', titulo: 'Em Andamento', cor: 'bg-chart-3' },
+  { status: 'Resolvido', titulo: 'Resolvido', cor: 'bg-[var(--status-good)]' },
+  { status: 'Fechado', titulo: 'Fechado', cor: 'bg-chart-5' },
+  { status: 'Cancelado', titulo: 'Cancelado', cor: 'bg-[var(--status-critical)]' },
 ]
 
 interface KanbanBoardProps {
@@ -19,6 +22,7 @@ interface KanbanBoardProps {
 
 export function KanbanBoard({ chamados }: KanbanBoardProps) {
   const queryClient = useQueryClient()
+  const { perfil } = useAuth()
   const [draggingId, setDraggingId] = useState<string | null>(null)
 
   const sensors = useSensors(
@@ -54,13 +58,13 @@ export function KanbanBoard({ chamados }: KanbanBoardProps) {
       )
 
       try {
-        await alterarStatus(chamadoId, novoStatus)
+        await alterarStatus(chamadoId, novoStatus, perfil?.id, perfil?.nome)
       } catch {
         // Reverte em caso de erro
         queryClient.invalidateQueries({ queryKey: ['chamados', 'kanban'] })
       }
     },
-    [chamados, queryClient],
+    [chamados, queryClient, perfil],
   )
 
   return (

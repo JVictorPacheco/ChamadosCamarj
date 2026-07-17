@@ -147,10 +147,16 @@ export function UsuarioFormDialog({ open, onOpenChange, usuario }: UsuarioFormDi
               control={control}
               name="ativo"
               render={({ field }) => (
-                <label className="flex items-center gap-2 text-sm">
-                  <Checkbox checked={field.value} onCheckedChange={(checked) => field.onChange(!!checked)} />
-                  Ativo
-                </label>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="usuario-ativo"
+                    checked={field.value}
+                    onCheckedChange={(checked) => field.onChange(!!checked)}
+                  />
+                  <Label htmlFor="usuario-ativo" className="text-sm font-normal">
+                    Ativo
+                  </Label>
+                </div>
               )}
             />
           )}

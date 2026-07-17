@@ -30,6 +30,10 @@ public class ExceptionHandlingMiddleware
         {
             await WriteResponseAsync(context, HttpStatusCode.Conflict, new { message = ex.Message });
         }
+        catch (ForbiddenException ex)
+        {
+            await WriteResponseAsync(context, HttpStatusCode.Forbidden, new { message = ex.Message });
+        }
         catch (ValidationException ex)
         {
             var erros = ex.Errors.Select(e => new { campo = e.PropertyName, erro = e.ErrorMessage });

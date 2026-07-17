@@ -16,7 +16,7 @@ export function KanbanColumn({ status, titulo, chamados, cor }: KanbanColumnProp
     <div
       ref={setNodeRef}
       className={`flex min-h-[200px] flex-col gap-2 rounded-lg border-2 p-3 transition-colors ${
-        isOver ? 'border-blue-400 bg-blue-50' : 'border-border bg-muted/20'
+        isOver ? 'border-primary bg-primary/10' : 'border-border bg-muted/20'
       }`}
     >
       <div className="flex items-center gap-2">

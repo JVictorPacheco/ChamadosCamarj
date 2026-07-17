@@ -11,8 +11,6 @@ namespace ChamadosCamarj.WebApi.Controllers;
 [Produces("application/json")]
 public class UsuariosController : ControllerBase
 {
-    private const string PerfilAdmin = "Admin";
-
     private readonly IMediator _mediator;
 
     public UsuariosController(IMediator mediator)
@@ -30,10 +28,7 @@ public class UsuariosController : ControllerBase
         [FromQuery] string? perfilRequisitante,
         CancellationToken cancellationToken)
     {
-        if (!EhAdmin(perfilRequisitante))
-            return Proibido();
-
-        var result = await _mediator.Send(new ListarUsuariosPerfilQuery(), cancellationToken);
+        var result = await _mediator.Send(new ListarUsuariosPerfilQuery(perfilRequisitante), cancellationToken);
         return Ok(result);
     }
 
@@ -49,10 +44,7 @@ public class UsuariosController : ControllerBase
         [FromBody] CriarUsuarioPerfilCommand command,
         CancellationToken cancellationToken)
     {
-        if (!EhAdmin(perfilRequisitante))
-            return Proibido();
-
-        var result = await _mediator.Send(command, cancellationToken);
+        var result = await _mediator.Send(command with { PerfilRequisitante = perfilRequisitante }, cancellationToken);
         return CreatedAtAction(nameof(ObterPorEmail), new { email = result.Email }, result);
     }
 
@@ -69,10 +61,7 @@ public class UsuariosController : ControllerBase
         [FromBody] AtualizarUsuarioPerfilCommand command,
         CancellationToken cancellationToken)
     {
-        if (!EhAdmin(perfilRequisitante))
-            return Proibido();
-
-        var result = await _mediator.Send(command with { Id = id }, cancellationToken);
+        var result = await _mediator.Send(command with { Id = id, PerfilRequisitante = perfilRequisitante }, cancellationToken);
 
         if (result is null)
             return NotFound(new { message = "Usuário não encontrado." });
@@ -97,10 +86,4 @@ public class UsuariosController : ControllerBase
 
         return Ok(result);
     }
-
-    private static bool EhAdmin(string? perfilRequisitante) =>
-        string.Equals(perfilRequisitante, PerfilAdmin, StringComparison.OrdinalIgnoreCase);
-
-    private ObjectResult Proibido() =>
-        StatusCode(StatusCodes.Status403Forbidden, new { message = "Apenas usuários com perfil Admin podem realizar esta ação." });
 }

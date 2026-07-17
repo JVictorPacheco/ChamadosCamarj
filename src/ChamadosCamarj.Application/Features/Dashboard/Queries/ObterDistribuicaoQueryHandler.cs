@@ -16,12 +16,14 @@ public class ObterDistribuicaoQueryHandler : IRequestHandler<ObterDistribuicaoQu
 
     public async Task<DistribuicaoResponse> Handle(ObterDistribuicaoQuery request, CancellationToken cancellationToken)
     {
-        var aguardando = await _chamadoRepository.ContarPorStatusAsync(StatusChamado.Aberto, cancellationToken);
-        var assumido = await _chamadoRepository.ContarPorStatusAsync(StatusChamado.EmAndamento, cancellationToken);
-        var resolvido = await _chamadoRepository.ContarPorStatusAsync(StatusChamado.Resolvido, cancellationToken);
-        var encerrado = await _chamadoRepository.ContarPorStatusAsync(StatusChamado.Fechado, cancellationToken);
-        var cancelado = await _chamadoRepository.ContarPorStatusAsync(StatusChamado.Cancelado, cancellationToken);
+        var contagens = await _chamadoRepository.ContarPorStatusAgrupadoAsync(cancellationToken);
 
-        return new DistribuicaoResponse(aguardando, assumido, resolvido, encerrado, cancelado);
+        return new DistribuicaoResponse(
+            contagens.GetValueOrDefault(StatusChamado.Aberto),
+            contagens.GetValueOrDefault(StatusChamado.EmAndamento),
+            contagens.GetValueOrDefault(StatusChamado.Resolvido),
+            contagens.GetValueOrDefault(StatusChamado.Fechado),
+            contagens.GetValueOrDefault(StatusChamado.Cancelado)
+        );
     }
 }

@@ -1,4 +1,5 @@
 using MediatR;
+using ChamadosCamarj.Application.Common.Authorization;
 using ChamadosCamarj.Application.Common.Exceptions;
 using ChamadosCamarj.Application.Features.Usuarios.DTOs;
 using ChamadosCamarj.Application.Mappings;
@@ -18,6 +19,8 @@ public class CriarUsuarioPerfilCommandHandler : IRequestHandler<CriarUsuarioPerf
 
     public async Task<UsuarioPerfilResponse> Handle(CriarUsuarioPerfilCommand request, CancellationToken cancellationToken)
     {
+        PerfilRequisitanteGuard.ExigirAdmin(request.PerfilRequisitante);
+
         var emailNormalizado = request.Email.Trim().ToLowerInvariant();
         var existente = await _usuarioPerfilRepository.ObterPorEmailAsync(emailNormalizado, cancellationToken);
         if (existente is not null)

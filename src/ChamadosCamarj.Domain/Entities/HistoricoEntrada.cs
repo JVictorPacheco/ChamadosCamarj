@@ -14,7 +14,7 @@ public class HistoricoEntrada : BaseEntity
     public DateTime DataHora { get; private set; }
 
     // Constructor para EF Core
-    public HistoricoEntrada() { }
+    private HistoricoEntrada() { }
 
     // Factory method com validação
     public static HistoricoEntrada Criar(

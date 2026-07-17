@@ -188,7 +188,7 @@ public class ChamadosController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> AlterarStatus(Guid id, [FromBody] AlterarStatusRequest request, CancellationToken cancellationToken)
     {
-        await _mediator.Send(new AlterarStatusChamadoCommand(id, request.NovoStatus), cancellationToken);
+        await _mediator.Send(new AlterarStatusChamadoCommand(id, request.NovoStatus, request.UsuarioId, request.UsuarioNome), cancellationToken);
         return NoContent();
     }
 

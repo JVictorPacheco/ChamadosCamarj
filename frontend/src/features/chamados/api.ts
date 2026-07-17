@@ -67,12 +67,19 @@ export function listarCategorias(): Promise<CategoriaResponse[]> {
 
 export interface AlterarStatusRequest {
   novoStatus: StatusChamado
+  usuarioId?: string
+  usuarioNome?: string
 }
 
-export function alterarStatus(chamadoId: string, novoStatus: StatusChamado): Promise<void> {
+export function alterarStatus(
+  chamadoId: string,
+  novoStatus: StatusChamado,
+  usuarioId?: string,
+  usuarioNome?: string,
+): Promise<void> {
   return apiFetch<void>(`/chamados/${chamadoId}/status`, {
     method: 'PUT',
-    body: JSON.stringify({ novoStatus }),
+    body: JSON.stringify({ novoStatus, usuarioId, usuarioNome }),
   })
 }
 

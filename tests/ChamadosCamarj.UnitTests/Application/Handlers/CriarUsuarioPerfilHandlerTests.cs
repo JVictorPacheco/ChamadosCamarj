@@ -24,7 +24,7 @@ public class CriarUsuarioPerfilHandlerTests
         _repositoryMock.Setup(r => r.ObterPorEmailAsync("catia@camarj.com.br", It.IsAny<CancellationToken>()))
             .ReturnsAsync((UsuarioPerfil?)null);
 
-        var command = new CriarUsuarioPerfilCommand("catia@camarj.com.br", "Cátia", Perfil.Solicitante);
+        var command = new CriarUsuarioPerfilCommand("catia@camarj.com.br", "Cátia", Perfil.Solicitante, "Admin");
         var response = await _handler.Handle(command, CancellationToken.None);
 
         response.Email.Should().Be("catia@camarj.com.br");
@@ -42,7 +42,7 @@ public class CriarUsuarioPerfilHandlerTests
         _repositoryMock.Setup(r => r.ObterPorEmailAsync("victor@camarj.com.br", It.IsAny<CancellationToken>()))
             .ReturnsAsync(existente);
 
-        var command = new CriarUsuarioPerfilCommand("victor@camarj.com.br", "Victor Duplicado", Perfil.Admin);
+        var command = new CriarUsuarioPerfilCommand("victor@camarj.com.br", "Victor Duplicado", Perfil.Admin, "Admin");
 
         var act = async () => await _handler.Handle(command, CancellationToken.None);
         await act.Should().ThrowAsync<ConflictException>();
@@ -59,7 +59,7 @@ public class CriarUsuarioPerfilHandlerTests
         _repositoryMock.Setup(r => r.ObterPorEmailAsync("fabio@camarj.com.br", It.IsAny<CancellationToken>()))
             .ReturnsAsync(existenteInativo);
 
-        var command = new CriarUsuarioPerfilCommand("fabio@camarj.com.br", "Fábio Novo", Perfil.Atendente);
+        var command = new CriarUsuarioPerfilCommand("fabio@camarj.com.br", "Fábio Novo", Perfil.Atendente, "Admin");
         var response = await _handler.Handle(command, CancellationToken.None);
 
         response.Nome.Should().Be("Fábio Novo");
@@ -77,9 +77,29 @@ public class CriarUsuarioPerfilHandlerTests
         _repositoryMock.Setup(r => r.ObterPorEmailAsync("catia@camarj.com.br", It.IsAny<CancellationToken>()))
             .ReturnsAsync((UsuarioPerfil?)null);
 
-        var command = new CriarUsuarioPerfilCommand("  Catia@Camarj.COM.BR  ", "Cátia", Perfil.Solicitante);
+        var command = new CriarUsuarioPerfilCommand("  Catia@Camarj.COM.BR  ", "Cátia", Perfil.Solicitante, "Admin");
         await _handler.Handle(command, CancellationToken.None);
 
         _repositoryMock.Verify(r => r.ObterPorEmailAsync("catia@camarj.com.br", It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_QuandoRequisitanteNaoEhAdmin_DeveLancarForbiddenException()
+    {
+        var command = new CriarUsuarioPerfilCommand("catia@camarj.com.br", "Cátia", Perfil.Solicitante, "Atendente");
+
+        var act = async () => await _handler.Handle(command, CancellationToken.None);
+        await act.Should().ThrowAsync<ForbiddenException>();
+
+        _repositoryMock.Verify(r => r.ObterPorEmailAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_QuandoRequisitanteNulo_DeveLancarForbiddenException()
+    {
+        var command = new CriarUsuarioPerfilCommand("catia@camarj.com.br", "Cátia", Perfil.Solicitante);
+
+        var act = async () => await _handler.Handle(command, CancellationToken.None);
+        await act.Should().ThrowAsync<ForbiddenException>();
     }
 }

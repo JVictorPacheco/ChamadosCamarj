@@ -6,7 +6,15 @@ import { DonutChart } from '@/components/charts/DonutChart'
 
 export function DashboardPage() {
   const { data: metrics, isPending, isError } = useDashboardMetrics()
-  const { data: distribuicao } = useDashboardDistribuicao()
+  const { data: distribuicao, isPending: distribuicaoPending, isError: distribuicaoError } = useDashboardDistribuicao()
+
+  const totalDistribuicao = distribuicao
+    ? distribuicao.aguardando +
+      distribuicao.assumido +
+      distribuicao.resolvido +
+      distribuicao.encerrado +
+      distribuicao.cancelado
+    : 0
 
   return (
     <div className="flex flex-col gap-4 p-4">
@@ -33,24 +41,30 @@ export function DashboardPage() {
 
           <div className="rounded-lg border bg-card p-4">
             <h2 className="mb-3 text-sm font-heading">Distribuição por situação</h2>
-            {distribuicao &&
-            (distribuicao.aguardando +
-              distribuicao.assumido +
-              distribuicao.resolvido +
-              distribuicao.encerrado +
-              distribuicao.cancelado) >
-              0 ? (
-              <DonutChart
-                data={[
-                  { label: 'Aguardando', value: distribuicao.aguardando, color: 'var(--chart-3)' },
-                  { label: 'Assumido', value: distribuicao.assumido, color: 'var(--chart-1)' },
-                  { label: 'Resolvido', value: distribuicao.resolvido, color: 'var(--chart-4)' },
-                  { label: 'Encerrado', value: distribuicao.encerrado, color: 'var(--chart-5)' },
-                  { label: 'Cancelado', value: distribuicao.cancelado, color: 'var(--chart-2)' },
-                ]}
-              />
-            ) : (
-              <p className="py-8 text-center text-sm text-muted-foreground">Nenhum chamado no sistema.</p>
+            {distribuicaoPending && (
+              <p className="py-8 text-center text-sm text-muted-foreground">Carregando distribuição...</p>
+            )}
+
+            {!distribuicaoPending && distribuicaoError && (
+              <Alert variant="destructive">
+                <AlertDescription>Serviço indisponível. Tente novamente em instantes.</AlertDescription>
+              </Alert>
+            )}
+
+            {!distribuicaoPending && !distribuicaoError && distribuicao && (
+              totalDistribuicao > 0 ? (
+                <DonutChart
+                  data={[
+                    { label: 'Aguardando', value: distribuicao.aguardando, color: 'var(--chart-3)' },
+                    { label: 'Assumido', value: distribuicao.assumido, color: 'var(--chart-1)' },
+                    { label: 'Resolvido', value: distribuicao.resolvido, color: 'var(--chart-4)' },
+                    { label: 'Encerrado', value: distribuicao.encerrado, color: 'var(--chart-5)' },
+                    { label: 'Cancelado', value: distribuicao.cancelado, color: 'var(--chart-2)' },
+                  ]}
+                />
+              ) : (
+                <p className="py-8 text-center text-sm text-muted-foreground">Nenhum chamado no sistema.</p>
+              )
             )}
           </div>
 

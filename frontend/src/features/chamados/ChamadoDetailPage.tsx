@@ -47,8 +47,8 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
           disabled={isPending}
           onClick={() =>
             atribuir.mutate({
-              responsavelId: perfil!.id,
-              responsavelNome: perfil!.nome,
+              responsavelId: perfil?.id ?? '',
+              responsavelNome: perfil?.nome ?? '',
             })
           }
         >

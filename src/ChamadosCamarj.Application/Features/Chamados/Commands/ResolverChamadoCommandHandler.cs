@@ -28,7 +28,7 @@ public class ResolverChamadoCommandHandler : IRequestHandler<ResolverChamadoComm
         chamado.Resolver();
         await _chamadoRepository.AtualizarAsync(chamado, cancellationToken);
 
-                await _historicoRepository.RegistrarHistoricoAsync(
+        await _historicoRepository.RegistrarHistoricoAsync(
             chamado.Id,
             AcaoHistorico.Resolvido,
             detalheNovo: "Chamado resolvido",

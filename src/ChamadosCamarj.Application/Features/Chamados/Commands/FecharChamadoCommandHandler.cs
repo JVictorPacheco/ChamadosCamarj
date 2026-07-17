@@ -28,7 +28,7 @@ public class FecharChamadoCommandHandler : IRequestHandler<FecharChamadoCommand>
         chamado.Fechar();
         await _chamadoRepository.AtualizarAsync(chamado, cancellationToken);
 
-                await _historicoRepository.RegistrarHistoricoAsync(
+        await _historicoRepository.RegistrarHistoricoAsync(
             chamado.Id,
             AcaoHistorico.Fechado,
             detalheNovo: "Chamado fechado",

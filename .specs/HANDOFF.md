@@ -1,8 +1,8 @@
 # Handoff
 
-**Date:** 2026-07-16
-**Feature:** F5a implementada e pushada (login mockado por e-mail + cadastro de usuários) + melhorias de dataviz + spec nova (Arquivo de Chamados)
-**Task:** Sessão encerrada a pedido do usuário. Ordem dos próximos 3 passos **já decidida e confirmada** (ver Pending) — ao retomar, seguir exatamente essa ordem, não repriorizar sem confirmar com o usuário de novo.
+**Date:** 2026-07-17
+**Feature:** Débito técnico da revisão sênior resolvido (passo 1 de 3 confirmados)
+**Task:** Passo 1 (débito técnico, 15 itens do `CONCERNS.md`) concluído nesta sessão — build/testes limpos, ainda não commitado (ver Pending). Próximo: passo 2, `arquivo-de-chamados` "com tudo certinho".
 
 ## Completed ✓
 
@@ -24,8 +24,8 @@ Nada em execução.
 
 ## Pending — ORDEM CONFIRMADA PELO USUÁRIO EM 2026-07-16, SEGUIR ASSIM
 
-1. **🥇 Resolver o débito técnico da revisão sênior (15 itens, Médio/Baixo)** — documentados em `.specs/codebase/CONCERNS.md` (seção "EM ABERTO", D-01 a D-15). Destaques: D-01 (Kanban não gera histórico/auditoria), D-02 (nada impede autodesativar o último Admin), D-03 (paginação de chamados sem limite). **O usuário pediu explicitamente pra não esquecer disso** — não tratar como "nice to have" descartável. **Começar por aqui.**
-2. **🥈 Implementar a spec `arquivo-de-chamados`** "com tudo certinho" (palavras do usuário — seguir o fluxo completo Design → Tasks → Execute do skill spec-driven, não pular etapas). Está só no estágio de Spec. Ver notas técnicas na própria spec: estender `ListarChamadosQuery.Status` pra aceitar lista (ou um novo parâmetro `Finalizados=true`), e adicionar o filtro de prioridade que já existe no backend mas não no componente `FiltroChamados.tsx` do frontend.
+1. ~~🥇 Resolver o débito técnico da revisão sênior~~ **✅ CONCLUÍDO em 2026-07-17** — 15 itens (D-01 a D-15) corrigidos via 2 agentes em paralelo (backend/frontend) + 1 correção manual complementar (D-01 estava faltando a integração do frontend do Kanban enviando `usuarioId`/`usuarioNome` reais). 2 decisões de design confirmadas com o usuário: enum `AcaoHistorico.StatusAlterado` novo, e `PerfilRequisitanteGuard` compartilhado. 169 testes passando, builds limpos. **Ainda não commitado/pushado** — fazer isso antes de prosseguir pro passo 2.
+2. **🥈 Implementar a spec `arquivo-de-chamados`** "com tudo certinho" (palavras do usuário — seguir o fluxo completo Design → Tasks → Execute do skill spec-driven, não pular etapas). Está só no estágio de Spec. Ver notas técnicas na própria spec: estender `ListarChamadosQuery.Status` pra aceitar lista (ou um novo parâmetro `Finalizados=true`), e adicionar o filtro de prioridade que já existe no backend mas não no componente `FiltroChamados.tsx` do frontend. **Próximo passo desta sessão.**
 3. **🥉 Documento pra TI** — texto explicando os pré-requisitos de infra pro Google Workspace OAuth (Client ID, domínio autorizado, redirect URIs, Workspace admin console). Pré-requisito pra retomar T09/T15 (login real).
 4. **T09 (F5b)** — Login real via Google Workspace: endpoint `POST /auth/google`, JWT. Depende do documento de TI (item 3) pra ter os dados de configuração reais.
 5. **T15** — Frontend: substituir `LoginPage` (F5a, já em produção) pelo fluxo OAuth real. Depende de T09.

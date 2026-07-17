@@ -169,6 +169,14 @@ public class ChamadoRepository : IChamadoRepository
         return await _dbSet.CountAsync(c => c.Status == status, cancellationToken);
     }
 
+    public async Task<Dictionary<Domain.Enums.StatusChamado, int>> ContarPorStatusAgrupadoAsync(CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .GroupBy(c => c.Status)
+            .Select(g => new { Status = g.Key, Quantidade = g.Count() })
+            .ToDictionaryAsync(x => x.Status, x => x.Quantidade, cancellationToken);
+    }
+
     public async Task<int> ContarResolvidosHojeAsync(CancellationToken cancellationToken = default)
     {
         var hoje = DateTime.UtcNow.Date;

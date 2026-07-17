@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback, useRef, type ReactNode } from 'react'
 import {
   HubConnectionBuilder,
   type HubConnection,
@@ -20,26 +20,21 @@ export function SignalRProvider({ children }: { children: ReactNode }) {
   const [connection, setConnection] = useState<HubConnection | null>(null)
   const [isConnected, setIsConnected] = useState(false)
   const [lastEvent, setLastEvent] = useState<SignalREvent | null>(null)
-  const [subscribers, setSubscribers] = useState<Set<(event: SignalREvent) => void>>(new Set())
+  // useRef em vez de useState: dá identidade estável pro Set, sem forçar recriação
+  // de `notify` (e portanto do efeito de conexão abaixo) a cada subscribe/unsubscribe.
+  const subscribersRef = useRef<Set<(event: SignalREvent) => void>>(new Set())
 
   const subscribe = useCallback((handler: (event: SignalREvent) => void) => {
-    setSubscribers((prev) => new Set(prev).add(handler))
+    subscribersRef.current.add(handler)
     return () => {
-      setSubscribers((prev) => {
-        const next = new Set(prev)
-        next.delete(handler)
-        return next
-      })
+      subscribersRef.current.delete(handler)
     }
   }, [])
 
-  const notify = useCallback(
-    (event: SignalREvent) => {
-      setLastEvent(event)
-      subscribers.forEach((handler) => handler(event))
-    },
-    [subscribers],
-  )
+  const notify = useCallback((event: SignalREvent) => {
+    setLastEvent(event)
+    subscribersRef.current.forEach((handler) => handler(event))
+  }, [])
 
   useEffect(() => {
     const conn = new HubConnectionBuilder()
