@@ -42,7 +42,7 @@ Outros 15 itens (6 Médio + 9 Baixo) **documentados em `.specs/codebase/CONCERNS
 
 **Decisão de 2026-07-15 (sessão atual):** antes do T09/T15 real (Google Workspace), criar um passo intermediário **F5a** — não descartável, adianta o T09 de verdade: tabela `UsuarioPerfil` (e-mail→perfil), tela de Admin pra cadastrar usuários (email+nome+perfil), e login mockado por e-mail (sem senha) substituindo o `ProfileSelector` atual. O F5b (Google OAuth real) só troca depois a *fonte* do e-mail (digitado → vindo do token do Google) — reaproveita a mesma tabela sem mudança de schema. Detalhado em `.specs/features/fase-6-admin-log/spec.md` (F5a/F5b) + `design.md` + `tasks.md` (T09a-T09e).
 
-**Próximo (atualizado após push de 2026-07-16):** com F5a em `develop`, os próximos passos possíveis são (nenhum ainda escolhido): (1) resolver o débito técnico da revisão sênior (`CONCERNS.md`, 15 itens); (2) implementar `arquivo-de-chamados` (spec pronta, falta Design/Tasks/Execute); (3) escrever o documento pra TI sobre pré-requisitos do Google OAuth, pré-requisito pra retomar T09/T15 reais. Fase 4 (Email/Storage) segue sem data.
+**Próximo — ordem CONFIRMADA pelo usuário em 2026-07-16 (sessão encerrada logo em seguida a pedido dele):** (1) resolver o débito técnico da revisão sênior (`CONCERNS.md`, 15 itens); (2) implementar `arquivo-de-chamados` "com tudo certinho" (Design → Tasks → Execute completos); (3) escrever o documento pra TI sobre pré-requisitos do Google OAuth. Depois disso, retomar T09/T15 reais. Fase 4 (Email/Storage) segue sem data. **Ao retomar, seguir essa ordem — não é uma sugestão, foi confirmada explicitamente.**
 
 ---
 
@@ -93,10 +93,10 @@ Nenhum.
 
 ---
 
-## 📋 TODOs (ordenados por prioridade)
+## 📋 TODOs (ordenados por prioridade — ordem CONFIRMADA explicitamente pelo usuário em 2026-07-16, não repriorizar sem checar de novo)
 
 1. **⚠️ Resolver o débito técnico documentado em `CONCERNS.md` (15 itens da revisão de 2026-07-16)** — usuário pediu explicitamente para não esquecer. Prioridade dentro do grupo: D-01 (auditoria do Kanban) e D-02 (auto-lockout de Admin) são os mais importantes dos Médios
-2. Implementar `arquivo-de-chamados` (Design → Tasks → Execute) a partir da spec já pronta
+2. Implementar `arquivo-de-chamados` "com tudo certinho" (Design → Tasks → Execute completos, sem pular etapas) a partir da spec já pronta
 3. Escrever documento pro time de TI com os pré-requisitos de infra do Google Workspace OAuth (Client ID, domínio autorizado, redirect URIs) — pedido pelo usuário em 2026-07-15, ainda não feito
 4. Retomar T09/T15 reais (Google Workspace OAuth) — depende de 3
 5. Quando T09 (real) entrar: trocar `UsuarioId`/`UsuarioNome` (hoje enviados pelo cliente, aceitáveis só por não haver auth real) por extração via claims do JWT no backend

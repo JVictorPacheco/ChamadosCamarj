@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-16
 **Feature:** F5a implementada e pushada (login mockado por e-mail + cadastro de usuários) + melhorias de dataviz + spec nova (Arquivo de Chamados)
-**Task:** Nada pendente de commit/push — tudo que está descrito abaixo já está em `develop` no remoto. Próximo passo é escolher entre: débito técnico da revisão sênior, `arquivo-de-chamados`, ou documento pra TI (Google OAuth). Nenhum ainda decidido.
+**Task:** Sessão encerrada a pedido do usuário. Ordem dos próximos 3 passos **já decidida e confirmada** (ver Pending) — ao retomar, seguir exatamente essa ordem, não repriorizar sem confirmar com o usuário de novo.
 
 ## Completed ✓
 
@@ -22,11 +22,11 @@
 
 Nada em execução.
 
-## Pending
+## Pending — ORDEM CONFIRMADA PELO USUÁRIO EM 2026-07-16, SEGUIR ASSIM
 
-1. **⚠️ Débito técnico da revisão sênior de 2026-07-16 (15 itens, Médio/Baixo)** — documentados em `.specs/codebase/CONCERNS.md` (seção "EM ABERTO", D-01 a D-15). Destaques: D-01 (Kanban não gera histórico/auditoria), D-02 (nada impede autodesativar o último Admin), D-03 (paginação de chamados sem limite). **O usuário pediu explicitamente pra não esquecer disso** — não tratar como "nice to have" descartável.
-2. **Implementar a spec `arquivo-de-chamados`** (Design → Tasks → Execute) — está só no estágio de Spec. Ver notas técnicas na própria spec: estender `ListarChamadosQuery.Status` pra aceitar lista (ou um novo parâmetro `Finalizados=true`), e adicionar o filtro de prioridade que já existe no backend mas não no componente `FiltroChamados.tsx` do frontend.
-3. **Documento pra TI** — usuário pediu um texto explicando os pré-requisitos de infra pro Google Workspace OAuth (Client ID, domínio autorizado, redirect URIs, Workspace admin console). Ainda não escrito. Pré-requisito pra retomar T09/T15.
+1. **🥇 Resolver o débito técnico da revisão sênior (15 itens, Médio/Baixo)** — documentados em `.specs/codebase/CONCERNS.md` (seção "EM ABERTO", D-01 a D-15). Destaques: D-01 (Kanban não gera histórico/auditoria), D-02 (nada impede autodesativar o último Admin), D-03 (paginação de chamados sem limite). **O usuário pediu explicitamente pra não esquecer disso** — não tratar como "nice to have" descartável. **Começar por aqui.**
+2. **🥈 Implementar a spec `arquivo-de-chamados`** "com tudo certinho" (palavras do usuário — seguir o fluxo completo Design → Tasks → Execute do skill spec-driven, não pular etapas). Está só no estágio de Spec. Ver notas técnicas na própria spec: estender `ListarChamadosQuery.Status` pra aceitar lista (ou um novo parâmetro `Finalizados=true`), e adicionar o filtro de prioridade que já existe no backend mas não no componente `FiltroChamados.tsx` do frontend.
+3. **🥉 Documento pra TI** — texto explicando os pré-requisitos de infra pro Google Workspace OAuth (Client ID, domínio autorizado, redirect URIs, Workspace admin console). Pré-requisito pra retomar T09/T15 (login real).
 4. **T09 (F5b)** — Login real via Google Workspace: endpoint `POST /auth/google`, JWT. Depende do documento de TI (item 3) pra ter os dados de configuração reais.
 5. **T15** — Frontend: substituir `LoginPage` (F5a, já em produção) pelo fluxo OAuth real. Depende de T09.
 6. Quando T09 (real) entrar: trocar `UsuarioId`/`UsuarioNome` (hoje enviados pelo cliente nos commands de Reatribuir/AlterarPrioridade/Resolver/Fechar/Cancelar) por extração via claims do JWT no backend.
@@ -34,8 +34,6 @@ Nada em execução.
 8. Revisar se Dashboard/Kanban/Fila (soft-RBAC) precisam do mesmo bloqueio real que o Relatório Mensal e o `Admin > Usuários` já receberam, ou se ficam assim até T09.
 9. Fase 4 (Email/Storage) segue sem data.
 10. **Menor:** os tokens `--chart-1..5` do modo **escuro** passam em contraste/CVD/chroma no validador de paleta, mas falham no check de "lightness band" (ficam um pouco claros/vibrantes demais pra uma superfície escura). Não é urgente — visualmente aprovado pelo usuário.
-
-**Nenhum destes está priorizado ainda — decisão em aberto do usuário sobre o que vem a seguir.**
 
 ## Blockers
 
