@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { ATENDENTES } from '@/auth/AuthContext'
+import { useAtendentes } from '@/auth/useAtendentes'
 import { useReatribuirChamado } from '../hooks/useAcoesChamado'
 
 interface ReatribuirModalProps {
@@ -15,8 +15,9 @@ interface ReatribuirModalProps {
 export function ReatribuirModal({ open, onOpenChange, chamadoId, responsavelAtualId }: ReatribuirModalProps) {
   const [novoResponsavelId, setNovoResponsavelId] = useState('')
   const { mutate, isPending, error, reset } = useReatribuirChamado(chamadoId)
+  const { data: atendentes, isLoading: carregandoAtendentes, isError: erroAtendentes } = useAtendentes()
 
-  const opcoes = ATENDENTES.filter((atendente) => atendente.id !== responsavelAtualId)
+  const opcoes = (atendentes ?? []).filter((atendente) => atendente.id !== responsavelAtualId)
 
   const fechar = (proximoEstado: boolean) => {
     if (!proximoEstado) {
@@ -44,9 +45,15 @@ export function ReatribuirModal({ open, onOpenChange, chamadoId, responsavelAtua
         </DialogHeader>
 
         <div className="flex flex-col gap-3">
-          <Select value={novoResponsavelId} onValueChange={setNovoResponsavelId}>
+          <Select
+            value={novoResponsavelId}
+            onValueChange={setNovoResponsavelId}
+            disabled={carregandoAtendentes || erroAtendentes}
+          >
             <SelectTrigger>
-              <SelectValue placeholder="Selecione um atendente" />
+              <SelectValue
+                placeholder={carregandoAtendentes ? 'Carregando atendentes...' : 'Selecione um atendente'}
+              />
             </SelectTrigger>
             <SelectContent>
               {opcoes.map((atendente) => (
@@ -56,6 +63,12 @@ export function ReatribuirModal({ open, onOpenChange, chamadoId, responsavelAtua
               ))}
             </SelectContent>
           </Select>
+
+          {erroAtendentes && (
+            <p className="text-sm text-destructive">
+              Não foi possível carregar os atendentes. Tente novamente.
+            </p>
+          )}
 
           {error && <p className="text-sm text-destructive">{error.message}</p>}
         </div>

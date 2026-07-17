@@ -1,6 +1,8 @@
 import { createContext, useContext, useState, type ReactNode } from 'react'
+import { obterUsuarioPorEmail } from './api'
+import type { TipoPerfil, UsuarioPerfilResponse } from '@/types/api'
 
-export type TipoPerfil = 'Admin' | 'Atendente' | 'Solicitante'
+export type { TipoPerfil }
 
 export interface Perfil {
   tipo: TipoPerfil
@@ -9,37 +11,39 @@ export interface Perfil {
   email: string
 }
 
-const PERFIS: Record<TipoPerfil, Perfil> = {
-  Admin:       { tipo: 'Admin',       id: 'a1000000-0000-0000-0000-000000000001', nome: 'Victor',          email: 'victor@camarj.com.br' },
-  Atendente:   { tipo: 'Atendente',   id: 'a2000000-0000-0000-0000-000000000002', nome: 'Fábio',           email: 'fabio@camarj.com.br' },
-  Solicitante: { tipo: 'Solicitante', id: 'a3000000-0000-0000-0000-000000000003', nome: 'Ana Colaboradora', email: 'ana.colaboradora@camarj.com.br' },
-}
-
-// Fonte única dos atendentes mockados (até o mapeamento conta→perfil real da Fase 6/T09).
-// Reatribuição usa essa lista em vez de uma tabela de usuários, que ainda não existe.
-export const ATENDENTES: Perfil[] = [PERFIS.Admin, PERFIS.Atendente]
-
 const STORAGE_KEY = 'chamados-camarj:perfil'
 
 interface AuthContextValue {
   perfil: Perfil | null
-  login: (tipo: TipoPerfil) => void
+  login: (email: string) => Promise<void>
   logout: () => void
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
+function paraPerfil(usuario: UsuarioPerfilResponse): Perfil {
+  return { tipo: usuario.perfil, id: usuario.id, nome: usuario.nome, email: usuario.email }
+}
+
 function lerPerfilSalvo(): Perfil | null {
-  const tipo = localStorage.getItem(STORAGE_KEY) as TipoPerfil | null
-  return tipo && tipo in PERFIS ? PERFIS[tipo] : null
+  const salvo = localStorage.getItem(STORAGE_KEY)
+  if (!salvo) return null
+
+  try {
+    return JSON.parse(salvo) as Perfil
+  } catch {
+    return null
+  }
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [perfil, setPerfil] = useState<Perfil | null>(() => lerPerfilSalvo())
 
-  const login = (tipo: TipoPerfil) => {
-    localStorage.setItem(STORAGE_KEY, tipo)
-    setPerfil(PERFIS[tipo])
+  const login = async (email: string) => {
+    const usuario = await obterUsuarioPorEmail(email)
+    const perfilLogado = paraPerfil(usuario)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(perfilLogado))
+    setPerfil(perfilLogado)
   }
 
   const logout = () => {

@@ -3,7 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { ApiError } from '@/lib/api'
 import { AuthProvider, useAuth } from './auth/AuthContext'
-import { ProfileSelector } from './auth/ProfileSelector'
+import { LoginPage } from './auth/LoginPage'
 import { AppLayout } from './layouts/AppLayout'
 import { SignalRProvider } from './hooks/useSignalR'
 import { AbrirChamadoPage } from './features/chamados/AbrirChamadoPage'
@@ -13,6 +13,7 @@ import { KanbanPage } from './features/chamados/KanbanPage'
 import { FilaAtendimentoPage } from './features/chamados/FilaAtendimentoPage'
 import { DashboardPage } from './features/dashboard/DashboardPage'
 import { RelatorioMensalPage } from './features/relatorio-mensal/RelatorioMensalPage'
+import { UsuariosPage } from './features/admin/UsuariosPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -49,7 +50,7 @@ function LoginRoute() {
   if (perfil) {
     return <Navigate to="/chamados" replace />
   }
-  return <ProfileSelector />
+  return <LoginPage />
 }
 
 function ProtectedRoute() {
@@ -72,6 +73,7 @@ function AppRoutes() {
         <Route path="/atendimento/dashboard" element={<DashboardPage />} />
         <Route path="/atendimento/fila" element={<FilaAtendimentoPage />} />
         <Route path="/atendimento/relatorio-mensal" element={<RelatorioMensalPage />} />
+        <Route path="/admin/usuarios" element={<UsuariosPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/chamados" replace />} />
     </Routes>

@@ -6,11 +6,27 @@
 
 ## 📍 Onde estamos
 
-**Sessão de 2026-07-16:** usuário testou a aplicação localmente pela primeira vez contra o Supabase real (reconectado com sucesso, ver Aprendizados sobre o bug do reset de senha). Aprovou o resultado da Fase 6/7 e pediu duas coisas: (1) uma tela nova pra chamados finalizados, sem apagar dados — spec criada em `.specs/features/arquivo-de-chamados/spec.md`, ainda **não implementada**; (2) revisão de dev sênior nas visualizações de Dashboard/Relatório Mensal — 4 melhorias **já implementadas e testadas** (tokens de cor do tema, labels diretos na rosca, cor de sinal na variação %, correção de um bug de cor cinza-puro no tema claro). Detalhes completos em `.specs/HANDOFF.md`. **Falta comitar e pushar essas mudanças de frontend.**
+**Sessão de 2026-07-16:** usuário testou a aplicação localmente pela primeira vez contra o Supabase real (reconectado com sucesso, ver Aprendizados sobre o bug do reset de senha). Aprovou o resultado da Fase 6/7 e pediu duas coisas: (1) uma tela nova pra chamados finalizados, sem apagar dados — spec criada em `.specs/features/arquivo-de-chamados/spec.md`, ainda **não implementada**; (2) revisão de dev sênior nas visualizações de Dashboard/Relatório Mensal — 4 melhorias **já implementadas, testadas e já commitadas/pushadas em `develop`** (tokens de cor do tema, labels diretos na rosca, cor de sinal na variação %, correção de um bug de cor cinza-puro no tema claro). Detalhes completos em `.specs/HANDOFF.md`.
+
+**Sessão de 2026-07-15 (paralela, mesclada em 2026-07-16):** decisão de dividir o login em **F5a** (mock por e-mail + cadastro de usuários, ver Decisões) antes do T09/T15 (Google real).
+
+**F5a IMPLEMENTADA de ponta a ponta em 2026-07-16** (T09a-T09e, via Execute do skill spec-driven, contra o Supabase real): enum `Perfil`, entidade/tabela `UsuarioPerfil`, `UsuariosController` (4 endpoints), `AuthContext`/`LoginPage` reescritos (login por e-mail, sem senha), tela `Admin > Usuários` (`/admin/usuarios`) com botão direto de Desativar/Reativar por linha. Usuários de teste criados: Victor (Admin, já existia no seed), Fábio (Atendente, já existia no seed), Ana Colaboradora (Solicitante, criada nesta sessão).
+
+**Revisão sênior completa (backend + frontend) feita antes do commit da F5a, a pedido do usuário.** 4 achados de severidade Alta corrigidos na hora:
+1. Backend: `CriarUsuarioPerfilCommandHandler` quebrava com 500 ao recadastrar um e-mail desativado (índice único não distingue ativo/inativo) — agora reativa o registro existente em vez de tentar inserir um novo.
+2. Frontend: botão Desativar/Reativar em `UsuariosPage` falhava em silêncio em caso de erro de rede — agora mostra alerta.
+3. Frontend: botão "Assumir" na Fila de Atendimento sem tratamento de erro (race condition entre atendentes) — agora mostra erro e invalida a fila.
+4. Frontend: Select de atendentes no modal de Reatribuir ficava vazio e silencioso se a busca falhasse — agora mostra erro.
+
+Outros 15 itens (6 Médio + 9 Baixo) **documentados em `.specs/codebase/CONCERNS.md` (seção "EM ABERTO") e ainda NÃO corrigidos** — usuário pediu explicitamente para não esquecer de tratá-los numa sessão futura (destaque: D-01 auditoria do Kanban, D-02 auto-lockout de Admin, D-03 paginação sem limite).
+
+**Bloqueio real de RBAC implementado em `/admin/usuarios`** (2026-07-16, mesmo padrão do Relatório Mensal): não-Admin que acessar a rota direto vê alerta de bloqueio + botão "Voltar", não só link escondido na sidebar — pendência do `tasks.md` resolvida.
+
+143 testes de backend passando, `npm run build` limpo nos dois lados. **Pronto para commit.**
 
 **Fase 5 concluída** — Kanban + Dashboard + SignalR + Fila de Atendimento + Ações de Atendente. Mergeada em `develop`/`main` (2026-06-30). Dashboard bastante retrabalhado nesta sessão (ver abaixo).
 
-**Fase 6 — T01-T08 e T10-T14 concluídos, verificados e MERGEADOS em `develop`** via PR #13 ("Feature/fase 6 admin log"), mergeado em 2026-07-15T03:05Z. Faltam T09/T15 (login Google Workspace) — **pausados a pedido do usuário** pra adiantar o relatório mensal (Fase 7). **Retomar T09/T15 é o próximo passo.**
+**Fase 6 — T01-T08 e T10-T14 concluídos, verificados e MERGEADOS em `develop`** via PR #13 ("Feature/fase 6 admin log"), mergeado em 2026-07-15T03:05Z. Faltam T09/T15 (login Google Workspace) — **pausados a pedido do usuário** pra adiantar o relatório mensal (Fase 7), e agora precedidos pelo F5a (ver acima).
 
 **Fase 7 (Relatório Mensal) CONCLUÍDA, verificada e também já em `develop`** (mesmo PR #13). Specify → Design → Tasks → Execute completos (`.specs/features/relatorio-mensal/`). Endpoint `GET /api/relatorios/mensal`, página `/atendimento/relatorio-mensal` com seletor de mês, KPIs com variação % vs mês anterior, rosca de SLA, quebra por categoria e por atendente, exportação CSV e PDF (via impressão). RBAC: Admin vê tudo, Atendente só os próprios números, Solicitante bloqueado (bloqueio de verdade, não só link escondido — ver Aprendizados).
 
@@ -24,7 +40,9 @@
 
 **Também descoberto em 2026-07-13:** os documentos de estado (`STATE.md`/`ROADMAP.md`/`HANDOFF.md`) na branch `develop` estavam desatualizados — diziam "próximo é Fase 4" quando na verdade Fase 5 e boa parte da Fase 6 já tinham sido feitas em branches não mergeadas.
 
-**Próximo:** retomar T09/T15 (Google Workspace auth) — a partir da `develop`, não mais da branch de feature (já mergeada). Fase 4 (Email/Storage) segue sem data.
+**Decisão de 2026-07-15 (sessão atual):** antes do T09/T15 real (Google Workspace), criar um passo intermediário **F5a** — não descartável, adianta o T09 de verdade: tabela `UsuarioPerfil` (e-mail→perfil), tela de Admin pra cadastrar usuários (email+nome+perfil), e login mockado por e-mail (sem senha) substituindo o `ProfileSelector` atual. O F5b (Google OAuth real) só troca depois a *fonte* do e-mail (digitado → vindo do token do Google) — reaproveita a mesma tabela sem mudança de schema. Detalhado em `.specs/features/fase-6-admin-log/spec.md` (F5a/F5b) + `design.md` + `tasks.md` (T09a-T09e).
+
+**Próximo:** executar T09a-T09e (F5a — ver `tasks.md`). Depois, T09/T15 reais (Google OAuth) e um documento à parte pro time de TI com os pré-requisitos de infra (OAuth Client ID, domínio autorizado, etc.) — pedido pelo usuário, ainda não escrito. Fase 4 (Email/Storage) segue sem data.
 
 ---
 
@@ -52,8 +70,9 @@
 | Reatribuição Admin | Admin pode mover chamado entre atendentes mesmo em `EmAndamento` via endpoint `/reatribuir` separado do `/atribuir` — planejado para Fase 6 |
 | Ordem Fase 6 vs Fase 7 | Fase 7 (Relatório Mensal) antecipada na frente de T09/T15 (Google auth) — decisão de 2026-07-14, motivada por prazo real de fechamento mensal pra superintendência |
 | Relatório mensal | É um documento de período fechado (mês), não uma view "semanal" do dashboard operacional — dashboard fica com números em tempo real, relatório é outra tela/exportação (Fase 7) |
-| Chamados finalizados nunca são apagados | Pedido do usuário era "remover" chamados Resolvidos/Cancelados da vista — decidido que a solução é uma tela separada de leitura filtrada (`.specs/features/arquivo-de-chamados/`), não exclusão. Apagar quebraria `HistoricoEntrada` e os números já fechados do Relatório Mensal | 2026-07-16 |
-| Cores de gráfico usam tokens do tema | `DonutChart`/`CategoriaChart` passaram a usar `var(--chart-1..5)` e `var(--status-good/critical)` (definidos em `frontend/src/index.css`) em vez de hex fixo por chamada — validado com a skill `dataviz` (`validate_palette.js`) contra as superfícies reais do app (branco no claro, `#0f1c1a` no escuro) | 2026-07-16 |
+| F5a antes de F5b (2026-07-15) | Login mockado por e-mail + cadastro de usuários (Admin) vira um passo intermediário antes do Google OAuth real, em vez de pular direto pro T09 — motivado por ser mais seguro testar o modelo conta→perfil sem inventar um sistema de senha descartável. Tabela `UsuarioPerfil` é reaproveitada sem mudança quando o F5b (OAuth real) entrar |
+| Chamados finalizados nunca são apagados (2026-07-16) | Pedido do usuário era "remover" chamados Resolvidos/Cancelados da vista — decidido que a solução é uma tela separada de leitura filtrada (`.specs/features/arquivo-de-chamados/`), não exclusão. Apagar quebraria `HistoricoEntrada` e os números já fechados do Relatório Mensal |
+| Cores de gráfico usam tokens do tema (2026-07-16) | `DonutChart`/`CategoriaChart` passaram a usar `var(--chart-1..5)` e `var(--status-good/critical)` (definidos em `frontend/src/index.css`) em vez de hex fixo por chamada — validado com a skill `dataviz` (`validate_palette.js`) contra as superfícies reais do app (branco no claro, `#0f1c1a` no escuro) |
 
 ---
 
@@ -69,19 +88,20 @@ Nenhum.
 |-----------|---------|
 | Hospedagem em produção | Onde a API vai rodar (VM, Docker, Azure App Service etc.) e como a connection string será injetada |
 | Fase 4 | Email + Storage ainda não implementados — aguardando priorização |
-| **Commitar/pushar mudanças de dataviz** | 6 arquivos de frontend alterados em 2026-07-16 (ver `.specs/HANDOFF.md`) ainda não commitados/pushados pra `develop` |
 | **Implementar spec `arquivo-de-chamados`** | Spec pronta (`.specs/features/arquivo-de-chamados/spec.md`), falta Design → Tasks → Execute |
+| **⚠️ Débito técnico da revisão sênior (2026-07-16)** | 15 itens (Médio/Baixo) documentados em `.specs/codebase/CONCERNS.md` — usuário pediu explicitamente pra não esquecer de tratá-los numa sessão futura |
 
 ---
 
 ## 📋 TODOs (ordenados por prioridade)
 
-1. Commitar e pushar as mudanças de dataviz de 2026-07-16 pra `develop`
-2. Retomar T09/T15 (Google Workspace auth)
-3. Quando T09 entrar: trocar `UsuarioId`/`UsuarioNome` (hoje enviados pelo cliente, aceitáveis só por não haver auth real) por extração via claims do JWT no backend
-4. "Forçar encerramento" (Admin fechar/cancelar fora do fluxo normal) — item da spec da Fase 6 ainda não abordado
-5. Revisar se as outras telas com soft-RBAC (Dashboard/Kanban/Fila — só escondem o link, sem bloqueio de rota) precisam do mesmo tratamento que o Relatório Mensal recebeu, ou se ficam assim até o login real (T09) trazer autenticação de verdade
-6. Implementar `arquivo-de-chamados` (Design → Tasks → Execute) a partir da spec já pronta
+1. **⚠️ Resolver o débito técnico documentado em `CONCERNS.md` (15 itens da revisão de 2026-07-16)** — usuário pediu explicitamente para não esquecer. Prioridade dentro do grupo: D-01 (auditoria do Kanban) e D-02 (auto-lockout de Admin) são os mais importantes dos Médios
+2. Implementar `arquivo-de-chamados` (Design → Tasks → Execute) a partir da spec já pronta
+3. Escrever documento pro time de TI com os pré-requisitos de infra do Google Workspace OAuth (Client ID, domínio autorizado, redirect URIs) — pedido pelo usuário em 2026-07-15, ainda não feito
+4. Retomar T09/T15 reais (Google Workspace OAuth) — depende de 3
+5. Quando T09 (real) entrar: trocar `UsuarioId`/`UsuarioNome` (hoje enviados pelo cliente, aceitáveis só por não haver auth real) por extração via claims do JWT no backend
+7. "Forçar encerramento" (Admin fechar/cancelar fora do fluxo normal) — item da spec da Fase 6 ainda não abordado
+8. Revisar se as outras telas com soft-RBAC (Dashboard/Kanban/Fila — só escondem o link, sem bloqueio de rota) precisam do mesmo tratamento que o Relatório Mensal recebeu, ou se ficam assim até o login real (T09) trazer autenticação de verdade
 
 ## ✅ Concluído recentemente
 

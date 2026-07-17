@@ -81,3 +81,13 @@ export interface HistoricoResponse {
   detalheNovo: string | null;
   dataHora: string;
 }
+
+export type TipoPerfil = "Admin" | "Atendente" | "Solicitante";
+
+export interface UsuarioPerfilResponse {
+  id: string;
+  email: string;
+  nome: string;
+  perfil: TipoPerfil;
+  ativo: boolean;
+}
