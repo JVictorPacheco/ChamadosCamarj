@@ -1,8 +1,8 @@
 # Handoff
 
 **Date:** 2026-07-18
-**Feature:** Os 3 passos confirmados pelo usuário em 2026-07-16 estão TODOS concluídos
-**Task:** Passo 2 (`arquivo-de-chamados`) e passo 3 (documento pra TI) concluídos nesta sessão. Nada pendente de commit/push desses 3 passos. **Próximo passo real, ainda sem ordem formal confirmada:** retomar T09/T15 (Google OAuth real) — mas isso está bloqueado até a TI devolver o Client ID (documento já entregue) e a hospedagem de produção ser decidida.
+**Feature:** Os 3 passos confirmados pelo usuário em 2026-07-16 estão TODOS concluídos + Design do T09/F5b (login real Google) adiantado
+**Task:** Passo 2 (`arquivo-de-chamados`) e passo 3 (documento pra TI) concluídos e commitados. Depois disso, adiantado o **Design** completo do T09/F5b (`.specs/features/fase-6-admin-log/design-t09-google-oauth.md`), com pesquisa de documentação atual (Context7 + Microsoft Learn) e 3 decisões de segurança confirmadas com o usuário (chave JWT simétrica, token 8-12h sem refresh, logout automático por 20min de inatividade). **Ainda não commitado** — ver Pending. Execute do T09 continua bloqueado até a TI devolver o Client ID, mas o Design/Tasks não dependem disso.
 
 ## Completed ✓
 
@@ -31,9 +31,9 @@ Nada em execução.
 3. ~~🥉 Documento pra TI sobre Google Workspace OAuth~~ **✅ CONCLUÍDO em 2026-07-18** — `.specs/features/fase-6-admin-log/oauth-requisitos-ti.md`, escrito em linguagem não-técnica, cobre o que fazer no Google Cloud Console e o que devolver (Client ID). Sinaliza que o redirect URI de produção depende da decisão de hospedagem (pendência separada).
 
 **A partir daqui não há mais uma ordem confirmada pelo usuário — perguntar antes de assumir prioridade.** Candidatos naturais (ver `STATE.md` → TODOs):
-4. **T09 (F5b)** — Login real via Google Workspace: endpoint `POST /auth/google`, JWT. **Bloqueado** até a TI devolver o Client ID (documento já entregue) e a hospedagem de produção ser decidida.
-5. **T15** — Frontend: substituir `LoginPage` (F5a, já em produção) pelo fluxo OAuth real. Depende de T09.
-6. Quando T09 (real) entrar: trocar `UsuarioId`/`UsuarioNome` (hoje enviados pelo cliente nos commands de Reatribuir/AlterarPrioridade/Resolver/Fechar/Cancelar) por extração via claims do JWT no backend.
+4. **T09 (F5b) — Design CONCLUÍDO em 2026-07-18** (`design-t09-google-oauth.md`), Tasks/Execute ainda não feitos. Endpoint `POST /auth/google`, JWT simétrico (8-12h, sem refresh), logout automático por 20min de inatividade, `ICurrentUserService` substituindo `UsuarioId`/`UsuarioNome`/`perfilRequisitante` client-supplied. **Execute bloqueado** até a TI devolver o Client ID — mas o **Tasks** (quebra atômica) pode ser feito antes disso, não depende do valor real do Client ID.
+5. **T15** — Frontend: substituir `LoginPage` (F5a, já em produção) pelo fluxo OAuth real. Já coberto no design do T09 acima (T09.5/T09.6).
+6. ~~Quando T09 (real) entrar: trocar `UsuarioId`/`UsuarioNome` por claims do JWT~~ — já endereçado no design via `ICurrentUserService`, falta só o Execute.
 7. "Forçar encerramento" (Admin fechar/cancelar fora do fluxo normal) — item da spec da Fase 6 ainda não abordado.
 8. Revisar se Dashboard/Kanban/Fila (soft-RBAC) precisam do mesmo bloqueio real que o Relatório Mensal e o `Admin > Usuários` já receberam, ou se ficam assim até T09.
 9. Fase 4 (Email/Storage) segue sem data.
