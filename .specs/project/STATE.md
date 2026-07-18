@@ -12,7 +12,9 @@
 
 **Ajuste de UX também feito durante a sessão (a pedido do usuário):** os campos de filtro de período apareciam em "Meus Chamados" também (reaproveitamento do componente `FiltroChamados`), sem nenhuma legenda visível — confuso. Corrigido: campos de data só aparecem no Arquivo (`mostrarPeriodo` prop, default `false`), agora com labels visíveis "De"/"Até".
 
-**Próximo: passo 3, escrever o documento pra TI sobre os pré-requisitos de infra do Google Workspace OAuth.**
+**Passo 3 dos 3 confirmados também concluído nesta mesma sessão:** documento `.specs/features/fase-6-admin-log/oauth-requisitos-ti.md` criado — explica pro time de TI (linguagem não-técnica) como criar o projeto/credenciais OAuth no Google Cloud Console (tipo "Internal", restrito a `camarj.com.br`), o que devolver pro dev (Client ID) e o que NÃO precisa (Client Secret, aprovação pública, cadastro de usuários). **Bloqueio sinalizado no próprio documento:** o redirect URI de produção depende da decisão de hospedagem (pendência já registrada abaixo) — não impede começar os passos 1-3 do documento, só o passo 4 final.
+
+**Os 3 passos confirmados pelo usuário em 2026-07-16 estão TODOS concluídos.** Próximo passo real (não mais parte da lista dos 3) seria retomar T09/T15 (Google OAuth real) — mas isso depende da TI de fato configurar o Client ID e da decisão de hospedagem em produção, então fica bloqueado até essas respostas chegarem.
 
 **Sessão de 2026-07-17: passo 1 dos 3 confirmados concluído — débito técnico resolvido.** Os 15 itens (D-01 a D-15) documentados em `.specs/codebase/CONCERNS.md` foram todos corrigidos (backend e frontend em paralelo, via 2 agentes + 1 correção manual complementar). Destaques: Kanban agora gera `HistoricoEntrada` (D-01, incluindo o `usuarioId`/`usuarioNome` reais no frontend, que tinha ficado faltando na primeira passada do agente); guarda contra autodesativar o último Admin (D-02); paginação de chamados validada (D-03); checagem de Admin movida pra dentro dos Handlers de Usuarios com um `PerfilRequisitanteGuard` compartilhado (D-09); mais 11 itens de consistência/qualidade menores. 2 decisões de design foram confirmadas explicitamente com o usuário (enum `AcaoHistorico.StatusAlterado` novo, e o guard compartilhado). 169 testes de backend passando, builds limpos nos dois lados. `CONCERNS.md` agora só tem os itens antigos (todos resolvidos) — nada em aberto. **Próximo: passo 2, implementar `arquivo-de-chamados` "com tudo certinho" (Design → Tasks → Execute completos).**
 
@@ -96,17 +98,18 @@ Nenhum.
 
 | Pendência | Detalhe |
 |-----------|---------|
-| Hospedagem em produção | Onde a API vai rodar (VM, Docker, Azure App Service etc.) e como a connection string será injetada |
+| Hospedagem em produção | Onde a API vai rodar (VM, Docker, Azure App Service etc.) — agora também bloqueia o passo 4 do documento de TI (redirect URI de produção do OAuth), ver `.specs/features/fase-6-admin-log/oauth-requisitos-ti.md` |
 | Fase 4 | Email + Storage ainda não implementados — aguardando priorização |
+| Resposta da TI sobre o Client ID do Google OAuth | Documento entregue em 2026-07-18 (`oauth-requisitos-ti.md`) — aguardando a TI configurar e devolver o Client ID antes de retomar T09/T15 |
 
 ---
 
-## 📋 TODOs (ordenados por prioridade — ordem CONFIRMADA explicitamente pelo usuário em 2026-07-16, não repriorizar sem checar de novo)
+## 📋 TODOs (ordenados por prioridade — os 3 confirmados em 2026-07-16 estão TODOS concluídos; itens abaixo ainda não têm prioridade formal confirmada)
 
-1. ~~Resolver o débito técnico documentado em `CONCERNS.md`~~ ✅ **CONCLUÍDO em 2026-07-17** — 15 itens (D-01 a D-15) corrigidos, ver "Onde estamos"
-2. ~~Implementar `arquivo-de-chamados` "com tudo certinho"~~ ✅ **CONCLUÍDO em 2026-07-18** — Design → Tasks → Execute completos, bug de DateTime/UTC encontrado e corrigido, ver "Onde estamos"
-3. **Escrever documento pro time de TI com os pré-requisitos de infra do Google Workspace OAuth** (Client ID, domínio autorizado, redirect URIs) — pedido pelo usuário em 2026-07-15 — **próximo passo agora**
-4. Retomar T09/T15 reais (Google Workspace OAuth) — depende de 3
+1. ~~Resolver o débito técnico documentado em `CONCERNS.md`~~ ✅ **CONCLUÍDO em 2026-07-17**
+2. ~~Implementar `arquivo-de-chamados` "com tudo certinho"~~ ✅ **CONCLUÍDO em 2026-07-18**
+3. ~~Escrever documento pro time de TI com os pré-requisitos de infra do Google Workspace OAuth~~ ✅ **CONCLUÍDO em 2026-07-18** — `.specs/features/fase-6-admin-log/oauth-requisitos-ti.md`
+4. Retomar T09/T15 reais (Google Workspace OAuth) — **bloqueado** até a TI devolver o Client ID e a hospedagem de produção ser decidida
 5. Quando T09 (real) entrar: trocar `UsuarioId`/`UsuarioNome` (hoje enviados pelo cliente, aceitáveis só por não haver auth real) por extração via claims do JWT no backend
 6. "Forçar encerramento" (Admin fechar/cancelar fora do fluxo normal) — item da spec da Fase 6 ainda não abordado
 7. Revisar se as outras telas com soft-RBAC (Dashboard/Kanban/Fila — só escondem o link, sem bloqueio de rota) precisam do mesmo tratamento que o Relatório Mensal e o `Admin > Usuários` receberam, ou se ficam assim até o login real (T09) trazer autenticação de verdade

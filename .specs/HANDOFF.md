@@ -1,8 +1,8 @@
 # Handoff
 
 **Date:** 2026-07-18
-**Feature:** `arquivo-de-chamados` implementado (passo 2 de 3 confirmados)
-**Task:** Passo 2 concluído e commitado nesta sessão — Design → Tasks → Execute completos, bug de DateTime/UTC encontrado pelo usuário e corrigido, reteste confirmado ok. Próximo: passo 3, documento pra TI sobre Google Workspace OAuth.
+**Feature:** Os 3 passos confirmados pelo usuário em 2026-07-16 estão TODOS concluídos
+**Task:** Passo 2 (`arquivo-de-chamados`) e passo 3 (documento pra TI) concluídos nesta sessão. Nada pendente de commit/push desses 3 passos. **Próximo passo real, ainda sem ordem formal confirmada:** retomar T09/T15 (Google OAuth real) — mas isso está bloqueado até a TI devolver o Client ID (documento já entregue) e a hospedagem de produção ser decidida.
 
 ## Completed ✓
 
@@ -24,12 +24,14 @@
 
 Nada em execução.
 
-## Pending — ORDEM CONFIRMADA PELO USUÁRIO EM 2026-07-16, SEGUIR ASSIM
+## Pending — os 3 passos confirmados em 2026-07-16 estão TODOS concluídos
 
 1. ~~🥇 Resolver o débito técnico da revisão sênior~~ **✅ CONCLUÍDO e commitado em 2026-07-17.**
 2. ~~🥈 Implementar a spec `arquivo-de-chamados` "com tudo certinho"~~ **✅ CONCLUÍDO, testado e commitado em 2026-07-18** — ver "Completed" acima pro bug de DateTime/UTC encontrado e corrigido.
-3. **🥉 Documento pra TI** — texto explicando os pré-requisitos de infra pro Google Workspace OAuth (Client ID, domínio autorizado, redirect URIs, Workspace admin console). Pré-requisito pra retomar T09/T15 (login real). **Próximo passo agora.**
-4. **T09 (F5b)** — Login real via Google Workspace: endpoint `POST /auth/google`, JWT. Depende do documento de TI (item 3) pra ter os dados de configuração reais.
+3. ~~🥉 Documento pra TI sobre Google Workspace OAuth~~ **✅ CONCLUÍDO em 2026-07-18** — `.specs/features/fase-6-admin-log/oauth-requisitos-ti.md`, escrito em linguagem não-técnica, cobre o que fazer no Google Cloud Console e o que devolver (Client ID). Sinaliza que o redirect URI de produção depende da decisão de hospedagem (pendência separada).
+
+**A partir daqui não há mais uma ordem confirmada pelo usuário — perguntar antes de assumir prioridade.** Candidatos naturais (ver `STATE.md` → TODOs):
+4. **T09 (F5b)** — Login real via Google Workspace: endpoint `POST /auth/google`, JWT. **Bloqueado** até a TI devolver o Client ID (documento já entregue) e a hospedagem de produção ser decidida.
 5. **T15** — Frontend: substituir `LoginPage` (F5a, já em produção) pelo fluxo OAuth real. Depende de T09.
 6. Quando T09 (real) entrar: trocar `UsuarioId`/`UsuarioNome` (hoje enviados pelo cliente nos commands de Reatribuir/AlterarPrioridade/Resolver/Fechar/Cancelar) por extração via claims do JWT no backend.
 7. "Forçar encerramento" (Admin fechar/cancelar fora do fluxo normal) — item da spec da Fase 6 ainda não abordado.
