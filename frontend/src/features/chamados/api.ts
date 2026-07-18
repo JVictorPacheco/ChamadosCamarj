@@ -20,6 +20,9 @@ export interface ListarChamadosFiltros {
   categoriaId?: string
   busca?: string
   solicitanteEmail?: string
+  finalizados?: boolean
+  dataInicio?: string
+  dataFim?: string
 }
 
 function buildQueryString<T extends object>(filtros: T): string {

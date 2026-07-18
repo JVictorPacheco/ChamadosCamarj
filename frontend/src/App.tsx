@@ -8,6 +8,7 @@ import { AppLayout } from './layouts/AppLayout'
 import { SignalRProvider } from './hooks/useSignalR'
 import { AbrirChamadoPage } from './features/chamados/AbrirChamadoPage'
 import { ChamadosListPage } from './features/chamados/ChamadosListPage'
+import { ArquivoChamadosPage } from './features/chamados/ArquivoChamadosPage'
 import { ChamadoDetailPage } from './features/chamados/ChamadoDetailPage'
 import { KanbanPage } from './features/chamados/KanbanPage'
 import { FilaAtendimentoPage } from './features/chamados/FilaAtendimentoPage'
@@ -68,6 +69,7 @@ function AppRoutes() {
       <Route element={<ProtectedRoute />}>
         <Route path="/chamados" element={<ChamadosListPage />} />
         <Route path="/chamados/novo" element={<AbrirChamadoPage />} />
+        <Route path="/chamados/arquivo" element={<ArquivoChamadosPage />} />
         <Route path="/chamados/:id" element={<ChamadoDetailPage />} />
         <Route path="/atendimento/kanban" element={<KanbanPage />} />
         <Route path="/atendimento/dashboard" element={<DashboardPage />} />

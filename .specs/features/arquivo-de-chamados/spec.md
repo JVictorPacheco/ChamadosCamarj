@@ -1,6 +1,6 @@
 # Spec — Arquivo de Chamados (Encerrados)
 
-> Status: DRAFT (aguardando Design)
+> Status: IMPLEMENTADA (ARQ-T01 a ARQ-T06 completas, 2026-07-17) — aguardando validação do usuário e commit
 > Criado em: 2026-07-16
 > Pedido feito pelo usuário durante teste manual da aplicação (branch `develop`, sessão de 2026-07-16)
 
@@ -117,14 +117,14 @@ Hoje, chamados `Resolvido`, `Fechado` e `Cancelado` continuam misturados nas mes
 
 | Requirement ID | Story | Phase | Status |
 |---|---|---|---|
-| ARQ-01 | P1: Listar só finalizados, paginado | Design | Pending |
-| ARQ-02 | P1: Link pro Detalhe do Chamado | Design | Pending |
-| ARQ-03 | P1: RBAC por perfil (mesmo padrão de "Meus Chamados") | Design | Pending |
-| ARQ-04 | P1: Filtro por período (DataCriacao) | Design | Pending |
-| ARQ-05 | P1: Filtro por prioridade | Design | Pending |
-| ARQ-06 | P2: Filtro por status/categoria/busca | Design | Pending |
+| ARQ-01 | P1: Listar só finalizados, paginado | ARQ-T01, ARQ-T05 | Mapped |
+| ARQ-02 | P1: Link pro Detalhe do Chamado | ARQ-T05 (reaproveita `ChamadoCard`) | Mapped |
+| ARQ-03 | P1: RBAC por perfil (mesmo padrão de "Meus Chamados") | ARQ-T05 | Mapped |
+| ARQ-04 | P1: Filtro por período (DataCriacao) | ARQ-T01, ARQ-T02, ARQ-T03, ARQ-T04 | Mapped |
+| ARQ-05 | P1: Filtro por prioridade | ARQ-T03, ARQ-T04 | Mapped |
+| ARQ-06 | P2: Filtro por status/categoria/busca | ARQ-T03, ARQ-T05 | Mapped |
 
-**Coverage:** 6 total, 0 mapped to tasks, 6 unmapped ⚠️ (aguardando Design)
+**Coverage:** 6 total, 6 mapped to tasks, 0 unmapped — ver `tasks.md` para detalhamento e `design.md` para arquitetura.
 
 ---
 

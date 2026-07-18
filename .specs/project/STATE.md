@@ -1,10 +1,18 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-07-17
+> Atualizado em: 2026-07-18
 
 ---
 
 ## 📍 Onde estamos
+
+**Sessão de 2026-07-18: passo 2 dos 3 confirmados concluído — `arquivo-de-chamados` implementado via Design → Tasks → Execute completos.** Nova tela "Arquivo" (menu lateral, todos os perfis) lista só chamados Resolvido/Fechado/Cancelado, com filtros de status/prioridade/categoria/busca/período (mesmo RBAC de "Meus Chamados"). Backend: `Finalizados=true` + `DataInicio`/`DataFim` em `ListarChamadosQuery` (sem quebrar quem já usa `Status` como filtro único). 174 testes passando.
+
+**Bug real encontrado pelo usuário ao testar e corrigido na mesma sessão:** filtrar por qualquer data quebrava com 500 (`Cannot write DateTime with Kind=Unspecified to PostgreSQL type 'timestamp with time zone'`) — o model binding do ASP.NET Core cria `DateTime` sem `Kind` a partir da query string, mas a coluna é `timestamp with time zone`. Corrigido no `ListarChamadosQueryHandler` convertendo pra UTC explicitamente, com `DataFim` virando o fim do dia (23:59:59.999) em vez da meia-noite. Retestado pelo usuário, confirmado ok.
+
+**Ajuste de UX também feito durante a sessão (a pedido do usuário):** os campos de filtro de período apareciam em "Meus Chamados" também (reaproveitamento do componente `FiltroChamados`), sem nenhuma legenda visível — confuso. Corrigido: campos de data só aparecem no Arquivo (`mostrarPeriodo` prop, default `false`), agora com labels visíveis "De"/"Até".
+
+**Próximo: passo 3, escrever o documento pra TI sobre os pré-requisitos de infra do Google Workspace OAuth.**
 
 **Sessão de 2026-07-17: passo 1 dos 3 confirmados concluído — débito técnico resolvido.** Os 15 itens (D-01 a D-15) documentados em `.specs/codebase/CONCERNS.md` foram todos corrigidos (backend e frontend em paralelo, via 2 agentes + 1 correção manual complementar). Destaques: Kanban agora gera `HistoricoEntrada` (D-01, incluindo o `usuarioId`/`usuarioNome` reais no frontend, que tinha ficado faltando na primeira passada do agente); guarda contra autodesativar o último Admin (D-02); paginação de chamados validada (D-03); checagem de Admin movida pra dentro dos Handlers de Usuarios com um `PerfilRequisitanteGuard` compartilhado (D-09); mais 11 itens de consistência/qualidade menores. 2 decisões de design foram confirmadas explicitamente com o usuário (enum `AcaoHistorico.StatusAlterado` novo, e o guard compartilhado). 169 testes de backend passando, builds limpos nos dois lados. `CONCERNS.md` agora só tem os itens antigos (todos resolvidos) — nada em aberto. **Próximo: passo 2, implementar `arquivo-de-chamados` "com tudo certinho" (Design → Tasks → Execute completos).**
 
@@ -90,15 +98,14 @@ Nenhum.
 |-----------|---------|
 | Hospedagem em produção | Onde a API vai rodar (VM, Docker, Azure App Service etc.) e como a connection string será injetada |
 | Fase 4 | Email + Storage ainda não implementados — aguardando priorização |
-| **Implementar spec `arquivo-de-chamados`** | Spec pronta (`.specs/features/arquivo-de-chamados/spec.md`), falta Design → Tasks → Execute |
 
 ---
 
 ## 📋 TODOs (ordenados por prioridade — ordem CONFIRMADA explicitamente pelo usuário em 2026-07-16, não repriorizar sem checar de novo)
 
 1. ~~Resolver o débito técnico documentado em `CONCERNS.md`~~ ✅ **CONCLUÍDO em 2026-07-17** — 15 itens (D-01 a D-15) corrigidos, ver "Onde estamos"
-2. **Implementar `arquivo-de-chamados` "com tudo certinho"** (Design → Tasks → Execute completos, sem pular etapas) a partir da spec já pronta — **próximo passo agora**
-3. Escrever documento pro time de TI com os pré-requisitos de infra do Google Workspace OAuth (Client ID, domínio autorizado, redirect URIs) — pedido pelo usuário em 2026-07-15, ainda não feito
+2. ~~Implementar `arquivo-de-chamados` "com tudo certinho"~~ ✅ **CONCLUÍDO em 2026-07-18** — Design → Tasks → Execute completos, bug de DateTime/UTC encontrado e corrigido, ver "Onde estamos"
+3. **Escrever documento pro time de TI com os pré-requisitos de infra do Google Workspace OAuth** (Client ID, domínio autorizado, redirect URIs) — pedido pelo usuário em 2026-07-15 — **próximo passo agora**
 4. Retomar T09/T15 reais (Google Workspace OAuth) — depende de 3
 5. Quando T09 (real) entrar: trocar `UsuarioId`/`UsuarioNome` (hoje enviados pelo cliente, aceitáveis só por não haver auth real) por extração via claims do JWT no backend
 6. "Forçar encerramento" (Admin fechar/cancelar fora do fluxo normal) — item da spec da Fase 6 ainda não abordado
@@ -106,6 +113,7 @@ Nenhum.
 
 ## ✅ Concluído recentemente
 
+- **`arquivo-de-chamados` implementado** (2026-07-18): tela "Arquivo" (todos os perfis, mesmo RBAC de "Meus Chamados"), filtros de status/prioridade/categoria/busca/período. Backend com `Finalizados=true` + `DataInicio`/`DataFim` em `ListarChamadosQuery`, sem quebrar filtros existentes. Bug de DateTime Kind=Unspecified vs Postgres timestamptz encontrado pelo usuário e corrigido na mesma sessão. Ajuste de UX: filtro de período só no Arquivo (não em "Meus Chamados"), com labels visíveis. 174 testes passando
 - **Débito técnico da revisão sênior resolvido** (2026-07-17): 15 itens (D-01 a D-15) de `CONCERNS.md` corrigidos — auditoria do Kanban, guarda contra autodesativar o último Admin, validação de paginação, `HistoricoEntrada` com ctor privado, dashboard com query unificada, checagem de Admin movida pra Handlers (`PerfilRequisitanteGuard`), indentação, reconexão do SignalR, cores hardcoded no Kanban, arquivo morto removido, consistência de non-null assertion, race condition no Dashboard. 169 testes passando, builds limpos
 - **F5a commitada e pushada em `develop`** (2026-07-16, commits `76ce0d1`/`a0747a7`): login mockado por e-mail + cadastro de usuários pelo Admin (T09a-T09e), revisão sênior com 4 bugs Altos corrigidos antes do commit, bloqueio real de RBAC em `/admin/usuarios`
 - **Melhorias de visualização de dados no Dashboard e Relatório Mensal** (2026-07-16): cores de gráfico migradas pra tokens do tema (`--chart-1..5`, `--status-good/critical`), bug de cor cinza-puro corrigido no modo claro, labels diretos nas fatias da rosca (resolve ilegibilidade no PDF exportado), cor de sinal na variação % do Relatório Mensal. Detalhes técnicos completos em `.specs/HANDOFF.md`
@@ -166,3 +174,4 @@ Nenhum.
 - **Reset de senha do Supabase:** no dashboard, o campo que mostra uma senha "gerada" não a aplica de verdade até o botão de confirmar/reset ser clicado — copiar a sugestão sem confirmar deixa a senha antiga válida, e a conexão falha com `28P01: password authentication failed` mesmo com a senha "certa". Pra isolar esse tipo de problema rápido: testar a connection string fora do `dotnet run` (ex: script `.cs` de arquivo único com `#:package Npgsql@...`) e comparar o erro com um projeto/usuário propositalmente inválido — `tenant/user not found` confirma que a connection string está certa e sobrou só a senha; `password authentication failed` com o projeto certo confirma que é mesmo a senha
 - Recharts v3 (`Pie` com `label` customizado): os labels só aparecem depois que a animação de entrada termina (`showLabels: !isAnimating` no código-fonte) — num teste automatizado ou num print disparado cedo demais, os labels simplesmente não existem no DOM ainda. Setar `isAnimationActive={false}` na `Pie` quando o gráfico precisa ter os valores sempre visíveis (ex: relatório exportável em PDF) resolve de forma determinística, em vez de torcer pro timing dar certo
 - Ao commitar uma feature grande implementada por múltiplos subagentes em paralelo/sequência (caso da F5a), `git add` com uma lista explícita de caminhos é mais arriscado que parece — um arquivo criado por um subagente (`UsuarioPerfilConfiguration.cs`, criado no T09a) ficou de fora da lista e só foi percebido depois do commit, num `git status` de checagem. `dotnet build` não pega isso porque o arquivo existe no disco, só não está no commit — a lacuna só aparece num clone limpo. Depois de um `git add` explícito em cenário assim, rodar `git status -s` de novo ANTES do commit e comparar contra a lista de arquivos que os subagentes relataram ter criado
+- **Filtro de data + EF Core + Npgsql:** um `DateTime?` vindo de model binding de query string (`[FromQuery] DateTime?`) chega com `Kind=Unspecified`. Se a coluna do Postgres for `timestamp with time zone` (padrão do projeto pra datas), o Npgsql recusa em runtime com `Cannot write DateTime with Kind=Unspecified..., only UTC is supported` — só aparece quando o filtro é de fato usado, não no build/testes com mock. Sempre que um parâmetro de data novo entrar numa query filtrando uma coluna `timestamptz`, converter explicitamente com `DateTime.SpecifyKind(valor, DateTimeKind.Utc)` antes de repassar pro repositório. Detalhe extra: filtro de "data final" deve virar o **fim do dia** (`.AddDays(1).AddTicks(-1)`), não a meia-noite, senão um período de 1 dia só (`dataInicio == dataFim`) não retorna nada criado depois de 00:00

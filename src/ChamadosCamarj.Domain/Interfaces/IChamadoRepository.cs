@@ -28,6 +28,9 @@ public interface IChamadoRepository
         Guid? categoriaId = null,
         string? busca = null,
         string? solicitanteEmail = null,
+        IEnumerable<StatusChamado>? statusEntre = null,
+        DateTime? dataInicio = null,
+        DateTime? dataFim = null,
         CancellationToken cancellationToken = default);
 
     // Verificações

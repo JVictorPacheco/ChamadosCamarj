@@ -1,8 +1,8 @@
 # Handoff
 
-**Date:** 2026-07-17
-**Feature:** Débito técnico da revisão sênior resolvido (passo 1 de 3 confirmados)
-**Task:** Passo 1 (débito técnico, 15 itens do `CONCERNS.md`) concluído nesta sessão — build/testes limpos, ainda não commitado (ver Pending). Próximo: passo 2, `arquivo-de-chamados` "com tudo certinho".
+**Date:** 2026-07-18
+**Feature:** `arquivo-de-chamados` implementado (passo 2 de 3 confirmados)
+**Task:** Passo 2 concluído e commitado nesta sessão — Design → Tasks → Execute completos, bug de DateTime/UTC encontrado pelo usuário e corrigido, reteste confirmado ok. Próximo: passo 3, documento pra TI sobre Google Workspace OAuth.
 
 ## Completed ✓
 
@@ -17,6 +17,8 @@
   - `npm run build`/`npm run lint` limpos. Usuário concordou explicitamente com o diagnóstico e as 4 mudanças antes da implementação.
 - **F5a/F5b especificadas** (sessão 2026-07-15): spec de `fase-6-admin-log` dividida — F5a (login mockado por e-mail + `UsuarioPerfil` + cadastro de usuários pelo Admin) como passo intermediário não descartável, F5b (Google OAuth real) reaproveitando a mesma tabela depois. `design.md` e `tasks.md` (T09a-T09e) criados em `.specs/features/fase-6-admin-log/`.
 - **F5a IMPLEMENTADA, revisada e PUSHADA em `develop`** (sessão seguinte, mesmo dia 2026-07-16): T09a-T09e completas via Execute do skill spec-driven — enum `Perfil`, entidade/tabela `UsuarioPerfil`, `UsuariosController` (4 endpoints), `AuthContext`/`LoginPage` reescritos, tela `Admin > Usuários` com botão de Desativar/Reativar e bloqueio real de RBAC. Usuários de teste: Victor (Admin), Fábio (Atendente), Ana Colaboradora (Solicitante). Antes do commit, uma revisão de code review sênior (backend + frontend, pedida explicitamente pelo usuário) encontrou 19 itens — os 4 de severidade Alta foram corrigidos na hora (reativação de e-mail desativado quebrando com 500; três casos de erro engolido em silêncio no frontend: desativar usuário, assumir chamado na fila, carregar atendentes pra reatribuir). Os outros 15 (Médio/Baixo) foram documentados em `.specs/codebase/CONCERNS.md` (seção "EM ABERTO") — **usuário pediu explicitamente pra não esquecer de tratá-los depois.** Commitado (`76ce0d1` + `a0747a7`, o segundo corrigindo um arquivo esquecido no primeiro) e confirmado pushado pelo usuário no terminal dele.
+- **Débito técnico resolvido e commitado** (2026-07-17): 15 itens (D-01 a D-15) de `CONCERNS.md` corrigidos via 2 agentes em paralelo + 1 correção manual complementar (D-01 precisou do frontend do Kanban enviando `usuarioId`/`usuarioNome` reais, que os agentes tinham deixado passar). 2 decisões de design confirmadas: enum `AcaoHistorico.StatusAlterado`, `PerfilRequisitanteGuard` compartilhado.
+- **`arquivo-de-chamados` IMPLEMENTADA e commitada** (2026-07-18): Design → Tasks → Execute completos, seguindo o skill spec-driven do zero. Nova tela "Arquivo" (todos os perfis, mesmo RBAC de "Meus Chamados") lista só chamados Resolvido/Fechado/Cancelado, com filtros de status/prioridade/categoria/busca/período. Backend: `Finalizados=true` + `DataInicio`/`DataFim` em `ListarChamadosQuery`, aditivo (não quebra Kanban/Fila que usam `Status` sozinho). **Bug real encontrado pelo usuário ao testar** (filtrar por data quebrava com 500 — `DateTime Kind=Unspecified` vs coluna `timestamptz` do Postgres) — corrigido no `ListarChamadosQueryHandler` convertendo pra UTC explicitamente, com `DataFim` virando fim do dia. Reteste do usuário confirmou ok. Ajuste de UX também feito: filtro de período só aparece no Arquivo (não em "Meus Chamados", que reaproveitava o mesmo componente sem necessidade), com labels visíveis "De"/"Até". 174 testes passando.
 
 ## In Progress
 
@@ -24,9 +26,9 @@ Nada em execução.
 
 ## Pending — ORDEM CONFIRMADA PELO USUÁRIO EM 2026-07-16, SEGUIR ASSIM
 
-1. ~~🥇 Resolver o débito técnico da revisão sênior~~ **✅ CONCLUÍDO em 2026-07-17** — 15 itens (D-01 a D-15) corrigidos via 2 agentes em paralelo (backend/frontend) + 1 correção manual complementar (D-01 estava faltando a integração do frontend do Kanban enviando `usuarioId`/`usuarioNome` reais). 2 decisões de design confirmadas com o usuário: enum `AcaoHistorico.StatusAlterado` novo, e `PerfilRequisitanteGuard` compartilhado. 169 testes passando, builds limpos. **Ainda não commitado/pushado** — fazer isso antes de prosseguir pro passo 2.
-2. **🥈 Implementar a spec `arquivo-de-chamados`** "com tudo certinho" (palavras do usuário — seguir o fluxo completo Design → Tasks → Execute do skill spec-driven, não pular etapas). Está só no estágio de Spec. Ver notas técnicas na própria spec: estender `ListarChamadosQuery.Status` pra aceitar lista (ou um novo parâmetro `Finalizados=true`), e adicionar o filtro de prioridade que já existe no backend mas não no componente `FiltroChamados.tsx` do frontend. **Próximo passo desta sessão.**
-3. **🥉 Documento pra TI** — texto explicando os pré-requisitos de infra pro Google Workspace OAuth (Client ID, domínio autorizado, redirect URIs, Workspace admin console). Pré-requisito pra retomar T09/T15 (login real).
+1. ~~🥇 Resolver o débito técnico da revisão sênior~~ **✅ CONCLUÍDO e commitado em 2026-07-17.**
+2. ~~🥈 Implementar a spec `arquivo-de-chamados` "com tudo certinho"~~ **✅ CONCLUÍDO, testado e commitado em 2026-07-18** — ver "Completed" acima pro bug de DateTime/UTC encontrado e corrigido.
+3. **🥉 Documento pra TI** — texto explicando os pré-requisitos de infra pro Google Workspace OAuth (Client ID, domínio autorizado, redirect URIs, Workspace admin console). Pré-requisito pra retomar T09/T15 (login real). **Próximo passo agora.**
 4. **T09 (F5b)** — Login real via Google Workspace: endpoint `POST /auth/google`, JWT. Depende do documento de TI (item 3) pra ter os dados de configuração reais.
 5. **T15** — Frontend: substituir `LoginPage` (F5a, já em produção) pelo fluxo OAuth real. Depende de T09.
 6. Quando T09 (real) entrar: trocar `UsuarioId`/`UsuarioNome` (hoje enviados pelo cliente nos commands de Reatribuir/AlterarPrioridade/Resolver/Fechar/Cancelar) por extração via claims do JWT no backend.

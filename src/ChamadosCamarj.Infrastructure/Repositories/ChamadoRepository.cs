@@ -123,6 +123,9 @@ public class ChamadoRepository : IChamadoRepository
         Guid? categoriaId = null,
         string? busca = null,
         string? solicitanteEmail = null,
+        IEnumerable<Domain.Enums.StatusChamado>? statusEntre = null,
+        DateTime? dataInicio = null,
+        DateTime? dataFim = null,
         CancellationToken cancellationToken = default)
     {
         var query = _dbSet.AsNoTracking().AsQueryable();
@@ -144,6 +147,15 @@ public class ChamadoRepository : IChamadoRepository
 
         if (!string.IsNullOrWhiteSpace(solicitanteEmail))
             query = query.Where(c => c.SolicitanteEmail == solicitanteEmail);
+
+        if (statusEntre is not null)
+            query = query.Where(c => statusEntre.Contains(c.Status));
+
+        if (dataInicio.HasValue)
+            query = query.Where(c => c.DataCriacao >= dataInicio.Value);
+
+        if (dataFim.HasValue)
+            query = query.Where(c => c.DataCriacao <= dataFim.Value);
 
         var total = await query.CountAsync(cancellationToken);
 

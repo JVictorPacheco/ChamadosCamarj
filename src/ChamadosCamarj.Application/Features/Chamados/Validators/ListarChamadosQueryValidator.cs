@@ -12,5 +12,9 @@ public class ListarChamadosQueryValidator : AbstractValidator<ListarChamadosQuer
 
         RuleFor(q => q.TamanhoPagina)
             .InclusiveBetween(1, 100).WithMessage("Tamanho da página deve estar entre 1 e 100.");
+
+        RuleFor(q => q.DataFim)
+            .Must((query, dataFim) => !query.DataInicio.HasValue || !dataFim.HasValue || dataFim >= query.DataInicio)
+            .WithMessage("Data final deve ser maior ou igual à data inicial.");
     }
 }

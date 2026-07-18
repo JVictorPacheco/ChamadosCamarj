@@ -56,4 +56,24 @@ public class ListarChamadosQueryValidatorTests
 
         result.ShouldNotHaveValidationErrorFor(q => q.TamanhoPagina);
     }
+
+    [Fact]
+    public void Validate_ComDataFimAnteriorADataInicio_DeveFalharValidacao()
+    {
+        var query = new ListarChamadosQuery(DataInicio: new DateTime(2026, 7, 31), DataFim: new DateTime(2026, 7, 1));
+
+        var result = _validator.TestValidate(query);
+
+        result.ShouldHaveValidationErrorFor(q => q.DataFim);
+    }
+
+    [Fact]
+    public void Validate_ComDataFimIgualOuPosteriorADataInicio_DevePassar()
+    {
+        var query = new ListarChamadosQuery(DataInicio: new DateTime(2026, 7, 1), DataFim: new DateTime(2026, 7, 31));
+
+        var result = _validator.TestValidate(query);
+
+        result.ShouldNotHaveValidationErrorFor(q => q.DataFim);
+    }
 }

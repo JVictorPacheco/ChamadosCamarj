@@ -13,7 +13,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { useAuth } from '@/auth/AuthContext'
-import { Kanban, LayoutDashboard, Inbox, FileBarChart, Users } from 'lucide-react'
+import { Kanban, LayoutDashboard, Inbox, FileBarChart, Users, Archive } from 'lucide-react'
 
 export function AppLayout() {
   const { perfil, logout } = useAuth()
@@ -40,6 +40,14 @@ export function AppLayout() {
                 <Link to="/chamados">
                   <Inbox className="h-4 w-4" />
                   Meus Chamados
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={location.pathname === '/chamados/arquivo'}>
+                <Link to="/chamados/arquivo">
+                  <Archive className="h-4 w-4" />
+                  Arquivo
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
