@@ -1,10 +1,12 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-07-18
+> Atualizado em: 2026-07-19
 
 ---
 
 ## 📍 Onde estamos
+
+**Sessão de 2026-07-19 (continuação): T09/F5b COMMITADO (`8166ff0`) + tela de login redesenhada visualmente a pedido do usuário.** Depois do Execute completo (ver abaixo), o usuário testou no navegador e pediu polimento visual na `LoginPage`: logo maior (`h-44`), tipografia serifada nos títulos (`Source Serif 4`, self-hosted, só nessa tela via classe `font-serif` — sem alterar `--font-heading` usado no resto do app), textos maiores, botão do Google no tema `filled_black` (Google não permite recolorir o botão livremente — só há 3 temas oficiais). Duas iterações de ajuste do próprio usuário: um gradiente de fundo + brilho atrás do logo foram removidos (desfocava o logo), e o `ring` (borda) do logo também (ficava esverdeado no tema escuro). Tudo commitado junto no mesmo commit. **Usuário vai dar o push manualmente.**
 
 **Sessão de 2026-07-18 (continuação): T09/F5b (login real Google) IMPLEMENTADO por completo — Design → Tasks → Execute.** Pesquisa de documentação atual feita antes de desenhar (Context7: `Google.Apis.Auth`, `@react-oauth/google`; Microsoft Learn: boas práticas de JWT Bearer). Fluxo implementado: frontend manda id_token do Google (`GoogleLogin`/`GoogleOAuthProvider`) → backend valida via `IGoogleTokenValidator`/`GoogleJsonWebSignature.ValidateAsync` (interface própria, não estática, pra ficar testável) + confere domínio `@camarj.com.br` de novo no servidor (defesa em profundidade) → busca na tabela `UsuarioPerfil` (mesma do F5a) → emite JWT próprio (`AuthController`/`POST /auth/google`). Autenticação agora é **global por padrão** (`SetFallbackPolicy(RequireAuthenticatedUser)`) — todo endpoint exige token, exceto `/auth/google` e o Scalar (dev). `ICurrentUserService` substitui `UsuarioId`/`UsuarioNome`/`perfilRequisitante` client-supplied em todos os Controllers (Reatribuir/AlterarPrioridade/Resolver/Fechar/Cancelar/AlterarStatus/Atribuir/Usuarios/ListarComentarios).
 
@@ -131,7 +133,7 @@ Nenhum.
 
 ## ✅ Concluído recentemente
 
-- **T09/F5b implementado por completo** (2026-07-18): login real via Google Workspace — `POST /auth/google`, JWT próprio (simétrico, 8-12h), autenticação global (`SetFallbackPolicy`), `ICurrentUserService` substituindo identidade client-supplied em todos os Controllers, logout automático por 20min de inatividade. SignalR e Scalar ajustados pra conviver com auth global. 177 testes passando. Falta só o Client ID real da TI
+- **T09/F5b implementado, testado e COMMITADO** (`8166ff0`, 2026-07-18/19): login real via Google Workspace — `POST /auth/google`, JWT próprio (simétrico, 8-12h), autenticação global (`SetFallbackPolicy`), `ICurrentUserService` substituindo identidade client-supplied em todos os Controllers, logout automático por 20min de inatividade. SignalR e Scalar ajustados pra conviver com auth global. Tela de login redesenhada (logo maior, tipografia serifada, botão do Google no tema preto). 177 testes passando. Falta só o Client ID real da TI. **Usuário fará o push manualmente**
 - **`arquivo-de-chamados` implementado** (2026-07-18): tela "Arquivo" (todos os perfis, mesmo RBAC de "Meus Chamados"), filtros de status/prioridade/categoria/busca/período. Backend com `Finalizados=true` + `DataInicio`/`DataFim` em `ListarChamadosQuery`, sem quebrar filtros existentes. Bug de DateTime Kind=Unspecified vs Postgres timestamptz encontrado pelo usuário e corrigido na mesma sessão. Ajuste de UX: filtro de período só no Arquivo (não em "Meus Chamados"), com labels visíveis. 174 testes passando
 - **Débito técnico da revisão sênior resolvido** (2026-07-17): 15 itens (D-01 a D-15) de `CONCERNS.md` corrigidos — auditoria do Kanban, guarda contra autodesativar o último Admin, validação de paginação, `HistoricoEntrada` com ctor privado, dashboard com query unificada, checagem de Admin movida pra Handlers (`PerfilRequisitanteGuard`), indentação, reconexão do SignalR, cores hardcoded no Kanban, arquivo morto removido, consistência de non-null assertion, race condition no Dashboard. 169 testes passando, builds limpos
 - **F5a commitada e pushada em `develop`** (2026-07-16, commits `76ce0d1`/`a0747a7`): login mockado por e-mail + cadastro de usuários pelo Admin (T09a-T09e), revisão sênior com 4 bugs Altos corrigidos antes do commit, bloqueio real de RBAC em `/admin/usuarios`

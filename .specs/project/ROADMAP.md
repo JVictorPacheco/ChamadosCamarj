@@ -1,6 +1,6 @@
 # Roadmap — ChamadosCamarj
 
-> Última atualização: 2026-07-18
+> Última atualização: 2026-07-19
 
 ## ✅ Fase 0 — Setup
 
