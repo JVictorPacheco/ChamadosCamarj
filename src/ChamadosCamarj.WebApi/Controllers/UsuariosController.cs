@@ -1,5 +1,7 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ChamadosCamarj.Application.Common;
 using ChamadosCamarj.Application.Features.Usuarios.Commands;
 using ChamadosCamarj.Application.Features.Usuarios.DTOs;
 using ChamadosCamarj.Application.Features.Usuarios.Queries;
@@ -12,10 +14,12 @@ namespace ChamadosCamarj.WebApi.Controllers;
 public class UsuariosController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly ICurrentUserService _currentUser;
 
-    public UsuariosController(IMediator mediator)
+    public UsuariosController(IMediator mediator, ICurrentUserService currentUser)
     {
         _mediator = mediator;
+        _currentUser = currentUser;
     }
 
     /// <summary>
@@ -24,11 +28,9 @@ public class UsuariosController : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<UsuarioPerfilResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<ActionResult<IEnumerable<UsuarioPerfilResponse>>> Listar(
-        [FromQuery] string? perfilRequisitante,
-        CancellationToken cancellationToken)
+    public async Task<ActionResult<IEnumerable<UsuarioPerfilResponse>>> Listar(CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(new ListarUsuariosPerfilQuery(perfilRequisitante), cancellationToken);
+        var result = await _mediator.Send(new ListarUsuariosPerfilQuery(_currentUser.Perfil), cancellationToken);
         return Ok(result);
     }
 
@@ -40,12 +42,11 @@ public class UsuariosController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<UsuarioPerfilResponse>> Criar(
-        [FromQuery] string? perfilRequisitante,
         [FromBody] CriarUsuarioPerfilCommand command,
         CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(command with { PerfilRequisitante = perfilRequisitante }, cancellationToken);
-        return CreatedAtAction(nameof(ObterPorEmail), new { email = result.Email }, result);
+        var result = await _mediator.Send(command with { PerfilRequisitante = _currentUser.Perfil }, cancellationToken);
+        return StatusCode(StatusCodes.Status201Created, result);
     }
 
     /// <summary>
@@ -57,33 +58,14 @@ public class UsuariosController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Atualizar(
         Guid id,
-        [FromQuery] string? perfilRequisitante,
         [FromBody] AtualizarUsuarioPerfilCommand command,
         CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(command with { Id = id, PerfilRequisitante = perfilRequisitante }, cancellationToken);
+        var result = await _mediator.Send(command with { Id = id, PerfilRequisitante = _currentUser.Perfil }, cancellationToken);
 
         if (result is null)
             return NotFound(new { message = "Usuário não encontrado." });
 
         return NoContent();
-    }
-
-    /// <summary>
-    /// Busca um usuário pelo e-mail (usado pelo login, sem checagem de perfil)
-    /// </summary>
-    [HttpGet("por-email")]
-    [ProducesResponseType(typeof(UsuarioPerfilResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<UsuarioPerfilResponse>> ObterPorEmail(
-        [FromQuery] string email,
-        CancellationToken cancellationToken)
-    {
-        var result = await _mediator.Send(new ObterUsuarioPerfilPorEmailQuery(email), cancellationToken);
-
-        if (result is null)
-            return NotFound(new { message = "Usuário não encontrado." });
-
-        return Ok(result);
     }
 }

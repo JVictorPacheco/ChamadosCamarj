@@ -51,10 +51,10 @@ export function abrirChamado(dados: AbrirChamadoRequest): Promise<ChamadoRespons
   })
 }
 
-export function listarComentarios(chamadoId: string, perfilUsuario?: string): Promise<ComentarioResponse[]> {
-  return apiFetch<ComentarioResponse[]>(
-    `/chamados/${chamadoId}/comentarios${buildQueryString({ perfilUsuario })}`,
-  )
+// perfilUsuario (pra filtrar comentário interno) agora vem do token no backend, não
+// precisa mais ser mandado pelo cliente.
+export function listarComentarios(chamadoId: string): Promise<ComentarioResponse[]> {
+  return apiFetch<ComentarioResponse[]>(`/chamados/${chamadoId}/comentarios`)
 }
 
 export function comentar(chamadoId: string, dados: ComentarChamadoRequest): Promise<void> {
@@ -68,60 +68,32 @@ export function listarCategorias(): Promise<CategoriaResponse[]> {
   return apiFetch<CategoriaResponse[]>('/categorias')
 }
 
-export interface AlterarStatusRequest {
-  novoStatus: StatusChamado
-  usuarioId?: string
-  usuarioNome?: string
-}
+// Quem fez a ação (usuarioId/usuarioNome) vem do token no backend agora — nenhuma
+// das funções abaixo precisa mais receber/mandar essa informação pelo cliente.
 
-export function alterarStatus(
-  chamadoId: string,
-  novoStatus: StatusChamado,
-  usuarioId?: string,
-  usuarioNome?: string,
-): Promise<void> {
+export function alterarStatus(chamadoId: string, novoStatus: StatusChamado): Promise<void> {
   return apiFetch<void>(`/chamados/${chamadoId}/status`, {
     method: 'PUT',
-    body: JSON.stringify({ novoStatus, usuarioId, usuarioNome }),
+    body: JSON.stringify({ novoStatus }),
   })
 }
 
-export interface AtribuirRequest {
-  responsavelId: string
-  responsavelNome: string
-}
-
-export function atribuirChamado(chamadoId: string, dados: AtribuirRequest): Promise<void> {
+export function atribuirChamado(chamadoId: string): Promise<void> {
   return apiFetch<void>(`/chamados/${chamadoId}/atribuir`, {
     method: 'PATCH',
-    body: JSON.stringify(dados),
   })
 }
 
-export interface AtorRequest {
-  usuarioId: string
-  usuarioNome: string
+export function resolverChamado(chamadoId: string): Promise<void> {
+  return apiFetch<void>(`/chamados/${chamadoId}/resolver`, { method: 'PATCH' })
 }
 
-export function resolverChamado(chamadoId: string, ator: AtorRequest): Promise<void> {
-  return apiFetch<void>(`/chamados/${chamadoId}/resolver`, {
-    method: 'PATCH',
-    body: JSON.stringify(ator),
-  })
+export function fecharChamado(chamadoId: string): Promise<void> {
+  return apiFetch<void>(`/chamados/${chamadoId}/fechar`, { method: 'PATCH' })
 }
 
-export function fecharChamado(chamadoId: string, ator: AtorRequest): Promise<void> {
-  return apiFetch<void>(`/chamados/${chamadoId}/fechar`, {
-    method: 'PATCH',
-    body: JSON.stringify(ator),
-  })
-}
-
-export function cancelarChamado(chamadoId: string, ator: AtorRequest): Promise<void> {
-  return apiFetch<void>(`/chamados/${chamadoId}/cancelar`, {
-    method: 'PATCH',
-    body: JSON.stringify(ator),
-  })
+export function cancelarChamado(chamadoId: string): Promise<void> {
+  return apiFetch<void>(`/chamados/${chamadoId}/cancelar`, { method: 'PATCH' })
 }
 
 export interface ReatribuirRequest {
@@ -129,21 +101,17 @@ export interface ReatribuirRequest {
   novoResponsavelNome: string
 }
 
-export function reatribuirChamado(chamadoId: string, dados: ReatribuirRequest, ator: AtorRequest): Promise<void> {
+export function reatribuirChamado(chamadoId: string, dados: ReatribuirRequest): Promise<void> {
   return apiFetch<void>(`/chamados/${chamadoId}/reatribuir`, {
     method: 'PATCH',
-    body: JSON.stringify({ ...dados, ...ator }),
+    body: JSON.stringify(dados),
   })
 }
 
-export function alterarPrioridade(
-  chamadoId: string,
-  novaPrioridade: PrioridadeChamado,
-  ator: AtorRequest,
-): Promise<void> {
+export function alterarPrioridade(chamadoId: string, novaPrioridade: PrioridadeChamado): Promise<void> {
   return apiFetch<void>(`/chamados/${chamadoId}/prioridade`, {
     method: 'PATCH',
-    body: JSON.stringify({ novaPrioridade, ...ator }),
+    body: JSON.stringify({ novaPrioridade }),
   })
 }
 

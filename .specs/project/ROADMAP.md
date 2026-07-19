@@ -1,6 +1,6 @@
 # Roadmap — ChamadosCamarj
 
-> Última atualização: 2026-07-16
+> Última atualização: 2026-07-18
 
 ## ✅ Fase 0 — Setup
 
@@ -85,13 +85,13 @@
 - [ ] `StorageService` (Supabase Storage S3)
 - [ ] Upload/download de anexos no portal
 
-## 🔐 Fase 6 — Admin Completo + Log + Google Workspace (PAUSADA em T09)
+## 🔐 Fase 6 — Admin Completo + Log + Google Workspace (CÓDIGO COMPLETO — falta só o Client ID da TI)
 
-> **Pausada em 2026-07-14** a pedido do usuário — Fase 7 (Relatório Mensal) antecipada por ter prazo real (fechamento mensal pra superintendência). Retomar T09/T15 depois.
+> **Pausada em 2026-07-14, retomada em 2026-07-15/18.** T01-T14 mergeados em 2026-07-15; F5a implementada em 2026-07-16; T09/F5b/T15 (login real Google) implementados em 2026-07-18. Falta só o Client ID real da TI (documento já entregue) pro login funcionar de ponta a ponta em ambiente real.
 
 > Corrigido em 2026-06-25: Camarj usa Google Workspace (Gmail corporativo), não Azure AD.
 > Planejado em 2026-07-01: features de Admin e auditoria.
-> Spec em `.specs/features/fase-6-admin-log/spec.md`.
+> Spec em `.specs/features/fase-6-admin-log/spec.md`, design/tasks em `design-t09-google-oauth.md`/`tasks-t09-google-oauth.md`.
 > Trabalho feito em `feature/fase-6-admin-log`, **mergeada em `develop` via PR #13 em 2026-07-15**. T01-T14 concluídos e verificados via Playwright.
 
 **Backend — completo (T01-T08), incluindo ator real na auditoria:**
@@ -102,16 +102,16 @@
 - [x] T06 `ListarHistoricoQuery` + endpoint `GET /chamados/{id}/historico`
 - [x] T07 endpoint `PATCH /chamados/{id}/prioridade`
 - [x] T08 Filtro de comentários internos por perfil em `ListarComentariosQueryHandler` (endpoint corrigido pra repassar `perfilUsuario`)
-- [x] **F5a (decidido em 2026-07-15, IMPLEMENTADO e MERGEADO em `develop` em 2026-07-16):** Login mockado por e-mail + cadastro de usuários (Admin) — tabela `UsuarioPerfil`, `UsuariosController` (CRUD), tela `Admin > Usuários` com bloqueio real de RBAC, `LoginPage` substitui `ProfileSelector`. T09a-T09e completas, testadas contra o Supabase real, revisadas por um code review sênior (4 bugs Altos corrigidos antes do commit), validadas pelo usuário e pushadas (commits `76ce0d1`/`a0747a7`). Não é descartável: a tabela `UsuarioPerfil` é reaproveitada sem mudança pelo T09 real. 15 itens de débito técnico (Médio/Baixo) da revisão ficaram documentados em `.specs/codebase/CONCERNS.md`, ainda pendentes
-- [ ] T09 (F5b) Login Google Workspace real (endpoint `POST /auth/google`, JWT) — depende de F5a. Quando entrar, trocar `UsuarioId`/`UsuarioNome` client-supplied por claims do JWT
+- [x] **F5a (decidido em 2026-07-15, IMPLEMENTADO e MERGEADO em `develop` em 2026-07-16):** Login mockado por e-mail + cadastro de usuários (Admin) — tabela `UsuarioPerfil`, `UsuariosController` (CRUD), tela `Admin > Usuários` com bloqueio real de RBAC, `LoginPage` substitui `ProfileSelector`. T09a-T09e completas, testadas contra o Supabase real, revisadas por um code review sênior (4 bugs Altos corrigidos antes do commit), validadas pelo usuário e pushadas (commits `76ce0d1`/`a0747a7`). Não é descartável: a tabela `UsuarioPerfil` é reaproveitada sem mudança pelo T09 real. Os 15 itens de débito técnico (Médio/Baixo) da revisão foram todos corrigidos em 2026-07-17 (ver `CONCERNS.md`, seção RESOLVIDOS)
+- [x] **T09 (F5b) Login Google Workspace real IMPLEMENTADO em 2026-07-18** (código completo — Design → Tasks → Execute): `POST /auth/google`, JWT próprio (simétrico), autenticação global, `ICurrentUserService` substituindo `UsuarioId`/`UsuarioNome`/`perfilRequisitante` client-supplied em todos os Controllers. Logout automático por 20min de inatividade. 177 testes passando. **Falta só o Client ID real da TI** pro teste de ponta a ponta funcionar — ver `.specs/features/fase-6-admin-log/tasks-t09-google-oauth.md`
 - [x] Documento pra TI com pré-requisitos de infra — `.specs/features/fase-6-admin-log/oauth-requisitos-ti.md` (2026-07-18). Aguardando a TI configurar e devolver o Client ID
 
-**Frontend — completo (T10-T14), reescrito e verificado em 2026-07-14:**
+**Frontend — completo (T10-T14, T15), reescrito e verificado em 2026-07-14/2026-07-18:**
 - [x] T10-T14 (Reatribuir, Histórico, Alterar Prioridade, Comentário interno) — os componentes originais tinham sido commitados no caminho errado (`src/ChamadosCamarj.Web/...`) usando padrões inexistentes no projeto (axios, toast, shadcn não instalado, tema claro). Reescritos do zero em `frontend/src/features/chamados/`, seguindo os padrões reais (`apiFetch`, erro inline, shadcn via CLI, tema dark). `ComentarioForm`/`ComentarioList` estendidos em vez de duplicados.
+- [x] **T15 — Login real via Google Workspace IMPLEMENTADO em 2026-07-18** — `LoginPage` (F5a) substituída pelo botão `GoogleLogin`/`GoogleOAuthProvider`, `AuthContext.loginComGoogle`, `apiFetch` com Bearer + logout automático em 401
 - [ ] **Forçar encerramento** — Admin pode fechar/cancelar sem seguir o fluxo normal (ainda não abordado)
-- [ ] **Login real via Google Workspace** — substitui a `LoginPage` mockada do F5a (T15, depende de T09)
-- [x] ~~Mapeamento conta→perfil no backend~~ → entra pelo F5a (tabela `UsuarioPerfil`), antes do T09 real
-- [ ] RBAC real (baseado em claims do token Google)
+- [x] ~~Mapeamento conta→perfil no backend~~ → entra pelo F5a (tabela `UsuarioPerfil`)
+- [x] **RBAC real (baseado em claims do token Google) IMPLEMENTADO** — `ICurrentUserService` lê `perfil`/`sub`/`name` dos claims do JWT em todos os Controllers
 - [ ] Admin: gerenciar categorias, usuários e configurações do sistema
 
 ## 📈 Fase 7 — Relatório Mensal (CONCLUÍDA — antecipada)

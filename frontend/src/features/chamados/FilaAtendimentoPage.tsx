@@ -6,14 +6,12 @@ import { listarChamados } from '@/features/chamados/api'
 import { ChamadoCard } from '@/features/chamados/components/ChamadoCard'
 import { useSignalR } from '@/hooks/useSignalR'
 import { useEffect } from 'react'
-import { useAuth } from '@/auth/AuthContext'
 import { useAtribuirChamado } from '@/features/chamados/hooks/useAcoesChamado'
 import type { ChamadoResponse } from '@/types/api'
 
 function LinhaFila({ chamado }: { chamado: ChamadoResponse }) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { perfil } = useAuth()
   const atribuir = useAtribuirChamado(chamado.id)
 
   return (
@@ -32,17 +30,11 @@ function LinhaFila({ chamado }: { chamado: ChamadoResponse }) {
               size="sm"
               disabled={atribuir.isPending}
               onClick={() =>
-                atribuir.mutate(
-                  {
-                    responsavelId: perfil?.id ?? '',
-                    responsavelNome: perfil?.nome ?? '',
-                  },
-                  {
-                    // Se outro atendente já assumiu o chamado quase ao mesmo tempo, o backend
-                    // rejeita esta tentativa — invalidar a fila reflete o estado real na tela.
-                    onError: () => queryClient.invalidateQueries({ queryKey: ['chamados', 'fila'] }),
-                  },
-                )
+                atribuir.mutate(undefined, {
+                  // Se outro atendente já assumiu o chamado quase ao mesmo tempo, o backend
+                  // rejeita esta tentativa — invalidar a fila reflete o estado real na tela.
+                  onError: () => queryClient.invalidateQueries({ queryKey: ['chamados', 'fila'] }),
+                })
               }
             >
               {atribuir.isPending ? 'Assumindo...' : 'Assumir'}

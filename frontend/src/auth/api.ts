@@ -1,14 +1,23 @@
 import { apiFetch } from '@/lib/api'
 import type { TipoPerfil, UsuarioPerfilResponse } from '@/types/api'
 
-export function obterUsuarioPorEmail(email: string): Promise<UsuarioPerfilResponse> {
-  return apiFetch<UsuarioPerfilResponse>(`/usuarios/por-email?email=${encodeURIComponent(email)}`)
+export interface AutenticacaoResponse {
+  token: string
+  id: string
+  nome: string
+  email: string
+  perfil: TipoPerfil
 }
 
-export function listarUsuarios(perfilRequisitante: TipoPerfil): Promise<UsuarioPerfilResponse[]> {
-  return apiFetch<UsuarioPerfilResponse[]>(
-    `/usuarios?perfilRequisitante=${encodeURIComponent(perfilRequisitante)}`,
-  )
+export function autenticarGoogle(idToken: string): Promise<AutenticacaoResponse> {
+  return apiFetch<AutenticacaoResponse>('/auth/google', {
+    method: 'POST',
+    body: JSON.stringify({ idToken }),
+  })
+}
+
+export function listarUsuarios(): Promise<UsuarioPerfilResponse[]> {
+  return apiFetch<UsuarioPerfilResponse[]>('/usuarios')
 }
 
 export interface CriarUsuarioRequest {
@@ -17,17 +26,11 @@ export interface CriarUsuarioRequest {
   perfil: TipoPerfil
 }
 
-export function criarUsuario(
-  dados: CriarUsuarioRequest,
-  perfilRequisitante: TipoPerfil,
-): Promise<UsuarioPerfilResponse> {
-  return apiFetch<UsuarioPerfilResponse>(
-    `/usuarios?perfilRequisitante=${encodeURIComponent(perfilRequisitante)}`,
-    {
-      method: 'POST',
-      body: JSON.stringify(dados),
-    },
-  )
+export function criarUsuario(dados: CriarUsuarioRequest): Promise<UsuarioPerfilResponse> {
+  return apiFetch<UsuarioPerfilResponse>('/usuarios', {
+    method: 'POST',
+    body: JSON.stringify(dados),
+  })
 }
 
 export interface AtualizarUsuarioRequest {
@@ -36,12 +39,8 @@ export interface AtualizarUsuarioRequest {
   ativo: boolean
 }
 
-export function atualizarUsuario(
-  id: string,
-  dados: AtualizarUsuarioRequest,
-  perfilRequisitante: TipoPerfil,
-): Promise<void> {
-  return apiFetch<void>(`/usuarios/${id}?perfilRequisitante=${encodeURIComponent(perfilRequisitante)}`, {
+export function atualizarUsuario(id: string, dados: AtualizarUsuarioRequest): Promise<void> {
+  return apiFetch<void>(`/usuarios/${id}`, {
     method: 'PUT',
     body: JSON.stringify(dados),
   })

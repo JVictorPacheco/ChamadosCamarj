@@ -1,6 +1,6 @@
 # Spec — Fase 6: Admin Completo + Log de Histórico + Google Workspace
 
-> Status: F1-F4 CONCLUÍDAS. F5 dividida em F5a (mock, planejada) e F5b (real, planejada, depende de F5a).
+> Status: F1-F4 CONCLUÍDAS. F5a IMPLEMENTADA (login mockado por e-mail). F5b IMPLEMENTADA (código completo, 2026-07-18) — falta só o Client ID real da TI pro teste de ponta a ponta. Ver `design-t09-google-oauth.md` + `tasks-t09-google-oauth.md`.
 > Atualizado em: 2026-07-15
 
 ---

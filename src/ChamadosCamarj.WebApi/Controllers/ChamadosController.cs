@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using ChamadosCamarj.Application.Common;
 using ChamadosCamarj.Application.Features.Chamados.Commands;
 using ChamadosCamarj.Application.Features.Chamados.DTOs;
 using ChamadosCamarj.Application.Features.Chamados.Queries;
@@ -13,11 +14,13 @@ public class ChamadosController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly ILogger<ChamadosController> _logger;
+    private readonly ICurrentUserService _currentUser;
 
-    public ChamadosController(IMediator mediator, ILogger<ChamadosController> logger)
+    public ChamadosController(IMediator mediator, ILogger<ChamadosController> logger, ICurrentUserService currentUser)
     {
         _mediator = mediator;
         _logger = logger;
+        _currentUser = currentUser;
     }
 
     /// <summary>
@@ -98,17 +101,15 @@ public class ChamadosController : ControllerBase
     }
 
     /// <summary>
-    /// Atribui um chamado a um atendente
+    /// Assume um chamado (atribui a si mesmo, o usuário autenticado)
     /// </summary>
     [HttpPatch("{id:guid}/atribuir")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Atribuir(
-        Guid id,
-        [FromBody] AtribuirChamadoCommand command,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> Atribuir(Guid id, CancellationToken cancellationToken)
     {
-        await _mediator.Send(command with { Id = id }, cancellationToken);
+        var command = new AtribuirChamadoCommand(id, _currentUser.UsuarioId, _currentUser.Nome);
+        await _mediator.Send(command, cancellationToken);
         return NoContent();
     }
 
@@ -124,7 +125,7 @@ public class ChamadosController : ControllerBase
         [FromBody] ReatribuirRequest request,
         CancellationToken cancellationToken)
     {
-        var command = new ReatribuirChamadoCommand(id, request.NovoResponsavelId, request.NovoResponsavelNome, request.UsuarioId, request.UsuarioNome);
+        var command = new ReatribuirChamadoCommand(id, request.NovoResponsavelId, request.NovoResponsavelNome, _currentUser.UsuarioId, _currentUser.Nome);
         await _mediator.Send(command, cancellationToken);
         return NoContent();
     }
@@ -141,7 +142,7 @@ public class ChamadosController : ControllerBase
         [FromBody] AlterarPrioridadeRequest request,
         CancellationToken cancellationToken)
     {
-        var command = new AlterarPrioridadeChamadoCommand(id, request.NovaPrioridade, request.UsuarioId, request.UsuarioNome);
+        var command = new AlterarPrioridadeChamadoCommand(id, request.NovaPrioridade, _currentUser.UsuarioId, _currentUser.Nome);
         await _mediator.Send(command, cancellationToken);
         return NoContent();
     }
@@ -152,9 +153,9 @@ public class ChamadosController : ControllerBase
     [HttpPatch("{id:guid}/resolver")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Resolver(Guid id, [FromBody] AtorRequest? request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Resolver(Guid id, CancellationToken cancellationToken)
     {
-        await _mediator.Send(new ResolverChamadoCommand(id, request?.UsuarioId, request?.UsuarioNome ?? "Sistema"), cancellationToken);
+        await _mediator.Send(new ResolverChamadoCommand(id, _currentUser.UsuarioId, _currentUser.Nome), cancellationToken);
         return NoContent();
     }
 
@@ -164,9 +165,9 @@ public class ChamadosController : ControllerBase
     [HttpPatch("{id:guid}/fechar")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Fechar(Guid id, [FromBody] AtorRequest? request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Fechar(Guid id, CancellationToken cancellationToken)
     {
-        await _mediator.Send(new FecharChamadoCommand(id, request?.UsuarioId, request?.UsuarioNome ?? "Sistema"), cancellationToken);
+        await _mediator.Send(new FecharChamadoCommand(id, _currentUser.UsuarioId, _currentUser.Nome), cancellationToken);
         return NoContent();
     }
 
@@ -176,9 +177,9 @@ public class ChamadosController : ControllerBase
     [HttpPatch("{id:guid}/cancelar")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Cancelar(Guid id, [FromBody] AtorRequest? request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Cancelar(Guid id, CancellationToken cancellationToken)
     {
-        await _mediator.Send(new CancelarChamadoCommand(id, request?.UsuarioId, request?.UsuarioNome ?? "Sistema"), cancellationToken);
+        await _mediator.Send(new CancelarChamadoCommand(id, _currentUser.UsuarioId, _currentUser.Nome), cancellationToken);
         return NoContent();
     }
 
@@ -191,7 +192,7 @@ public class ChamadosController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> AlterarStatus(Guid id, [FromBody] AlterarStatusRequest request, CancellationToken cancellationToken)
     {
-        await _mediator.Send(new AlterarStatusChamadoCommand(id, request.NovoStatus, request.UsuarioId, request.UsuarioNome), cancellationToken);
+        await _mediator.Send(new AlterarStatusChamadoCommand(id, request.NovoStatus, _currentUser.UsuarioId, _currentUser.Nome), cancellationToken);
         return NoContent();
     }
 
@@ -202,10 +203,9 @@ public class ChamadosController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<ComentarioResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<ComentarioResponse>>> ListarComentarios(
         Guid id,
-        [FromQuery] string? perfilUsuario,
         CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(new ListarComentariosQuery(id, perfilUsuario), cancellationToken);
+        var result = await _mediator.Send(new ListarComentariosQuery(id, _currentUser.Perfil), cancellationToken);
         return Ok(result);
     }
 

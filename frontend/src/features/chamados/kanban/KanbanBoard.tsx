@@ -3,7 +3,6 @@ import { DndContext, type DragEndEvent, type DragStartEvent, PointerSensor, useS
 import { useQueryClient } from '@tanstack/react-query'
 import type { ChamadoResponse, StatusChamado } from '@/types/api'
 import { alterarStatus } from '@/features/chamados/api'
-import { useAuth } from '@/auth/AuthContext'
 import { KanbanColumn } from './KanbanColumn'
 
 // Cores com sentido: Resolvido usa o token semântico "bom", Cancelado usa "crítico";
@@ -22,7 +21,6 @@ interface KanbanBoardProps {
 
 export function KanbanBoard({ chamados }: KanbanBoardProps) {
   const queryClient = useQueryClient()
-  const { perfil } = useAuth()
   const [draggingId, setDraggingId] = useState<string | null>(null)
 
   const sensors = useSensors(
@@ -58,13 +56,13 @@ export function KanbanBoard({ chamados }: KanbanBoardProps) {
       )
 
       try {
-        await alterarStatus(chamadoId, novoStatus, perfil?.id, perfil?.nome)
+        await alterarStatus(chamadoId, novoStatus)
       } catch {
         // Reverte em caso de erro
         queryClient.invalidateQueries({ queryKey: ['chamados', 'kanban'] })
       }
     },
-    [chamados, queryClient, perfil],
+    [chamados, queryClient],
   )
 
   return (

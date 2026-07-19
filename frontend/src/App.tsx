@@ -36,9 +36,7 @@ function App() {
       <BrowserRouter>
         <TooltipProvider>
           <AuthProvider>
-            <SignalRProvider>
-              <AppRoutes />
-            </SignalRProvider>
+            <AppRoutes />
           </AuthProvider>
         </TooltipProvider>
       </BrowserRouter>
@@ -59,7 +57,14 @@ function ProtectedRoute() {
   if (!perfil) {
     return <Navigate to="/login" replace />
   }
-  return <AppLayout />
+  // SignalRProvider só monta com um usuário autenticado — antes disso não há token
+  // pra conexão em tempo real, e a conexão só é criada uma vez (não tenta de novo
+  // sozinha depois do login se falhar na primeira tentativa sem token).
+  return (
+    <SignalRProvider>
+      <AppLayout />
+    </SignalRProvider>
+  )
 }
 
 function AppRoutes() {

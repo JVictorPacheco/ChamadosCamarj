@@ -4,6 +4,7 @@ import {
   type HubConnection,
 } from '@microsoft/signalr'
 import type { SignalREvent } from '@/lib/signalr-events'
+import { getToken } from '@/lib/api'
 
 const SIGNALR_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ?? 'http://localhost:5000'
 
@@ -37,8 +38,13 @@ export function SignalRProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
+    // O SignalR não manda o header Authorization em conexões WebSocket — accessTokenFactory
+    // é chamado a cada (re)conexão e o token vai via query string, lido pelo backend
+    // (Program.cs, OnMessageReceived) especificamente pro caminho /hubs.
     const conn = new HubConnectionBuilder()
-      .withUrl(`${SIGNALR_URL}/hubs/chamados`)
+      .withUrl(`${SIGNALR_URL}/hubs/chamados`, {
+        accessTokenFactory: () => getToken() ?? '',
+      })
       .withAutomaticReconnect()
       .build()
 

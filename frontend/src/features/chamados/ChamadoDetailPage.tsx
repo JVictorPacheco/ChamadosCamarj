@@ -42,16 +42,7 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
   return (
     <div className="flex flex-wrap gap-2">
       {isAtendente && status === 'Aberto' && (
-        <Button
-          size="sm"
-          disabled={isPending}
-          onClick={() =>
-            atribuir.mutate({
-              responsavelId: perfil?.id ?? '',
-              responsavelNome: perfil?.nome ?? '',
-            })
-          }
-        >
+        <Button size="sm" disabled={isPending} onClick={() => atribuir.mutate()}>
           {atribuir.isPending ? 'Assumindo...' : 'Assumir'}
         </Button>
       )}

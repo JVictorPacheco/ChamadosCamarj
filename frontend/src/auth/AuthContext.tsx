@@ -1,6 +1,7 @@
-import { createContext, useContext, useState, type ReactNode } from 'react'
-import { obterUsuarioPorEmail } from './api'
-import type { TipoPerfil, UsuarioPerfilResponse } from '@/types/api'
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { autenticarGoogle, type AutenticacaoResponse } from './api'
+import { clearToken, registrarLogoutAutomatico, setToken } from '@/lib/api'
+import type { TipoPerfil } from '@/types/api'
 
 export type { TipoPerfil }
 
@@ -15,14 +16,14 @@ const STORAGE_KEY = 'chamados-camarj:perfil'
 
 interface AuthContextValue {
   perfil: Perfil | null
-  login: (email: string) => Promise<void>
+  loginComGoogle: (idToken: string) => Promise<void>
   logout: () => void
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
-function paraPerfil(usuario: UsuarioPerfilResponse): Perfil {
-  return { tipo: usuario.perfil, id: usuario.id, nome: usuario.nome, email: usuario.email }
+function paraPerfil(resposta: AutenticacaoResponse): Perfil {
+  return { tipo: resposta.perfil, id: resposta.id, nome: resposta.nome, email: resposta.email }
 }
 
 function lerPerfilSalvo(): Perfil | null {
@@ -39,19 +40,27 @@ function lerPerfilSalvo(): Perfil | null {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [perfil, setPerfil] = useState<Perfil | null>(() => lerPerfilSalvo())
 
-  const login = async (email: string) => {
-    const usuario = await obterUsuarioPorEmail(email)
-    const perfilLogado = paraPerfil(usuario)
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(perfilLogado))
-    setPerfil(perfilLogado)
-  }
-
   const logout = () => {
+    clearToken()
     localStorage.removeItem(STORAGE_KEY)
     setPerfil(null)
   }
 
-  return <AuthContext.Provider value={{ perfil, login, logout }}>{children}</AuthContext.Provider>
+  // Se a API responder 401 (token expirado/inválido) em qualquer requisição,
+  // desloga automaticamente em vez de deixar a pessoa vendo erros genéricos.
+  useEffect(() => {
+    registrarLogoutAutomatico(logout)
+  }, [])
+
+  const loginComGoogle = async (idToken: string) => {
+    const resposta = await autenticarGoogle(idToken)
+    setToken(resposta.token)
+    const perfilLogado = paraPerfil(resposta)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(perfilLogado))
+    setPerfil(perfilLogado)
+  }
+
+  return <AuthContext.Provider value={{ perfil, loginComGoogle, logout }}>{children}</AuthContext.Provider>
 }
 
 export function useAuth(): AuthContextValue {

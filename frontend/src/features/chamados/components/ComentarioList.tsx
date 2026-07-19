@@ -1,10 +1,8 @@
-import { useAuth } from '@/auth/AuthContext'
 import { Badge } from '@/components/ui/badge'
 import { useComentarios } from '../hooks/useComentarios'
 
 export function ComentarioList({ chamadoId }: { chamadoId: string }) {
-  const { perfil } = useAuth()
-  const { data: comentarios, isPending } = useComentarios(chamadoId, perfil?.tipo)
+  const { data: comentarios, isPending } = useComentarios(chamadoId)
 
   if (isPending) {
     return <p className="text-sm text-muted-foreground">Carregando comentários...</p>

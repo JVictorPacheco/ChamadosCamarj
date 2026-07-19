@@ -10,22 +10,19 @@ import {
 
 export function useUsuarios() {
   const { perfil } = useAuth()
-  const perfilRequisitante = perfil?.tipo ?? 'Admin'
 
   return useQuery({
-    queryKey: ['usuarios', perfilRequisitante],
-    queryFn: () => listarUsuarios(perfilRequisitante),
+    queryKey: ['usuarios'],
+    queryFn: () => listarUsuarios(),
     enabled: !!perfil,
   })
 }
 
 export function useCriarUsuario() {
   const queryClient = useQueryClient()
-  const { perfil } = useAuth()
-  const perfilRequisitante = perfil?.tipo ?? 'Admin'
 
   return useMutation({
-    mutationFn: (dados: CriarUsuarioRequest) => criarUsuario(dados, perfilRequisitante),
+    mutationFn: (dados: CriarUsuarioRequest) => criarUsuario(dados),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['usuarios'] })
     },
@@ -34,12 +31,10 @@ export function useCriarUsuario() {
 
 export function useAtualizarUsuario() {
   const queryClient = useQueryClient()
-  const { perfil } = useAuth()
-  const perfilRequisitante = perfil?.tipo ?? 'Admin'
 
   return useMutation({
     mutationFn: ({ id, dados }: { id: string; dados: AtualizarUsuarioRequest }) =>
-      atualizarUsuario(id, dados, perfilRequisitante),
+      atualizarUsuario(id, dados),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['usuarios'] })
     },

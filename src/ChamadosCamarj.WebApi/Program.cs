@@ -1,14 +1,20 @@
 using System.Reflection;
+using System.Text;
 using FluentValidation;
 using MediatR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
+using ChamadosCamarj.Application.Common;
 using ChamadosCamarj.Application.Common.Behaviours;
 using ChamadosCamarj.Domain.Interfaces;
 using ChamadosCamarj.Infrastructure.Data;
 using ChamadosCamarj.Infrastructure.Repositories;
+using ChamadosCamarj.Infrastructure.Services;
 using ChamadosCamarj.WebApi.Middleware;
 using ChamadosCamarj.WebApi.Hubs;
+using ChamadosCamarj.WebApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,6 +57,53 @@ builder.Services.AddScoped<IChamadoRepository, ChamadoRepository>();
 builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
 builder.Services.AddScoped<IHistoricoRepository, HistoricoRepository>();
 builder.Services.AddScoped<IUsuarioPerfilRepository, UsuarioPerfilRepository>();
+builder.Services.AddScoped<IGoogleTokenValidator, GoogleTokenValidator>();
+
+// ─────────────────────────────
+// Autenticação — login real via Google Workspace (T09/F5b)
+// ─────────────────────────────
+builder.Services.Configure<AuthSettings>(builder.Configuration.GetSection("Auth"));
+var authSettings = builder.Configuration.GetSection("Auth").Get<AuthSettings>() ?? new AuthSettings();
+if (string.IsNullOrWhiteSpace(authSettings.JwtSigningKey))
+    throw new InvalidOperationException("'Auth:JwtSigningKey' não configurada. Use dotnet user-secrets set.");
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = "ChamadosCamarj",
+            ValidateAudience = true,
+            ValidAudience = "ChamadosCamarj.Frontend",
+            ValidateLifetime = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authSettings.JwtSigningKey)),
+        };
+
+        // SignalR não manda o header Authorization em conexões WebSocket — o token
+        // vem via query string na negociação/conexão do hub, então precisa ser lido
+        // manualmente daqui pros hubs (única exceção a receber o token fora do header).
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                if (!string.IsNullOrEmpty(accessToken) && context.HttpContext.Request.Path.StartsWithSegments("/hubs"))
+                    context.Token = accessToken;
+
+                return Task.CompletedTask;
+            },
+        };
+    });
+
+builder.Services.AddAuthorizationBuilder()
+    .SetFallbackPolicy(new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build());
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 // ─────────────────────────────
 // OpenAPI (nativo .NET 10)
@@ -91,12 +144,16 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
-    app.MapScalarApiReference();
+    // Doc da API (só em dev) — não deve exigir token, senão ninguém consegue nem
+    // ver os endpoints disponíveis antes de já ter um JWT.
+    app.MapOpenApi().AllowAnonymous();
+    app.MapScalarApiReference().AllowAnonymous();
 }
 
 app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 app.MapHub<ChamadosHub>("/hubs/chamados");
 
