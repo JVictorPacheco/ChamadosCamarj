@@ -16,7 +16,7 @@ Sistema interno para **gestão de chamados corporativos** da CAMARJ. Colaborador
 | [[👥 Perfis de Usuário]] | Admin, Atendente, Solicitante — permissões e fluxos |
 | [[📋 Histórico de Chamados]] | Log de auditoria do ciclo de vida *(Fase 6 ✅ implementado)* |
 | [[📧 Integração Email]] | Captura automática via IMAP/Gmail *(Fase 4, não iniciada)* |
-| [[🔐 Google Workspace]] | Autenticação corporativa *(Fase 6, login real pendente — T09/T15)* |
+| [[🔐 Google Workspace]] | Autenticação corporativa *(T09/T15 ✅ implementado — falta só o Client ID da TI)* |
 | [[📦 Supabase Storage]] | Anexos em bucket S3 *(Fase 4, não iniciada)* |
 | [[🗺️ Roadmap]] | Fases do desenvolvimento |
 | [[📈 Relatório Mensal]] | Relatório fechado do mês, exportação CSV/PDF *(Fase 7 ✅ implementado)* |
@@ -33,14 +33,16 @@ Sistema interno para **gestão de chamados corporativos** da CAMARJ. Colaborador
 
 ---
 
-## 📍 Onde paramos (2026-07-15)
+## 📍 Onde paramos (2026-07-18)
 
 - ✅ **Fases 0–3 concluídas** — backend completo, frontend portal do solicitante funcionando
-- ✅ **Fase 5 concluída** — Kanban, Dashboard, SignalR, Fila de Atendimento, Ações de Atendente (Assumir/Resolver/Fechar/Cancelar). Dashboard retrabalhado em 2026-07-14/15 (ver abaixo)
-- 🔐 **Fase 6 quase completa** — Reatribuição Admin, Log de Histórico, Alterar Prioridade e Comentários Internos implementados e verificados (T01-T14). Falta só o login Google real (T09/T15), pausado a pedido do usuário para dar lugar à Fase 7
+- ✅ **Fase 5 concluída** — Kanban, Dashboard, SignalR, Fila de Atendimento, Ações de Atendente (Assumir/Resolver/Fechar/Cancelar). Dashboard retrabalhado em 2026-07-14/15
+- ✅ **Fase 6 praticamente completa** — Reatribuição Admin, Log de Histórico, Alterar Prioridade, Comentários Internos (T01-T14), F5a (cadastro de usuários pelo Admin) e T09/T15 (login Google real) todos implementados e commitados. Falta só o **Client ID real da TI** pro login funcionar de ponta a ponta
 - ✅ **Fase 7 concluída (antecipada)** — Relatório Mensal: seletor de mês, KPIs com variação vs. mês anterior, rosca de SLA, quebra por categoria/atendente, exportação CSV/PDF
-- ✅ **PR #13 mergeado em `develop`** (2026-07-15) — Fase 6 (T01-T14) + Fase 7 completas
-- ⏭️ **Próximo:** retomar T09/T15 (login Google Workspace real)
+- ✅ **Arquivo de Chamados concluído** (2026-07-18) — tela separada pra chamados finalizados (Resolvido/Fechado/Cancelado), filtros de período/prioridade/categoria
+- ✅ **Débito técnico da revisão sênior resolvido** (2026-07-17) — 15 itens de `CONCERNS.md` corrigidos
+- ✅ **PR #13 mergeado em `develop`** (2026-07-15); todo o trabalho seguinte (F5a, débito técnico, Arquivo, T09/T15) direto em `develop`
+- ⏭️ **Próximo:** aguardar Client ID da TI (documento de requisitos já entregue); depois, itens sem ordem confirmada — Forçar encerramento, revisão do RBAC soft, Fase 4 (Email/Storage)
 
 ### Features implementadas na Fase 5 (e retrabalho de 2026-07-14/15)
 - Kanban com drag & drop (dnd-kit) entre status
@@ -59,4 +61,4 @@ Sistema interno para **gestão de chamados corporativos** da CAMARJ. Colaborador
 
 ---
 
-> *Última atualização: 2026-07-15 — PR #13 mergeado em `develop` (Fase 6 quase completa, falta login Google real; Fase 7 Relatório Mensal concluída). Ver [[🗺️ Roadmap]] para detalhes.*
+> *Última atualização: 2026-07-18 — Fase 6 praticamente completa (F5a + T09/T15 login Google real implementados, falta só o Client ID da TI), débito técnico resolvido, Arquivo de Chamados concluído. Ver [[🗺️ Roadmap]] para detalhes.*

@@ -7,7 +7,8 @@
 - **Reatribuir chamado** entre atendentes, mesmo em `EmAndamento` — ✅ implementado (Fase 6)
 - **Forçar encerramento** de qualquer chamado — ⏳ ainda não implementado (Fase 6, pendente)
 - **Alterar prioridade** de qualquer chamado — ✅ implementado (Fase 6)
-- Gerenciar categorias, usuários e configurações do sistema — ⏳ ainda não implementado (Fase 6, pendente)
+- **Gerenciar usuários** (cadastrar, editar, desativar/reativar) — ✅ implementado (F5a, tela `Admin > Usuários`)
+- Gerenciar categorias e configurações do sistema — ⏳ ainda não implementado (Fase 6, pendente)
 - **Relatório Mensal** — vê todos os números, quebra por categoria e por atendente *(Fase 7 ✅)*, ver [[📈 Relatório Mensal]]
 
 ## 🛠️ Atendente (Fábio)
@@ -78,6 +79,6 @@ Admin pode reatribuir em qualquer etapa não-final
 
 ## Autenticação
 
-[[🔐 Google Workspace]] — Login corporativo Gmail (Fase 6, login real ainda pendente — T09/T15)
+[[🔐 Google Workspace]] — Login corporativo Gmail, **implementado (T09/T15, 2026-07-18)**. Falta só o Client ID real da TI pra funcionar de ponta a ponta.
 
-> ⚠️ Atualmente mockada: seletor de perfil salvo em `localStorage`. Trocar o perfil exige clicar em **Sair** na sidebar e selecionar novamente. É o único item que falta para a Fase 6 estar 100% completa.
+> Perfil (Admin/Atendente/Solicitante) vem do JWT emitido no login com Google, buscado na tabela `UsuarioPerfil` (cadastrada/gerenciada pelo Admin em `Admin > Usuários`, ver F5a). Um e-mail `@camarj.com.br` sem cadastro recebe 403 ao tentar entrar.
