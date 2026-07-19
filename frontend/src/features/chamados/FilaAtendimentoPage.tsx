@@ -6,6 +6,7 @@ import { listarChamados } from '@/features/chamados/api'
 import { ChamadoCard } from '@/features/chamados/components/ChamadoCard'
 import { useSignalR } from '@/hooks/useSignalR'
 import { useEffect } from 'react'
+import { useAuth } from '@/auth/AuthContext'
 import { useAtribuirChamado } from '@/features/chamados/hooks/useAcoesChamado'
 import type { ChamadoResponse } from '@/types/api'
 
@@ -59,6 +60,7 @@ function LinhaFila({ chamado }: { chamado: ChamadoResponse }) {
 }
 
 export function FilaAtendimentoPage() {
+  const { perfil } = useAuth()
   const queryClient = useQueryClient()
   const { subscribe } = useSignalR()
 
@@ -81,6 +83,19 @@ export function FilaAtendimentoPage() {
       queryClient.invalidateQueries({ queryKey: ['chamados', 'fila'] })
     })
   }, [subscribe, queryClient])
+
+  if (perfil?.tipo === 'Solicitante') {
+    return (
+      <div className="flex flex-col items-center gap-3 p-8 text-center">
+        <Alert variant="destructive" className="max-w-md">
+          <AlertDescription>Esta área não está disponível para o seu perfil.</AlertDescription>
+        </Alert>
+        <Button asChild variant="outline">
+          <Link to="/chamados">Voltar para a lista</Link>
+        </Button>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col gap-4 p-4">

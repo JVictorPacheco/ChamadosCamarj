@@ -92,7 +92,7 @@ export function FiltroChamados({
       </Select>
 
       <Input
-        placeholder="Buscar..."
+        placeholder="Buscar por título, descrição ou número (CAM-42)..."
         value={value.busca ?? ''}
         onChange={(e) => onChange({ ...value, busca: e.target.value || undefined })}
       />

@@ -1,12 +1,29 @@
+import { Link } from 'react-router'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import { useAuth } from '@/auth/AuthContext'
 import { useDashboardMetrics, useDashboardDistribuicao } from './hooks'
 import { DashboardKpi } from './DashboardKpi'
 import { CategoriaChart } from './CategoriaChart'
 import { DonutChart } from '@/components/charts/DonutChart'
 
 export function DashboardPage() {
+  const { perfil } = useAuth()
   const { data: metrics, isPending, isError } = useDashboardMetrics()
   const { data: distribuicao, isPending: distribuicaoPending, isError: distribuicaoError } = useDashboardDistribuicao()
+
+  if (perfil?.tipo === 'Solicitante') {
+    return (
+      <div className="flex flex-col items-center gap-3 p-8 text-center">
+        <Alert variant="destructive" className="max-w-md">
+          <AlertDescription>Esta área não está disponível para o seu perfil.</AlertDescription>
+        </Alert>
+        <Button asChild variant="outline">
+          <Link to="/chamados">Voltar para a lista</Link>
+        </Button>
+      </div>
+    )
+  }
 
   const totalDistribuicao = distribuicao
     ? distribuicao.aguardando +
