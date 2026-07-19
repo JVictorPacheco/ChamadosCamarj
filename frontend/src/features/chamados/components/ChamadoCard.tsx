@@ -2,13 +2,17 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { StatusBadge } from './StatusBadge'
 import { PrioridadeBadge } from './PrioridadeBadge'
 import { SlaBadge } from './SlaBadge'
+import { formatarNumeroChamado } from '@/lib/utils'
 import type { ChamadoResponse } from '@/types/api'
 
 export function ChamadoCard({ chamado }: { chamado: ChamadoResponse }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{chamado.titulo}</CardTitle>
+        <CardTitle>
+          <span className="mr-2 text-muted-foreground">{formatarNumeroChamado(chamado.numero)}</span>
+          {chamado.titulo}
+        </CardTitle>
         <CardDescription>{chamado.categoriaNome ?? 'Sem categoria'}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-wrap items-center gap-2">

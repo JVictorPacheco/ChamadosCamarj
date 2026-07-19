@@ -72,10 +72,10 @@
 - [ ] Resposta automática
 - [ ] Anexos via [[📦 Supabase Storage]]
 
-### 🔐 Fase 6 — Admin Completo + Log + Google Workspace (PAUSADA em T09)
+### 🔐 Fase 6 — Admin Completo + Log + Google Workspace (praticamente concluída)
 
 > ⚠️ **Corrigido em 2026-06-25:** Camarj usa **Google Workspace** (Gmail corporativo), não Azure AD.
-> **Pausada em 2026-07-14** a pedido do usuário — Fase 7 (Relatório Mensal) antecipada por ter prazo real (fechamento mensal pra superintendência). Trabalho feito em `feature/fase-6-admin-log`, **mergeado em `develop` via PR #13 em 2026-07-15**. T01-T08 (backend) e T10-T14 (frontend) concluídos e verificados via Playwright.
+> **Pausada em 2026-07-14** a pedido do usuário — Fase 7 (Relatório Mensal) antecipada por ter prazo real (fechamento mensal pra superintendência). Trabalho feito em `feature/fase-6-admin-log`, **mergeado em `develop` via PR #13 em 2026-07-15**. T01-T14 concluídos e verificados. **Retomada em 2026-07-16/18:** F5a (login mockado por e-mail + cadastro de usuários) implementada como passo intermediário, depois T09/T15 (login Google real) implementado por completo em 2026-07-18.
 
 **Backend — completo:**
 - [x] **Log de histórico** — entidade `HistoricoEntrada` + `IHistoricoRepository`, ver [[📋 Histórico de Chamados]]
@@ -84,15 +84,14 @@
 - [x] Endpoint `GET /chamados/{id}/historico`
 - [x] **Alterar prioridade** — endpoint `PATCH /chamados/{id}/prioridade`
 - [x] **Comentários internos** — filtro por perfil em `ListarComentariosQueryHandler`
-- [ ] Login real via [[🔐 Google Workspace]] (T09 — endpoint `POST /auth/google`, JWT, tabela `UsuarioPerfil`) — não iniciado
+- [x] **F5a (2026-07-16):** cadastro/gestão de usuários pelo Admin — tabela `UsuarioPerfil`, `UsuariosController` (CRUD + ativar/desativar), passo intermediário não descartável rumo ao login real
+- [x] **T09 — Login real via [[🔐 Google Workspace]] (2026-07-18):** `POST /auth/google` valida o token do Google, JWT próprio (simétrico, 8-12h), autenticação global por padrão (`RequireAuthenticatedUser`), `ICurrentUserService` substitui dados de ator vindos do cliente em todos os Controllers. **Falta só o Client ID real da TI** (documento já entregue) pra funcionar de ponta a ponta
 
-**Frontend — completo (T10-T14):**
+**Frontend — completo (T10-T14 + T15):**
 - [x] Reatribuir, Histórico (timeline), Alterar Prioridade, Comentário interno — componentes reescritos do zero em `frontend/src/features/chamados/` (uma versão anterior tinha sido commitada no caminho errado com padrões inexistentes no projeto)
+- [x] **T15 — Login real via Google Workspace (2026-07-18):** `LoginPage` com `GoogleLogin`/`GoogleOAuthProvider`, logout automático por 20min de inatividade, redesenho visual (logo maior, tipografia serifada)
 - [ ] **Forçar encerramento** — Admin pode fechar/cancelar sem seguir o fluxo normal (ainda não abordado)
-- [ ] Login real via Google Workspace (T15, depende de T09)
-- [ ] Mapeamento conta→perfil no backend
-- [ ] RBAC real (baseado em claims do token Google)
-- [ ] Admin: gerenciar categorias, usuários e configurações
+- [ ] Admin: gerenciar categorias e configurações do sistema (usuários já implementado no F5a)
 
 ### 📈 Fase 7 — Relatório Mensal (CONCLUÍDA — antecipada)
 
@@ -107,6 +106,15 @@
 - [ ] SLA tracking com alertas de vencimento em tempo real — fora de escopo por ora
 - [ ] Dashboard de carga por atendente — fora de escopo por ora
 
+### 🗄️ Arquivo de Chamados (CONCLUÍDA — 2026-07-18)
+
+> Pedido pelo usuário em 2026-07-16: chamados finalizados (Resolvido/Fechado/Cancelado) misturados com os ativos no dia a dia. Decisão explícita: **nunca apagar chamados** (quebraria auditoria/Relatório Mensal) — solução é uma tela separada de leitura filtrada. Spec → Design → Tasks → Execute completos em `.specs/features/arquivo-de-chamados/`.
+
+- [x] Nova tela "Arquivo" (mesmo RBAC de "Meus Chamados") lista só Resolvido/Fechado/Cancelado
+- [x] Filtros: status, prioridade, categoria, busca, período (`DataCriacao`)
+- [x] Backend aditivo: `Finalizados=true` + `DataInicio`/`DataFim` em `ListarChamadosQuery` (não quebra Kanban/Fila)
+- [x] Bug corrigido (achado pelo usuário testando): filtro de data quebrava com 500 (`DateTime Kind=Unspecified` vs. `timestamptz` do Postgres)
+
 ---
 
-> **Progresso atual:** ✅ Fases 0-3 e 5 concluídas, ✅ Fase 7 (Relatório Mensal) concluída, 🔐 Fase 6 quase completa (só falta T09/T15 — login Google real). ✅ PR #13 mergeado em `develop` (2026-07-15). Próximo passo: retomar T09/T15.
+> **Progresso atual:** ✅ Fases 0-3, 5 e 7 concluídas. ✅ Fase 6 praticamente completa — só falta o **Client ID real da TI** pro login Google (T09/T15) funcionar de ponta a ponta; documento de requisitos já entregue à TI. ✅ Arquivo de Chamados concluído (2026-07-18). Próximo passo: aguardar TI, depois revisar itens sem ordem confirmada (Forçar encerramento, RBAC soft do Dashboard/Kanban/Fila, Fase 4 Email/Storage).

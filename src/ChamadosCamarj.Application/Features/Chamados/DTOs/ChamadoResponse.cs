@@ -4,6 +4,7 @@ namespace ChamadosCamarj.Application.Features.Chamados.DTOs;
 
 public record ChamadoResponse(
     Guid Id,
+    int Numero,
     string Titulo,
     string Descricao,
     StatusChamado Status,

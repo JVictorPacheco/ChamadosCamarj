@@ -37,6 +37,7 @@ public class Chamado : BaseEntity
     }
 
     // Propriedades
+    public int Numero { get; private set; }
     public string Titulo { get; private set; } = string.Empty;
     public string Descricao { get; private set; } = string.Empty;
     public StatusChamado Status { get; private set; }
@@ -100,6 +101,16 @@ public class Chamado : BaseEntity
             throw new InvalidOperationException("Só é possível fechar um chamado que já foi resolvido.");
 
         Status = StatusChamado.Fechado;
+        DataAtualizacao = DateTime.UtcNow;
+    }
+
+    public void ForcarEncerramento()
+    {
+        if (Status is StatusChamado.Fechado or StatusChamado.Cancelado)
+            throw new InvalidOperationException($"Não é possível forçar o encerramento de um chamado com status '{Status}'.");
+
+        Status = StatusChamado.Fechado;
+        DataConclusao ??= DateTime.UtcNow;
         DataAtualizacao = DateTime.UtcNow;
     }
 

@@ -6,6 +6,7 @@ import {
   cancelarChamado,
   reatribuirChamado,
   alterarPrioridade,
+  forcarEncerramento,
 } from '@/features/chamados/api'
 import type { ReatribuirRequest } from '@/features/chamados/api'
 import type { PrioridadeChamado } from '@/types/api'
@@ -60,6 +61,14 @@ export function useAlterarPrioridadeChamado(chamadoId: string) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (novaPrioridade: PrioridadeChamado) => alterarPrioridade(chamadoId, novaPrioridade),
+    onSuccess: () => invalidarChamado(queryClient, chamadoId),
+  })
+}
+
+export function useForcarEncerramentoChamado(chamadoId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (motivo: string) => forcarEncerramento(chamadoId, motivo),
     onSuccess: () => invalidarChamado(queryClient, chamadoId),
   })
 }

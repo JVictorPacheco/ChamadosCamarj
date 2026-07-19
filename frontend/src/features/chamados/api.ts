@@ -115,6 +115,13 @@ export function alterarPrioridade(chamadoId: string, novaPrioridade: PrioridadeC
   })
 }
 
+export function forcarEncerramento(chamadoId: string, motivo: string): Promise<void> {
+  return apiFetch<void>(`/chamados/${chamadoId}/forcar-encerramento`, {
+    method: 'PATCH',
+    body: JSON.stringify({ motivo }),
+  })
+}
+
 export function listarHistorico(chamadoId: string): Promise<HistoricoResponse[]> {
   return apiFetch<HistoricoResponse[]>(`/chamados/${chamadoId}/historico`)
 }

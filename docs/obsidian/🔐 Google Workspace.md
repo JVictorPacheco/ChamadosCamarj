@@ -12,46 +12,57 @@
 
 ## Status atual
 
-**Mockada (Fases 3-6):** seletor de perfil em `localStorage` (Admin/Atendente/Solicitante) — segue em uso.
-**Real (Fase 6, T09/T15):** "Sign in with Google" substitui o seletor mockado — **único item pendente** da Fase 6 (T01-T08 backend e T10-T14 frontend já concluídos e verificados). Pausado em 2026-07-14 a pedido do usuário para dar lugar ao Relatório Mensal (Fase 7, já entregue); próximo passo é retomar T09/T15.
+**IMPLEMENTADO (T09/T15, 2026-07-18).** "Sign in with Google" (`GoogleLogin`/`GoogleOAuthProvider`) substituiu por completo o antigo seletor mockado e o login por e-mail do F5a. Código pronto, testado visualmente e commitado (`8166ff0`) — falta só o **Client ID real da TI** (documento de requisitos já entregue) pra funcionar de ponta a ponta contra contas Google de verdade.
 
-## Como vai funcionar (Fase 6)
+**Passo intermediário (F5a, 2026-07-16):** antes do login Google real, foi implementado um login mockado por e-mail com cadastro de usuários pelo Admin (tabela `UsuarioPerfil` + `UsuariosController`). Não foi descartado — o T09 reaproveita a mesma tabela `UsuarioPerfil` sem mudanças, só trocando a fonte de autenticação de "e-mail digitado" para "token Google validado".
+
+## Como funciona (implementado)
 
 ```
-Usuário → Botão "Entrar com Google" → OAuth2 Google → Token JWT → Acesso ao sistema
+Usuário → Botão "Entrar com Google" → Google devolve id_token → Backend valida (Google.Apis.Auth)
+   → Confere domínio @camarj.com.br + EmailVerified → Lookup em UsuarioPerfil → JWT próprio (perfil incluso)
 ```
 
-## Fluxo Técnico Planejado
+## Fluxo Técnico (como foi implementado)
 
-1. Frontend redireciona para login Google
+1. Frontend mostra o botão oficial do Google (`@react-oauth/google`, tema `filled_black`, `hosted_domain="camarj.com.br"`)
 2. Usuário autentica com sua conta `@camarj.com.br`
-3. Google devolve token (id_token + access_token)
-4. Backend valida o token com Google APIs
-5. Extrai claims: nome, email
-6. Faz lookup no mapeamento conta→perfil (tabela no banco)
-7. Retorna JWT próprio com perfil (Admin/Atendente/Solicitante)
-8. Frontend usa o JWT para todas as requisições
+3. Google devolve o `id_token` (`credentialResponse.credential`)
+4. Frontend envia pro backend: `POST /auth/google { idToken }`
+5. Backend valida com `GoogleJsonWebSignature.ValidateAsync` (via `IGoogleTokenValidator`, abstração pra testabilidade)
+6. Confere `EmailVerified` + domínio `@camarj.com.br` (email normalizado/trim antes da checagem)
+7. Faz lookup em `UsuarioPerfil` (mesma tabela do F5a) — se não encontrar, 403 ("peça a um Admin pra te cadastrar")
+8. Emite JWT próprio (assinatura simétrica, claims `sub`/`email`/`name`/`perfil`, expiração 8-12h)
+9. Frontend guarda o token e manda `Authorization: Bearer` em toda requisição; **logout automático após 20min de inatividade** e também em qualquer resposta 401
+
+## Decisões de segurança (confirmadas com o usuário em 2026-07-18)
+
+- **Assinatura JWT:** simétrica (`SymmetricSecurityKey`), gerada via `openssl rand -base64 48`, guardada em `user-secrets` (`Auth:JwtSigningKey`)
+- **Expiração do token:** 8-12h, sem refresh token
+- **Logout por inatividade:** 20 minutos sem interação (mouse/teclado/scroll/click) — ideia do próprio usuário, não estava no design original
 
 ## Mapeamento de Contas
 
-Contas são **por setor**, não por analista individual:
+Contas são gerenciadas **pelo Admin** via tela `Admin > Usuários` (F5a) — não é mais um mapeamento fixo por setor no código:
 
-| Email | Perfil no Sistema |
+| Email (exemplo em teste) | Perfil no Sistema |
 |-------|-------------------|
 | victor@camarj.com.br | 👑 Admin |
 | fabio@camarj.com.br | 🛠️ Atendente |
-| autorizacao@camarj.com.br | 🛠️ Atendente |
-| ti@camarj.com.br | 🛠️ Atendente |
-| (demais @camarj.com.br) | 🙋 Solicitante |
+| (cadastro pelo Admin) | 🙋 Solicitante / 🛠️ Atendente / 👑 Admin |
 
-> O mapeamento exato precisa ser definido com Victor antes de implementar.
+> Um e-mail `@camarj.com.br` que faz login com Google mas não está cadastrado em `UsuarioPerfil` recebe 403 — precisa ser cadastrado antes pelo Admin.
 
-## Tecnologias Planejadas
+## Tecnologias usadas
 
-- **Backend:** Google OAuth2 + JWT Bearer
-- **Frontend:** `@react-oauth/google` ou similar
-- **Escopos:** `openid`, `profile`, `email`
+- **Backend:** `Google.Apis.Auth` (validação do token) + `Microsoft.AspNetCore.Authentication.JwtBearer` + `System.IdentityModel.Tokens.Jwt` (emissão do JWT próprio)
+- **Frontend:** `@react-oauth/google`
+- **Escopos:** `openid`, `profile`, `email` (padrão do botão do Google, sem escopo customizado)
+
+## Pendência real
+
+Falta só o **Client ID real da TI** — configurar via `dotnet user-secrets set "Auth:GoogleClientId" "<valor>"` (backend) e `frontend/.env` com `VITE_GOOGLE_CLIENT_ID=<valor>`. Documento de requisitos não-técnico já entregue à TI em `.specs/features/fase-6-admin-log/oauth-requisitos-ti.md`.
 
 ## Relação com [[👥 Perfis de Usuário]]
 
-Perfil Admin/Atendente/Solicitante continuará sendo o mesmo — só a fonte de autenticação muda (de localStorage para token Google real).
+Perfil Admin/Atendente/Solicitante continua sendo o mesmo — só a fonte de autenticação mudou (de `localStorage`/e-mail digitado para token Google real).
