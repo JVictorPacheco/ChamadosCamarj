@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useAuth } from '@/auth/AuthContext'
 import { ApiError } from '@/lib/api'
+import { formatarNumeroChamado } from '@/lib/utils'
 import { StatusBadge } from './components/StatusBadge'
 import { PrioridadeBadge } from './components/PrioridadeBadge'
 import { SlaBadge } from './components/SlaBadge'
@@ -11,6 +12,7 @@ import { ComentarioList } from './components/ComentarioList'
 import { ComentarioForm } from './components/ComentarioForm'
 import { ReatribuirModal } from './components/ReatribuirModal'
 import { AlterarPrioridadeModal } from './components/AlterarPrioridadeModal'
+import { ForcarEncerramentoModal } from './components/ForcarEncerramentoModal'
 import { TimelineHistorico } from './components/TimelineHistorico'
 import { useChamado } from './hooks/useChamado'
 import {
@@ -29,6 +31,7 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
   const cancelar = useCancelarChamado(chamado.id)
   const [reatribuirAberto, setReatribuirAberto] = useState(false)
   const [prioridadeAberto, setPrioridadeAberto] = useState(false)
+  const [forcarEncerramentoAberto, setForcarEncerramentoAberto] = useState(false)
 
   const isAdmin = perfil?.tipo === 'Admin'
   const isAtendente = perfil?.tipo === 'Admin' || perfil?.tipo === 'Atendente'
@@ -90,6 +93,12 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
         </Button>
       )}
 
+      {isAdmin && !statusFinal && (
+        <Button size="sm" variant="destructive" onClick={() => setForcarEncerramentoAberto(true)}>
+          Forçar Encerramento
+        </Button>
+      )}
+
       {(atribuir.isError || resolver.isError || fechar.isError || cancelar.isError) && (
         <Alert variant="destructive" className="w-full">
           <AlertDescription>
@@ -110,6 +119,11 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
         onOpenChange={setPrioridadeAberto}
         chamadoId={chamado.id}
         prioridadeAtual={chamado.prioridade}
+      />
+      <ForcarEncerramentoModal
+        open={forcarEncerramentoAberto}
+        onOpenChange={setForcarEncerramentoAberto}
+        chamadoId={chamado.id}
       />
     </div>
   )
@@ -158,7 +172,10 @@ export function ChamadoDetailPage() {
         <Link to="/chamados">← Voltar</Link>
       </Button>
 
-      <h1 className="text-xl font-heading">{chamado.titulo}</h1>
+      <h1 className="text-xl font-heading">
+        <span className="mr-2 text-muted-foreground">{formatarNumeroChamado(chamado.numero)}</span>
+        {chamado.titulo}
+      </h1>
 
       <div className="flex flex-wrap items-center gap-2">
         <StatusBadge status={chamado.status} />

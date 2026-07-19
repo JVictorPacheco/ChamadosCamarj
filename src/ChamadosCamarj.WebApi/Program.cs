@@ -71,6 +71,11 @@ builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        // Sem isso, o handler remapeia claims de nome curto (ex: "sub") para as URIs longas
+        // de ClaimTypes por padrão — e ICurrentUserService.UsuarioId, que lê o claim "sub"
+        // pelo nome curto (JwtRegisteredClaimNames.Sub), sempre caía no fallback Guid.Empty.
+        options.MapInboundClaims = false;
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,

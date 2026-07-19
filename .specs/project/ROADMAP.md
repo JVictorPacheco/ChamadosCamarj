@@ -109,7 +109,7 @@
 **Frontend — completo (T10-T14, T15), reescrito e verificado em 2026-07-14/2026-07-18:**
 - [x] T10-T14 (Reatribuir, Histórico, Alterar Prioridade, Comentário interno) — os componentes originais tinham sido commitados no caminho errado (`src/ChamadosCamarj.Web/...`) usando padrões inexistentes no projeto (axios, toast, shadcn não instalado, tema claro). Reescritos do zero em `frontend/src/features/chamados/`, seguindo os padrões reais (`apiFetch`, erro inline, shadcn via CLI, tema dark). `ComentarioForm`/`ComentarioList` estendidos em vez de duplicados.
 - [x] **T15 — Login real via Google Workspace IMPLEMENTADO em 2026-07-18** — `LoginPage` (F5a) substituída pelo botão `GoogleLogin`/`GoogleOAuthProvider`, `AuthContext.loginComGoogle`, `apiFetch` com Bearer + logout automático em 401
-- [ ] **Forçar encerramento** — Admin pode fechar/cancelar sem seguir o fluxo normal (ainda não abordado)
+- [x] **Forçar encerramento** — Admin fecha um chamado direto de qualquer status não-final (Aberto/EmAndamento/Resolvido), com motivo obrigatório auditado no histórico (`AcaoHistorico.EncerramentoForcado`). Implementado e verificado em 2026-07-19 (`.specs/features/forcar-encerramento/`) — falta só o clique real no navegador, bloqueado pelo Client ID do Google (mesma pendência do T09/F5b)
 - [x] ~~Mapeamento conta→perfil no backend~~ → entra pelo F5a (tabela `UsuarioPerfil`)
 - [x] **RBAC real (baseado em claims do token Google) IMPLEMENTADO** — `ICurrentUserService` lê `perfil`/`sub`/`name` dos claims do JWT em todos os Controllers
 - [ ] Admin: gerenciar categorias, usuários e configurações do sistema
@@ -140,3 +140,12 @@
 - [x] Filtro por status/categoria/busca (reaproveitado `FiltroChamados.tsx`, com `statusOptions` restrito aos 3 finalizados)
 - [x] RBAC igual ao padrão de "Meus Chamados" (Admin=todos, Atendente=responsavelId, Solicitante=solicitanteEmail)
 - [x] Ajuste de UX pós-teste: filtro de período só aparece na tela Arquivo (não em "Meus Chamados"), com labels visíveis "De"/"Até"
+
+## 🔢 Número do Chamado (CONCLUÍDA — 2026-07-19)
+
+> Pedido pelo usuário: `Guid` interno não é referenciável em conversa/e-mail. Formato escolhido: `CAM-{número}`, sem zero-padding (`CAM-1`, `CAM-42`). Spec/design em `.specs/features/numero-do-chamado/`.
+
+- [x] Coluna `Numero` gerada por sequence do Postgres (não pela aplicação — evita corrida em criações concorrentes)
+- [x] Migration com backfill cronológico (`ORDER BY DataCriacao`) dos chamados já existentes, verificado contra o Supabase real (37 chamados, números únicos 1-37, ordem cronológica exata; chamado novo criado depois recebeu 38)
+- [x] Exibido em `CAM-{número}` no `ChamadoCard` (Lista, Arquivo, Fila, Kanban) e no cabeçalho do Detalhe
+- [ ] Busca/filtro por número — fora de escopo por ora, ver spec

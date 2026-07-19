@@ -15,6 +15,11 @@ public class ChamadoConfiguration : IEntityTypeConfiguration<Chamado>
         builder.Property(c => c.Id)
             .ValueGeneratedNever();
 
+        builder.Property(c => c.Numero)
+            .IsRequired()
+            .HasDefaultValueSql("nextval('\"ChamadosNumeroSeq\"')")
+            .ValueGeneratedOnAdd();
+
         builder.Property(c => c.Titulo)
             .IsRequired()
             .HasMaxLength(200);
@@ -51,6 +56,7 @@ public class ChamadoConfiguration : IEntityTypeConfiguration<Chamado>
             .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         // Índices
+        builder.HasIndex(c => c.Numero).IsUnique();
         builder.HasIndex(c => c.Status);
         builder.HasIndex(c => c.Prioridade);
         builder.HasIndex(c => c.SolicitanteEmail);

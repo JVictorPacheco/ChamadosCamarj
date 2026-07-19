@@ -9,10 +9,12 @@ export type AcaoHistorico =
   | "Fechado"
   | "Cancelado"
   | "ComentarioAdicionado"
-  | "PrioridadeAlterada";
+  | "PrioridadeAlterada"
+  | "EncerramentoForcado";
 
 export interface ChamadoResponse {
   id: string;
+  numero: number;
   titulo: string;
   descricao: string;
   status: StatusChamado;

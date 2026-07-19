@@ -184,6 +184,24 @@ public class ChamadosController : ControllerBase
     }
 
     /// <summary>
+    /// Força o encerramento de um chamado a partir de qualquer status não-final, com justificativa obrigatória (Admin)
+    /// </summary>
+    [HttpPatch("{id:guid}/forcar-encerramento")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ForcarEncerramento(
+        Guid id,
+        [FromBody] ForcarEncerramentoRequest request,
+        CancellationToken cancellationToken)
+    {
+        var command = new ForcarEncerramentoChamadoCommand(id, request.Motivo, _currentUser.UsuarioId, _currentUser.Nome, _currentUser.Perfil);
+        await _mediator.Send(command, cancellationToken);
+        return NoContent();
+    }
+
+    /// <summary>
     /// Altera o status de um chamado (usado pelo Kanban drag & drop)
     /// </summary>
     [HttpPut("{id:guid}/status")]
