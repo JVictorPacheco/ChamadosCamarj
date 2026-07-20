@@ -1,11 +1,26 @@
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Link } from 'react-router'
+import { useAuth } from '@/auth/AuthContext'
 import { KanbanBoard } from './kanban/KanbanBoard'
 import { useKanbanChamados } from './kanban/useKanbanChamados'
 
 export function KanbanPage() {
+  const { perfil } = useAuth()
   const { data: chamados, isPending, isError } = useKanbanChamados()
+
+  if (perfil?.tipo === 'Solicitante') {
+    return (
+      <div className="flex flex-col items-center gap-3 p-8 text-center">
+        <Alert variant="destructive" className="max-w-md">
+          <AlertDescription>Esta área não está disponível para o seu perfil.</AlertDescription>
+        </Alert>
+        <Button asChild variant="outline">
+          <Link to="/chamados">Voltar para a lista</Link>
+        </Button>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col">

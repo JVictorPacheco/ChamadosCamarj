@@ -20,9 +20,10 @@
 
 | Item | Motivo |
 |---|---|
-| Buscar/filtrar chamados por número | Não pedido agora; adicionar depois se sentir falta |
 | Reiniciar a numeração por ano (`CAM-2026-42`) | Formato mais simples escolhido explicitamente pelo usuário |
 | Expor o número na integração de e-mail (Fase 4) | Fase 4 ainda não implementada |
+
+> **Atualização 2026-07-19:** busca/filtro por número foi implementada logo em seguida (ver seção "Busca por número" abaixo) — deixou de ser fora de escopo.
 
 ## User Stories
 
@@ -55,3 +56,9 @@
 - **Sequência nova**: chamado criado depois da migration recebeu `numero: 38` — continua exatamente de onde o backfill parou, sem reiniciar
 - 197 testes de backend continuam passando (nenhum teste novo dedicado — `Numero` é gerado pelo banco, sem lógica de aplicação pra unitário cobrir; a correção real foi verificada via curl contra dados reais)
 - `npm run build` limpo — `CAM-{numero}` aparece em `ChamadoCard` (cobre Lista, Arquivo, Fila e Kanban, que reaproveita o mesmo card) e no cabeçalho do `ChamadoDetailPage`
+
+## Busca por número (2026-07-19, adicionada em seguida)
+
+O campo de busca livre já existente (`FiltroChamados.tsx`, parâmetro `busca`) passou a reconhecer `"42"` ou `"CAM-42"` (case-insensitive) como referência ao número do chamado, além da busca por texto em Título/Descrição já existente — sem nenhum campo de filtro novo na UI. Implementado em `ChamadoRepository.ListarAsync` (`ParseNumeroChamado`): se `busca` parseia como número (com ou sem o prefixo `CAM-`), a query vira `Titulo.Contains(busca) OR Descricao.Contains(busca) OR Numero == numero`; senão, cai só na busca de texto de sempre.
+
+**Verificado contra o Supabase real:** `busca=CAM-1` retornou só o chamado #1; `busca=1` retornou o #1 mais qualquer chamado com "1" no título/descrição (comportamento correto — "1" é ambíguo, número e substring); `busca=Reembolso` (texto puro) continuou funcionando exatamente como antes. 197 testes de backend passando (nenhum teste novo — mesmo padrão de cobertura da camada de repositório já usado no resto do projeto, que não tem testes dedicados, só verificação manual), `npm run build` limpo.

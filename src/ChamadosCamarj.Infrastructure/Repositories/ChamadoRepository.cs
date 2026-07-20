@@ -143,7 +143,12 @@ public class ChamadoRepository : IChamadoRepository
             query = query.Where(c => c.CategoriaId == categoriaId.Value);
 
         if (!string.IsNullOrWhiteSpace(busca))
-            query = query.Where(c => c.Titulo.Contains(busca) || c.Descricao.Contains(busca));
+        {
+            var numeroBuscado = ParseNumeroChamado(busca);
+            query = numeroBuscado.HasValue
+                ? query.Where(c => c.Titulo.Contains(busca) || c.Descricao.Contains(busca) || c.Numero == numeroBuscado.Value)
+                : query.Where(c => c.Titulo.Contains(busca) || c.Descricao.Contains(busca));
+        }
 
         if (!string.IsNullOrWhiteSpace(solicitanteEmail))
             query = query.Where(c => c.SolicitanteEmail == solicitanteEmail);
@@ -233,4 +238,14 @@ public class ChamadoRepository : IChamadoRepository
             .ToDictionaryAsync(x => x.Prioridade, x => x.Quantidade, cancellationToken);
     }
 
+    // Aceita "42" ou "CAM-42" (case-insensitive) na mesma busca de texto livre —
+    // qualquer outra coisa (ex: "impressora") não é um número, cai só na busca por texto.
+    private static int? ParseNumeroChamado(string busca)
+    {
+        var texto = busca.Trim();
+        if (texto.StartsWith("CAM-", StringComparison.OrdinalIgnoreCase))
+            texto = texto[4..];
+
+        return int.TryParse(texto, out var numero) ? numero : null;
+    }
 }
