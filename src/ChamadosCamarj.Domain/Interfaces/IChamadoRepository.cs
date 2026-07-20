@@ -9,10 +9,13 @@ public interface IChamadoRepository
     Task<Chamado> AdicionarAsync(Chamado chamado, CancellationToken cancellationToken = default);
     Task AtualizarAsync(Chamado chamado, CancellationToken cancellationToken = default);
     Task AdicionarComentarioAsync(Comentario comentario, CancellationToken cancellationToken = default);
+    Task AdicionarAnexoAsync(Anexo anexo, CancellationToken cancellationToken = default);
 
     // Consultas
     Task<Chamado?> ObterPorIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<IEnumerable<Comentario>> ObterComentariosPorChamadoAsync(Guid chamadoId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Anexo>> ObterAnexosPorChamadoAsync(Guid chamadoId, CancellationToken cancellationToken = default);
+    Task<Anexo?> ObterAnexoPorIdAsync(Guid anexoId, CancellationToken cancellationToken = default);
     Task<IEnumerable<Chamado>> ObterTodosAsync(CancellationToken cancellationToken = default);
     Task<IEnumerable<Chamado>> ObterPorStatusAsync(StatusChamado status, CancellationToken cancellationToken = default);
     Task<IEnumerable<Chamado>> ObterPorSolicitanteAsync(string email, CancellationToken cancellationToken = default);

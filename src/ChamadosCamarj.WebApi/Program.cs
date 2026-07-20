@@ -60,6 +60,29 @@ builder.Services.AddScoped<IUsuarioPerfilRepository, UsuarioPerfilRepository>();
 builder.Services.AddScoped<IGoogleTokenValidator, GoogleTokenValidator>();
 
 // ─────────────────────────────
+// Supabase Storage (Anexos) — Fase 4, metade 1
+// ─────────────────────────────
+builder.Services.Configure<SupabaseSettings>(builder.Configuration.GetSection("Supabase"));
+var supabaseSettings = builder.Configuration.GetSection("Supabase").Get<SupabaseSettings>() ?? new SupabaseSettings();
+// Chave de serviço (Service Role Key, Supabase Dashboard > Settings > API) ainda pendente
+// (usuário vai atrás em paralelo) — sem ela, a app sobe normalmente, só a feature de
+// Anexos fica indisponível (mesma tolerância já aplicada ao GoogleClientId).
+if (!string.IsNullOrWhiteSpace(supabaseSettings.Url) && !string.IsNullOrWhiteSpace(supabaseSettings.ServiceRoleKey))
+{
+    var supabaseClient = new Supabase.Client(supabaseSettings.Url, supabaseSettings.ServiceRoleKey);
+    await supabaseClient.InitializeAsync();
+    builder.Services.AddSingleton(supabaseClient);
+    builder.Services.AddScoped<IStorageService, SupabaseStorageService>();
+}
+else
+{
+    // IStorageService precisa estar registrado sempre — o validador de DI do ASP.NET Core
+    // (ValidateOnBuild, ativo em Development) derruba a aplicação inteira no Build() se um
+    // Handler exige uma dependência não registrada, mesmo que ninguém chame o endpoint.
+    builder.Services.AddScoped<IStorageService, NullStorageService>();
+}
+
+// ─────────────────────────────
 // Autenticação — login real via Google Workspace (T09/F5b)
 // ─────────────────────────────
 builder.Services.Configure<AuthSettings>(builder.Configuration.GetSection("Auth"));

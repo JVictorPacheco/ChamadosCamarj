@@ -1,6 +1,7 @@
 import { apiFetch } from '@/lib/api'
 import type {
   AbrirChamadoRequest,
+  AnexoResponse,
   CategoriaResponse,
   ChamadoResponse,
   ComentarChamadoRequest,
@@ -120,6 +121,27 @@ export function forcarEncerramento(chamadoId: string, motivo: string): Promise<v
     method: 'PATCH',
     body: JSON.stringify({ motivo }),
   })
+}
+
+export function uploadAnexo(chamadoId: string, arquivo: File, comentarioId?: string): Promise<AnexoResponse> {
+  const formData = new FormData()
+  formData.append('arquivo', arquivo)
+  if (comentarioId) {
+    formData.append('comentarioId', comentarioId)
+  }
+
+  return apiFetch<AnexoResponse>(`/chamados/${chamadoId}/anexos`, {
+    method: 'POST',
+    body: formData,
+  })
+}
+
+export function listarAnexos(chamadoId: string): Promise<AnexoResponse[]> {
+  return apiFetch<AnexoResponse[]>(`/chamados/${chamadoId}/anexos`)
+}
+
+export function obterUrlDownloadAnexo(chamadoId: string, anexoId: string): Promise<{ url: string }> {
+  return apiFetch<{ url: string }>(`/chamados/${chamadoId}/anexos/${anexoId}/download-url`)
 }
 
 export function listarHistorico(chamadoId: string): Promise<HistoricoResponse[]> {

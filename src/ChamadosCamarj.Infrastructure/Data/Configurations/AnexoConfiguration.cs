@@ -27,6 +27,13 @@ public class AnexoConfiguration : IEntityTypeConfiguration<Anexo>
         builder.Property(a => a.TamanhoBytes)
             .IsRequired();
 
+        builder.Property(a => a.EnviadoPorId)
+            .IsRequired(false);
+
+        builder.Property(a => a.EnviadoPorNome)
+            .IsRequired()
+            .HasMaxLength(150);
+
         // C-07: FK opcional para Comentario (estava no modelo mas ausente na migration)
         builder.HasOne(a => a.Comentario)
             .WithMany()

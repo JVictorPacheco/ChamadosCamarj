@@ -254,4 +254,56 @@ public class ChamadosController : ControllerBase
         await _mediator.Send(command, cancellationToken);
         return NoContent();
     }
+
+    /// <summary>
+    /// Anexa um arquivo a um chamado (ou a um comentário específico)
+    /// </summary>
+    [HttpPost("{id:guid}/anexos")]
+    [ProducesResponseType(typeof(AnexoResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [RequestSizeLimit(10 * 1024 * 1024)]
+    public async Task<ActionResult<AnexoResponse>> AdicionarAnexo(
+        Guid id,
+        [FromForm] IFormFile arquivo,
+        [FromForm] Guid? comentarioId,
+        CancellationToken cancellationToken)
+    {
+        await using var conteudo = arquivo.OpenReadStream();
+        var command = new AdicionarAnexoCommand(
+            id,
+            comentarioId,
+            arquivo.FileName,
+            arquivo.ContentType,
+            conteudo,
+            arquivo.Length,
+            _currentUser.UsuarioId,
+            _currentUser.Nome);
+
+        var result = await _mediator.Send(command, cancellationToken);
+        return CreatedAtAction(nameof(ListarAnexos), new { id }, result);
+    }
+
+    /// <summary>
+    /// Lista os anexos de um chamado
+    /// </summary>
+    [HttpGet("{id:guid}/anexos")]
+    [ProducesResponseType(typeof(IEnumerable<AnexoResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<AnexoResponse>>> ListarAnexos(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new ListarAnexosQuery(id), cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Gera uma URL assinada (expira em 1h) pra baixar um anexo
+    /// </summary>
+    [HttpGet("{id:guid}/anexos/{anexoId:guid}/download-url")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ObterUrlDownloadAnexo(Guid id, Guid anexoId, CancellationToken cancellationToken)
+    {
+        var url = await _mediator.Send(new ObterUrlDownloadAnexoQuery(anexoId), cancellationToken);
+        return Ok(new { url });
+    }
 }

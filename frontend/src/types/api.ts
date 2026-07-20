@@ -41,6 +41,15 @@ export interface ComentarioResponse {
   dataCriacao: string;
 }
 
+export interface AnexoResponse {
+  id: string;
+  nomeArquivo: string;
+  tipoArquivo: string;
+  tamanhoBytes: number;
+  enviadoPorNome: string;
+  dataCriacao: string;
+}
+
 export interface CategoriaResponse {
   id: string;
   nome: string;

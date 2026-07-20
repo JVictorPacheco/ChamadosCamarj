@@ -14,6 +14,8 @@ import { ReatribuirModal } from './components/ReatribuirModal'
 import { AlterarPrioridadeModal } from './components/AlterarPrioridadeModal'
 import { ForcarEncerramentoModal } from './components/ForcarEncerramentoModal'
 import { TimelineHistorico } from './components/TimelineHistorico'
+import { AnexosList } from './components/AnexosList'
+import { UploadAnexoForm } from './components/UploadAnexoForm'
 import { useChamado } from './hooks/useChamado'
 import {
   useAtribuirChamado,
@@ -215,6 +217,10 @@ export function ChamadoDetailPage() {
           </div>
         )}
       </dl>
+
+      <h2 className="text-base font-heading">Anexos</h2>
+      <AnexosList chamadoId={chamado.id} />
+      <UploadAnexoForm chamadoId={chamado.id} />
 
       <h2 className="text-base font-heading">Comentários</h2>
       <ComentarioList chamadoId={chamado.id} />

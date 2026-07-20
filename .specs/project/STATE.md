@@ -1,10 +1,20 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-07-19
+> Atualizado em: 2026-07-20
 
 ---
 
 ## 📍 Onde estamos
+
+**Sessão de 2026-07-20 (branch `feature/anexos-storage`, a partir de `develop`): Fase 4 iniciada — Storage de Anexos implementado (Design → Tasks → Execute completos), metade 1 de 2 (Email/IMAP fica pra quando a credencial chegar).** Upload de arquivo num chamado (PDF, imagens, Word, Excel, ZIP — máx 10MB), listagem de anexos e download via URL assinada do Supabase Storage (expira 1h). Backend: `Anexo` ganhou `EnviadoPorId`/`EnviadoPorNome` (preenchido via `ICurrentUserService`, não client-supplied — decisão consciente de não repetir o gap antigo que `Comentar.Autor` ainda tem), `IStorageService` revisado (`UploadAsync`/`ObterUrlAssinadaAsync`, removidos `DownloadAsync`/`RemoverAsync` sem uso), `SupabaseStorageService` real via pacote NuGet `Supabase` (API confirmada via Context7 + busca web antes de implementar). 3 endpoints novos no `ChamadosController`. Frontend: `AnexosList`/`UploadAnexoForm` no Detalhe do Chamado, `apiFetch` ajustado pra não fixar `Content-Type` quando o body é `FormData` (upload multipart). 216 testes passando (19 novos), `npm run build` limpo.
+
+**Duas decisões assumidas sem confirmação explícita do usuário** (pergunta ficou sem resposta): (1) qualquer perfil envolvido no chamado pode anexar; (2) anexo nunca é removido (`RemoverAsync` tirado da interface). Revisar se o usuário discordar.
+
+**Bug real encontrado e corrigido durante a verificação (fora do escopo original, mais sério que os anteriores):** a API **não subia de jeito nenhum** sem a Service Role Key do Supabase configurada — `ValidateOnBuild` do ASP.NET Core (ativo em Development) derruba a aplicação inteira no `Build()` porque `AdicionarAnexoCommandHandler` exige `IStorageService`, não registrado quando a chave está ausente. Diferente da tolerância já existente pro `GoogleClientId` (que não impede o boot), isso quebraria a API inteira, não só a feature de Anexos. Corrigido com `NullStorageService` (fallback registrado quando `Supabase:Url`/`ServiceRoleKey` estão vazios, lança erro claro só se alguém tentar usar a feature de verdade). Ver Aprendizados.
+
+**Verificado via curl contra a API + Supabase real** (chamado de teste `CAM-39` criado e depois removido): extensão inválida → 400; arquivo válido sem a chave → 400 com mensagem clara do `NullStorageService` (não crash); resto da API continua funcionando normal. **Upload/download reais contra o bucket do Supabase Storage NÃO foram testados** — segue bloqueado pela Service Role Key, que o usuário está buscando em paralelo, sem previsão. Branch `feature/anexos-storage` ainda não commitada nem enviada — aguardando decisão do usuário (commitar agora vs. esperar a chave pra testar de ponta a ponta antes).
+
+---
 
 **Sessão de 2026-07-19 (pós-merge do PR #15, direto em `develop`): limpeza + busca por número + RBAC real do Dashboard/Kanban/Fila.**
 - **Limpeza:** os 4 chamados de teste (`[TESTE E2E]` 1-4) removidos do Supabase real via script Npgsql direto (histórico + chamado, numa transação) — o app não tem endpoint de exclusão por decisão de produto, então foi o único jeito. Confirmado: 0 restantes, total voltou a 34. Os números CAM-35 a 38 ficam como buracos permanentes na sequência (normal, não são reaproveitados).
@@ -134,8 +144,9 @@ Nenhum.
 | Pendência | Detalhe |
 |-----------|---------|
 | Hospedagem em produção | Onde a API vai rodar (VM, Docker, Azure App Service etc.) — agora também bloqueia o redirect URI de produção do OAuth, ver `.specs/features/fase-6-admin-log/oauth-requisitos-ti.md` |
-| Fase 4 | Email + Storage ainda não implementados — aguardando priorização |
+| Fase 4 (Email/IMAP) | Ainda não implementada — depende de senha de app do IMAP (`suporte@camarj.com.br`/`ti@camarj.com.br`), usuário ainda não tem |
 | Resposta da TI sobre o Client ID do Google OAuth | Documento entregue em 2026-07-18 (`oauth-requisitos-ti.md`). **T09/F5b já está implementado e esperando só esse valor** para funcionar de ponta a ponta — configurar via `dotnet user-secrets set "Auth:GoogleClientId" "<valor real>"` (backend) e `VITE_GOOGLE_CLIENT_ID` (frontend, criar `.env`) assim que a TI devolver |
+| Service Role Key do Supabase (Storage/Anexos) | **Storage de Anexos já está implementado** (2026-07-20, `.specs/features/anexos-storage/`) e esperando só essa chave (Dashboard > Settings > API) — configurar via `dotnet user-secrets set "Supabase:Url" "https://oxiqutweuejvopofbkoy.supabase.co"` e `dotnet user-secrets set "Supabase:ServiceRoleKey" "<valor real>"` assim que o usuário conseguir. Sem ela, a feature de Anexos retorna 400 com mensagem clara (`NullStorageService`), resto da API funciona normal |
 
 ---
 
@@ -190,6 +201,7 @@ Nenhum.
 
 - **ASP.NET Core `JwtBearerHandler` remapeia claims de nome curto (`sub`, `email` etc.) pra URIs longas de `ClaimTypes` por padrão** (`MapInboundClaims = true` é o default) — código que emite o claim com `JwtRegisteredClaimNames.Sub` ("sub") e depois lê de volta com o mesmo nome curto (`FindFirstValue(JwtRegisteredClaimNames.Sub)`) não acha nada, porque no `ClaimsPrincipal` o claim já virou `ClaimTypes.NameIdentifier`. Resultado silencioso: fallback pro valor default (`Guid.Empty`), sem exception, sem erro visível — só aparece revisando o dado gravado (nesse caso, auditoria com `UsuarioId` sempre zerado). Fix: `options.MapInboundClaims = false;` no `AddJwtBearer`. Ao introduzir JWT com claims custom, sempre conferir se o claim é lido de volta pelo mesmo *tipo* de nome (curto vs. URI longa) usado pra escrever — não só pelo mesmo *valor* de string.
 - **Testar um endpoint autenticado sem depender do login real (Google) é possível**: como o JWT é HMAC simétrico com uma chave já em `user-secrets` (`Auth:JwtSigningKey`) e o token não depende de nenhum lookup no banco (`ICurrentUserService` só lê claims), dá pra mintar um token válido localmente (mesmos claims/issuer/audience do `AutenticarGoogleCommandHandler`) num projeto C# descartável e testar a API real (inclusive contra o Supabase) via curl, sem esperar o Client ID da TI. Útil pra qualquer feature nova que dependa de perfil/identidade enquanto o OAuth real segue bloqueado.
+- **`ValidateOnBuild` do ASP.NET Core (padrão ativo em Development) derruba a aplicação inteira se QUALQUER Handler registrado no MediatR exigir uma dependência não registrada no DI — mesmo que ninguém nunca chame aquele endpoint.** Ao adicionar uma feature nova que depende de uma credencial externa ainda não disponível (Service Role Key do Supabase, nesse caso), registrar a interface **condicionalmente** (só quando a credencial existe) quebra o boot de TODA a API, não só da feature nova — sintoma: exceção de `InvalidOperationException: Unable to resolve service for type 'X'` no `Build()`, app não sobe de jeito nenhum. Fix: sempre registrar a interface, com uma implementação fallback (`NullStorageService`) que lança um erro claro só quando de fato chamada — nunca deixar uma interface sem nenhuma implementação registrada em nenhum cenário de configuração. Esse é o mesmo princípio de tolerância já usado pro `Auth:GoogleClientId` (a app sobe sem ele, só a Google login endpoint falha se chamado), só que aqui a falta dessa tolerância derrubava literalmente tudo, não só a feature nova — vale testar sempre "a app sobe sem a credencial nova?" antes de considerar uma feature com dependência externa como pronta.
 
 - `EnsureCreated()` não aplica migrations — bom para dev rápido, perigoso para mudanças de schema
 - `ObterTodosAsync()` + filtro em memória é um padrão a evitar desde o início

@@ -44,6 +44,15 @@ public class ChamadoRepository : IChamadoRepository
         await _context.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task AdicionarAnexoAsync(Anexo anexo, CancellationToken cancellationToken = default)
+    {
+        if (anexo == null)
+            throw new ArgumentNullException(nameof(anexo));
+
+        await _context.Set<Anexo>().AddAsync(anexo, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<Chamado?> ObterPorIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _dbSet
@@ -61,6 +70,22 @@ public class ChamadoRepository : IChamadoRepository
             .OrderBy(c => c.DataCriacao)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IEnumerable<Anexo>> ObterAnexosPorChamadoAsync(Guid chamadoId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Set<Anexo>()
+            .Where(a => a.ChamadoId == chamadoId)
+            .OrderBy(a => a.DataCriacao)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<Anexo?> ObterAnexoPorIdAsync(Guid anexoId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Set<Anexo>()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Id == anexoId, cancellationToken);
     }
 
     public async Task<IEnumerable<Chamado>> ObterTodosAsync(CancellationToken cancellationToken = default)
