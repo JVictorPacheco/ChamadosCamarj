@@ -1,6 +1,6 @@
 # 📋 Histórico de Chamados
 
-> Planejado para **Fase 6**. Fornece auditoria completa de cada chamado.
+> ✅ **Implementado e verificado (Fase 6, T01-T06 backend + T12 frontend, 2026-07-14).** Fornece auditoria completa de cada chamado. Também é a fonte de dados do [[📈 Relatório Mensal]] (Fase 7).
 
 ## O que é
 
@@ -20,7 +20,7 @@ O **Log de Histórico** registra automaticamente cada evento relevante no ciclo 
 | Id | Guid | PK |
 | ChamadoId | Guid (FK) | Chamado relacionado |
 | UsuarioNome | string | Nome de quem realizou a ação |
-| UsuarioId | Guid? | ID do usuário (preenchido na Fase 6 com auth real) |
+| UsuarioId | Guid? | ID do usuário — hoje enviado pelo próprio cliente (`AuthContext` mockado), pois não há auth real; passa a vir de claims do JWT quando o login Google (T09) entrar |
 | Acao | enum | Ver `AcaoHistorico` abaixo |
 | DetalheAnterior | string? | Estado anterior (ex: "Fábio" antes da reatribuição) |
 | DetalheNovo | string? | Estado novo (ex: "Victor" após a reatribuição) |
@@ -52,9 +52,9 @@ O **Log de Histórico** registra automaticamente cada evento relevante no ciclo 
 | ComentarioAdicionado (interno) | ✅ | ✅ | ❌ |
 | PrioridadeAlterada | ✅ | ✅ | ❌ (interno) |
 
-## UI Planejada
+## UI Implementada
 
-No **Detalhe do Chamado**, uma seção "Histórico" com timeline vertical:
+No **Detalhe do Chamado** (`frontend/src/features/chamados/`), uma seção "Histórico" com timeline vertical, consumindo `GET /api/chamados/{id}/historico` (ordenado por `DataHora` descrescente). Verificada via Playwright em 2026-07-14.
 
 ```
 📅 2026-07-01 09:15  Victor criou o chamado
@@ -66,21 +66,26 @@ No **Detalhe do Chamado**, uma seção "Histórico" com timeline vertical:
 
 ## Implementação (Backend)
 
-O `HistoricoEntrada` será gerado via **Domain Events** ou diretamente nos `CommandHandlers`, logo após cada ação bem-sucedida:
+O `HistoricoEntrada` é gerado diretamente nos `CommandHandlers`, logo após cada ação bem-sucedida — não via Domain Events. A geração foi integrada em **todos** os handlers relevantes (Abrir, Atribuir, Resolver, Fechar, Cancelar, Reatribuir, AlterarPrioridade), não só num exemplo isolado:
 
 ```csharp
-// Exemplo em AtribuirChamadoCommandHandler
+// Padrão usado em cada CommandHandler, ex: ReatribuirChamadoCommandHandler
 var entrada = new HistoricoEntrada(
     chamadoId: chamado.Id,
-    usuarioNome: request.ResponsavelNome,
-    acao: AcaoHistorico.Assumido,
-    detalheNovo: request.ResponsavelNome
+    usuarioNome: request.UsuarioNome,
+    usuarioId: request.UsuarioId,
+    acao: AcaoHistorico.Reatribuido,
+    detalheAnterior: responsavelAnterior,
+    detalheNovo: request.NovoResponsavelNome
 );
 await _historicoRepository.AdicionarAsync(entrada);
 ```
+
+> `UsuarioId`/`UsuarioNome` vêm do `AuthContext` mockado do frontend (client-supplied), já que não há auth real ainda — sem isso, o handler não teria de onde tirar "quem está fazendo a ação".
 
 ## Relação com outros documentos
 
 - [[📊 Modelo de Dados]] — entidade `HistoricoEntrada` detalhada
 - [[👥 Perfis de Usuário]] — visibilidade por perfil
-- [[🗺️ Roadmap]] — planejado na Fase 6
+- [[📈 Relatório Mensal]] — consome `HistoricoEntrada` para agregação por mês fechado
+- [[🗺️ Roadmap]] — implementado na Fase 6 (T01-T06, T12)

@@ -1,6 +1,6 @@
 # Roadmap — ChamadosCamarj
 
-> Última atualização: 2026-07-01
+> Última atualização: 2026-07-19
 
 ## ✅ Fase 0 — Setup
 
@@ -72,6 +72,8 @@
 - [x] RBAC de UI: atendentes/admin veem ações corretas, solicitante só vê o que é seu
 - [x] "Meus Chamados" diferenciado por perfil (Admin=todos, Atendente=responsavelId, Solicitante=solicitanteEmail)
 - [x] Bug fix: Link aninhado no card da Fila eliminado
+- [x] Bug fix (2026-07-14): Dashboard não mostrava Cancelados/Resolvidos (só "hoje"); card "Abertos" agora detalha assumidos vs em espera
+- [x] Retrabalho (2026-07-14/15): gráfico de Tendência (linha, 7 dias) substituído por rosca "Distribuição por situação" (Aguardando/Assumido/Resolvido/Encerrado/Cancelado, foto do momento); KPIs simplificados pra só Resolvidos Hoje + Tempo Médio, já que a rosca cobre o resto
 
 ## 📧 Fase 4 — Integração Email + Storage
 
@@ -83,25 +85,67 @@
 - [ ] `StorageService` (Supabase Storage S3)
 - [ ] Upload/download de anexos no portal
 
-## 🔐 Fase 6 — Admin Completo + Log + Google Workspace
+## 🔐 Fase 6 — Admin Completo + Log + Google Workspace (CÓDIGO COMPLETO — falta só o Client ID da TI)
+
+> **Pausada em 2026-07-14, retomada em 2026-07-15/18.** T01-T14 mergeados em 2026-07-15; F5a implementada em 2026-07-16; T09/F5b/T15 (login real Google) implementados em 2026-07-18. Falta só o Client ID real da TI (documento já entregue) pro login funcionar de ponta a ponta em ambiente real.
 
 > Corrigido em 2026-06-25: Camarj usa Google Workspace (Gmail corporativo), não Azure AD.
 > Planejado em 2026-07-01: features de Admin e auditoria.
-> Spec em `.specs/features/fase-6-admin-log/spec.md`.
+> Spec em `.specs/features/fase-6-admin-log/spec.md`, design/tasks em `design-t09-google-oauth.md`/`tasks-t09-google-oauth.md`.
+> Trabalho feito em `feature/fase-6-admin-log`, **mergeada em `develop` via PR #13 em 2026-07-15**. T01-T14 concluídos e verificados via Playwright.
 
-- [ ] **Reatribuição Admin** — mover chamado entre atendentes (qualquer status não-final)
-- [ ] **Log de histórico** — entidade `HistoricoEntrada` auditando cada transição de status, atribuição, comentário
-- [ ] **Comentários internos** — visíveis só para Admin/Atendente (campo `Tipo` já existe no `Comentario`)
-- [ ] **Alterar prioridade** — Admin pode alterar prioridade de qualquer chamado
-- [ ] **Forçar encerramento** — Admin pode fechar/cancelar sem seguir o fluxo normal
-- [ ] **Login real via Google Workspace** — substitui o seletor mockado
-- [ ] Mapeamento conta→perfil no backend (tabela de usuários por setor)
-- [ ] RBAC real (baseado em claims do token Google)
+**Backend — completo (T01-T08), incluindo ator real na auditoria:**
+- [x] T01 `HistoricoEntrada` + enum `AcaoHistorico` + `IHistoricoRepository`
+- [x] T02 `Chamado.Reatribuir()` na domain entity
+- [x] T03/T04 `ReatribuirChamadoCommand` + endpoint `PATCH /chamados/{id}/reatribuir`
+- [x] T05 Geração de `HistoricoEntrada` integrada em todos os CommandHandlers (Abrir, Atribuir, Resolver, Fechar, Cancelar, Reatribuir, AlterarPrioridade) — `UsuarioId`/`UsuarioNome` agora vêm do `AuthContext` mockado do frontend em vez de "Sistema" fixo (ver Aprendizados)
+- [x] T06 `ListarHistoricoQuery` + endpoint `GET /chamados/{id}/historico`
+- [x] T07 endpoint `PATCH /chamados/{id}/prioridade`
+- [x] T08 Filtro de comentários internos por perfil em `ListarComentariosQueryHandler` (endpoint corrigido pra repassar `perfilUsuario`)
+- [x] **F5a (decidido em 2026-07-15, IMPLEMENTADO e MERGEADO em `develop` em 2026-07-16):** Login mockado por e-mail + cadastro de usuários (Admin) — tabela `UsuarioPerfil`, `UsuariosController` (CRUD), tela `Admin > Usuários` com bloqueio real de RBAC, `LoginPage` substitui `ProfileSelector`. T09a-T09e completas, testadas contra o Supabase real, revisadas por um code review sênior (4 bugs Altos corrigidos antes do commit), validadas pelo usuário e pushadas (commits `76ce0d1`/`a0747a7`). Não é descartável: a tabela `UsuarioPerfil` é reaproveitada sem mudança pelo T09 real. Os 15 itens de débito técnico (Médio/Baixo) da revisão foram todos corrigidos em 2026-07-17 (ver `CONCERNS.md`, seção RESOLVIDOS)
+- [x] **T09 (F5b) Login Google Workspace real IMPLEMENTADO em 2026-07-18** (código completo — Design → Tasks → Execute): `POST /auth/google`, JWT próprio (simétrico), autenticação global, `ICurrentUserService` substituindo `UsuarioId`/`UsuarioNome`/`perfilRequisitante` client-supplied em todos os Controllers. Logout automático por 20min de inatividade. 177 testes passando. **Falta só o Client ID real da TI** pro teste de ponta a ponta funcionar — ver `.specs/features/fase-6-admin-log/tasks-t09-google-oauth.md`
+- [x] Documento pra TI com pré-requisitos de infra — `.specs/features/fase-6-admin-log/oauth-requisitos-ti.md` (2026-07-18). Aguardando a TI configurar e devolver o Client ID
+
+**Frontend — completo (T10-T14, T15), reescrito e verificado em 2026-07-14/2026-07-18:**
+- [x] T10-T14 (Reatribuir, Histórico, Alterar Prioridade, Comentário interno) — os componentes originais tinham sido commitados no caminho errado (`src/ChamadosCamarj.Web/...`) usando padrões inexistentes no projeto (axios, toast, shadcn não instalado, tema claro). Reescritos do zero em `frontend/src/features/chamados/`, seguindo os padrões reais (`apiFetch`, erro inline, shadcn via CLI, tema dark). `ComentarioForm`/`ComentarioList` estendidos em vez de duplicados.
+- [x] **T15 — Login real via Google Workspace IMPLEMENTADO em 2026-07-18** — `LoginPage` (F5a) substituída pelo botão `GoogleLogin`/`GoogleOAuthProvider`, `AuthContext.loginComGoogle`, `apiFetch` com Bearer + logout automático em 401
+- [x] **Forçar encerramento** — Admin fecha um chamado direto de qualquer status não-final (Aberto/EmAndamento/Resolvido), com motivo obrigatório auditado no histórico (`AcaoHistorico.EncerramentoForcado`). Implementado e verificado em 2026-07-19 (`.specs/features/forcar-encerramento/`) — falta só o clique real no navegador, bloqueado pelo Client ID do Google (mesma pendência do T09/F5b)
+- [x] ~~Mapeamento conta→perfil no backend~~ → entra pelo F5a (tabela `UsuarioPerfil`)
+- [x] **RBAC real (baseado em claims do token Google) IMPLEMENTADO** — `ICurrentUserService` lê `perfil`/`sub`/`name` dos claims do JWT em todos os Controllers
 - [ ] Admin: gerenciar categorias, usuários e configurações do sistema
 
-## 📈 Fase 7 — Relatórios + SLA
+## 📈 Fase 7 — Relatório Mensal (CONCLUÍDA — antecipada)
 
-- [ ] Relatórios por período/categoria/atendente
-- [ ] SLA tracking com alertas de vencimento
+> **Antecipada em 2026-07-14** na frente de T09/T15 — usuário precisa de um relatório mensal de andamento dos chamados pra apresentar à superintendência todo fim de mês. Spec completo em `.specs/features/relatorio-mensal/` (spec → design → tasks → execute). **Mergeada em `develop` via PR #13 em 2026-07-15.**
+
+- [x] **Relatório mensal**: seletor de mês, totais (abertos/resolvidos/cancelados + variação % vs mês anterior), quebra por categoria e por atendente, cumprimento de SLA (rosca), tempo médio de resolução
+- [x] Dados vindos de `HistoricoEntrada` (data real de cada evento — REL-10), não do status atual do chamado
+- [x] Exportação CSV (client-side) e PDF (via impressão, `@media print` dedicado) — sem bibliotecas novas
+- [x] RBAC: Admin vê tudo, Atendente só os próprios números (sem quebra por atendente), Solicitante bloqueado de verdade (não só link escondido)
+- [x] Bug corrigido de quebra: Dashboard tinha `ObterTendenciaAsync` contando "resolvidos" pela data de criação, não de resolução
+- [ ] Relatórios por período livre (granularidade além do mês fechado) — fora de escopo por ora
+- [ ] SLA tracking com alertas de vencimento (tempo real — diferente do relatório, que é histórico)
 - [ ] Exportação CSV/PDF
 - [ ] Dashboard de carga por atendente
+
+**Retrabalho de visualização de dados (2026-07-16):** Dashboard e Relatório Mensal revisados como um review de dev sênior — cores de gráfico migradas de hex fixo pra tokens do tema (`--chart-1..5`, `--status-good/critical` em `frontend/src/index.css`, validados com a skill `dataviz`), bug de cor cinza-puro corrigido no tema claro, labels diretos nas fatias da rosca (o hover não existe no PDF exportado), cor de sinal (verde/vermelho) na variação % do Relatório Mensal. Detalhes em `.specs/HANDOFF.md`.
+
+## 🗄️ Fase 8 — Arquivo de Chamados (CONCLUÍDA — 2026-07-18)
+
+> Pedido pelo usuário em 2026-07-16 ao testar a aplicação: chamados finalizados (Resolvido/Fechado/Cancelado) misturados com os ativos nas telas do dia a dia. Decisão explícita: **nunca apagar chamados** (quebraria `HistoricoEntrada`/Relatório Mensal) — solução é uma tela separada de leitura filtrada. Spec/design/tasks completos em `.specs/features/arquivo-de-chamados/`.
+
+- [x] Listar só chamados finalizados, paginado, reaproveitando `GET /api/chamados` (`Finalizados=true`)
+- [x] Filtro por período (`DataCriacao`) — bug de DateTime/UTC encontrado pelo usuário ao testar e corrigido na mesma sessão
+- [x] Filtro por prioridade (backend já suportava, UI adicionada em `FiltroChamados.tsx`)
+- [x] Filtro por status/categoria/busca (reaproveitado `FiltroChamados.tsx`, com `statusOptions` restrito aos 3 finalizados)
+- [x] RBAC igual ao padrão de "Meus Chamados" (Admin=todos, Atendente=responsavelId, Solicitante=solicitanteEmail)
+- [x] Ajuste de UX pós-teste: filtro de período só aparece na tela Arquivo (não em "Meus Chamados"), com labels visíveis "De"/"Até"
+
+## 🔢 Número do Chamado (CONCLUÍDA — 2026-07-19)
+
+> Pedido pelo usuário: `Guid` interno não é referenciável em conversa/e-mail. Formato escolhido: `CAM-{número}`, sem zero-padding (`CAM-1`, `CAM-42`). Spec/design em `.specs/features/numero-do-chamado/`.
+
+- [x] Coluna `Numero` gerada por sequence do Postgres (não pela aplicação — evita corrida em criações concorrentes)
+- [x] Migration com backfill cronológico (`ORDER BY DataCriacao`) dos chamados já existentes, verificado contra o Supabase real (37 chamados, números únicos 1-37, ordem cronológica exata; chamado novo criado depois recebeu 38)
+- [x] Exibido em `CAM-{número}` no `ChamadoCard` (Lista, Arquivo, Fila, Kanban) e no cabeçalho do Detalhe
+- [ ] Busca/filtro por número — fora de escopo por ora, ver spec

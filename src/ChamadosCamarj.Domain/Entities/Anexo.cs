@@ -6,7 +6,15 @@ public class Anexo : BaseEntity
 {
     private Anexo() { }
 
-    public Anexo(Guid chamadoId, string nomeArquivo, string caminhoStorage, string tipoArquivo, long tamanhoBytes, Guid? comentarioId = null)
+    public Anexo(
+        Guid chamadoId,
+        string nomeArquivo,
+        string caminhoStorage,
+        string tipoArquivo,
+        long tamanhoBytes,
+        Guid? enviadoPorId = null,
+        string enviadoPorNome = "Sistema",
+        Guid? comentarioId = null)
     {
         if (string.IsNullOrWhiteSpace(nomeArquivo))
             throw new ArgumentException("Nome do arquivo é obrigatório.", nameof(nomeArquivo));
@@ -19,6 +27,8 @@ public class Anexo : BaseEntity
         CaminhoStorage = caminhoStorage;
         TipoArquivo = tipoArquivo;
         TamanhoBytes = tamanhoBytes;
+        EnviadoPorId = enviadoPorId;
+        EnviadoPorNome = enviadoPorNome;
     }
 
     public Guid ChamadoId { get; private set; }
@@ -27,6 +37,8 @@ public class Anexo : BaseEntity
     public string CaminhoStorage { get; private set; } = string.Empty;
     public string TipoArquivo { get; private set; } = string.Empty;
     public long TamanhoBytes { get; private set; }
+    public Guid? EnviadoPorId { get; private set; }
+    public string EnviadoPorNome { get; private set; } = string.Empty;
 
     // Navegação EF
     public Chamado? Chamado { get; private set; }

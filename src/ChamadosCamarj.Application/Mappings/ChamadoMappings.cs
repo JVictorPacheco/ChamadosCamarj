@@ -8,6 +8,7 @@ public static class ChamadoMappings
     public static ChamadoResponse ToResponse(this Chamado chamado) =>
         new(
             chamado.Id,
+            chamado.Numero,
             chamado.Titulo,
             chamado.Descricao,
             chamado.Status,

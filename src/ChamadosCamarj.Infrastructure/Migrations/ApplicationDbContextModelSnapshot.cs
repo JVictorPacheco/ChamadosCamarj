@@ -17,7 +17,7 @@ namespace ChamadosCamarj.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.17")
+                .HasAnnotation("ProductVersion", "9.0.18")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -44,6 +44,14 @@ namespace ChamadosCamarj.Infrastructure.Migrations
 
                     b.Property<DateTime>("DataCriacao")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("EnviadoPorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("EnviadoPorNome")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
 
                     b.Property<string>("NomeArquivo")
                         .IsRequired()
@@ -125,6 +133,11 @@ namespace ChamadosCamarj.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("Numero")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValueSql("nextval('\"ChamadosNumeroSeq\"')");
+
                     b.Property<string>("Origem")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -166,6 +179,9 @@ namespace ChamadosCamarj.Infrastructure.Migrations
                     b.HasIndex("CategoriaId");
 
                     b.HasIndex("DataLimite");
+
+                    b.HasIndex("Numero")
+                        .IsUnique();
 
                     b.HasIndex("Prioridade");
 
@@ -212,6 +228,91 @@ namespace ChamadosCamarj.Infrastructure.Migrations
                     b.HasIndex("ChamadoId");
 
                     b.ToTable("Comentarios", (string)null);
+                });
+
+            modelBuilder.Entity("ChamadosCamarj.Domain.Entities.HistoricoEntrada", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Acao")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<Guid>("ChamadoId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DataAtualizacao")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DataCriacao")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DataHora")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DetalheAnterior")
+                        .HasColumnType("text");
+
+                    b.Property<string>("DetalheNovo")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("UsuarioId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UsuarioNome")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChamadoId")
+                        .HasDatabaseName("IX_HistoricoEntradas_ChamadoId");
+
+                    b.HasIndex("DataHora")
+                        .HasDatabaseName("IX_HistoricoEntradas_DataHora");
+
+                    b.ToTable("HistoricoEntradas", (string)null);
+                });
+
+            modelBuilder.Entity("ChamadosCamarj.Domain.Entities.UsuarioPerfil", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("DataAtualizacao")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DataCriacao")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<string>("Perfil")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.ToTable("UsuariosPerfil", (string)null);
                 });
 
             modelBuilder.Entity("ChamadosCamarj.Domain.Entities.Anexo", b =>

@@ -1,12 +1,37 @@
+import { Link } from 'react-router'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { useDashboardMetrics, useDashboardTendencia } from './hooks'
+import { Button } from '@/components/ui/button'
+import { useAuth } from '@/auth/AuthContext'
+import { useDashboardMetrics, useDashboardDistribuicao } from './hooks'
 import { DashboardKpi } from './DashboardKpi'
-import { TendenciaChart } from './TendenciaChart'
 import { CategoriaChart } from './CategoriaChart'
+import { DonutChart } from '@/components/charts/DonutChart'
 
 export function DashboardPage() {
+  const { perfil } = useAuth()
   const { data: metrics, isPending, isError } = useDashboardMetrics()
-  const { data: tendencia } = useDashboardTendencia(7)
+  const { data: distribuicao, isPending: distribuicaoPending, isError: distribuicaoError } = useDashboardDistribuicao()
+
+  if (perfil?.tipo === 'Solicitante') {
+    return (
+      <div className="flex flex-col items-center gap-3 p-8 text-center">
+        <Alert variant="destructive" className="max-w-md">
+          <AlertDescription>Esta área não está disponível para o seu perfil.</AlertDescription>
+        </Alert>
+        <Button asChild variant="outline">
+          <Link to="/chamados">Voltar para a lista</Link>
+        </Button>
+      </div>
+    )
+  }
+
+  const totalDistribuicao = distribuicao
+    ? distribuicao.aguardando +
+      distribuicao.assumido +
+      distribuicao.resolvido +
+      distribuicao.encerrado +
+      distribuicao.cancelado
+    : 0
 
   return (
     <div className="flex flex-col gap-4 p-4">
@@ -22,9 +47,7 @@ export function DashboardPage() {
 
       {!isPending && metrics && (
         <>
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <DashboardKpi titulo="Abertos" valor={metrics.totalAbertos} />
-            <DashboardKpi titulo="Em Andamento" valor={metrics.totalEmAndamento} />
+          <div className="grid grid-cols-2 gap-3">
             <DashboardKpi titulo="Resolvidos Hoje" valor={metrics.totalResolvidosHoje} />
             <DashboardKpi
               titulo="Tempo Médio"
@@ -34,11 +57,31 @@ export function DashboardPage() {
           </div>
 
           <div className="rounded-lg border bg-card p-4">
-            <h2 className="mb-3 text-sm font-heading">Tendência (7 dias)</h2>
-            {tendencia && tendencia.items.length > 0 ? (
-              <TendenciaChart data={tendencia.items} />
-            ) : (
-              <p className="py-8 text-center text-sm text-muted-foreground">Sem dados no período.</p>
+            <h2 className="mb-3 text-sm font-heading">Distribuição por situação</h2>
+            {distribuicaoPending && (
+              <p className="py-8 text-center text-sm text-muted-foreground">Carregando distribuição...</p>
+            )}
+
+            {!distribuicaoPending && distribuicaoError && (
+              <Alert variant="destructive">
+                <AlertDescription>Serviço indisponível. Tente novamente em instantes.</AlertDescription>
+              </Alert>
+            )}
+
+            {!distribuicaoPending && !distribuicaoError && distribuicao && (
+              totalDistribuicao > 0 ? (
+                <DonutChart
+                  data={[
+                    { label: 'Aguardando', value: distribuicao.aguardando, color: 'var(--chart-3)' },
+                    { label: 'Assumido', value: distribuicao.assumido, color: 'var(--chart-1)' },
+                    { label: 'Resolvido', value: distribuicao.resolvido, color: 'var(--chart-4)' },
+                    { label: 'Encerrado', value: distribuicao.encerrado, color: 'var(--chart-5)' },
+                    { label: 'Cancelado', value: distribuicao.cancelado, color: 'var(--chart-2)' },
+                  ]}
+                />
+              ) : (
+                <p className="py-8 text-center text-sm text-muted-foreground">Nenhum chamado no sistema.</p>
+              )
             )}
           </div>
 

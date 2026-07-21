@@ -5,12 +5,14 @@ import type { ChamadoResponse, StatusChamado } from '@/types/api'
 import { alterarStatus } from '@/features/chamados/api'
 import { KanbanColumn } from './KanbanColumn'
 
+// Cores com sentido: Resolvido usa o token semântico "bom", Cancelado usa "crítico";
+// os demais status usam tokens neutros --chart-* (mesma paleta do Dashboard/Relatório Mensal).
 const COLUNAS: { status: StatusChamado; titulo: string; cor: string }[] = [
-  { status: 'Aberto', titulo: 'Aberto', cor: 'bg-red-500' },
-  { status: 'EmAndamento', titulo: 'Em Andamento', cor: 'bg-yellow-500' },
-  { status: 'Resolvido', titulo: 'Resolvido', cor: 'bg-green-500' },
-  { status: 'Fechado', titulo: 'Fechado', cor: 'bg-gray-500' },
-  { status: 'Cancelado', titulo: 'Cancelado', cor: 'bg-purple-500' },
+  { status: 'Aberto', titulo: 'Aberto', cor: 'bg-chart-1' },
+  { status: 'EmAndamento', titulo: 'Em Andamento', cor: 'bg-chart-3' },
+  { status: 'Resolvido', titulo: 'Resolvido', cor: 'bg-[var(--status-good)]' },
+  { status: 'Fechado', titulo: 'Fechado', cor: 'bg-chart-5' },
+  { status: 'Cancelado', titulo: 'Cancelado', cor: 'bg-[var(--status-critical)]' },
 ]
 
 interface KanbanBoardProps {

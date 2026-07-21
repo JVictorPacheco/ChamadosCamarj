@@ -37,6 +37,7 @@ public class Chamado : BaseEntity
     }
 
     // Propriedades
+    public int Numero { get; private set; }
     public string Titulo { get; private set; } = string.Empty;
     public string Descricao { get; private set; } = string.Empty;
     public StatusChamado Status { get; private set; }
@@ -67,6 +68,23 @@ public class Chamado : BaseEntity
         DataAtualizacao = DateTime.UtcNow;
     }
 
+    public void Reatribuir(Guid novoResponsavelId, string novoResponsavelNome)
+    {
+        if (Status is StatusChamado.Fechado or StatusChamado.Cancelado)
+            throw new InvalidOperationException($"Não é possível reatribuir um chamado com status '{Status}'.");
+
+        if (string.IsNullOrWhiteSpace(novoResponsavelNome))
+            throw new ArgumentException("Nome do novo responsável é obrigatório.", nameof(novoResponsavelNome));
+
+        // Se estava Aberto, passa para EmAndamento
+        if (Status == StatusChamado.Aberto)
+            Status = StatusChamado.EmAndamento;
+
+        ResponsavelId = novoResponsavelId;
+        ResponsavelNome = novoResponsavelNome;
+        DataAtualizacao = DateTime.UtcNow;
+    }
+
     public void Resolver()
     {
         if (Status is not (StatusChamado.Aberto or StatusChamado.EmAndamento))
@@ -83,6 +101,16 @@ public class Chamado : BaseEntity
             throw new InvalidOperationException("Só é possível fechar um chamado que já foi resolvido.");
 
         Status = StatusChamado.Fechado;
+        DataAtualizacao = DateTime.UtcNow;
+    }
+
+    public void ForcarEncerramento()
+    {
+        if (Status is StatusChamado.Fechado or StatusChamado.Cancelado)
+            throw new InvalidOperationException($"Não é possível forçar o encerramento de um chamado com status '{Status}'.");
+
+        Status = StatusChamado.Fechado;
+        DataConclusao ??= DateTime.UtcNow;
         DataAtualizacao = DateTime.UtcNow;
     }
 

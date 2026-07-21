@@ -44,6 +44,15 @@ public class ChamadoRepository : IChamadoRepository
         await _context.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task AdicionarAnexoAsync(Anexo anexo, CancellationToken cancellationToken = default)
+    {
+        if (anexo == null)
+            throw new ArgumentNullException(nameof(anexo));
+
+        await _context.Set<Anexo>().AddAsync(anexo, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<Chamado?> ObterPorIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _dbSet
@@ -61,6 +70,22 @@ public class ChamadoRepository : IChamadoRepository
             .OrderBy(c => c.DataCriacao)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IEnumerable<Anexo>> ObterAnexosPorChamadoAsync(Guid chamadoId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Set<Anexo>()
+            .Where(a => a.ChamadoId == chamadoId)
+            .OrderBy(a => a.DataCriacao)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<Anexo?> ObterAnexoPorIdAsync(Guid anexoId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Set<Anexo>()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Id == anexoId, cancellationToken);
     }
 
     public async Task<IEnumerable<Chamado>> ObterTodosAsync(CancellationToken cancellationToken = default)
@@ -123,6 +148,9 @@ public class ChamadoRepository : IChamadoRepository
         Guid? categoriaId = null,
         string? busca = null,
         string? solicitanteEmail = null,
+        IEnumerable<Domain.Enums.StatusChamado>? statusEntre = null,
+        DateTime? dataInicio = null,
+        DateTime? dataFim = null,
         CancellationToken cancellationToken = default)
     {
         var query = _dbSet.AsNoTracking().AsQueryable();
@@ -140,10 +168,24 @@ public class ChamadoRepository : IChamadoRepository
             query = query.Where(c => c.CategoriaId == categoriaId.Value);
 
         if (!string.IsNullOrWhiteSpace(busca))
-            query = query.Where(c => c.Titulo.Contains(busca) || c.Descricao.Contains(busca));
+        {
+            var numeroBuscado = ParseNumeroChamado(busca);
+            query = numeroBuscado.HasValue
+                ? query.Where(c => c.Titulo.Contains(busca) || c.Descricao.Contains(busca) || c.Numero == numeroBuscado.Value)
+                : query.Where(c => c.Titulo.Contains(busca) || c.Descricao.Contains(busca));
+        }
 
         if (!string.IsNullOrWhiteSpace(solicitanteEmail))
             query = query.Where(c => c.SolicitanteEmail == solicitanteEmail);
+
+        if (statusEntre is not null)
+            query = query.Where(c => statusEntre.Contains(c.Status));
+
+        if (dataInicio.HasValue)
+            query = query.Where(c => c.DataCriacao >= dataInicio.Value);
+
+        if (dataFim.HasValue)
+            query = query.Where(c => c.DataCriacao <= dataFim.Value);
 
         var total = await query.CountAsync(cancellationToken);
 
@@ -167,6 +209,14 @@ public class ChamadoRepository : IChamadoRepository
     public async Task<int> ContarPorStatusAsync(Domain.Enums.StatusChamado status, CancellationToken cancellationToken = default)
     {
         return await _dbSet.CountAsync(c => c.Status == status, cancellationToken);
+    }
+
+    public async Task<Dictionary<Domain.Enums.StatusChamado, int>> ContarPorStatusAgrupadoAsync(CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .GroupBy(c => c.Status)
+            .Select(g => new { Status = g.Key, Quantidade = g.Count() })
+            .ToDictionaryAsync(x => x.Status, x => x.Quantidade, cancellationToken);
     }
 
     public async Task<int> ContarResolvidosHojeAsync(CancellationToken cancellationToken = default)
@@ -213,27 +263,14 @@ public class ChamadoRepository : IChamadoRepository
             .ToDictionaryAsync(x => x.Prioridade, x => x.Quantidade, cancellationToken);
     }
 
-    public async Task<List<(DateTime Data, int Abertos, int Resolvidos)>> ObterTendenciaAsync(int dias, CancellationToken cancellationToken = default)
+    // Aceita "42" ou "CAM-42" (case-insensitive) na mesma busca de texto livre —
+    // qualquer outra coisa (ex: "impressora") não é um número, cai só na busca por texto.
+    private static int? ParseNumeroChamado(string busca)
     {
-        var inicio = DateTime.UtcNow.Date.AddDays(-dias + 1);
-        var fim = DateTime.UtcNow.Date.AddDays(1);
+        var texto = busca.Trim();
+        if (texto.StartsWith("CAM-", StringComparison.OrdinalIgnoreCase))
+            texto = texto[4..];
 
-        var chamadosNoPeriodo = await _dbSet
-            .Where(c => c.DataCriacao >= inicio && c.DataCriacao < fim)
-            .Select(c => new
-            {
-                Data = c.DataCriacao.Date,
-                FoiResolvido = c.Status == Domain.Enums.StatusChamado.Resolvido && c.DataConclusao.HasValue
-            })
-            .ToListAsync(cancellationToken);
-
-        return Enumerable.Range(0, dias)
-            .Select(d => inicio.AddDays(d))
-            .Select(data => (
-                Data: data,
-                Abertos: chamadosNoPeriodo.Count(c => c.Data == data),
-                Resolvidos: chamadosNoPeriodo.Count(c => c.Data == data && c.FoiResolvido)
-            ))
-            .ToList();
+        return int.TryParse(texto, out var numero) ? numero : null;
     }
 }

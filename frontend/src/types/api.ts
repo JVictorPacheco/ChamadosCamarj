@@ -1,9 +1,20 @@
 export type StatusChamado = "Aberto" | "EmAndamento" | "Resolvido" | "Fechado" | "Cancelado";
 export type PrioridadeChamado = "Baixa" | "Media" | "Alta" | "Urgente";
 export type TipoComentario = "Publico" | "Interno";
+export type AcaoHistorico =
+  | "Criado"
+  | "Assumido"
+  | "Reatribuido"
+  | "Resolvido"
+  | "Fechado"
+  | "Cancelado"
+  | "ComentarioAdicionado"
+  | "PrioridadeAlterada"
+  | "EncerramentoForcado";
 
 export interface ChamadoResponse {
   id: string;
+  numero: number;
   titulo: string;
   descricao: string;
   status: StatusChamado;
@@ -27,6 +38,15 @@ export interface ComentarioResponse {
   autor: string;
   conteudo: string;
   tipo: TipoComentario;
+  dataCriacao: string;
+}
+
+export interface AnexoResponse {
+  id: string;
+  nomeArquivo: string;
+  tipoArquivo: string;
+  tamanhoBytes: number;
+  enviadoPorNome: string;
   dataCriacao: string;
 }
 
@@ -60,4 +80,25 @@ export interface ComentarChamadoRequest {
   autor: string;
   conteudo: string;
   interno: boolean;
+}
+
+export interface HistoricoResponse {
+  id: string;
+  chamadoId: string;
+  usuarioNome: string;
+  usuarioId: string | null;
+  acao: AcaoHistorico;
+  detalheAnterior: string | null;
+  detalheNovo: string | null;
+  dataHora: string;
+}
+
+export type TipoPerfil = "Admin" | "Atendente" | "Solicitante";
+
+export interface UsuarioPerfilResponse {
+  id: string;
+  email: string;
+  nome: string;
+  perfil: TipoPerfil;
+  ativo: boolean;
 }

@@ -26,6 +26,21 @@ public class ListarChamadosQueryHandler : IRequestHandler<ListarChamadosQuery, P
             Enum.TryParse<Domain.Enums.PrioridadeChamado>(request.Prioridade, ignoreCase: true, out var prioridadeParsed))
             prioridade = prioridadeParsed;
 
+        IEnumerable<Domain.Enums.StatusChamado>? statusEntre = null;
+        if (request.Finalizados == true)
+            statusEntre = [Domain.Enums.StatusChamado.Resolvido, Domain.Enums.StatusChamado.Fechado, Domain.Enums.StatusChamado.Cancelado];
+
+        // O model binding do ASP.NET Core produz DateTime com Kind=Unspecified a partir da query
+        // string, mas a coluna DataCriacao é "timestamp with time zone" no Postgres — só aceita UTC.
+        // DataFim vira o fim do dia (23:59:59.999...), não a meia-noite, para incluir o dia inteiro
+        // selecionado (senão filtrar "hoje até hoje" não retornaria nada criado depois da meia-noite).
+        DateTime? dataInicio = request.DataInicio.HasValue
+            ? DateTime.SpecifyKind(request.DataInicio.Value.Date, DateTimeKind.Utc)
+            : null;
+        DateTime? dataFim = request.DataFim.HasValue
+            ? DateTime.SpecifyKind(request.DataFim.Value.Date, DateTimeKind.Utc).AddDays(1).AddTicks(-1)
+            : null;
+
         var (items, total) = await _chamadoRepository.ListarAsync(
             request.Pagina,
             request.TamanhoPagina,
@@ -35,6 +50,9 @@ public class ListarChamadosQueryHandler : IRequestHandler<ListarChamadosQuery, P
             request.CategoriaId,
             request.Busca,
             request.SolicitanteEmail,
+            statusEntre,
+            dataInicio,
+            dataFim,
             cancellationToken);
 
         return new PagedResult<ChamadoResponse>(

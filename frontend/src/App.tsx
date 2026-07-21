@@ -3,15 +3,18 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { ApiError } from '@/lib/api'
 import { AuthProvider, useAuth } from './auth/AuthContext'
-import { ProfileSelector } from './auth/ProfileSelector'
+import { LoginPage } from './auth/LoginPage'
 import { AppLayout } from './layouts/AppLayout'
 import { SignalRProvider } from './hooks/useSignalR'
 import { AbrirChamadoPage } from './features/chamados/AbrirChamadoPage'
 import { ChamadosListPage } from './features/chamados/ChamadosListPage'
+import { ArquivoChamadosPage } from './features/chamados/ArquivoChamadosPage'
 import { ChamadoDetailPage } from './features/chamados/ChamadoDetailPage'
 import { KanbanPage } from './features/chamados/KanbanPage'
 import { FilaAtendimentoPage } from './features/chamados/FilaAtendimentoPage'
 import { DashboardPage } from './features/dashboard/DashboardPage'
+import { RelatorioMensalPage } from './features/relatorio-mensal/RelatorioMensalPage'
+import { UsuariosPage } from './features/admin/UsuariosPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -33,9 +36,7 @@ function App() {
       <BrowserRouter>
         <TooltipProvider>
           <AuthProvider>
-            <SignalRProvider>
-              <AppRoutes />
-            </SignalRProvider>
+            <AppRoutes />
           </AuthProvider>
         </TooltipProvider>
       </BrowserRouter>
@@ -48,7 +49,7 @@ function LoginRoute() {
   if (perfil) {
     return <Navigate to="/chamados" replace />
   }
-  return <ProfileSelector />
+  return <LoginPage />
 }
 
 function ProtectedRoute() {
@@ -56,7 +57,14 @@ function ProtectedRoute() {
   if (!perfil) {
     return <Navigate to="/login" replace />
   }
-  return <AppLayout />
+  // SignalRProvider só monta com um usuário autenticado — antes disso não há token
+  // pra conexão em tempo real, e a conexão só é criada uma vez (não tenta de novo
+  // sozinha depois do login se falhar na primeira tentativa sem token).
+  return (
+    <SignalRProvider>
+      <AppLayout />
+    </SignalRProvider>
+  )
 }
 
 function AppRoutes() {
@@ -66,10 +74,13 @@ function AppRoutes() {
       <Route element={<ProtectedRoute />}>
         <Route path="/chamados" element={<ChamadosListPage />} />
         <Route path="/chamados/novo" element={<AbrirChamadoPage />} />
+        <Route path="/chamados/arquivo" element={<ArquivoChamadosPage />} />
         <Route path="/chamados/:id" element={<ChamadoDetailPage />} />
         <Route path="/atendimento/kanban" element={<KanbanPage />} />
         <Route path="/atendimento/dashboard" element={<DashboardPage />} />
         <Route path="/atendimento/fila" element={<FilaAtendimentoPage />} />
+        <Route path="/atendimento/relatorio-mensal" element={<RelatorioMensalPage />} />
+        <Route path="/admin/usuarios" element={<UsuariosPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/chamados" replace />} />
     </Routes>

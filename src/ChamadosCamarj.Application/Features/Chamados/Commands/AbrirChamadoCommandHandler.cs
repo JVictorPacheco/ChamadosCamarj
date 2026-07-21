@@ -1,10 +1,12 @@
 using MediatR;
 using ChamadosCamarj.Application.Common.Exceptions;
 using ChamadosCamarj.Application.Common.Notifications;
+using ChamadosCamarj.Application.Common.Extensions;
 using ChamadosCamarj.Application.Features.Chamados.DTOs;
 using ChamadosCamarj.Application.Mappings;
 using ChamadosCamarj.Domain.Entities;
 using ChamadosCamarj.Domain.Interfaces;
+using ChamadosCamarj.Domain.Enums;
 
 namespace ChamadosCamarj.Application.Features.Chamados.Commands;
 
@@ -12,15 +14,18 @@ public class AbrirChamadoCommandHandler : IRequestHandler<AbrirChamadoCommand, C
 {
     private readonly IChamadoRepository _chamadoRepository;
     private readonly ICategoriaRepository _categoriaRepository;
+    private readonly IHistoricoRepository _historicoRepository;
     private readonly IPublisher _publisher;
 
     public AbrirChamadoCommandHandler(
         IChamadoRepository chamadoRepository,
         ICategoriaRepository categoriaRepository,
+        IHistoricoRepository historicoRepository,
         IPublisher publisher)
     {
         _chamadoRepository = chamadoRepository;
         _categoriaRepository = categoriaRepository;
+        _historicoRepository = historicoRepository;
         _publisher = publisher;
     }
 
@@ -40,6 +45,15 @@ public class AbrirChamadoCommandHandler : IRequestHandler<AbrirChamadoCommand, C
         );
 
         await _chamadoRepository.AdicionarAsync(chamado, cancellationToken);
+
+        // Registrar no histórico
+        await _historicoRepository.RegistrarHistoricoAsync(
+            chamado.Id,
+            AcaoHistorico.Criado,
+            detalheNovo: $"Chamado aberto por {request.SolicitanteNome}",
+            usuarioNome: request.SolicitanteNome,
+            cancellationToken: cancellationToken
+        );
 
         await _publisher.Publish(new ChamadoCriadoNotification(
             chamado.Id,

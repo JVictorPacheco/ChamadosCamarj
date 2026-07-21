@@ -14,11 +14,12 @@ Sistema interno para **gestão de chamados corporativos** da CAMARJ. Colaborador
 | [[🏗️ Arquitetura]] | Clean Architecture + Stack |
 | [[📊 Modelo de Dados]] | Entidades, Enums, Relacionamentos |
 | [[👥 Perfis de Usuário]] | Admin, Atendente, Solicitante — permissões e fluxos |
-| [[📋 Histórico de Chamados]] | Log de auditoria do ciclo de vida *(Fase 6)* |
-| [[📧 Integração Email]] | Captura automática via IMAP/Gmail *(Fase 4)* |
-| [[🔐 Google Workspace]] | Autenticação corporativa *(Fase 6)* |
-| [[📦 Supabase Storage]] | Anexos em bucket S3 *(Fase 4)* |
+| [[📋 Histórico de Chamados]] | Log de auditoria do ciclo de vida *(Fase 6 ✅ implementado)* |
+| [[📧 Integração Email]] | Captura automática via IMAP/Gmail *(Fase 4, não iniciada)* |
+| [[🔐 Google Workspace]] | Autenticação corporativa *(T09/T15 ✅ implementado — falta só o Client ID da TI)* |
+| [[📦 Supabase Storage]] | Anexos em bucket S3 *(Fase 4, não iniciada)* |
 | [[🗺️ Roadmap]] | Fases do desenvolvimento |
+| [[📈 Relatório Mensal]] | Relatório fechado do mês, exportação CSV/PDF *(Fase 7 ✅ implementado)* |
 | [[💬 Decisões]] | Decisões tomadas com o Victor |
 | [[📝 Perguntas Pendentes]] | O que ainda precisa responder |
 | [[⚠️ Concerns]] | Débito técnico e riscos identificados |
@@ -32,20 +33,32 @@ Sistema interno para **gestão de chamados corporativos** da CAMARJ. Colaborador
 
 ---
 
-## 📍 Onde paramos (2026-07-01)
+## 📍 Onde paramos (2026-07-18)
 
 - ✅ **Fases 0–3 concluídas** — backend completo, frontend portal do solicitante funcionando
-- ✅ **Fase 5 concluída** — Kanban, Dashboard, SignalR, Fila de Atendimento, Ações de Atendente (Assumir/Resolver/Fechar/Cancelar)
-- ⏭️ **Próximo:** Fase 6 — Reatribuição Admin, Log de Histórico, Comentários Internos, Google Workspace Auth
+- ✅ **Fase 5 concluída** — Kanban, Dashboard, SignalR, Fila de Atendimento, Ações de Atendente (Assumir/Resolver/Fechar/Cancelar). Dashboard retrabalhado em 2026-07-14/15
+- ✅ **Fase 6 praticamente completa** — Reatribuição Admin, Log de Histórico, Alterar Prioridade, Comentários Internos (T01-T14), F5a (cadastro de usuários pelo Admin) e T09/T15 (login Google real) todos implementados e commitados. Falta só o **Client ID real da TI** pro login funcionar de ponta a ponta
+- ✅ **Fase 7 concluída (antecipada)** — Relatório Mensal: seletor de mês, KPIs com variação vs. mês anterior, rosca de SLA, quebra por categoria/atendente, exportação CSV/PDF
+- ✅ **Arquivo de Chamados concluído** (2026-07-18) — tela separada pra chamados finalizados (Resolvido/Fechado/Cancelado), filtros de período/prioridade/categoria
+- ✅ **Débito técnico da revisão sênior resolvido** (2026-07-17) — 15 itens de `CONCERNS.md` corrigidos
+- ✅ **PR #13 mergeado em `develop`** (2026-07-15); todo o trabalho seguinte (F5a, débito técnico, Arquivo, T09/T15) direto em `develop`
+- ⏭️ **Próximo:** aguardar Client ID da TI (documento de requisitos já entregue); depois, itens sem ordem confirmada — Forçar encerramento, revisão do RBAC soft, Fase 4 (Email/Storage)
 
-### Features implementadas na Fase 5
+### Features implementadas na Fase 5 (e retrabalho de 2026-07-14/15)
 - Kanban com drag & drop (dnd-kit) entre status
-- Dashboard com métricas (totais por status, alertas SLA, recentes)
+- Dashboard com métricas: KPIs simplificados (Resolvidos Hoje + Tempo Médio) e rosca "Distribuição por situação" (Aguardando/Assumido/Resolvido/Encerrado/Cancelado) — substituiu o gráfico de Tendência
+- Distinção entre **Resolvido** (marcado como solucionado) e **Encerrado** (confirmado e arquivado)
 - Notificações SignalR em tempo real
 - Fila de Atendimento (chamados Abertos por prioridade)
 - Botões de ação no Detalhe: Assumir, Resolver, Fechar, Cancelar
 - "Meus Chamados" diferenciado por perfil (Admin=todos, Atendente=responsável, Solicitante=seus)
 
+### Features implementadas na Fase 6 (T01-T14)
+- Reatribuição de chamado pelo Admin (`PATCH /chamados/{id}/reatribuir`)
+- Alterar prioridade (`PATCH /chamados/{id}/prioridade`)
+- Histórico/auditoria completo (`HistoricoEntrada`), timeline no detalhe do chamado
+- Comentários internos filtrados por perfil
+
 ---
 
-> *Última atualização: 2026-07-01 — Fase 5 concluída, Fase 6 planejada (Admin completo + Log + Google Workspace).*
+> *Última atualização: 2026-07-18 — Fase 6 praticamente completa (F5a + T09/T15 login Google real implementados, falta só o Client ID da TI), débito técnico resolvido, Arquivo de Chamados concluído. Ver [[🗺️ Roadmap]] para detalhes.*

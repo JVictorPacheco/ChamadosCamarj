@@ -1,13 +1,21 @@
+import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useAuth } from '@/auth/AuthContext'
 import { ApiError } from '@/lib/api'
+import { formatarNumeroChamado } from '@/lib/utils'
 import { StatusBadge } from './components/StatusBadge'
 import { PrioridadeBadge } from './components/PrioridadeBadge'
 import { SlaBadge } from './components/SlaBadge'
 import { ComentarioList } from './components/ComentarioList'
 import { ComentarioForm } from './components/ComentarioForm'
+import { ReatribuirModal } from './components/ReatribuirModal'
+import { AlterarPrioridadeModal } from './components/AlterarPrioridadeModal'
+import { ForcarEncerramentoModal } from './components/ForcarEncerramentoModal'
+import { TimelineHistorico } from './components/TimelineHistorico'
+import { AnexosList } from './components/AnexosList'
+import { UploadAnexoForm } from './components/UploadAnexoForm'
 import { useChamado } from './hooks/useChamado'
 import {
   useAtribuirChamado,
@@ -23,10 +31,15 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
   const resolver = useResolverChamado(chamado.id)
   const fechar = useFecharChamado(chamado.id)
   const cancelar = useCancelarChamado(chamado.id)
+  const [reatribuirAberto, setReatribuirAberto] = useState(false)
+  const [prioridadeAberto, setPrioridadeAberto] = useState(false)
+  const [forcarEncerramentoAberto, setForcarEncerramentoAberto] = useState(false)
 
+  const isAdmin = perfil?.tipo === 'Admin'
   const isAtendente = perfil?.tipo === 'Admin' || perfil?.tipo === 'Atendente'
   const isSolicitante = perfil?.tipo === 'Solicitante'
   const status = chamado.status
+  const statusFinal = status === 'Fechado' || status === 'Cancelado'
 
   const isPending =
     atribuir.isPending || resolver.isPending || fechar.isPending || cancelar.isPending
@@ -34,16 +47,7 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
   return (
     <div className="flex flex-wrap gap-2">
       {isAtendente && status === 'Aberto' && (
-        <Button
-          size="sm"
-          disabled={isPending}
-          onClick={() =>
-            atribuir.mutate({
-              responsavelId: perfil!.id,
-              responsavelNome: perfil!.nome,
-            })
-          }
-        >
+        <Button size="sm" disabled={isPending} onClick={() => atribuir.mutate()}>
           {atribuir.isPending ? 'Assumindo...' : 'Assumir'}
         </Button>
       )}
@@ -79,6 +83,24 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
         </Button>
       )}
 
+      {isAdmin && !statusFinal && (
+        <Button size="sm" variant="outline" onClick={() => setReatribuirAberto(true)}>
+          Reatribuir
+        </Button>
+      )}
+
+      {isAdmin && !statusFinal && (
+        <Button size="sm" variant="outline" onClick={() => setPrioridadeAberto(true)}>
+          Alterar prioridade
+        </Button>
+      )}
+
+      {isAdmin && !statusFinal && (
+        <Button size="sm" variant="destructive" onClick={() => setForcarEncerramentoAberto(true)}>
+          Forçar Encerramento
+        </Button>
+      )}
+
       {(atribuir.isError || resolver.isError || fechar.isError || cancelar.isError) && (
         <Alert variant="destructive" className="w-full">
           <AlertDescription>
@@ -87,6 +109,24 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
           </AlertDescription>
         </Alert>
       )}
+
+      <ReatribuirModal
+        open={reatribuirAberto}
+        onOpenChange={setReatribuirAberto}
+        chamadoId={chamado.id}
+        responsavelAtualId={chamado.responsavelId}
+      />
+      <AlterarPrioridadeModal
+        open={prioridadeAberto}
+        onOpenChange={setPrioridadeAberto}
+        chamadoId={chamado.id}
+        prioridadeAtual={chamado.prioridade}
+      />
+      <ForcarEncerramentoModal
+        open={forcarEncerramentoAberto}
+        onOpenChange={setForcarEncerramentoAberto}
+        chamadoId={chamado.id}
+      />
     </div>
   )
 }
@@ -134,7 +174,10 @@ export function ChamadoDetailPage() {
         <Link to="/chamados">← Voltar</Link>
       </Button>
 
-      <h1 className="text-xl font-heading">{chamado.titulo}</h1>
+      <h1 className="text-xl font-heading">
+        <span className="mr-2 text-muted-foreground">{formatarNumeroChamado(chamado.numero)}</span>
+        {chamado.titulo}
+      </h1>
 
       <div className="flex flex-wrap items-center gap-2">
         <StatusBadge status={chamado.status} />
@@ -175,9 +218,16 @@ export function ChamadoDetailPage() {
         )}
       </dl>
 
+      <h2 className="text-base font-heading">Anexos</h2>
+      <AnexosList chamadoId={chamado.id} />
+      <UploadAnexoForm chamadoId={chamado.id} />
+
       <h2 className="text-base font-heading">Comentários</h2>
       <ComentarioList chamadoId={chamado.id} />
       <ComentarioForm chamadoId={chamado.id} autor={perfil?.nome ?? ''} />
+
+      <h2 className="text-base font-heading">Histórico</h2>
+      <TimelineHistorico chamadoId={chamado.id} />
     </div>
   )
 }
