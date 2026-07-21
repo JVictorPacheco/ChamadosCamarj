@@ -29,8 +29,14 @@ public class SupabaseStorageService : IStorageService
 
     public async Task<string> ObterUrlAssinadaAsync(string caminho, int expiracaoSegundos, CancellationToken cancellationToken = default)
     {
-        return await _client.Storage
+        var url = await _client.Storage
             .From(_bucket)
             .CreateSignedUrl(caminho, expiracaoSegundos);
+
+        // O SDK (Supabase v1.3.0) devolve a URL com um "?" solto no final quando nenhuma
+        // TransformOptions/download é passada — isso quebra o parse do token JWT no servidor
+        // do Storage ("Failed to base64url decode the signature"). Removido aqui até o SDK
+        // corrigir isso upstream (não achado como issue já reportada em 2026-07-21).
+        return url.TrimEnd('?');
     }
 }

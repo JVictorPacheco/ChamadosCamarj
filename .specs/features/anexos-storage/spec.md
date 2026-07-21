@@ -1,6 +1,6 @@
 # Spec — Anexos (Supabase Storage)
 
-> Status: EM DESIGN
+> Status: IMPLEMENTADA E VERIFICADA DE PONTA A PONTA (2026-07-21) — upload/listagem/download real confirmados contra o Supabase Storage
 > Criado em: 2026-07-20
 > Fase 4 (metade 1 de 2 — Storage antes de Email, decidido pelo usuário: sem dependência externa nova, dá pra implementar e verificar de ponta a ponta agora)
 
@@ -68,10 +68,12 @@ Colaboradores frequentemente precisam anexar evidência a um chamado (print de e
 | ANX-03 | Listagem de anexos por chamado | Pending |
 | ANX-04 | Download via URL assinada (1h) | Pending |
 
-**Coverage:** 4 total, 0 mapped (ver `design.md`).
+**Coverage:** 4 total, 4 verificados de ponta a ponta contra o Supabase Storage real (2026-07-21).
 
-## Bloqueio conhecido pra verificação de ponta a ponta
+## Bloqueio resolvido — verificação de ponta a ponta (2026-07-21)
 
-Diferente das features anteriores desta sessão (que rodaram contra o Supabase real via token JWT mintado localmente), o Storage do Supabase precisa de uma **credencial própria** (Service Role Key, em Settings > API no dashboard do Supabase) — ainda não configurada em `user-secrets`. Mesma dinâmica do Client ID do Google: o código é implementado e testado com mock; o teste real de upload/download contra o bucket fica pendente até a chave chegar.
+Service Role Key obtida pelo usuário (aba "Legacy anon, service_role API keys" do dashboard — o Supabase tem um formato de chave novo, `sb_secret_...`, mas o SDK C# usado aqui é da geração anterior, então a legada/JWT é a compatível) e configurada em `user-secrets`. Bucket `chamados-anexos` criado via chamada direta à Storage REST API.
 
-**Confirmado em 2026-07-20:** usuário vai atrás da chave em paralelo, sem previsão. Registrado como pendência — seguir a implementação com testes mockados, e fazer a verificação real assim que a chave chegar (mesmo texto de aviso que já existe pro Client ID do Google em `STATE.md`/`HANDOFF.md`).
+**Bug real encontrado e corrigido nesta verificação:** o SDK `Supabase` v1.3.0 devolve a URL de `CreateSignedUrl` com um `?` sobrando no final, que quebra o parse do JWT no servidor do Storage (`InvalidJWT`). Corrigido com `url.TrimEnd('?')` em `SupabaseStorageService`. Ver `tasks.md` pro detalhe completo.
+
+Upload real de um PDF, listagem, geração de URL assinada e **download real do arquivo (conteúdo conferido byte a byte)** — tudo confirmado contra o Supabase Storage de verdade. 216 testes de backend passando depois do fix. Feature 100% funcional, sem pendências.

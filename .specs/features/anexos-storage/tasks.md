@@ -1,7 +1,7 @@
 # Anexos (Supabase Storage) — Tasks
 
 **Design**: `.specs/features/anexos-storage/design.md`
-**Status**: Done (2026-07-20) — T1 a T11 completas. Upload/download real contra o Supabase Storage segue pendente da Service Role Key (usuário foi atrás em paralelo)
+**Status**: Done (2026-07-21) — T1 a T11 completas, **upload/download real verificado de ponta a ponta contra o Supabase Storage** (Service Role Key configurada em 2026-07-21)
 
 ---
 
@@ -235,6 +235,30 @@ T10 → T11
 - **Bug real encontrado e corrigido durante esta verificação (fora do escopo original):** a API **não subia** sem a Service Role Key do Supabase configurada — o validador de DI do ASP.NET Core (`ValidateOnBuild`, ativo em Development) derruba a aplicação inteira no `Build()` porque `AdicionarAnexoCommandHandler` exige `IStorageService` no construtor, e nada registrava essa interface quando a chave estava ausente. Isso derrubaria **a API inteira**, não só a feature de Anexos — muito mais grave que o padrão de tolerância já usado pro `GoogleClientId` (que não bloqueia o boot). Corrigido criando `NullStorageService : IStorageService` (Infrastructure), registrado como fallback quando `Supabase:Url`/`Supabase:ServiceRoleKey` estão vazios — lança `InvalidOperationException` com mensagem clara só se alguém de fato chamar um endpoint de Anexo, sem impedir o resto da aplicação de funcionar.
 - **Verificado via curl contra a API + Supabase real** (chamado real criado e depois removido, `CAM-39`): extensão inválida (`.exe`) → 400 com mensagem de validação; arquivo válido (`.pdf`) sem a Service Role Key → 400 com a mensagem clara do `NullStorageService` (não um crash); listagem de anexos (vazia) e resto da API (outros endpoints) continuam funcionando normalmente.
 - **Não verificado**: upload real contra o bucket do Supabase Storage, geração de signed URL real, download real — tudo isso depende da Service Role Key, que o usuário ainda não tem (confirmado como pendência, sem previsão).
+
+---
+
+## Atualização (2026-07-21) — Service Role Key configurada, verificação de ponta a ponta completa
+
+Usuário conseguiu a `service_role` key (aba "Legacy anon, service_role API keys" do dashboard — o Supabase migrou pra um novo formato de chave, `sb_secret_...`, mas o SDK C# usado aqui (`Supabase` v1.3.0) foi feito pro formato JWT antigo, então usamos a legada). Configurado em `user-secrets`:
+```
+Supabase:Url = https://oxiqutweuejvopofbkoy.supabase.co
+Supabase:ServiceRoleKey = <JWT service_role>
+```
+Bucket `chamados-anexos` criado via chamada direta à Storage REST API (`POST /storage/v1/bucket`, `public: false`) — não precisou do dashboard.
+
+**Bug real encontrado e corrigido nesta verificação:** `CreateSignedUrl` do SDK `Supabase` v1.3.0 devolve a URL assinada com um **`?` solto no final** (ex: `...token=eyJ...TKXg?`), mesmo sem nenhuma `TransformOptions`/parâmetro de download passado. Como `?` só delimita query string na primeira ocorrência (RFC 3986), esse `?` extra vira parte literal do valor do `token`, quebrando o JWT — o Storage do Supabase rejeitava com `{"statusCode":"400","error":"InvalidJWT","message":"Failed to base64url decode the signature"}`. Não achada como issue já reportada upstream (busca web não retornou nada específico). Corrigido em `SupabaseStorageService.ObterUrlAssinadaAsync` com `url.TrimEnd('?')` antes de retornar — mitigação no nosso código, não uma correção no SDK.
+
+**Verificação de ponta a ponta, tudo contra o Supabase real:**
+1. Chamado de teste criado (`CAM-40`)
+2. Upload de um PDF real via `POST /chamados/{id}/anexos` → `201 Created`, `AnexoResponse` correto
+3. `GET /chamados/{id}/anexos` → lista o anexo certo
+4. `GET /chamados/{id}/anexos/{anexoId}/download-url` → URL assinada válida (após o fix do `TrimEnd`)
+5. **Download real da URL assinada → `200 OK`, conteúdo do arquivo baixado bate exatamente com o que foi enviado**
+6. 216 testes de backend continuam passando após o fix
+7. Limpeza: arquivo removido do bucket via `DELETE /storage/v1/object/...`, chamado de teste removido do banco (cascade apagou o registro `Anexo` junto)
+
+**Feature 100% funcional de ponta a ponta.** Nenhuma pendência restante além do que já estava documentado como fora de escopo (Email/IMAP, busca por anexo, etc).
 
 ---
 
