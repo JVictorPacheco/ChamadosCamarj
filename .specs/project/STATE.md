@@ -6,11 +6,32 @@
 
 ## 📍 Onde estamos
 
-**Sessão de 2026-07-21 (continuação, mesma branch `feature/anexos-storage`): Service Role Key do Supabase obtida e configurada — Storage de Anexos verificado de ponta a ponta contra o Supabase real.** Usuário conseguiu a `service_role` key (aba "Legacy anon, service_role API keys" do dashboard — o formato novo `sb_secret_...` não é compatível com o SDK C# usado, que é da geração JWT). Configurada em `user-secrets` (`Supabase:Url`, `Supabase:ServiceRoleKey`); bucket `chamados-anexos` criado via chamada direta à Storage REST API (sem precisar do dashboard).
+**Sessão de 2026-07-21 (continuação): revisão de processo (SDD) + qualidade de código (features recentes) contra documentação oficial.** Usuário pediu leitura de specdriven.ai (metodologia canônica de Spec-Driven Development) pra comparar com nosso uso do skill `tlc-spec-driven`, além de checar se o código segue boas práticas oficiais (via MCP `microsoft-learn` pro backend, `context7` genérico pro frontend — não existe MCP dedicado de React, só o `angular` (Angular CLI, não serve pra este projeto React/Vite)).
+
+**Gaps de processo identificados (comparando com o ciclo de 6 fases do specdriven.ai):**
+1. Pergunta de clarificação sem resposta (caso do Anexos: "quem pode anexar") virou suposição documentada em vez de bloquear — o método pede verificação humana antes de prosseguir em decisões difíceis de reverter.
+2. "Spec antes do código" nem sempre seguido — busca por número e RBAC real foram implementados como extensão rápida, só documentados depois (corrigido retroativamente na sessão anterior, mas o hábito certo é atualizar a spec antes).
+3. Mudança de contrato entre camadas (remoção de `RemoverAsync`/`DownloadAsync` de `IStorageService`) feita e só reportada depois — o ideal seria sinalizar antes de aplicar, não só narrar depois.
+
+**Achado real de código, corrigido:** `AdicionarAnexo` (Controller) passava `arquivo.FileName` (de `IFormFile`) direto pro Command sem sanitizar — a doc oficial da Microsoft (`Upload files in ASP.NET Core`) é explícita: nunca confiar no `FileName` sem remover o caminho antes de guardar/exibir. Corrigido com `Path.GetFileName(arquivo.FileName)` no Controller. 216 testes continuam passando (nenhum teste novo — Controllers não têm cobertura dedicada no projeto, mesmo padrão já estabelecido).
+
+**Outros 2 pontos levantados, sem ação ainda:**
+- Comportamento de upload acima de 10MB (`[RequestSizeLimit]`) não foi testado manualmente — a doc oficial alerta que isso pode aparecer como reset de conexão em vez de um 4xx limpo, dependendo da configuração. Vale testar quando houver oportunidade.
+- `SupabaseStorageService`/`Supabase.Client` é inicializado manualmente (`new` + `InitializeAsync()`) antes do `builder.Build()`, diferente do padrão usado pra migrations do banco no mesmo arquivo (`app.Services.CreateScope()` depois do `Build()`). Funciona, mas é uma pequena inconsistência de estilo — não urgente.
+
+**Frontend das features recentes (`useAnexos`, `AnexosList`, `apiFetch` com `FormData`) checado contra a doc oficial do TanStack Query v5 via Context7: sem desvio encontrado** — `isPending` é a nomenclatura correta da v5 (não `isLoading`), e `mutationFn` de fato não recebe `AbortSignal` (diferente de `queryFn`), então a ausência de cancelamento no upload não é um gap.
+
+---
+
+## 📍 Onde estamos
+
+**Sessão de 2026-07-21 (continuação): PR aberto acidentalmente contra `main` em vez de `develop`, mergeado, e corrigido.** O usuário criou o PR da branch `feature/anexos-storage` escolhendo `main` como destino por engano — o GitHub já tinha mergeado de verdade (não só aberto e fechado) antes de perceber. Diagnóstico: `main` e `develop` já estavam **exatamente idênticas** (mesmo commit, `4216f21`) antes desse acidente — então o merge não pulou nem quebrou nada, só deixou `main` 2 commits à frente de `develop` (a feature de Anexos). Correção aplicada: fast-forward simples de `develop` pros mesmos 2 commits (`git merge feature/anexos-storage` a partir de `develop`, sem conflito, sem revert). `develop` e `main` estão sincronizadas de novo em `72451a3`, build e 216 testes confirmados depois do fast-forward. **Nenhum dado ou código foi perdido — foi só uma questão de branch de destino, resolvida sem risco.** Lição prática: ao abrir PR neste repo, sempre conferir o dropdown `base` antes de confirmar — ele não fixa `develop` como lembrança, volta pro padrão do repo (`main`).
+
+**Sessão de 2026-07-21 (mesmo dia, mais cedo): Service Role Key do Supabase obtida e configurada — Storage de Anexos verificado de ponta a ponta contra o Supabase real.** Usuário conseguiu a `service_role` key (aba "Legacy anon, service_role API keys" do dashboard — o formato novo `sb_secret_...` não é compatível com o SDK C# usado, que é da geração JWT). Configurada em `user-secrets` (`Supabase:Url`, `Supabase:ServiceRoleKey`); bucket `chamados-anexos` criado via chamada direta à Storage REST API (sem precisar do dashboard).
 
 **Bug real encontrado e corrigido nesta verificação:** o SDK `Supabase` v1.3.0 devolve a URL de `CreateSignedUrl` com um **`?` solto no final**, que quebra o parse do JWT no servidor do Storage (`InvalidJWT: Failed to base64url decode the signature`) — não é uma issue já documentada publicamente (busca web não achou nada específico). Corrigido com `url.TrimEnd('?')` em `SupabaseStorageService.ObterUrlAssinadaAsync` — mitigação no nosso código, já que não dá pra corrigir o SDK de terceiros.
 
-**Verificação completa de ponta a ponta, tudo contra o Supabase real** (chamado de teste `CAM-40`, depois limpo): upload de um PDF real → `201`; listagem → anexo aparece certo; URL assinada gerada (após o fix); **download real da URL → `200`, conteúdo baixado bate byte a byte com o que foi enviado**. 216 testes de backend continuam passando. Arquivo removido do bucket e chamado de teste removido do banco ao final (cascade apagou o `Anexo` junto). **Feature 100% funcional e verificada, sem pendências.** Branch `feature/anexos-storage` tem 1 commit (`a76ffcc`, da sessão anterior) + o fix do `TrimEnd` ainda por commitar — aguardando decisão do usuário sobre push.
+**Verificação completa de ponta a ponta, tudo contra o Supabase real** (chamado de teste `CAM-40`, depois limpo): upload de um PDF real → `201`; listagem → anexo aparece certo; URL assinada gerada (após o fix); **download real da URL → `200`, conteúdo baixado bate byte a byte com o que foi enviado**. 216 testes de backend continuam passando. Arquivo removido do bucket e chamado de teste removido do banco ao final (cascade apagou o `Anexo` junto). **Feature 100% funcional e verificada, sem pendências.** Commitada (`a76ffcc` + `72451a3` com o fix do `TrimEnd`), pushada e mergeada em `develop`/`main` (ver entrada acima sobre o incidente do PR aberto contra `main` por engano, corrigido no mesmo dia).
 
 ---
 

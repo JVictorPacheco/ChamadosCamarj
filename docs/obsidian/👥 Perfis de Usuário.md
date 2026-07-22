@@ -5,7 +5,7 @@
 - **Tudo que o Atendente faz**
 - Ver **todos** os chamados do sistema (não filtrado por email/responsável)
 - **Reatribuir chamado** entre atendentes, mesmo em `EmAndamento` — ✅ implementado (Fase 6)
-- **Forçar encerramento** de qualquer chamado — ⏳ ainda não implementado (Fase 6, pendente)
+- **Forçar encerramento** de qualquer chamado direto de qualquer status não-final, com motivo obrigatório auditado — ✅ implementado (2026-07-19)
 - **Alterar prioridade** de qualquer chamado — ✅ implementado (Fase 6)
 - **Gerenciar usuários** (cadastrar, editar, desativar/reativar) — ✅ implementado (F5a, tela `Admin > Usuários`)
 - Gerenciar categorias e configurações do sistema — ⏳ ainda não implementado (Fase 6, pendente)
@@ -17,7 +17,7 @@
 - **Assumir** chamados da fila
 - **Resolver, Fechar, Cancelar** chamados que está atendendo
 - Comentários públicos e internos — filtro por perfil ✅ implementado (Fase 6)
-- Anexar arquivos *(Fase 4, não implementado)*
+- Anexar arquivos — ✅ implementado, ver [[📦 Supabase Storage]]
 - "Chamados em Atendimento" — lista filtrada por `responsavelId` (só os seus)
 - **Relatório Mensal** — vê só os próprios números, sem quebra por atendente *(Fase 7 ✅)*
 
@@ -26,7 +26,7 @@
 - Abrir chamado (via email ou portal)
 - Ver **apenas seus próprios chamados** (filtrado por `solicitanteEmail`)
 - Comentar publicamente
-- Anexar arquivos *(Fase 4, não implementado)*
+- Anexar arquivos — ✅ implementado, ver [[📦 Supabase Storage]]
 - Cancelar seus próprios chamados enquanto em `Aberto` ou `EmAndamento`
 - **Relatório Mensal** — bloqueado de verdade (não só link escondido; a única tela do sistema com esse RBAC "hard block")
 
@@ -47,6 +47,8 @@
 | Ver histórico | ✅ | ✅ | ✅ (público) |
 | Comentário interno | ✅ | ✅ | ❌ |
 | Ver Relatório Mensal | ✅ (tudo) | ✅ (só os seus) | ❌ (bloqueio real) |
+| Forçar encerramento | ✅ | ❌ | ❌ |
+| Anexar arquivo | ✅ | ✅ | ✅ (no próprio chamado) |
 
 ---
 

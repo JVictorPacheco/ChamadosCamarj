@@ -1,6 +1,6 @@
 # 🗺️ Roadmap — Sistema de Chamados
 
-> Última atualização: 2026-07-15. Roadmap detalhado e sempre atualizado em `.specs/project/ROADMAP.md`.
+> Última atualização: 2026-07-21. Roadmap detalhado e sempre atualizado em `.specs/project/ROADMAP.md`.
 
 ## Fases do Desenvolvimento
 
@@ -64,13 +64,13 @@
 - [x] Bug fix (2026-07-14): Dashboard não mostrava Cancelados/Resolvidos (só "hoje"); card "Abertos" agora detalha assumidos vs. em espera
 - [x] Retrabalho (2026-07-14/15): gráfico de Tendência (linha, 7 dias) substituído por rosca "Distribuição por situação" (Aguardando/Assumido/Resolvido/Encerrado/Cancelado, foto do momento); KPIs simplificados pra só Resolvidos Hoje + Tempo Médio; corrigido bug de `ObterTendenciaAsync` que contava "resolvidos" pela data de criação, não de resolução
 
-### 📧 Fase 4 — Integração Email + Storage
-> Ainda não iniciada. Pode ser feita em paralelo com a Fase 6.
+### 📧 Fase 4 — Integração Email + Storage (Storage CONCLUÍDO — 2026-07-21)
+> Storage de Anexos implementado e verificado de ponta a ponta. Email/IMAP segue sem data — depende de senha de app das caixas suporte@/ti@camarj.com.br.
 
 - [ ] EmailReceiverService (IMAP/MailKit — suporte@camarj.com.br / ti@camarj.com.br)
 - [ ] Parsing de email → Chamado automático
 - [ ] Resposta automática
-- [ ] Anexos via [[📦 Supabase Storage]]
+- [x] Anexos via [[📦 Supabase Storage]] — upload/listagem/download, verificado contra o Supabase real (ver nota lá sobre os 2 bugs corrigidos)
 
 ### 🔐 Fase 6 — Admin Completo + Log + Google Workspace (praticamente concluída)
 
@@ -90,7 +90,7 @@
 **Frontend — completo (T10-T14 + T15):**
 - [x] Reatribuir, Histórico (timeline), Alterar Prioridade, Comentário interno — componentes reescritos do zero em `frontend/src/features/chamados/` (uma versão anterior tinha sido commitada no caminho errado com padrões inexistentes no projeto)
 - [x] **T15 — Login real via Google Workspace (2026-07-18):** `LoginPage` com `GoogleLogin`/`GoogleOAuthProvider`, logout automático por 20min de inatividade, redesenho visual (logo maior, tipografia serifada)
-- [ ] **Forçar encerramento** — Admin pode fechar/cancelar sem seguir o fluxo normal (ainda não abordado)
+- [x] **Forçar encerramento** (2026-07-19) — Admin fecha um chamado direto de qualquer status não-final, com motivo obrigatório auditado no histórico (`AcaoHistorico.EncerramentoForcado`). Ver `.specs/features/forcar-encerramento/`
 - [ ] Admin: gerenciar categorias e configurações do sistema (usuários já implementado no F5a)
 
 ### 📈 Fase 7 — Relatório Mensal (CONCLUÍDA — antecipada)
@@ -115,6 +115,18 @@
 - [x] Backend aditivo: `Finalizados=true` + `DataInicio`/`DataFim` em `ListarChamadosQuery` (não quebra Kanban/Fila)
 - [x] Bug corrigido (achado pelo usuário testando): filtro de data quebrava com 500 (`DateTime Kind=Unspecified` vs. `timestamptz` do Postgres)
 
+### 🔢 Número do Chamado (CONCLUÍDA — 2026-07-19/20)
+
+> `Guid` interno não é referenciável em conversa/e-mail. Formato: `CAM-{número}`, sem zero-padding. Spec em `.specs/features/numero-do-chamado/`.
+
+- [x] Coluna `Numero` gerada por sequence do Postgres, backfill cronológico dos chamados existentes
+- [x] Exibido em toda tela de lista/detalhe
+- [x] Busca por número no campo de busca já existente (`"42"` ou `"CAM-42"`)
+
+### 🔒 RBAC real do Dashboard/Kanban/Fila (CONCLUÍDA — 2026-07-20)
+
+> As 3 telas só escondiam o link da sidebar pro Solicitante. Aplicado o mesmo bloqueio real já usado no Relatório Mensal/Admin > Usuários.
+
 ---
 
-> **Progresso atual:** ✅ Fases 0-3, 5 e 7 concluídas. ✅ Fase 6 praticamente completa — só falta o **Client ID real da TI** pro login Google (T09/T15) funcionar de ponta a ponta; documento de requisitos já entregue à TI. ✅ Arquivo de Chamados concluído (2026-07-18). Próximo passo: aguardar TI, depois revisar itens sem ordem confirmada (Forçar encerramento, RBAC soft do Dashboard/Kanban/Fila, Fase 4 Email/Storage).
+> **Progresso atual:** ✅ Fases 0-3, 5 e 7 concluídas. ✅ Fase 6 praticamente completa — só falta o **Client ID real da TI** pro login Google (T09/T15) funcionar de ponta a ponta. ✅ Arquivo de Chamados, Forçar Encerramento, Número do Chamado, RBAC real e Storage de Anexos (Fase 4 metade 1) todos concluídos. Próximo passo: aguardar TI (Client ID) e senha de app do IMAP (Fase 4 metade 2 — Email); decisão de hospedagem em produção também pendente.
