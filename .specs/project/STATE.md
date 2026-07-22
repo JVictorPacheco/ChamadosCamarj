@@ -4,16 +4,32 @@
 
 ---
 
+## 🧭 Regras de Processo (Constitution) — sempre seguir, em toda sessão
+
+> Adotadas em 2026-07-21, depois de comparar nosso uso do skill `tlc-spec-driven` com a metodologia canônica de Spec-Driven Development (specdriven.ai — ciclo de 6 fases: Constitution → Specification → Clarification → Planning → Task Decomposition → Implementation/Iteration). Esta seção é permanente — não é um item de sessão, é uma regra de como trabalhar neste projeto daqui pra frente. Ela nasceu de 3 gaps reais encontrados na prática (ver histórico abaixo), e o pedido explícito do usuário foi resolvê-los, não só documentá-los.
+
+1. **Pergunta de clarificação sem resposta NÃO vira suposição silenciosa em decisão difícil de reverter.** Se uma pergunta de esclarecimento (via `AskUserQuestion` ou similar) ficar sem resposta e a decisão afetar comportamento de produto (não só detalhe técnico reversível), **parar e perguntar de novo antes de prosseguir pra Design/Execute** — ou, se for necessário seguir mesmo assim por prioridade de tempo, marcar isso de forma bem visível como "PENDENTE DE CONFIRMAÇÃO" tanto no início quanto no fim da sessão, nunca como "decisão tomada". (Gap 1, caso real: pergunta "quem pode anexar arquivo" da feature de Anexos ficou sem resposta e virou suposição documentada.)
+
+2. **Spec é atualizada ANTES do código, nunca depois — mesmo pra extensões pequenas/rápidas de uma feature já existente.** Antes de implementar qualquer mudança de comportamento (novo filtro, novo campo, ajuste de RBAC etc.), atualizar a `spec.md` correspondente primeiro (ou criar uma nova se a mudança não pertencer a nenhuma feature existente). Só depois implementar. (Gap 2, caso real: busca por número e RBAC real do Dashboard/Kanban/Fila foram implementados como "extensão rápida" e só documentados depois — corrigido retroativamente, mas o hábito certo é o oposto.)
+
+3. **Mudança de contrato compartilhado entre camadas é sinalizada ANTES de aplicar, não só relatada depois.** Se uma mudança remove/altera um método de uma interface usada por múltiplos consumidores, muda uma assinatura pública, ou qualquer coisa que outra camada/feature dependa — avisar o usuário antes de aplicar, não só narrar no resumo final. (Gap 3, caso real: remoção de `RemoverAsync`/`DownloadAsync` de `IStorageService` foi feita e só reportada depois.)
+
+**Como aplicar na prática:** ao iniciar uma feature nova ou uma extensão de feature existente neste projeto, revisar esta seção antes de seguir pro Design/Execute do skill `tlc-spec-driven`. Se notar que uma dessas 3 regras está prestes a ser quebrada, parar e avisar o usuário explicitamente, em vez de seguir e só documentar depois.
+
+---
+
 ## 📍 Onde estamos
 
 **Sessão de 2026-07-21 (continuação): revisão de processo (SDD) + qualidade de código (features recentes) contra documentação oficial.** Usuário pediu leitura de specdriven.ai (metodologia canônica de Spec-Driven Development) pra comparar com nosso uso do skill `tlc-spec-driven`, além de checar se o código segue boas práticas oficiais (via MCP `microsoft-learn` pro backend, `context7` genérico pro frontend — não existe MCP dedicado de React, só o `angular` (Angular CLI, não serve pra este projeto React/Vite)).
 
-**Gaps de processo identificados (comparando com o ciclo de 6 fases do specdriven.ai):**
+**Gaps de processo identificados (comparando com o ciclo de 6 fases do specdriven.ai) — usuário pediu explicitamente pra resolvê-los, não só documentar. Adotados como regra permanente na seção "🧭 Regras de Processo (Constitution)" no topo deste arquivo:**
 1. Pergunta de clarificação sem resposta (caso do Anexos: "quem pode anexar") virou suposição documentada em vez de bloquear — o método pede verificação humana antes de prosseguir em decisões difíceis de reverter.
 2. "Spec antes do código" nem sempre seguido — busca por número e RBAC real foram implementados como extensão rápida, só documentados depois (corrigido retroativamente na sessão anterior, mas o hábito certo é atualizar a spec antes).
 3. Mudança de contrato entre camadas (remoção de `RemoverAsync`/`DownloadAsync` de `IStorageService`) feita e só reportada depois — o ideal seria sinalizar antes de aplicar, não só narrar depois.
 
-**Achado real de código, corrigido:** `AdicionarAnexo` (Controller) passava `arquivo.FileName` (de `IFormFile`) direto pro Command sem sanitizar — a doc oficial da Microsoft (`Upload files in ASP.NET Core`) é explícita: nunca confiar no `FileName` sem remover o caminho antes de guardar/exibir. Corrigido com `Path.GetFileName(arquivo.FileName)` no Controller. 216 testes continuam passando (nenhum teste novo — Controllers não têm cobertura dedicada no projeto, mesmo padrão já estabelecido).
+**Achado real de código, corrigido, commitado e MERGEADO:** `AdicionarAnexo` (Controller) passava `arquivo.FileName` (de `IFormFile`) direto pro Command sem sanitizar — a doc oficial da Microsoft (`Upload files in ASP.NET Core`) é explícita: nunca confiar no `FileName` sem remover o caminho antes de guardar/exibir. Corrigido com `Path.GetFileName(arquivo.FileName)` no Controller. **PR #18 (`fix/sanitizar-nome-arquivo-anexo` → `develop`) aberto e mergeado em 2026-07-22T01:48:55Z**, desta vez com o `base` certo (`develop`, não `main`). Também nesse PR: `.mcp.json` criado com o MCP oficial do shadcn/ui (`ui.shadcn.com/docs/mcp` — browse/search/instalação de componentes; não existe MCP dedicado de React, a lib não tem CLI/tooling própria pra isso) e a documentação inteira do projeto revisada/atualizada (`.specs/` + `docs/obsidian/`). 216 testes continuam passando (nenhum teste novo — Controllers não têm cobertura dedicada no projeto, mesmo padrão já estabelecido).
+
+**Nota: o `.mcp.json` só fica disponível numa sessão nova/reload do Claude Code** — não estava ativo na sessão em que foi criado.
 
 **Outros 2 pontos levantados, sem ação ainda:**
 - Comportamento de upload acima de 10MB (`[RequestSizeLimit]`) não foi testado manualmente — a doc oficial alerta que isso pode aparecer como reset de conexão em vez de um 4xx limpo, dependendo da configuração. Vale testar quando houver oportunidade.

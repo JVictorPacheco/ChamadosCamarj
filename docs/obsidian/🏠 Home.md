@@ -62,4 +62,4 @@ Sistema interno para **gestão de chamados corporativos** da CAMARJ. Colaborador
 
 ---
 
-> *Última atualização: 2026-07-21 — Storage de Anexos concluído e verificado de ponta a ponta (Fase 4 metade 1); Forçar Encerramento, Número do Chamado e RBAC real do Dashboard/Kanban/Fila também concluídos desde a última atualização. Falta o Client ID da TI (login Google) e a senha de app do IMAP (Fase 4 metade 2 — Email). Ver [[🗺️ Roadmap]] para detalhes.*
+> *Última atualização: 2026-07-21/22 — Storage de Anexos concluído e verificado de ponta a ponta (Fase 4 metade 1); Forçar Encerramento, Número do Chamado e RBAC real do Dashboard/Kanban/Fila também concluídos. Revisão de processo (Spec-Driven Development) e de qualidade de código feita, com 1 correção de segurança em Anexos (nome de arquivo sanitizado) já em `develop`. Falta o Client ID da TI (login Google) e a senha de app do IMAP (Fase 4 metade 2 — Email). Ver [[🗺️ Roadmap]] para detalhes técnicos e `.specs/project/STATE.md` para as regras de processo do projeto.*

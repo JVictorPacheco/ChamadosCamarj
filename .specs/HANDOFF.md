@@ -1,16 +1,16 @@
 # Handoff
 
-**Date:** 2026-07-21
-**Feature:** Storage de Anexos (Fase 4, metade 1) — IMPLEMENTADO E VERIFICADO DE PONTA A PONTA
-**Task:** Desde a última vez que este documento foi atualizado (18-19/07), 5 features novas foram feitas: Forçar Encerramento, Número do Chamado (`CAM-42`), busca por número, RBAC real do Dashboard/Kanban/Fila, e Storage de Anexos. Tudo já está em `develop` (e também em `main`, ver Context). Único bloqueio real que resta é o Client ID do Google (TI) e a senha de app do IMAP (Fase 4, metade 2 — Email).
+**Date:** 2026-07-21/22
+**Feature:** Revisão de processo (SDD) + qualidade de código + MCP do shadcn/ui — CONCLUÍDO
+**Task:** Depois das 5 features da sessão anterior (Forçar Encerramento, Número do Chamado, busca por número, RBAC real, Storage de Anexos), esta sessão comparou nosso uso do skill `tlc-spec-driven` com a metodologia canônica de Spec-Driven Development (specdriven.ai) e revisou qualidade de código das features recentes contra documentação oficial (MCP `microsoft-learn` + `context7`). **Leia `.specs/project/STATE.md` primeiro** — a seção "🧭 Regras de Processo (Constitution)" no topo é permanente e deve ser seguida em toda sessão futura.
 
 ## Completed ✓
 
-- **Forçar Encerramento** (2026-07-19): Admin fecha um chamado direto de qualquer status não-final, com motivo obrigatório auditado no histórico. Bug real corrigido no caminho: `UsuarioId` sempre zerado no histórico desde o login Google real (fix: `MapInboundClaims = false`). Ver `.specs/features/forcar-encerramento/`.
-- **Número do Chamado** (2026-07-19/20): `CAM-{número}` sequencial via sequence do Postgres, backfill cronológico dos chamados existentes, exibido em toda tela de lista/detalhe. Depois: busca por número no campo de busca já existente (`"42"` ou `"CAM-42"`). Ver `.specs/features/numero-do-chamado/`.
-- **RBAC real do Dashboard/Kanban/Fila** (2026-07-20): as 3 telas ganharam bloqueio de verdade pro Solicitante (mesmo padrão do Relatório Mensal).
-- **Storage de Anexos** (2026-07-20/21): upload/listagem/download de arquivo num chamado via Supabase Storage, verificado de ponta a ponta contra o Supabase real (upload de PDF, geração de URL assinada, download com conteúdo conferido byte a byte). Dois bugs reais corrigidos: API não subia sem a Service Role Key (fix: `NullStorageService` fallback), e o SDK do Supabase devolvia a URL assinada quebrada (fix: `TrimEnd('?')`). Ver `.specs/features/anexos-storage/`.
-- **Incidente corrigido:** um PR foi acidentalmente aberto contra `main` em vez de `develop` e mergeado. Como as duas branches já estavam idênticas antes disso, a correção foi só um fast-forward simples de `develop` pros mesmos 2 commits — sem revert, sem conflito. `develop` e `main` estão sincronizadas de novo (`72451a3`).
+- **3 gaps de processo identificados e adotados como regra permanente** (não só documentados): (1) pergunta de clarificação sem resposta não vira suposição silenciosa em decisão difícil de reverter; (2) spec atualizada antes do código, mesmo em extensões pequenas; (3) mudança de contrato entre camadas sinalizada antes de aplicar, não só relatada depois. Ver `.specs/project/STATE.md`, seção "Constitution".
+- **1 bug de segurança real corrigido**: `AdicionarAnexo` (Controller) passava `arquivo.FileName` direto pro Command sem sanitizar — corrigido com `Path.GetFileName()`, conforme a doc oficial da Microsoft. **PR #18 mergeado em `develop`** (`dd166e0`, 2026-07-22T01:48:55Z), desta vez com o `base` certo.
+- **MCP oficial do shadcn/ui instalado** (`.mcp.json`, escopado a este projeto) — só fica disponível numa sessão nova/reload. Não existe MCP dedicado de React (a lib não tem CLI/tooling própria); Context7 (genérico) já cobre esse papel.
+- **Frontend das features recentes checado contra TanStack Query v5 oficial: sem desvio.** Backend teve 1 achado real (acima) + 2 pontos menores sem ação ainda (ver STATE.md).
+- **Toda a documentação revisada e sincronizada** (`.specs/` + `docs/obsidian/`) — nada estava faltando ao final desta sessão.
 
 ## In Progress
 
@@ -19,17 +19,20 @@ Nada em execução.
 ## Pending
 
 1. **Client ID real do Google (TI)** — login Google (T09/F5b) já implementado, só falta esse valor pra testar de ponta a ponta no navegador.
-2. **Senha de app do IMAP** (suporte@/ti@camarj.com.br) — bloqueia a metade 2 da Fase 4 (Email → Chamado automático). Storage (metade 1) já está pronto.
+2. **Senha de app do IMAP** (suporte@/ti@camarj.com.br) — bloqueia a metade 2 da Fase 4 (Email → Chamado automático). Storage (metade 1) já está pronto e verificado.
 3. **Decisão de hospedagem em produção** — também bloqueia o redirect URI de produção do OAuth.
-4. Sem ordem confirmada além disso.
+4. **Testar comportamento de upload >10MB** (`[RequestSizeLimit]`) — a doc oficial alerta que pode aparecer como reset de conexão em vez de 4xx limpo. Não verificado ainda.
+5. Sem ordem confirmada além disso.
 
 ## Blockers
 
-Nenhum bloqueio ativo — os itens acima são pendências externas (aguardando terceiros/decisões), não bugs nem trabalho travado.
+Nenhum bloqueio ativo — os itens acima são pendências externas (aguardando terceiros/decisões) ou verificações menores, não bugs nem trabalho travado.
 
-## Context
+## Context — MUITO IMPORTANTE PRA RETOMAR
 
-- Branch: `develop`, sincronizada com `main` e com o remoto (`72451a3`).
+- **Ler `.specs/project/STATE.md` de cima pra baixo antes de qualquer coisa** — a seção "🧭 Regras de Processo (Constitution)" é uma regra permanente de como conduzir specify→design→tasks→execute neste projeto daqui pra frente, não um item histórico.
+- Branch: `develop`, sincronizada com `main` e com o remoto (`dd166e0`).
 - 216 testes de backend passando, builds limpos nos dois lados.
-- Decisões e aprendizados completos em `.specs/project/STATE.md` — ler antes de mexer em auditoria/histórico, RBAC, Storage/Supabase, ou login.
-- `user-secrets` agora tem `Supabase:Url`/`Supabase:ServiceRoleKey` configurados (verificar com `dotnet user-secrets list` se mudar de ambiente — não persiste entre clones/ambientes diferentes).
+- `.mcp.json` foi criado nesta sessão (MCP do shadcn/ui) — se esta é uma sessão nova, ele já deve estar disponível; usar pra consultar componentes shadcn atuais (props/variantes/exemplos) em vez de confiar só na memória de treinamento.
+- `user-secrets` tem `Supabase:Url`/`Supabase:ServiceRoleKey` configurados (verificar com `dotnet user-secrets list` se mudar de ambiente — não persiste entre clones/ambientes diferentes).
+- Ao abrir um PR neste repo: **sempre conferir o dropdown `base`** — já aconteceu de ir pra `main` por engano (não fixa `develop` como lembrança).
