@@ -1,6 +1,6 @@
 # Roadmap — ChamadosCamarj
 
-> Última atualização: 2026-07-19
+> Última atualização: 2026-07-21
 
 ## ✅ Fase 0 — Setup
 
@@ -75,15 +75,17 @@
 - [x] Bug fix (2026-07-14): Dashboard não mostrava Cancelados/Resolvidos (só "hoje"); card "Abertos" agora detalha assumidos vs em espera
 - [x] Retrabalho (2026-07-14/15): gráfico de Tendência (linha, 7 dias) substituído por rosca "Distribuição por situação" (Aguardando/Assumido/Resolvido/Encerrado/Cancelado, foto do momento); KPIs simplificados pra só Resolvidos Hoje + Tempo Médio, já que a rosca cobre o resto
 
-## 📧 Fase 4 — Integração Email + Storage
+## 📧 Fase 4 — Integração Email + Storage (Storage CONCLUÍDO — 2026-07-21; Email ainda pendente)
 
-> Ainda não iniciada. Pode ser feita em paralelo com Fase 6.
+> Storage de Anexos implementado e verificado de ponta a ponta contra o Supabase real. Email/IMAP segue sem data — depende de senha de app das caixas suporte@/ti@camarj.com.br, que o usuário ainda não tem. Spec/design/tasks completos em `.specs/features/anexos-storage/`.
 
 - [ ] `EmailReceiverService` (IMAP/MailKit — suporte@camarj.com.br / ti@camarj.com.br)
 - [ ] Parsing de e-mail → Chamado automático
 - [ ] Resposta automática ao solicitante
-- [ ] `StorageService` (Supabase Storage S3)
-- [ ] Upload/download de anexos no portal
+- [x] `StorageService` (Supabase Storage S3) — `SupabaseStorageService`, pacote NuGet `Supabase`, bucket `chamados-anexos`
+- [x] Upload/download de anexos no portal — upload multipart (PDF/imagens/Word/Excel/ZIP, máx 10MB), listagem, download via URL assinada (expira 1h). `Anexo.EnviadoPorId/Nome` via `ICurrentUserService` (não client-supplied)
+- [x] Verificado de ponta a ponta contra o Supabase Storage real: upload, listagem, geração de URL e download real (conteúdo conferido byte a byte)
+- **2 bugs reais encontrados e corrigidos:** (1) API não subia sem a Service Role Key configurada — `ValidateOnBuild` do ASP.NET Core, corrigido com `NullStorageService` como fallback; (2) SDK `Supabase` v1.3.0 devolve `CreateSignedUrl` com um `?` sobrando no final, quebrando o JWT — corrigido com `TrimEnd('?')`. Ver `STATE.md` (Aprendizados) pro detalhe completo
 
 ## 🔐 Fase 6 — Admin Completo + Log + Google Workspace (CÓDIGO COMPLETO — falta só o Client ID da TI)
 
@@ -148,4 +150,10 @@
 - [x] Coluna `Numero` gerada por sequence do Postgres (não pela aplicação — evita corrida em criações concorrentes)
 - [x] Migration com backfill cronológico (`ORDER BY DataCriacao`) dos chamados já existentes, verificado contra o Supabase real (37 chamados, números únicos 1-37, ordem cronológica exata; chamado novo criado depois recebeu 38)
 - [x] Exibido em `CAM-{número}` no `ChamadoCard` (Lista, Arquivo, Fila, Kanban) e no cabeçalho do Detalhe
-- [ ] Busca/filtro por número — fora de escopo por ora, ver spec
+- [x] Busca/filtro por número (2026-07-20) — campo de busca já existente reconhece `"42"` ou `"CAM-42"`, sem filtro novo na UI (`ChamadoRepository.ParseNumeroChamado`)
+
+## 🔒 RBAC real do Dashboard/Kanban/Fila (CONCLUÍDA — 2026-07-20)
+
+> As 3 telas só escondiam o link da sidebar pro Solicitante, sem bloquear a rota de verdade. Aplicado o mesmo padrão já usado em Relatório Mensal/Admin > Usuários.
+
+- [x] Bloqueio real (Alert + "Voltar") nas 3 telas pro Solicitante — sem guard novo no backend (mesma decisão do Relatório Mensal, dado não é mais sensível entre Admin/Atendente)
