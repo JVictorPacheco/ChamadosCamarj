@@ -270,10 +270,13 @@ public class ChamadosController : ControllerBase
         CancellationToken cancellationToken)
     {
         await using var conteudo = arquivo.OpenReadStream();
+        // Nunca confiar no FileName do IFormFile sem sanitizar — um cliente malicioso pode
+        // mandar um valor com segmentos de caminho embutidos (ex: "../../etc/x.pdf").
+        var nomeArquivoSanitizado = Path.GetFileName(arquivo.FileName);
         var command = new AdicionarAnexoCommand(
             id,
             comentarioId,
-            arquivo.FileName,
+            nomeArquivoSanitizado,
             arquivo.ContentType,
             conteudo,
             arquivo.Length,

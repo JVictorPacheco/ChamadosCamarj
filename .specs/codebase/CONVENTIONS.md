@@ -1,5 +1,9 @@
 # Convenções de Código
 
+## Processo (Spec-Driven Development)
+
+> **Ver `.specs/project/STATE.md`, seção "🧭 Regras de Processo (Constitution)" — 3 regras permanentes sobre como conduzir o ciclo Specify → Design → Tasks → Execute neste projeto (perguntas de clarificação sem resposta, spec antes do código, mudança de contrato sinalizada antes de aplicar). Revisar antes de iniciar qualquer feature nova ou extensão de feature existente.**
+
 ## Linguagem e nomenclatura
 
 - **Idioma do código:** Português (nomes de domínio, métodos, propriedades)

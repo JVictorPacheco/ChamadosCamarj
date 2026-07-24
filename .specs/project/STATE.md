@@ -4,13 +4,50 @@
 
 ---
 
+## 🧭 Regras de Processo (Constitution) — sempre seguir, em toda sessão
+
+> Adotadas em 2026-07-21, depois de comparar nosso uso do skill `tlc-spec-driven` com a metodologia canônica de Spec-Driven Development (specdriven.ai — ciclo de 6 fases: Constitution → Specification → Clarification → Planning → Task Decomposition → Implementation/Iteration). Esta seção é permanente — não é um item de sessão, é uma regra de como trabalhar neste projeto daqui pra frente. Ela nasceu de 3 gaps reais encontrados na prática (ver histórico abaixo), e o pedido explícito do usuário foi resolvê-los, não só documentá-los.
+
+1. **Pergunta de clarificação sem resposta NÃO vira suposição silenciosa em decisão difícil de reverter.** Se uma pergunta de esclarecimento (via `AskUserQuestion` ou similar) ficar sem resposta e a decisão afetar comportamento de produto (não só detalhe técnico reversível), **parar e perguntar de novo antes de prosseguir pra Design/Execute** — ou, se for necessário seguir mesmo assim por prioridade de tempo, marcar isso de forma bem visível como "PENDENTE DE CONFIRMAÇÃO" tanto no início quanto no fim da sessão, nunca como "decisão tomada". (Gap 1, caso real: pergunta "quem pode anexar arquivo" da feature de Anexos ficou sem resposta e virou suposição documentada.)
+
+2. **Spec é atualizada ANTES do código, nunca depois — mesmo pra extensões pequenas/rápidas de uma feature já existente.** Antes de implementar qualquer mudança de comportamento (novo filtro, novo campo, ajuste de RBAC etc.), atualizar a `spec.md` correspondente primeiro (ou criar uma nova se a mudança não pertencer a nenhuma feature existente). Só depois implementar. (Gap 2, caso real: busca por número e RBAC real do Dashboard/Kanban/Fila foram implementados como "extensão rápida" e só documentados depois — corrigido retroativamente, mas o hábito certo é o oposto.)
+
+3. **Mudança de contrato compartilhado entre camadas é sinalizada ANTES de aplicar, não só relatada depois.** Se uma mudança remove/altera um método de uma interface usada por múltiplos consumidores, muda uma assinatura pública, ou qualquer coisa que outra camada/feature dependa — avisar o usuário antes de aplicar, não só narrar no resumo final. (Gap 3, caso real: remoção de `RemoverAsync`/`DownloadAsync` de `IStorageService` foi feita e só reportada depois.)
+
+**Como aplicar na prática:** ao iniciar uma feature nova ou uma extensão de feature existente neste projeto, revisar esta seção antes de seguir pro Design/Execute do skill `tlc-spec-driven`. Se notar que uma dessas 3 regras está prestes a ser quebrada, parar e avisar o usuário explicitamente, em vez de seguir e só documentar depois.
+
+---
+
 ## 📍 Onde estamos
 
-**Sessão de 2026-07-21 (continuação, mesma branch `feature/anexos-storage`): Service Role Key do Supabase obtida e configurada — Storage de Anexos verificado de ponta a ponta contra o Supabase real.** Usuário conseguiu a `service_role` key (aba "Legacy anon, service_role API keys" do dashboard — o formato novo `sb_secret_...` não é compatível com o SDK C# usado, que é da geração JWT). Configurada em `user-secrets` (`Supabase:Url`, `Supabase:ServiceRoleKey`); bucket `chamados-anexos` criado via chamada direta à Storage REST API (sem precisar do dashboard).
+**Sessão de 2026-07-21 (continuação): revisão de processo (SDD) + qualidade de código (features recentes) contra documentação oficial.** Usuário pediu leitura de specdriven.ai (metodologia canônica de Spec-Driven Development) pra comparar com nosso uso do skill `tlc-spec-driven`, além de checar se o código segue boas práticas oficiais (via MCP `microsoft-learn` pro backend, `context7` genérico pro frontend — não existe MCP dedicado de React, só o `angular` (Angular CLI, não serve pra este projeto React/Vite)).
+
+**Gaps de processo identificados (comparando com o ciclo de 6 fases do specdriven.ai) — usuário pediu explicitamente pra resolvê-los, não só documentar. Adotados como regra permanente na seção "🧭 Regras de Processo (Constitution)" no topo deste arquivo:**
+1. Pergunta de clarificação sem resposta (caso do Anexos: "quem pode anexar") virou suposição documentada em vez de bloquear — o método pede verificação humana antes de prosseguir em decisões difíceis de reverter.
+2. "Spec antes do código" nem sempre seguido — busca por número e RBAC real foram implementados como extensão rápida, só documentados depois (corrigido retroativamente na sessão anterior, mas o hábito certo é atualizar a spec antes).
+3. Mudança de contrato entre camadas (remoção de `RemoverAsync`/`DownloadAsync` de `IStorageService`) feita e só reportada depois — o ideal seria sinalizar antes de aplicar, não só narrar depois.
+
+**Achado real de código, corrigido, commitado e MERGEADO:** `AdicionarAnexo` (Controller) passava `arquivo.FileName` (de `IFormFile`) direto pro Command sem sanitizar — a doc oficial da Microsoft (`Upload files in ASP.NET Core`) é explícita: nunca confiar no `FileName` sem remover o caminho antes de guardar/exibir. Corrigido com `Path.GetFileName(arquivo.FileName)` no Controller. **PR #18 (`fix/sanitizar-nome-arquivo-anexo` → `develop`) aberto e mergeado em 2026-07-22T01:48:55Z**, desta vez com o `base` certo (`develop`, não `main`). Também nesse PR: `.mcp.json` criado com o MCP oficial do shadcn/ui (`ui.shadcn.com/docs/mcp` — browse/search/instalação de componentes; não existe MCP dedicado de React, a lib não tem CLI/tooling própria pra isso) e a documentação inteira do projeto revisada/atualizada (`.specs/` + `docs/obsidian/`). 216 testes continuam passando (nenhum teste novo — Controllers não têm cobertura dedicada no projeto, mesmo padrão já estabelecido).
+
+**Nota: o `.mcp.json` só fica disponível numa sessão nova/reload do Claude Code** — não estava ativo na sessão em que foi criado.
+
+**Outros 2 pontos levantados, sem ação ainda:**
+- Comportamento de upload acima de 10MB (`[RequestSizeLimit]`) não foi testado manualmente — a doc oficial alerta que isso pode aparecer como reset de conexão em vez de um 4xx limpo, dependendo da configuração. Vale testar quando houver oportunidade.
+- `SupabaseStorageService`/`Supabase.Client` é inicializado manualmente (`new` + `InitializeAsync()`) antes do `builder.Build()`, diferente do padrão usado pra migrations do banco no mesmo arquivo (`app.Services.CreateScope()` depois do `Build()`). Funciona, mas é uma pequena inconsistência de estilo — não urgente.
+
+**Frontend das features recentes (`useAnexos`, `AnexosList`, `apiFetch` com `FormData`) checado contra a doc oficial do TanStack Query v5 via Context7: sem desvio encontrado** — `isPending` é a nomenclatura correta da v5 (não `isLoading`), e `mutationFn` de fato não recebe `AbortSignal` (diferente de `queryFn`), então a ausência de cancelamento no upload não é um gap.
+
+---
+
+## 📍 Onde estamos
+
+**Sessão de 2026-07-21 (continuação): PR aberto acidentalmente contra `main` em vez de `develop`, mergeado, e corrigido.** O usuário criou o PR da branch `feature/anexos-storage` escolhendo `main` como destino por engano — o GitHub já tinha mergeado de verdade (não só aberto e fechado) antes de perceber. Diagnóstico: `main` e `develop` já estavam **exatamente idênticas** (mesmo commit, `4216f21`) antes desse acidente — então o merge não pulou nem quebrou nada, só deixou `main` 2 commits à frente de `develop` (a feature de Anexos). Correção aplicada: fast-forward simples de `develop` pros mesmos 2 commits (`git merge feature/anexos-storage` a partir de `develop`, sem conflito, sem revert). `develop` e `main` estão sincronizadas de novo em `72451a3`, build e 216 testes confirmados depois do fast-forward. **Nenhum dado ou código foi perdido — foi só uma questão de branch de destino, resolvida sem risco.** Lição prática: ao abrir PR neste repo, sempre conferir o dropdown `base` antes de confirmar — ele não fixa `develop` como lembrança, volta pro padrão do repo (`main`).
+
+**Sessão de 2026-07-21 (mesmo dia, mais cedo): Service Role Key do Supabase obtida e configurada — Storage de Anexos verificado de ponta a ponta contra o Supabase real.** Usuário conseguiu a `service_role` key (aba "Legacy anon, service_role API keys" do dashboard — o formato novo `sb_secret_...` não é compatível com o SDK C# usado, que é da geração JWT). Configurada em `user-secrets` (`Supabase:Url`, `Supabase:ServiceRoleKey`); bucket `chamados-anexos` criado via chamada direta à Storage REST API (sem precisar do dashboard).
 
 **Bug real encontrado e corrigido nesta verificação:** o SDK `Supabase` v1.3.0 devolve a URL de `CreateSignedUrl` com um **`?` solto no final**, que quebra o parse do JWT no servidor do Storage (`InvalidJWT: Failed to base64url decode the signature`) — não é uma issue já documentada publicamente (busca web não achou nada específico). Corrigido com `url.TrimEnd('?')` em `SupabaseStorageService.ObterUrlAssinadaAsync` — mitigação no nosso código, já que não dá pra corrigir o SDK de terceiros.
 
-**Verificação completa de ponta a ponta, tudo contra o Supabase real** (chamado de teste `CAM-40`, depois limpo): upload de um PDF real → `201`; listagem → anexo aparece certo; URL assinada gerada (após o fix); **download real da URL → `200`, conteúdo baixado bate byte a byte com o que foi enviado**. 216 testes de backend continuam passando. Arquivo removido do bucket e chamado de teste removido do banco ao final (cascade apagou o `Anexo` junto). **Feature 100% funcional e verificada, sem pendências.** Branch `feature/anexos-storage` tem 1 commit (`a76ffcc`, da sessão anterior) + o fix do `TrimEnd` ainda por commitar — aguardando decisão do usuário sobre push.
+**Verificação completa de ponta a ponta, tudo contra o Supabase real** (chamado de teste `CAM-40`, depois limpo): upload de um PDF real → `201`; listagem → anexo aparece certo; URL assinada gerada (após o fix); **download real da URL → `200`, conteúdo baixado bate byte a byte com o que foi enviado**. 216 testes de backend continuam passando. Arquivo removido do bucket e chamado de teste removido do banco ao final (cascade apagou o `Anexo` junto). **Feature 100% funcional e verificada, sem pendências.** Commitada (`a76ffcc` + `72451a3` com o fix do `TrimEnd`), pushada e mergeada em `develop`/`main` (ver entrada acima sobre o incidente do PR aberto contra `main` por engano, corrigido no mesmo dia).
 
 ---
 
