@@ -24,14 +24,25 @@ Colaboradores frequentemente precisam anexar evidência a um chamado (print de e
 | Decisão | Escolha | Nota |
 |---|---|---|
 | Quem pode anexar | Qualquer perfil envolvido no chamado — Solicitante no próprio (`solicitanteEmail`), Atendente/Admin em qualquer um | Seguido por padrão recomendado; **usuário não confirmou explicitamente** (sem resposta na pergunta) — revisar se discordar |
-| Remoção de anexo | **Nunca remove** — consistente com a filosofia append-only já usada em chamados/histórico (Fase 8) | Mesmo caso acima — assumido, não confirmado |
-| RBAC de verdade no backend | **Não** — mesmo padrão "soft" já usado em `Comentar` (nenhum guard de dono hoje). Anexar não é mais sensível que comentar; não introduz uma exceção nova | Consistente com a decisão de não replicar RBAC real em toda ação (só onde já foi feito: Relatório Mensal, Admin>Usuários, Forçar Encerramento) |
+| ~~Remoção de anexo: Nunca remove~~ | **REVERTIDO em 2026-07-24, a pedido explícito do usuário** — ver seção "Decisões novas (2026-07-24)" abaixo. Anexo agora PODE ser removido (exclusão real, Storage + banco) | Decisão assumida aqui em 2026-07-20 nunca tinha sido confirmada; o usuário pediu a remoção ao testar a feature de verdade |
+| RBAC de verdade no backend (upload) | **Não** — mesmo padrão "soft" já usado em `Comentar` (nenhum guard de dono hoje). Anexar não é mais sensível que comentar; não introduz uma exceção nova | Consistente com a decisão de não replicar RBAC real em toda ação (só onde já foi feito: Relatório Mensal, Admin>Usuários, Forçar Encerramento). **Nota:** a *remoção* de anexo, diferente do upload, ganhou RBAC real — ver abaixo |
+
+## Decisões novas (2026-07-24 — remoção de anexo)
+
+> A pedido do usuário, testando a feature já em produção contra o Supabase real.
+
+| Decisão | Escolha |
+|---|---|
+| Tipo de exclusão | **Real** (hard delete) — remove o arquivo do Supabase Storage **e** a linha da tabela `Anexos`. Não é soft-delete/arquivamento — decisão explícita do usuário ("foi um anexo errado, não teria sentido ser soft delete") |
+| Confirmação | Pop-up (`Dialog`) perguntando "tem certeza?" antes de remover, mostrando o nome do arquivo |
+| RBAC de quem pode remover | **Real, no backend** (diferente do upload, que é soft): Admin remove qualquer anexo; Atendente/Solicitante só removem os anexos que **eles mesmos enviaram** (compara `EnviadoPorId`, vindo do token, com o requisitante) — 403 se não for dono nem Admin |
+| `IStorageService.RemoverAsync` | Reintroduzido (tinha sido removido da interface em 2026-07-20 por não ter consumidor — ver `design.md`/`tasks.md` originais). Implementado em `SupabaseStorageService` (`Storage.From(bucket).Remove(...)`) e em `NullStorageService` (mesmo fallback dos outros métodos) |
+| Contrato aditivo | `AnexoResponse` ganhou `EnviadoPorId` (Guid?) — usado pelo frontend só pra decidir se mostra o botão "Remover"; não quebra nada que já consumia o DTO |
 
 ## Out of Scope
 
 | Item | Motivo |
 |---|---|
-| `RemoverAsync` (a interface já tem o método, resquício do scaffold da Fase 1) | Anexo nunca é removido — método fica sem implementação real, ou é removido da interface durante o Design |
 | Anexo em e-mail recebido (Fase 4, metade 2) | Depende do IMAP, que depende de credencial ainda não disponível — spec separada quando chegar a vez |
 | Preview de imagem inline no chat/comentário | Só link de download por ora |
 | Vírus/malware scanning | Fora de escopo — mitigação é só tipo/tamanho de arquivo |
@@ -59,16 +70,28 @@ Colaboradores frequentemente precisam anexar evidência a um chamado (print de e
 
 **Independent Test**: Subir 2 arquivos, recarregar a página, conferir que os 2 aparecem; clicar em baixar e confirmar que o arquivo abre.
 
+### P1: Remover anexo ⭐ (adicionada em 2026-07-24)
+
+**User Story**: Como Admin (qualquer anexo) ou Atendente/Solicitante (só os que eu mesmo enviei), quero excluir um anexo enviado por engano, pra ele parar de aparecer no chamado.
+
+**Acceptance Criteria**:
+1. WHEN o usuário clica em "Remover" e confirma no pop-up THEN o sistema SHALL apagar o arquivo do Supabase Storage e o registro `Anexo` do banco (exclusão real, sem desfazer)
+2. WHEN quem tenta remover não é Admin nem o autor original do anexo THEN o sistema SHALL retornar 403, sem apagar nada
+3. WHEN o botão "Remover" é renderizado no frontend THEN o sistema SHALL só mostrá-lo pra Admin ou pro autor do anexo (evita um clique que só vai dar 403)
+
+**Independent Test**: Como Atendente, tentar remover um anexo enviado por outro Atendente — botão nem aparece; como Admin, remover qualquer anexo — some da lista, do banco e do bucket.
+
 ## Requirement Traceability
 
 | Requirement ID | Story | Status |
 |---|---|---|
-| ANX-01 | Upload com validação de tipo/tamanho | Pending |
-| ANX-02 | Registro `Anexo` vinculado ao chamado (ou comentário) | Pending |
-| ANX-03 | Listagem de anexos por chamado | Pending |
-| ANX-04 | Download via URL assinada (1h) | Pending |
+| ANX-01 | Upload com validação de tipo/tamanho | Done |
+| ANX-02 | Registro `Anexo` vinculado ao chamado (ou comentário) | Done |
+| ANX-03 | Listagem de anexos por chamado | Done |
+| ANX-04 | Download via URL assinada (1h) | Done |
+| ANX-05 | Remoção real de anexo, com RBAC (Admin ou autor) | Done (2026-07-24) |
 
-**Coverage:** 4 total, 4 verificados de ponta a ponta contra o Supabase Storage real (2026-07-21).
+**Coverage:** 5 total, 5 verificados de ponta a ponta contra o Supabase Storage real (upload/listagem/download em 2026-07-21; remoção em 2026-07-24).
 
 ## Bloqueio resolvido — verificação de ponta a ponta (2026-07-21)
 

@@ -89,6 +89,7 @@ Configurado via `user-secrets` (`Supabase:Url`, `Supabase:ServiceRoleKey`) — m
   - `Task<string> UploadAsync(string caminho, string contentType, Stream conteudo, CancellationToken cancellationToken = default)` — `caminho` já vem pronto do caller (`{chamadoId}/{uuid}.{ext}`), retorna o mesmo `caminho` (guardado em `Anexo.CaminhoStorage`)
   - `Task<string> ObterUrlAssinadaAsync(string caminho, int expiracaoSegundos, CancellationToken cancellationToken = default)` — gera URL temporária de download
 - **Mudança em relação ao esqueleto atual**: `DownloadAsync(string): Task<Stream?>` e `RemoverAsync(string): Task<bool>` **removidos** — nenhum consumidor (ver Tech Decisions)
+- **REVERTIDO em 2026-07-24**: `RemoverAsync` foi **reintroduzido** na interface (assinatura final: `Task RemoverAsync(string caminho, CancellationToken cancellationToken = default)`, sem retorno `bool`) — o usuário pediu a feature de remover anexo de verdade. `DownloadAsync` continua removido (segue sem uso). Ver `spec.md`, seção "Decisões novas (2026-07-24)"
 
 ### `SupabaseStorageService : IStorageService` (Infrastructure, novo)
 
@@ -154,7 +155,7 @@ Configurado via `user-secrets` (`Supabase:Url`, `Supabase:ServiceRoleKey`) — m
 | Decisão | Escolha | Rationale |
 |---|---|---|
 | Download via URL assinada, não streaming pelo backend | `ObterUrlAssinadaAsync`, sem endpoint de proxy de bytes | Já era a decisão documentada (`URLs assinadas expiram em 1 hora`); evita carregar o backend com bytes de arquivo, delega isso ao Supabase |
-| `IStorageService.DownloadAsync`/`RemoverAsync` removidos | Simplificar a interface pro que realmente é usado | Ambos scaffold da Fase 1 sem consumidor real; `RemoverAsync` contradiz a decisão "nunca remove anexo"; manter métodos mortos na interface é ruído |
+| `IStorageService.DownloadAsync`/`RemoverAsync` removidos | Simplificar a interface pro que realmente é usado | Ambos scaffold da Fase 1 sem consumidor real; `RemoverAsync` contradiz a decisão "nunca remove anexo"; manter métodos mortos na interface é ruído — **`RemoverAsync` foi reintroduzido em 2026-07-24, a decisão "nunca remove anexo" foi revertida a pedido do usuário, ver `spec.md`** |
 | `Anexo` ganha `EnviadoPorId`/`EnviadoPorNome`, preenchido via `ICurrentUserService` | Novo campo, novo padrão de identidade | `Comentario.Autor` é client-supplied (gap conhecido, não corrigido aqui — fora de escopo). Anexo é código novo pós-migração de identidade (T09/F5b): não faz sentido introduzir o mesmo gap de novo |
 | Sem `HistoricoEntrada` pro upload de anexo | Não gera entrada de auditoria | `AcaoHistorico.ComentarioAdicionado` existe no enum mas **nunca é usado** — `Comentar` também não gera histórico. Anexo segue o mesmo padrão do sub-recurso mais próximo (conteúdo adicional ao chamado, não uma transição de estado) |
 | Sem guard de RBAC real no backend | Mesmo padrão "soft" de `Comentar` | Ver spec.md — decisão já registrada |

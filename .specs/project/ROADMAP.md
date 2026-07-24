@@ -85,7 +85,9 @@
 - [x] `StorageService` (Supabase Storage S3) — `SupabaseStorageService`, pacote NuGet `Supabase`, bucket `chamados-anexos`
 - [x] Upload/download de anexos no portal — upload multipart (PDF/imagens/Word/Excel/ZIP, máx 10MB), listagem, download via URL assinada (expira 1h). `Anexo.EnviadoPorId/Nome` via `ICurrentUserService` (não client-supplied)
 - [x] Verificado de ponta a ponta contra o Supabase Storage real: upload, listagem, geração de URL e download real (conteúdo conferido byte a byte)
-- **2 bugs reais encontrados e corrigidos:** (1) API não subia sem a Service Role Key configurada — `ValidateOnBuild` do ASP.NET Core, corrigido com `NullStorageService` como fallback; (2) SDK `Supabase` v1.3.0 devolve `CreateSignedUrl` com um `?` sobrando no final, quebrando o JWT — corrigido com `TrimEnd('?')`. Ver `STATE.md` (Aprendizados) pro detalhe completo
+- [x] **Anexar já ao abrir chamado ou ao responder um comentário** (2026-07-24) — antes só dava na tela de Detalhe; múltiplos arquivos de uma vez, reaproveita o `comentarioId` que o backend já aceitava
+- [x] **Remover anexo (2026-07-24)** — exclusão real (Storage + banco), pop-up de confirmação, RBAC real: Admin remove qualquer um, Atendente/Solicitante só o que enviaram. Reverte a decisão original "nunca remove anexo" — ver `.specs/features/anexos-storage/spec.md`
+- **2 bugs reais encontrados e corrigidos (2026-07-21):** (1) API não subia sem a Service Role Key configurada — `ValidateOnBuild` do ASP.NET Core, corrigido com `NullStorageService` como fallback; (2) SDK `Supabase` v1.3.0 devolve `CreateSignedUrl` com um `?` sobrando no final, quebrando o JWT — corrigido com `TrimEnd('?')`. Ver `STATE.md` (Aprendizados) pro detalhe completo
 
 ## 🔐 Fase 6 — Admin Completo + Log + Google Workspace (código do Google MANTIDO, mas SUBSTITUÍDO por login e-mail/senha)
 
