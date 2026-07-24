@@ -10,6 +10,7 @@ public interface IChamadoRepository
     Task AtualizarAsync(Chamado chamado, CancellationToken cancellationToken = default);
     Task AdicionarComentarioAsync(Comentario comentario, CancellationToken cancellationToken = default);
     Task AdicionarAnexoAsync(Anexo anexo, CancellationToken cancellationToken = default);
+    Task RemoverAnexoAsync(Guid anexoId, CancellationToken cancellationToken = default);
 
     // Consultas
     Task<Chamado?> ObterPorIdAsync(Guid id, CancellationToken cancellationToken = default);

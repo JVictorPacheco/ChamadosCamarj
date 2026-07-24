@@ -243,16 +243,16 @@ public class ChamadosController : ControllerBase
     /// Adiciona um comentário a um chamado
     /// </summary>
     [HttpPost("{id:guid}/comentarios")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ComentarioResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Comentar(
+    public async Task<ActionResult<ComentarioResponse>> Comentar(
         Guid id,
         [FromBody] ComentarChamadoRequest request,
         CancellationToken cancellationToken)
     {
         var command = new ComentarChamadoCommand(id, request.Autor, request.Conteudo, request.Interno);
-        await _mediator.Send(command, cancellationToken);
-        return NoContent();
+        var result = await _mediator.Send(command, cancellationToken);
+        return CreatedAtAction(nameof(ListarComentarios), new { id }, result);
     }
 
     /// <summary>
@@ -308,5 +308,18 @@ public class ChamadosController : ControllerBase
     {
         var url = await _mediator.Send(new ObterUrlDownloadAnexoQuery(anexoId), cancellationToken);
         return Ok(new { url });
+    }
+
+    /// <summary>
+    /// Remove um anexo (do Storage e do banco) — exclusão definitiva, sem desfazer
+    /// </summary>
+    [HttpDelete("{id:guid}/anexos/{anexoId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RemoverAnexo(Guid id, Guid anexoId, CancellationToken cancellationToken)
+    {
+        await _mediator.Send(new RemoverAnexoCommand(id, anexoId, _currentUser.UsuarioId, _currentUser.Perfil), cancellationToken);
+        return NoContent();
     }
 }

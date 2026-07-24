@@ -72,6 +72,15 @@ public class ChamadoRepository : IChamadoRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task RemoverAnexoAsync(Guid anexoId, CancellationToken cancellationToken = default)
+    {
+        var anexo = await _context.Set<Anexo>().FirstOrDefaultAsync(a => a.Id == anexoId, cancellationToken);
+        if (anexo is null) return;
+
+        _context.Set<Anexo>().Remove(anexo);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<IEnumerable<Anexo>> ObterAnexosPorChamadoAsync(Guid chamadoId, CancellationToken cancellationToken = default)
     {
         return await _context.Set<Anexo>()

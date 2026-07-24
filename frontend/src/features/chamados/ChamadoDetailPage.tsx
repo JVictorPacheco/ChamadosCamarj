@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useParams } from 'react-router'
+import { Link, useLocation, useParams } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useAuth } from '@/auth/AuthContext'
@@ -135,6 +135,10 @@ export function ChamadoDetailPage() {
   const { id } = useParams<{ id: string }>()
   const { perfil } = useAuth()
   const { data: chamado, isPending, error } = useChamado(id!)
+  const location = useLocation()
+  const [avisoAnexos, setAvisoAnexos] = useState<string | null>(
+    (location.state as { avisoAnexos?: string } | null)?.avisoAnexos ?? null,
+  )
 
   if (isPending) {
     return <p className="p-4 text-sm text-muted-foreground">Carregando...</p>
@@ -178,6 +182,20 @@ export function ChamadoDetailPage() {
         <span className="mr-2 text-muted-foreground">{formatarNumeroChamado(chamado.numero)}</span>
         {chamado.titulo}
       </h1>
+
+      {avisoAnexos && (
+        <Alert variant="destructive" className="flex items-start justify-between gap-2">
+          <AlertDescription>{avisoAnexos}</AlertDescription>
+          <button
+            type="button"
+            onClick={() => setAvisoAnexos(null)}
+            className="text-muted-foreground hover:text-foreground"
+            aria-label="Dispensar aviso"
+          >
+            ✕
+          </button>
+        </Alert>
+      )}
 
       <div className="flex flex-wrap items-center gap-2">
         <StatusBadge status={chamado.status} />

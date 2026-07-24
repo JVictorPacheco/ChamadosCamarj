@@ -39,4 +39,11 @@ public class SupabaseStorageService : IStorageService
         // corrigir isso upstream (não achado como issue já reportada em 2026-07-21).
         return url.TrimEnd('?');
     }
+
+    public async Task RemoverAsync(string caminho, CancellationToken cancellationToken = default)
+    {
+        await _client.Storage
+            .From(_bucket)
+            .Remove(new List<string> { caminho });
+    }
 }

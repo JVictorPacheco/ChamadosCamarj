@@ -17,4 +17,7 @@ public class NullStorageService : IStorageService
 
     public Task<string> ObterUrlAssinadaAsync(string caminho, int expiracaoSegundos, CancellationToken cancellationToken = default)
         => throw new InvalidOperationException(Mensagem);
+
+    public Task RemoverAsync(string caminho, CancellationToken cancellationToken = default)
+        => throw new InvalidOperationException(Mensagem);
 }

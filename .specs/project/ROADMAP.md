@@ -87,9 +87,11 @@
 - [x] Verificado de ponta a ponta contra o Supabase Storage real: upload, listagem, geração de URL e download real (conteúdo conferido byte a byte)
 - **2 bugs reais encontrados e corrigidos:** (1) API não subia sem a Service Role Key configurada — `ValidateOnBuild` do ASP.NET Core, corrigido com `NullStorageService` como fallback; (2) SDK `Supabase` v1.3.0 devolve `CreateSignedUrl` com um `?` sobrando no final, quebrando o JWT — corrigido com `TrimEnd('?')`. Ver `STATE.md` (Aprendizados) pro detalhe completo
 
-## 🔐 Fase 6 — Admin Completo + Log + Google Workspace (CÓDIGO COMPLETO — falta só o Client ID da TI)
+## 🔐 Fase 6 — Admin Completo + Log + Google Workspace (código do Google MANTIDO, mas SUBSTITUÍDO por login e-mail/senha)
 
-> **Pausada em 2026-07-14, retomada em 2026-07-15/18.** T01-T14 mergeados em 2026-07-15; F5a implementada em 2026-07-16; T09/F5b/T15 (login real Google) implementados em 2026-07-18. Falta só o Client ID real da TI (documento já entregue) pro login funcionar de ponta a ponta em ambiente real.
+> **ATUALIZAÇÃO 2026-07-24: a TI informou que o Client ID do Google OAuth está fora do plano da CAMARJ** — não é mais uma questão de aguardar, é uma mudança de direção. O login real via Google (T09/F5b, descrito abaixo) segue implementado e commitado, mas não vai ser usado em produção. Decisão: login por **e-mail + senha** no lugar do botão do Google, reaproveitando toda a infraestrutura de JWT/RBAC já existente. Ver `.specs/features/auth-email-senha/` (spec + tasks) para o detalhe completo — feature **EM ANDAMENTO**, começada em 2026-07-24.
+
+> **Pausada em 2026-07-14, retomada em 2026-07-15/18.** T01-T14 mergeados em 2026-07-15; F5a implementada em 2026-07-16; T09/F5b/T15 (login real Google) implementados em 2026-07-18 — histórico abaixo preservado como está, mesmo com a mudança de direção do login.
 
 > Corrigido em 2026-06-25: Camarj usa Google Workspace (Gmail corporativo), não Azure AD.
 > Planejado em 2026-07-01: features de Admin e auditoria.
@@ -115,6 +117,27 @@
 - [x] ~~Mapeamento conta→perfil no backend~~ → entra pelo F5a (tabela `UsuarioPerfil`)
 - [x] **RBAC real (baseado em claims do token Google) IMPLEMENTADO** — `ICurrentUserService` lê `perfil`/`sub`/`name` dos claims do JWT em todos os Controllers
 - [ ] Admin: gerenciar categorias, usuários e configurações do sistema
+
+## 🔑 Login por E-mail/Senha — substitui Google OAuth (EM ANDAMENTO — 2026-07-24)
+
+> Spec/tasks completos em `.specs/features/auth-email-senha/`. Motivo: TI informou que o Client ID do Google está fora do plano da CAMARJ. Reaproveita quase toda a infra do login Google (JWT, RBAC, auth global) — só troca a forma de obter a identidade inicial.
+
+**Backend — feito nesta sessão, build/testes ainda não confirmados (ver `tasks.md` pro comando exato):**
+- [x] Coluna `SenhaHash` em `UsuarioPerfil` + migration `AddSenhaHashUsuarioPerfil`
+- [x] `IJwtTokenService` extraído do `AutenticarGoogleCommandHandler` pra ser reaproveitado
+- [x] `POST /auth/login` (e-mail + senha) — `LoginCommand`/Handler/Validator
+- [x] Cadastro de usuário (`CriarUsuarioPerfilCommand`) exige senha inicial (mínimo 8 caracteres)
+- [x] `PATCH /usuarios/{id}/senha` — Admin redefine a senha de qualquer usuário, sem precisar de e-mail
+- [x] `PasswordHasher<UsuarioPerfil>` (ASP.NET Core Identity) registrado no DI
+- [x] Testes unitários existentes corrigidos pras novas assinaturas — **falta rodar `dotnet build`/`dotnet test` pra confirmar**
+
+**Frontend — não iniciado:**
+- [ ] `LoginPage.tsx`: formulário e-mail/senha no lugar do botão do Google
+- [ ] `AuthContext.tsx`: método `loginComSenha`
+- [ ] `UsuarioFormDialog.tsx`: campo de senha obrigatório na criação
+- [ ] `UsuariosPage.tsx`: botão "Redefinir senha" (modal, mesmo padrão do `ForcarEncerramentoModal`)
+- [ ] Decidir se o login Google fica escondido atrás de uma flag ou removido da tela (não perguntado ainda)
+- [ ] Verificação manual de ponta a ponta (cadastrar usuário → logar; redefinir senha → logar com a nova)
 
 ## 📈 Fase 7 — Relatório Mensal (CONCLUÍDA — antecipada)
 

@@ -12,7 +12,8 @@ public class CriarUsuarioPerfilValidatorTests
     private static CriarUsuarioPerfilCommand ComandoValido() => new(
         "vitor@camarj.com.br",
         "Vitor",
-        Perfil.Admin);
+        Perfil.Admin,
+        "SenhaForte123");
 
     [Fact]
     public void Validar_ComDadosValidos_DevePassar()
@@ -51,5 +52,16 @@ public class CriarUsuarioPerfilValidatorTests
         var result = _validator.Validate(command);
         result.IsValid.Should().BeFalse();
         result.Errors.Should().Contain(e => e.PropertyName == nameof(command.Perfil));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("curta1")]
+    public void Validar_ComSenhaCurtaOuVazia_DeveFalhar(string senha)
+    {
+        var command = ComandoValido() with { Senha = senha };
+        var result = _validator.Validate(command);
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.PropertyName == nameof(command.Senha));
     }
 }

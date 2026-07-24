@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { useAnexos } from '../hooks/useAnexos'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
+import { useAuth } from '@/auth/AuthContext'
+import { ApiError } from '@/lib/api'
+import { useAnexos, useRemoverAnexo } from '../hooks/useAnexos'
 import { obterUrlDownloadAnexo } from '../api'
 
 function formatarTamanho(bytes: number): string {
@@ -9,15 +12,21 @@ function formatarTamanho(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-function LinhaAnexo({ chamadoId, anexoId, nomeArquivo, tamanhoBytes, enviadoPorNome }: {
+function LinhaAnexo({ chamadoId, anexoId, nomeArquivo, tamanhoBytes, enviadoPorId, enviadoPorNome }: {
   chamadoId: string
   anexoId: string
   nomeArquivo: string
   tamanhoBytes: number
+  enviadoPorId: string | null
   enviadoPorNome: string
 }) {
+  const { perfil } = useAuth()
   const [baixando, setBaixando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
+  const [confirmarRemocaoAberto, setConfirmarRemocaoAberto] = useState(false)
+  const { mutate: remover, isPending: removendo } = useRemoverAnexo(chamadoId)
+
+  const podeRemover = perfil?.tipo === 'Admin' || (!!perfil && perfil.id === enviadoPorId)
 
   const baixar = async () => {
     setBaixando(true)
@@ -32,6 +41,17 @@ function LinhaAnexo({ chamadoId, anexoId, nomeArquivo, tamanhoBytes, enviadoPorN
     }
   }
 
+  const confirmarRemocao = () => {
+    setErro(null)
+    remover(anexoId, {
+      onSuccess: () => setConfirmarRemocaoAberto(false),
+      onError: (err) => {
+        const proibido = err instanceof ApiError && err.status === 403
+        setErro(proibido ? 'Você só pode remover anexos que você mesmo enviou.' : 'Não foi possível remover o anexo. Tente novamente.')
+      },
+    })
+  }
+
   return (
     <li className="flex flex-col gap-1">
       <div className="flex items-center justify-between gap-2 rounded-lg border border-border p-2">
@@ -41,11 +61,37 @@ function LinhaAnexo({ chamadoId, anexoId, nomeArquivo, tamanhoBytes, enviadoPorN
             {formatarTamanho(tamanhoBytes)} · enviado por {enviadoPorNome}
           </span>
         </div>
-        <Button size="sm" variant="outline" onClick={baixar} disabled={baixando}>
-          {baixando ? 'Gerando link...' : 'Baixar'}
-        </Button>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={baixar} disabled={baixando}>
+            {baixando ? 'Gerando link...' : 'Baixar'}
+          </Button>
+          {podeRemover && (
+            <Button size="sm" variant="destructive" onClick={() => setConfirmarRemocaoAberto(true)}>
+              Remover
+            </Button>
+          )}
+        </div>
       </div>
       {erro && <p className="text-sm text-destructive">{erro}</p>}
+
+      <Dialog open={confirmarRemocaoAberto} onOpenChange={setConfirmarRemocaoAberto}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Remover anexo</DialogTitle>
+            <DialogDescription>
+              Tem certeza que deseja excluir o anexo <strong>{nomeArquivo}</strong>? Essa ação não pode ser desfeita.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmarRemocaoAberto(false)} disabled={removendo}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={confirmarRemocao} disabled={removendo}>
+              {removendo ? 'Removendo...' : 'Remover'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </li>
   )
 }
@@ -70,6 +116,7 @@ export function AnexosList({ chamadoId }: { chamadoId: string }) {
           anexoId={anexo.id}
           nomeArquivo={anexo.nomeArquivo}
           tamanhoBytes={anexo.tamanhoBytes}
+          enviadoPorId={anexo.enviadoPorId}
           enviadoPorNome={anexo.enviadoPorNome}
         />
       ))}

@@ -46,6 +46,7 @@ export interface AnexoResponse {
   nomeArquivo: string;
   tipoArquivo: string;
   tamanhoBytes: number;
+  enviadoPorId: string | null;
   enviadoPorNome: string;
   dataCriacao: string;
 }

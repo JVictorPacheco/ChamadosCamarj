@@ -4,6 +4,7 @@ using ChamadosCamarj.Domain.Entities;
 using ChamadosCamarj.Domain.Enums;
 using ChamadosCamarj.Domain.Interfaces;
 using FluentAssertions;
+using Microsoft.AspNetCore.Identity;
 using Moq;
 
 namespace ChamadosCamarj.UnitTests.Application.Handlers;
@@ -11,11 +12,16 @@ namespace ChamadosCamarj.UnitTests.Application.Handlers;
 public class CriarUsuarioPerfilHandlerTests
 {
     private readonly Mock<IUsuarioPerfilRepository> _repositoryMock = new();
+    private readonly Mock<IPasswordHasher<UsuarioPerfil>> _passwordHasherMock = new();
     private readonly CriarUsuarioPerfilCommandHandler _handler;
 
     public CriarUsuarioPerfilHandlerTests()
     {
-        _handler = new CriarUsuarioPerfilCommandHandler(_repositoryMock.Object);
+        _passwordHasherMock
+            .Setup(h => h.HashPassword(It.IsAny<UsuarioPerfil>(), It.IsAny<string>()))
+            .Returns("hash-fake");
+
+        _handler = new CriarUsuarioPerfilCommandHandler(_repositoryMock.Object, _passwordHasherMock.Object);
     }
 
     [Fact]
@@ -24,7 +30,7 @@ public class CriarUsuarioPerfilHandlerTests
         _repositoryMock.Setup(r => r.ObterPorEmailAsync("catia@camarj.com.br", It.IsAny<CancellationToken>()))
             .ReturnsAsync((UsuarioPerfil?)null);
 
-        var command = new CriarUsuarioPerfilCommand("catia@camarj.com.br", "Cátia", Perfil.Solicitante, "Admin");
+        var command = new CriarUsuarioPerfilCommand("catia@camarj.com.br", "Cátia", Perfil.Solicitante, "SenhaForte123", "Admin");
         var response = await _handler.Handle(command, CancellationToken.None);
 
         response.Email.Should().Be("catia@camarj.com.br");
@@ -42,7 +48,7 @@ public class CriarUsuarioPerfilHandlerTests
         _repositoryMock.Setup(r => r.ObterPorEmailAsync("victor@camarj.com.br", It.IsAny<CancellationToken>()))
             .ReturnsAsync(existente);
 
-        var command = new CriarUsuarioPerfilCommand("victor@camarj.com.br", "Victor Duplicado", Perfil.Admin, "Admin");
+        var command = new CriarUsuarioPerfilCommand("victor@camarj.com.br", "Victor Duplicado", Perfil.Admin, "SenhaForte123", "Admin");
 
         var act = async () => await _handler.Handle(command, CancellationToken.None);
         await act.Should().ThrowAsync<ConflictException>();
@@ -59,7 +65,7 @@ public class CriarUsuarioPerfilHandlerTests
         _repositoryMock.Setup(r => r.ObterPorEmailAsync("fabio@camarj.com.br", It.IsAny<CancellationToken>()))
             .ReturnsAsync(existenteInativo);
 
-        var command = new CriarUsuarioPerfilCommand("fabio@camarj.com.br", "Fábio Novo", Perfil.Atendente, "Admin");
+        var command = new CriarUsuarioPerfilCommand("fabio@camarj.com.br", "Fábio Novo", Perfil.Atendente, "SenhaForte123", "Admin");
         var response = await _handler.Handle(command, CancellationToken.None);
 
         response.Nome.Should().Be("Fábio Novo");
@@ -77,7 +83,7 @@ public class CriarUsuarioPerfilHandlerTests
         _repositoryMock.Setup(r => r.ObterPorEmailAsync("catia@camarj.com.br", It.IsAny<CancellationToken>()))
             .ReturnsAsync((UsuarioPerfil?)null);
 
-        var command = new CriarUsuarioPerfilCommand("  Catia@Camarj.COM.BR  ", "Cátia", Perfil.Solicitante, "Admin");
+        var command = new CriarUsuarioPerfilCommand("  Catia@Camarj.COM.BR  ", "Cátia", Perfil.Solicitante, "SenhaForte123", "Admin");
         await _handler.Handle(command, CancellationToken.None);
 
         _repositoryMock.Verify(r => r.ObterPorEmailAsync("catia@camarj.com.br", It.IsAny<CancellationToken>()), Times.Once);
@@ -86,7 +92,7 @@ public class CriarUsuarioPerfilHandlerTests
     [Fact]
     public async Task Handle_QuandoRequisitanteNaoEhAdmin_DeveLancarForbiddenException()
     {
-        var command = new CriarUsuarioPerfilCommand("catia@camarj.com.br", "Cátia", Perfil.Solicitante, "Atendente");
+        var command = new CriarUsuarioPerfilCommand("catia@camarj.com.br", "Cátia", Perfil.Solicitante, "SenhaForte123", "Atendente");
 
         var act = async () => await _handler.Handle(command, CancellationToken.None);
         await act.Should().ThrowAsync<ForbiddenException>();
@@ -97,7 +103,7 @@ public class CriarUsuarioPerfilHandlerTests
     [Fact]
     public async Task Handle_QuandoRequisitanteNulo_DeveLancarForbiddenException()
     {
-        var command = new CriarUsuarioPerfilCommand("catia@camarj.com.br", "Cátia", Perfil.Solicitante);
+        var command = new CriarUsuarioPerfilCommand("catia@camarj.com.br", "Cátia", Perfil.Solicitante, "SenhaForte123");
 
         var act = async () => await _handler.Handle(command, CancellationToken.None);
         await act.Should().ThrowAsync<ForbiddenException>();
