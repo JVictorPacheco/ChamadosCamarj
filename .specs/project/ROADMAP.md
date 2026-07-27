@@ -193,3 +193,10 @@
 - [ ] Adicionar: Contas Médicas
 - [ ] Total: 8 categorias (eram 5)
 - [ ] Seed e migration necessários
+
+## 🎨 Tema Claro + Logo CAMARJ (PLANEJADO — 2026-07-27)
+
+- [ ] Toggle claro/escuro no AppLayout (via shadcn/ui ou CSS custom properties)
+- [ ] Respeitar preferência do sistema (`prefers-color-scheme`)
+- [ ] Logo CAMARJ no topo da sidebar (já existe na LoginPage, só adicionar no AppLayout)
+- [ ] Ainda sem spec — próxima sessão SDD

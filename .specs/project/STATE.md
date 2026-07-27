@@ -239,6 +239,8 @@ Nenhum.
 | ~~**Login e-mail/senha — retomar implementação**~~ | ✅ **CONCLUÍDO em 2026-07-27** — backend + frontend completos, 218 testes passando, migration `AddSenhaHashUsuarioPerfil` com Up/Down corretos, build limpo |
 | **Grupos/Equipes para visualização de chamados** | **NOVO (2026-07-27).** Usuários pertencem a um grupo (ex: Reembolso, Credenciado, etc.). Atendentes do mesmo grupo podem ver e interagir nos chamados uns dos outros — útil quando alguém sai de férias e o colega da mesma área precisa dar continuidade. **Ainda sem spec.** |
 | **Novas categorias + renomear existente** | **NOVO (2026-07-27).** Adicionar: Credenciado, Comercial, Contas Médicas. Renomear "Autorização" → "Autorização/Auditoria". Total: 8 categorias. **Ainda sem spec.** |
+| **Tema claro (light mode)** | **NOVO (2026-07-27).** Hoje só existe tema escuro. Adicionar toggle claro/escuro (padrão do shadcn/ui via `next-themes` ou CSS custom properties), respeitando a preferência do sistema. Afeta todas as telas. **Ainda sem spec.** |
+| **Logo CAMARJ no header/sidebar** | **NOVO (2026-07-27).** O logo da CAMARJ já aparece na tela de login, mas não no layout principal (sidebar/header do AppLayout). Adicionar o logo no topo da sidebar pra identidade visual. **Ainda sem spec.** |
 
 ---
 
