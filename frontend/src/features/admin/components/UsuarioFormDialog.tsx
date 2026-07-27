@@ -22,11 +22,12 @@ interface FormValues {
   email: string
   perfil: TipoPerfil
   ativo: boolean
+  senha: string
 }
 
 const PERFIS: TipoPerfil[] = ['Admin', 'Atendente', 'Solicitante']
 
-const VALORES_PADRAO: FormValues = { nome: '', email: '', perfil: 'Solicitante', ativo: true }
+const VALORES_PADRAO: FormValues = { nome: '', email: '', perfil: 'Solicitante', ativo: true, senha: '' }
 
 export function UsuarioFormDialog({ open, onOpenChange, usuario }: UsuarioFormDialogProps) {
   const emEdicao = !!usuario
@@ -51,7 +52,7 @@ export function UsuarioFormDialog({ open, onOpenChange, usuario }: UsuarioFormDi
 
     reset(
       usuario
-        ? { nome: usuario.nome, email: usuario.email, perfil: usuario.perfil, ativo: usuario.ativo }
+        ? { nome: usuario.nome, email: usuario.email, perfil: usuario.perfil, ativo: usuario.ativo, senha: '' }
         : VALORES_PADRAO,
     )
     resetCriar()
@@ -85,7 +86,7 @@ export function UsuarioFormDialog({ open, onOpenChange, usuario }: UsuarioFormDi
     }
 
     criar(
-      { email: values.email, nome: values.nome, perfil: values.perfil },
+      { email: values.email, nome: values.nome, perfil: values.perfil, senha: values.senha },
       { onSuccess: () => fechar(false), onError: tratarErro },
     )
   }
@@ -117,6 +118,18 @@ export function UsuarioFormDialog({ open, onOpenChange, usuario }: UsuarioFormDi
             />
             {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
           </div>
+
+          {!emEdicao && (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="senha">Senha</Label>
+              <Input
+                id="senha"
+                type="password"
+                {...register('senha', { required: !emEdicao && 'Senha é obrigatória.', minLength: { value: 8, message: 'Mínimo 8 caracteres.' } })}
+              />
+              {errors.senha && <p className="text-sm text-destructive">{errors.senha.message}</p>}
+            </div>
+          )}
 
           <div className="flex flex-col gap-1.5">
             <Label>Perfil</Label>

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
@@ -11,6 +12,8 @@ import { useAuth } from '@/auth/AuthContext'
 import { ApiError } from '@/lib/api'
 import { useAbrirChamado } from './hooks/useAbrirChamado'
 import { useCategorias } from './hooks/useCategorias'
+import { SeletorArquivosMultiplo } from './components/SeletorArquivosMultiplo'
+import { uploadAnexo } from './api'
 import type { PrioridadeChamado } from '@/types/api'
 
 interface FormValues {
@@ -28,6 +31,8 @@ export function AbrirChamadoPage() {
   const queryClient = useQueryClient()
   const { data: categorias } = useCategorias()
   const { mutate, isPending, error } = useAbrirChamado()
+  const [arquivos, setArquivos] = useState<File[]>([])
+  const [enviandoAnexos, setEnviandoAnexos] = useState(false)
   const {
     register,
     handleSubmit,
@@ -49,7 +54,26 @@ export function AbrirChamadoPage() {
         solicitanteEmail: perfil.email,
       },
       {
-        onSuccess: (chamado) => navigate(`/chamados/${chamado.id}`),
+        onSuccess: async (chamado) => {
+          if (arquivos.length === 0) {
+            navigate(`/chamados/${chamado.id}`)
+            return
+          }
+
+          setEnviandoAnexos(true)
+          const resultados = await Promise.allSettled(arquivos.map((arquivo) => uploadAnexo(chamado.id, arquivo)))
+          setEnviandoAnexos(false)
+          const falhas = resultados.filter((r) => r.status === 'rejected').length
+
+          navigate(`/chamados/${chamado.id}`, {
+            state:
+              falhas > 0
+                ? {
+                    avisoAnexos: `Chamado criado, mas ${falhas} de ${arquivos.length} anexo(s) não foram enviados. Tente novamente aqui na tela do chamado.`,
+                  }
+                : undefined,
+          })
+        },
         onError: (err) => {
           if (!(err instanceof ApiError)) return
 
@@ -130,14 +154,16 @@ export function AbrirChamadoPage() {
         />
       </div>
 
+      <SeletorArquivosMultiplo arquivos={arquivos} onChange={setArquivos} disabled={isPending || enviandoAnexos} />
+
       {error && !(error instanceof ApiError && (error.errors?.length || error.status === 404)) && (
         <Alert variant="destructive">
           <AlertDescription>{error.message}</AlertDescription>
         </Alert>
       )}
 
-      <Button type="submit" disabled={isPending} className="self-end">
-        Abrir chamado
+      <Button type="submit" disabled={isPending || enviandoAnexos} className="self-end">
+        {enviandoAnexos ? 'Enviando anexos...' : 'Abrir chamado'}
       </Button>
     </form>
   )

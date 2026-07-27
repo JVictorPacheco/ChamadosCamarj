@@ -1,13 +1,6 @@
 import { useRef, useState } from 'react'
 import { useUploadAnexo } from '../hooks/useAnexos'
-
-const TAMANHO_MAXIMO_BYTES = 10 * 1024 * 1024
-const EXTENSOES_PERMITIDAS = ['.pdf', '.jpg', '.jpeg', '.png', '.gif', '.doc', '.docx', '.xls', '.xlsx', '.zip']
-
-function extensaoPermitida(nomeArquivo: string): boolean {
-  const extensao = nomeArquivo.slice(nomeArquivo.lastIndexOf('.')).toLowerCase()
-  return EXTENSOES_PERMITIDAS.includes(extensao)
-}
+import { validarArquivo } from '../lib/anexoValidacao'
 
 export function UploadAnexoForm({ chamadoId }: { chamadoId: string }) {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -18,14 +11,9 @@ export function UploadAnexoForm({ chamadoId }: { chamadoId: string }) {
     const arquivo = e.target.files?.[0]
     if (!arquivo) return
 
-    if (arquivo.size > TAMANHO_MAXIMO_BYTES) {
-      setErro('Arquivo excede o tamanho máximo de 10MB.')
-      e.target.value = ''
-      return
-    }
-
-    if (!extensaoPermitida(arquivo.name)) {
-      setErro('Tipo de arquivo não permitido. Tipos aceitos: PDF, imagens, Word, Excel, ZIP.')
+    const erroValidacao = validarArquivo(arquivo)
+    if (erroValidacao) {
+      setErro(erroValidacao)
       e.target.value = ''
       return
     }

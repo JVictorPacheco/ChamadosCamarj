@@ -5,6 +5,7 @@ public record AnexoResponse(
     string NomeArquivo,
     string TipoArquivo,
     long TamanhoBytes,
+    Guid? EnviadoPorId,
     string EnviadoPorNome,
     DateTime DataCriacao
 );

@@ -10,7 +10,9 @@ export type AcaoHistorico =
   | "Cancelado"
   | "ComentarioAdicionado"
   | "PrioridadeAlterada"
-  | "EncerramentoForcado";
+  | "StatusAlterado"
+  | "EncerramentoForcado"
+  | "Reaberto";
 
 export interface ChamadoResponse {
   id: string;
@@ -46,6 +48,7 @@ export interface AnexoResponse {
   nomeArquivo: string;
   tipoArquivo: string;
   tamanhoBytes: number;
+  enviadoPorId: string | null;
   enviadoPorNome: string;
   dataCriacao: string;
 }

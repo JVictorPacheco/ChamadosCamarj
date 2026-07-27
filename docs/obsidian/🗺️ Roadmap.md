@@ -75,7 +75,7 @@
 ### 🔐 Fase 6 — Admin Completo + Log + Google Workspace (praticamente concluída)
 
 > ⚠️ **Corrigido em 2026-06-25:** Camarj usa **Google Workspace** (Gmail corporativo), não Azure AD.
-> **Pausada em 2026-07-14** a pedido do usuário — Fase 7 (Relatório Mensal) antecipada por ter prazo real (fechamento mensal pra superintendência). Trabalho feito em `feature/fase-6-admin-log`, **mergeado em `develop` via PR #13 em 2026-07-15**. T01-T14 concluídos e verificados. **Retomada em 2026-07-16/18:** F5a (login mockado por e-mail + cadastro de usuários) implementada como passo intermediário, depois T09/T15 (login Google real) implementado por completo em 2026-07-18.
+> **Pausada em 2026-07-14** a pedido do usuário — Fase 7 (Relatório Mensal) antecipada por ter prazo real (fechamento mensal pra superintendência). Trabalho feito em `feature/fase-6-admin-log`, **mergeado em `develop` via PR #13 em 2026-07-15**. T01-T14 concluídos e verificados. **Retomada em 2026-07-16/18:** F5a (login mockado por e-mail + cadastro de usuários) implementada como passo intermediário, depois T09/T15 (login Google real) implementado por completo em 2026-07-18. **2026-07-24:** login Google OAuth ficou dormante — TI informou que o Client ID está fora do plano CAMARJ. Auth ativa é **email+senha** (ASP.NET Core Identity/PasswordHasher).
 
 **Backend — completo:**
 - [x] **Log de histórico** — entidade `HistoricoEntrada` + `IHistoricoRepository`, ver [[📋 Histórico de Chamados]]
@@ -85,11 +85,12 @@
 - [x] **Alterar prioridade** — endpoint `PATCH /chamados/{id}/prioridade`
 - [x] **Comentários internos** — filtro por perfil em `ListarComentariosQueryHandler`
 - [x] **F5a (2026-07-16):** cadastro/gestão de usuários pelo Admin — tabela `UsuarioPerfil`, `UsuariosController` (CRUD + ativar/desativar), passo intermediário não descartável rumo ao login real
-- [x] **T09 — Login real via [[🔐 Google Workspace]] (2026-07-18):** `POST /auth/google` valida o token do Google, JWT próprio (simétrico, 8-12h), autenticação global por padrão (`RequireAuthenticatedUser`), `ICurrentUserService` substitui dados de ator vindos do cliente em todos os Controllers. **Falta só o Client ID real da TI** (documento já entregue) pra funcionar de ponta a ponta
+- [x] **T09 — Login real via [[🔐 Google Workspace]] (2026-07-18):** `POST /auth/google` valida o token do Google, JWT próprio (simétrico, 8-12h), autenticação global por padrão (`RequireAuthenticatedUser`), `ICurrentUserService` substitui dados de ator vindos do cliente em todos os Controllers. ⚠️ **DORMENTE (2026-07-24)** — TI informou que o Client ID está fora do plano CAMARJ.
+- [x] **Auth email+senha (2026-07-24):** `POST /auth/login` com ASP.NET Core Identity `PasswordHasher`, senhas definidas pelo Admin. Login Google OAuth mantido dormante. Spec em `.specs/features/auth-email-senha/spec.md`
 
 **Frontend — completo (T10-T14 + T15):**
 - [x] Reatribuir, Histórico (timeline), Alterar Prioridade, Comentário interno — componentes reescritos do zero em `frontend/src/features/chamados/` (uma versão anterior tinha sido commitada no caminho errado com padrões inexistentes no projeto)
-- [x] **T15 — Login real via Google Workspace (2026-07-18):** `LoginPage` com `GoogleLogin`/`GoogleOAuthProvider`, logout automático por 20min de inatividade, redesenho visual (logo maior, tipografia serifada)
+- [x] **T15 — Login real via Google Workspace (2026-07-18):** `LoginPage` com `GoogleLogin`/`GoogleOAuthProvider`, logout automático por 20min de inatividade, redesenho visual (logo maior, tipografia serifada) — ⚠️ **DORMENTE**, substituído pela `LoginPage` de email+senha
 - [x] **Forçar encerramento** (2026-07-19) — Admin fecha um chamado direto de qualquer status não-final, com motivo obrigatório auditado no histórico (`AcaoHistorico.EncerramentoForcado`). Ver `.specs/features/forcar-encerramento/`
 - [ ] Admin: gerenciar categorias e configurações do sistema (usuários já implementado no F5a)
 
@@ -129,4 +130,4 @@
 
 ---
 
-> **Progresso atual:** ✅ Fases 0-3, 5 e 7 concluídas. ✅ Fase 6 praticamente completa — só falta o **Client ID real da TI** pro login Google (T09/T15) funcionar de ponta a ponta. ✅ Arquivo de Chamados, Forçar Encerramento, Número do Chamado, RBAC real e Storage de Anexos (Fase 4 metade 1) todos concluídos. Próximo passo: aguardar TI (Client ID) e senha de app do IMAP (Fase 4 metade 2 — Email); decisão de hospedagem em produção também pendente.
+> **Progresso atual:** ✅ Fases 0-3, 5 e 7 concluídas. ✅ Fase 6 praticamente completa — login ativo é **email+senha** (PasswordHasher), Google OAuth dormante. ✅ Arquivo de Chamados, Forçar Encerramento, Número do Chamado, RBAC real, Storage de Anexos (Fase 4 metade 1) e auth email+senha todos concluídos. Próximo passo: senha de app do IMAP (Fase 4 metade 2 — Email); decisão de hospedagem em produção também pendente.

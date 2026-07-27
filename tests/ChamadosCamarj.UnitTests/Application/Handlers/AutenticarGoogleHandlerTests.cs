@@ -26,7 +26,7 @@ public class AutenticarGoogleHandlerTests
             TokenExpiracaoHoras = 10,
         });
 
-        _handler = new AutenticarGoogleCommandHandler(_repositoryMock.Object, _googleValidatorMock.Object, authSettings);
+        _handler = new AutenticarGoogleCommandHandler(_repositoryMock.Object, _googleValidatorMock.Object, new JwtTokenService(authSettings), authSettings);
     }
 
     private static GoogleJsonWebSignature.Payload CriarPayload(string email, bool emailVerified = true) =>

@@ -24,6 +24,16 @@ public class UsuarioPerfil : BaseEntity
     public string Nome { get; private set; } = string.Empty;
     public Perfil Perfil { get; private set; }
     public bool Ativo { get; private set; }
+    public string? SenhaHash { get; private set; }
+
+    public void DefinirSenhaHash(string senhaHash)
+    {
+        if (string.IsNullOrWhiteSpace(senhaHash))
+            throw new ArgumentException("Hash de senha é obrigatório.", nameof(senhaHash));
+
+        SenhaHash = senhaHash;
+        DataAtualizacao = DateTime.UtcNow;
+    }
 
     public void Atualizar(string nome, Perfil perfil)
     {

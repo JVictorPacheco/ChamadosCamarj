@@ -4,6 +4,7 @@ import {
   resolverChamado,
   fecharChamado,
   cancelarChamado,
+  reabrirChamado,
   reatribuirChamado,
   alterarPrioridade,
   forcarEncerramento,
@@ -45,6 +46,14 @@ export function useCancelarChamado(chamadoId: string) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: () => cancelarChamado(chamadoId),
+    onSuccess: () => invalidarChamado(queryClient, chamadoId),
+  })
+}
+
+export function useReabrirChamado(chamadoId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => reabrirChamado(chamadoId),
     onSuccess: () => invalidarChamado(queryClient, chamadoId),
   })
 }

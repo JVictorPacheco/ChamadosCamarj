@@ -1,6 +1,6 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-07-21
+> Atualizado em: 2026-07-27
 
 ---
 
@@ -19,6 +19,33 @@
 ---
 
 ## 📍 Onde estamos
+
+**Sessão de 2026-07-27 (nova parceira, opencode): orquestração + frontend auth-email-senha concluído.**
+- Setup de orquestração criado (`opencode.json` com 5 agentes: spec, build-backend, build-frontend, review, explorar — todos modelos Go)
+- MCPs configurados: Context7 (docs), shadcn (componentes), dotnet-context (análise Roslyn)
+- Backend da auth-email-senha verificado: **218 testes passando, build limpo**
+- Frontend da auth-email-senha implementado:
+  - `LoginPage.tsx`: substituído Google Login por formulário email + senha
+  - `AuthContext.tsx`: adicionado `loginComSenha`
+  - `api.ts`: adicionados `login()`, `redefinirSenha()`, e campo `senha` em `CriarUsuarioRequest`
+  - `UsuarioFormDialog.tsx`: campo de senha obrigatório no cadastro (mín 8 caracteres)
+  - `UsuariosPage.tsx`: botão "Redefinir senha" com modal
+  - `useUsuarios.ts`: hook `useRedefinirSenha()`
+- Build frontend (`npm run build`) verificado: ✅ sem erros
+- Dependência `@react-oauth/google` mantida (código do Google login dorme no backend/frontend)
+- Migration `AddSenhaHashUsuarioPerfil` ainda NÃO aplicada no Supabase real (roda automaticamente no próximo `dotnet run`)
+- Coluna `SenhaHash` adicionada manualmente ao Supabase (migration vazia — Up/Down vazios, bug do EF não detectar a mudança)
+- Senha do Victor configurada: `Teste123!` — os demais usuários (Fábio, Ana, Letícia) precisam ter senha definida via Admin → Redefinir senha
+- Porta 5000 ocupada pelo AirPlay do macOS — usar `http://localhost:5002` para API no Mac. `.env` do frontend criado com `VITE_API_BASE_URL=http://localhost:5000/api` (porta normal, só mudar pra 5002 no Mac)
+- Context7 MCP configurado (remote), `dotnet-context-mcp@0.2.0` (local), `shadcn` (local via `.mcp.json`)
+
+**Sessão de 2026-07-27 — feature auth-email-senha CONCLUÍDA + docs cleanup.**
+- Frontend UX: confirmation dialogs adicionados para Encerrar, Cancelar, Resolver, Desativar/Reativar usuário, Logout
+- Migration `AddSenhaHashUsuarioPerfil` corrigida — `Up()` e `Down()` preenchidos corretamente, coluna `SenhaHash` criada pela migration (não mais manual no Supabase)
+- ROADMAP.md: seção duplicada removida
+- Docs cleanup: README.md, AGENTS.md, STATE.md, HANDOFF.md, spec.md, tasks.md atualizados
+- Build: 0 erros, 218 testes passando, `npm run build` limpo
+- Feature auth-email-senha: spec marcada como CONCLUÍDO, todos os 9 requisitos (AUTH-01 a AUTH-09) ✅
 
 **Sessão de 2026-07-21 (continuação): revisão de processo (SDD) + qualidade de código (features recentes) contra documentação oficial.** Usuário pediu leitura de specdriven.ai (metodologia canônica de Spec-Driven Development) pra comparar com nosso uso do skill `tlc-spec-driven`, além de checar se o código segue boas práticas oficiais (via MCP `microsoft-learn` pro backend, `context7` genérico pro frontend — não existe MCP dedicado de React, só o `angular` (Angular CLI, não serve pra este projeto React/Vite)).
 
@@ -40,6 +67,24 @@
 ---
 
 ## 📍 Onde estamos
+
+**Sessão de 2026-07-24 — MUDANÇA DE DIREÇÃO: TI informou que o Client ID do Google OAuth está fora do plano da CAMARJ.** Não é mais "aguardar a TI configurar" — o login real via Google (T09/F5b, implementado e commitado em 2026-07-18/19) não vai ser usado em produção. Decisão tomada com o usuário: substituir por login **e-mail + senha**, Admin cadastrando a senha inicial de cada usuário, reaproveitando quase toda a infraestrutura de JWT/RBAC já existente (só troca a forma de obter a identidade inicial — claims/issuer/audience continuam os mesmos). Reset de senha V1 é o Admin redefinindo manualmente pela tela (sem e-mail); autoatendimento fica pra quando a Fase 4 (Email/SMTP) estiver pronta. Spec/tasks completos em `.specs/features/auth-email-senha/`.
+
+**Backend implementado nesta sessão, mas a sessão foi interrompida ANTES de confirmar `dotnet build`/`dotnet test`** (o usuário pediu pra documentar tudo e fazer commit/push pra continuar depois, em vez de fechar o ciclo agora). Feito: coluna `SenhaHash` em `UsuarioPerfil` + migration (`AddSenhaHashUsuarioPerfil`, ainda não aplicada no Supabase real — aplica sozinha no próximo `dotnet run`), `IJwtTokenService` extraído do `AutenticarGoogleCommandHandler` (reaproveitado pelos dois fluxos de login), `POST /auth/login` (`LoginCommand`/Handler/Validator), `CriarUsuarioPerfilCommand` agora exige senha inicial (≥8 caracteres), `PATCH /usuarios/{id}/senha` pro Admin redefinir senha de qualquer usuário, `PasswordHasher<UsuarioPerfil>` (ASP.NET Core Identity, pacote `Microsoft.Extensions.Identity.Core`) registrado no DI. Testes unitários existentes (`CriarUsuarioPerfilHandlerTests`, `AutenticarGoogleHandlerTests`, `CriarUsuarioPerfilValidatorTests`) já corrigidos pras novas assinaturas de construtor, mas **sem confirmação de que compilam/passam** — é literalmente o próximo comando a rodar ao retomar (`dotnet build && dotnet test`, comando exato em `.specs/features/auth-email-senha/tasks.md`).
+
+**Frontend NÃO iniciado** — `LoginPage.tsx` ainda mostra o botão do Google, `UsuarioFormDialog.tsx` não tem campo de senha, não existe botão de "Redefinir senha" no Admin. Lista detalhada arquivo-a-arquivo em `.specs/features/auth-email-senha/tasks.md`.
+
+**Decisão consciente de manter o código do login Google no backend** (`POST /auth/google`, `AutenticarGoogleCommandHandler`, `GoogleTokenValidator`) em vez de remover — fica dormant, sem uso pelo frontend, mas pronto caso a decisão da TI mude no futuro.
+
+**Nota de sessão:** houve um erro pequeno ao criar a migration (`dotnet ef migrations add` com um `--output-dir` errado criou os arquivos numa pasta nova `Data/Migrations` em vez da pasta real `Migrations/`) — corrigido na hora (arquivos errados apagados, migration recriada no lugar certo). Se `dotnet ef migrations list` algum dia mostrar duplicidade ou a pasta `Data/Migrations` reaparecer, é resíduo desse erro que não devia mais existir.
+
+---
+
+**Sessão de 2026-07-24 (mais cedo, mesma sessão): feature de Anexos evoluída — anexar ao abrir/responder chamado, remover anexo (com RBAC real).** A pedido do usuário, testando a feature de Anexos (Fase 4) já em produção: (1) anexar arquivo(s) já na abertura do chamado e ao responder um comentário (antes só dava pra anexar depois, na tela de Detalhe) — múltiplos arquivos de uma vez, reaproveitando o endpoint de upload existente (`comentarioId` já era aceito pelo backend, só nunca tinha sido usado pelo frontend); (2) excluir anexo (exclusão de verdade — do Storage e do banco — com pop-up de confirmação), com RBAC real: Admin remove qualquer anexo, Atendente/Solicitante só os que eles mesmos enviaram (comparando com `EnviadoPorId`, que já vinha do token). Mudança de contrato sinalizada e aceita: `POST /chamados/{id}/comentarios` passou a retornar o comentário criado (antes era `204 No Content`) — necessário pra vincular o anexo ao comentário certo. `AnexoResponse` ganhou `EnviadoPorId` (aditivo). 216 testes de backend continuam passando, build de frontend limpo. **Verificado pelo usuário contra o Supabase real**, inclusive um caso real de arquivo órfão no Storage (sobra da limpeza geral de dados feita via SQL direto, que não chama a API de Storage) — identificado e limpo manualmente.
+
+**Nesta mesma sessão, a pedido do usuário: limpeza geral de dados de teste no Supabase real** (Chamados/Comentários/Anexos/HistoricoEntradas apagados via script direto no Postgres, mantendo Categorias e Usuários), sequência `ChamadosNumeroSeq` reiniciada pra 1. **Aprendizado registrado:** apagar direto via SQL não limpa o Storage — só o botão "Remover" do app (implementado nesta sessão) faz a limpeza dos dois lados.
+
+---
 
 **Sessão de 2026-07-21 (continuação): PR aberto acidentalmente contra `main` em vez de `develop`, mergeado, e corrigido.** O usuário criou o PR da branch `feature/anexos-storage` escolhendo `main` como destino por engano — o GitHub já tinha mergeado de verdade (não só aberto e fechado) antes de perceber. Diagnóstico: `main` e `develop` já estavam **exatamente idênticas** (mesmo commit, `4216f21`) antes desse acidente — então o merge não pulou nem quebrou nada, só deixou `main` 2 commits à frente de `develop` (a feature de Anexos). Correção aplicada: fast-forward simples de `develop` pros mesmos 2 commits (`git merge feature/anexos-storage` a partir de `develop`, sem conflito, sem revert). `develop` e `main` estão sincronizadas de novo em `72451a3`, build e 216 testes confirmados depois do fast-forward. **Nenhum dado ou código foi perdido — foi só uma questão de branch de destino, resolvida sem risco.** Lição prática: ao abrir PR neste repo, sempre conferir o dropdown `base` antes de confirmar — ele não fixa `develop` como lembrança, volta pro padrão do repo (`main`).
 
@@ -155,7 +200,7 @@ Outros 15 itens (6 Médio + 9 Baixo) **documentados em `.specs/codebase/CONCERNS
 | Banco dev e prod | PostgreSQL via Supabase — mesma instância para os dois ambientes |
 | Conexão Supabase | **Session pooler** (`aws-1-us-east-2.pooler.supabase.com:5432`), não "Direct connection" (IPv6-only) nem "Transaction pooler" (incompatível com prepared statements do EF Core) |
 | Senha do banco | `dotnet user-secrets` local (dev) — nunca em `appsettings.json` |
-| Auth | **Google Workspace (Sign in with Google)** — corrigido em 2026-06-25, não é Azure AD/Microsoft. Mockada na Fase 3-5, real na Fase 6. Contas são **por setor** (ex: autorizacao@camarj.com.br) — perfil (Admin/Atendente/Solicitante) derivado de mapeamento conta→perfil no backend |
+| Auth | **Email e senha** (PasswordHasher ASP.NET Core Identity). Login Google Workspace (T09/F5b) está implementado mas dormant — descontinuado porque o Client ID está fora do plano da CAMARJ (TI, 2026-07-24). Contas são por e-mail individual — perfil (Admin/Atendente/Solicitante) definido no cadastro pelo Admin |
 | Anexos | Supabase Storage — implementar na Fase 4 |
 | Email | MailKit IMAP — suporte@camarj.com.br / ti@camarj.com.br |
 | Frontend | React 19 + TS + Vite + TailwindCSS v4 + Shadcn/ui |
@@ -188,9 +233,10 @@ Nenhum.
 
 | Pendência | Detalhe |
 |-----------|---------|
-| Hospedagem em produção | Onde a API vai rodar (VM, Docker, Azure App Service etc.) — agora também bloqueia o redirect URI de produção do OAuth, ver `.specs/features/fase-6-admin-log/oauth-requisitos-ti.md` |
+| Hospedagem em produção | Onde a API vai rodar (VM, Docker, Azure App Service etc.) — não depende mais do OAuth do Google (login agora é e-mail/senha), mas segue em aberto |
 | Fase 4 (Email/IMAP) | Ainda não implementada — depende de senha de app do IMAP (`suporte@camarj.com.br`/`ti@camarj.com.br`), usuário ainda não tem |
-| Resposta da TI sobre o Client ID do Google OAuth | Documento entregue em 2026-07-18 (`oauth-requisitos-ti.md`). **T09/F5b já está implementado e esperando só esse valor** para funcionar de ponta a ponta — configurar via `dotnet user-secrets set "Auth:GoogleClientId" "<valor real>"` (backend) e `VITE_GOOGLE_CLIENT_ID` (frontend, criar `.env`) assim que a TI devolver |
+| ~~Resposta da TI sobre o Client ID do Google OAuth~~ | **OBSOLETO em 2026-07-24** — a TI informou que o Client ID está fora do plano da CAMARJ. Login Google (`AutenticarGoogleCommand`, T09/F5b) fica implementado mas dormant no backend; substituído por login e-mail/senha, ver `.specs/features/auth-email-senha/` |
+| ~~**Login e-mail/senha — retomar implementação**~~ | ✅ **CONCLUÍDO em 2026-07-27** — backend + frontend completos, 218 testes passando, migration `AddSenhaHashUsuarioPerfil` com Up/Down corretos, build limpo |
 
 ---
 

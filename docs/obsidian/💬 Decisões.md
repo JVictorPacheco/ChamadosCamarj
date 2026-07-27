@@ -36,6 +36,7 @@
 | Assinatura do JWT (T09) | Simétrica (`SymmetricSecurityKey`) em vez de assimétrica — mais simples pra um único backend emitindo e validando | 2026-07-18 |
 | Expiração do token (T09) | 8-12h, sem refresh token | 2026-07-18 |
 | Logout por inatividade (T09) | 20 minutos sem interação do usuário — ideia do próprio usuário ao ser questionado sobre o que fazer com sessões esquecidas abertas | 2026-07-18 |
+| Login email+senha | TI informou que o Google OAuth está fora do plano CAMARJ. Login ativo substituído por **email+senha** via ASP.NET Core Identity (`PasswordHasher`). Senhas definidas pelo Admin na tela `Admin > Usuários`. Código do Google OAuth mantido dormante — spec em `.specs/features/auth-email-senha/spec.md` | 2026-07-24 |
 
 ---
 
@@ -49,3 +50,4 @@
 | Fase 6 como próximo passo | Fase 6 quase completa (T01-T14); Fase 7 (Relatório Mensal) antecipada na frente de T09/T15 | 2026-07-14 |
 | Rosca do Dashboard como "eventos dos últimos 7 dias" | Corrigido para "foto do momento" (situação atual via `ContarPorStatusAsync`) — primeira tentativa usou `HistoricoEntrada`/período por engano | 2026-07-14/15 |
 | T09/T15 como pendente | **Implementado por completo em 2026-07-18** — falta só o Client ID real da TI | 2026-07-18 |
+| Google OAuth como login ativo | **Substituído por email+senha (2026-07-24)** — TI informou que o Client ID está fora do plano CAMARJ. Código Google OAuth mantido dormante | 2026-07-24 |

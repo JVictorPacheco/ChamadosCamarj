@@ -1,0 +1,87 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "opencode-go/deepseek-v4-flash",
+  "mcp": {
+    "shadcn": {
+      "type": "local",
+      "command": ["npx", "shadcn@latest", "mcp"]
+    },
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp"
+    },
+    "dotnet-context": {
+      "type": "local",
+      "command": ["npx", "dotnet-context-mcp@0.2.0"],
+      "description": "Analisa solução .NET com Roslyn: DbContexts, entidades, migrations, DI",
+      "enabled": true
+    },
+    "microsoft-learn": {
+      "type": "remote",
+      "url": "https://mcp.microsoft.com/learn",
+      "description": "Busca documentação oficial da Microsoft: ASP.NET Core, EF Core, Identity, C#",
+      "enabled": true
+    }
+  },
+  "command": {
+    "resumir-emails": {
+      "template": "!`powershell -NoProfile -File ler-emails.ps1 -Limite 10`\n\nLeia os arquivos .md na pasta emails/ (ordenados por data, mais recentes primeiro).\n\nSe houver mais de 3 emails, liste todos com um resumo de 1 linha cada (assunto + quem enviou).\nSe o usuario pedir detalhes de algum, leia o arquivo completo.\n\nFiltre:\n- Spam / notificacoes automaticas do Google: ignore (so mencione se perguntarem)\n- Emails de pessoas reais: resuma com atencao (quem, o que quer, qual urgencia)\n- Se houver solicitacao de chamado/help, destaque com prioridade\n\nResponda em portugues, tom direto, sem firula.",
+      "description": "Baixa e resume emails nao lidos do suporte@camarj.com.br",
+      "agent": "spec",
+      "model": "opencode-go/deepseek-v4-flash"
+    }
+  },
+  "agent": {
+    "spec": {
+      "mode": "primary",
+      "model": "opencode-go/deepseek-v4-flash",
+      "description": "Cria specs SDD — rápido e barato",
+      "temperature": 0.2,
+      "steps": 5,
+      "permission": {
+        "edit": "allow",
+        "bash": "deny"
+      }
+    },
+    "build-backend": {
+      "mode": "primary",
+      "model": "opencode-go/deepseek-v4-pro",
+      "description": "Implementa C#, .NET, EF Core, CQRS",
+      "temperature": 0.1,
+      "permission": {
+        "edit": "allow",
+        "bash": "allow"
+      }
+    },
+    "build-frontend": {
+      "mode": "primary",
+      "model": "opencode-go/deepseek-v4-pro",
+      "description": "Implementa React, TypeScript, Tailwind, shadcn",
+      "temperature": 0.1,
+      "permission": {
+        "edit": "allow",
+        "bash": "allow"
+      }
+    },
+    "review": {
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro",
+      "description": "Revisão de código, segurança e boas práticas",
+      "temperature": 0.1,
+      "permission": {
+        "edit": "deny",
+        "bash": "deny"
+      }
+    },
+    "explorar": {
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-flash",
+      "description": "Explora o código, busca referências",
+      "temperature": 0,
+      "permission": {
+        "edit": "deny",
+        "bash": "allow"
+      }
+    }
+  }
+}

@@ -17,6 +17,6 @@ public class ListarAnexosQueryHandler : IRequestHandler<ListarAnexosQuery, IEnum
     {
         var anexos = await _chamadoRepository.ObterAnexosPorChamadoAsync(request.ChamadoId, cancellationToken);
 
-        return anexos.Select(a => new AnexoResponse(a.Id, a.NomeArquivo, a.TipoArquivo, a.TamanhoBytes, a.EnviadoPorNome, a.DataCriacao));
+        return anexos.Select(a => new AnexoResponse(a.Id, a.NomeArquivo, a.TipoArquivo, a.TamanhoBytes, a.EnviadoPorId, a.EnviadoPorNome, a.DataCriacao));
     }
 }

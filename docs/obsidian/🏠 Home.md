@@ -16,7 +16,7 @@ Sistema interno para **gestão de chamados corporativos** da CAMARJ. Colaborador
 | [[👥 Perfis de Usuário]] | Admin, Atendente, Solicitante — permissões e fluxos |
 | [[📋 Histórico de Chamados]] | Log de auditoria do ciclo de vida *(Fase 6 ✅ implementado)* |
 | [[📧 Integração Email]] | Captura automática via IMAP/Gmail *(Fase 4 metade 2, não iniciada — falta senha de app do IMAP)* |
-| [[🔐 Google Workspace]] | Autenticação corporativa *(T09/T15 ✅ implementado — falta só o Client ID da TI)* |
+| [[🔐 Google Workspace]] | Login Google OAuth *(implementado mas DORMENTE — ativo é email+senha)* |
 | [[📦 Supabase Storage]] | Anexos em bucket S3 *(Fase 4 metade 1 ✅ implementado e verificado de ponta a ponta)* |
 | [[🗺️ Roadmap]] | Fases do desenvolvimento |
 | [[📈 Relatório Mensal]] | Relatório fechado do mês, exportação CSV/PDF *(Fase 7 ✅ implementado)* |
@@ -36,14 +36,14 @@ Sistema interno para **gestão de chamados corporativos** da CAMARJ. Colaborador
 ## 📍 Onde paramos (2026-07-21)
 
 - ✅ **Fases 0–3, 5 e 7 concluídas** — backend completo, frontend funcionando, Kanban/Dashboard/SignalR/Fila, Relatório Mensal
-- ✅ **Fase 6 praticamente completa** — Reatribuição Admin, Log de Histórico, Alterar Prioridade, Comentários Internos, F5a e T09/T15 (login Google real) implementados. Falta só o **Client ID real da TI** pro login funcionar de ponta a ponta
+- ✅ **Fase 6 praticamente completa** — Reatribuição Admin, Log de Histórico, Alterar Prioridade, Comentários Internos, F5a e T09/T15 (login Google real) implementados. Login ativo é **email+senha** via ASP.NET Core Identity (PasswordHasher) — login Google OAuth está dormante (TI não liberou o Client ID do plano)
 - ✅ **Arquivo de Chamados concluído** (2026-07-18) — tela separada pra chamados finalizados
 - ✅ **Forçar Encerramento concluído** (2026-07-19) — Admin fecha chamado direto de qualquer status não-final, motivo obrigatório auditado
 - ✅ **Número do Chamado concluído** (2026-07-19/20) — `CAM-{número}` sequencial, backfill dos existentes, busca por número no campo já existente
 - ✅ **RBAC real do Dashboard/Kanban/Fila concluído** (2026-07-20) — bloqueio de verdade pro Solicitante, mesmo padrão do Relatório Mensal
 - ✅ **Storage de Anexos concluído** (2026-07-21) — Fase 4 metade 1, upload/listagem/download via Supabase Storage, verificado de ponta a ponta contra o Supabase real
 - ✅ **Débito técnico da revisão sênior resolvido** (2026-07-17) — 15 itens de `CONCERNS.md` corrigidos
-- ⏭️ **Próximo:** aguardar Client ID da TI e senha de app do IMAP (Fase 4 metade 2 — Email); sem ordem confirmada além disso. Decisão de hospedagem em produção também pendente
+- ⏭️ **Próximo:** aguardar senha de app do IMAP (Fase 4 metade 2 — Email); sem ordem confirmada além disso. Decisão de hospedagem em produção também pendente
 
 ### Features implementadas na Fase 5 (e retrabalho de 2026-07-14/15)
 - Kanban com drag & drop (dnd-kit) entre status
@@ -62,4 +62,4 @@ Sistema interno para **gestão de chamados corporativos** da CAMARJ. Colaborador
 
 ---
 
-> *Última atualização: 2026-07-21/22 — Storage de Anexos concluído e verificado de ponta a ponta (Fase 4 metade 1); Forçar Encerramento, Número do Chamado e RBAC real do Dashboard/Kanban/Fila também concluídos. Revisão de processo (Spec-Driven Development) e de qualidade de código feita, com 1 correção de segurança em Anexos (nome de arquivo sanitizado) já em `develop`. Falta o Client ID da TI (login Google) e a senha de app do IMAP (Fase 4 metade 2 — Email). Ver [[🗺️ Roadmap]] para detalhes técnicos e `.specs/project/STATE.md` para as regras de processo do projeto.*
+> *Última atualização: 2026-07-24 — Auth migrada para email+senha (ASP.NET Core Identity/PasswordHasher). Login Google OAuth implementado mas dormante. Storage de Anexos, Forçar Encerramento, Número do Chamado e RBAC real do Dashboard/Kanban/Fila todos concluídos. Falta a senha de app do IMAP (Fase 4 metade 2 — Email). Ver [[🗺️ Roadmap]] para detalhes técnicos e `.specs/project/STATE.md` para as regras de processo do projeto.*

@@ -14,5 +14,6 @@ public enum AcaoHistorico
     ComentarioAdicionado = 7,
     PrioridadeAlterada = 8,
     StatusAlterado = 9,
-    EncerramentoForcado = 10
+    EncerramentoForcado = 10,
+    Reaberto = 11
 }

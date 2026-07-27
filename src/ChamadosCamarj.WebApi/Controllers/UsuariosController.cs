@@ -68,4 +68,21 @@ public class UsuariosController : ControllerBase
 
         return NoContent();
     }
+
+    /// <summary>
+    /// Redefine a senha de um usuário (somente Admin) — não depende de e-mail/token,
+    /// o Admin define a nova senha diretamente
+    /// </summary>
+    [HttpPatch("{id:guid}/senha")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RedefinirSenha(
+        Guid id,
+        [FromBody] RedefinirSenhaCommand command,
+        CancellationToken cancellationToken)
+    {
+        await _mediator.Send(command with { Id = id, PerfilRequisitante = _currentUser.Perfil }, cancellationToken);
+        return NoContent();
+    }
 }

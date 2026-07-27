@@ -8,5 +8,6 @@ public record CriarUsuarioPerfilCommand(
     string Email,
     string Nome,
     Perfil Perfil,
+    string Senha,
     string? PerfilRequisitante = null
 ) : IRequest<UsuarioPerfilResponse>;

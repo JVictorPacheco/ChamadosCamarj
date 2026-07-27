@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router'
 import {
   Sidebar,
@@ -12,6 +13,7 @@ import {
 } from '@/components/ui/sidebar'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { useAuth } from '@/auth/AuthContext'
 import { Kanban, LayoutDashboard, Inbox, FileBarChart, Users, Archive } from 'lucide-react'
 
@@ -19,6 +21,7 @@ export function AppLayout() {
   const { perfil, logout } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
+  const [confirmarLogout, setConfirmarLogout] = useState(false)
 
   const sair = () => {
     logout()
@@ -117,7 +120,7 @@ export function AppLayout() {
         <SidebarFooter>
           <div className="flex flex-col gap-2 px-2 py-1 text-sm">
             <span className="font-medium text-sidebar-foreground">{perfil?.nome}</span>
-            <Button variant="outline" size="sm" onClick={sair}>
+            <Button variant="outline" size="sm" onClick={() => setConfirmarLogout(true)}>
               Sair
             </Button>
           </div>
@@ -126,6 +129,22 @@ export function AppLayout() {
       <SidebarInset>
         <Outlet />
       </SidebarInset>
+      <Dialog open={confirmarLogout} onOpenChange={setConfirmarLogout}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Sair</DialogTitle>
+            <DialogDescription>Tem certeza que deseja sair do sistema?</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmarLogout(false)}>
+              Cancelar
+            </Button>
+            <Button variant="outline" onClick={() => { setConfirmarLogout(false); sair() }}>
+              Sair
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </SidebarProvider>
   )
 }

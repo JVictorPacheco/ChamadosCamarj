@@ -18,5 +18,9 @@ public class CriarUsuarioPerfilCommandValidator : AbstractValidator<CriarUsuario
 
         RuleFor(c => c.Perfil)
             .IsInEnum().WithMessage("Perfil inválido.");
+
+        RuleFor(c => c.Senha)
+            .NotEmpty().WithMessage("Senha é obrigatória.")
+            .MinimumLength(8).WithMessage("Senha deve ter no mínimo 8 caracteres.");
     }
 }

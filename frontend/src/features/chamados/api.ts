@@ -58,8 +58,8 @@ export function listarComentarios(chamadoId: string): Promise<ComentarioResponse
   return apiFetch<ComentarioResponse[]>(`/chamados/${chamadoId}/comentarios`)
 }
 
-export function comentar(chamadoId: string, dados: ComentarChamadoRequest): Promise<void> {
-  return apiFetch<void>(`/chamados/${chamadoId}/comentarios`, {
+export function comentar(chamadoId: string, dados: ComentarChamadoRequest): Promise<ComentarioResponse> {
+  return apiFetch<ComentarioResponse>(`/chamados/${chamadoId}/comentarios`, {
     method: 'POST',
     body: JSON.stringify(dados),
   })
@@ -95,6 +95,10 @@ export function fecharChamado(chamadoId: string): Promise<void> {
 
 export function cancelarChamado(chamadoId: string): Promise<void> {
   return apiFetch<void>(`/chamados/${chamadoId}/cancelar`, { method: 'PATCH' })
+}
+
+export function reabrirChamado(chamadoId: string): Promise<void> {
+  return apiFetch<void>(`/chamados/${chamadoId}/reabrir`, { method: 'PATCH' })
 }
 
 export interface ReatribuirRequest {
@@ -142,6 +146,10 @@ export function listarAnexos(chamadoId: string): Promise<AnexoResponse[]> {
 
 export function obterUrlDownloadAnexo(chamadoId: string, anexoId: string): Promise<{ url: string }> {
   return apiFetch<{ url: string }>(`/chamados/${chamadoId}/anexos/${anexoId}/download-url`)
+}
+
+export function removerAnexo(chamadoId: string, anexoId: string): Promise<void> {
+  return apiFetch<void>(`/chamados/${chamadoId}/anexos/${anexoId}`, { method: 'DELETE' })
 }
 
 export function listarHistorico(chamadoId: string): Promise<HistoricoResponse[]> {

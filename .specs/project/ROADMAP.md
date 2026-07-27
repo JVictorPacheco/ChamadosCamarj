@@ -1,6 +1,6 @@
 # Roadmap — ChamadosCamarj
 
-> Última atualização: 2026-07-21
+> Última atualização: 2026-07-27
 
 ## ✅ Fase 0 — Setup
 
@@ -85,11 +85,15 @@
 - [x] `StorageService` (Supabase Storage S3) — `SupabaseStorageService`, pacote NuGet `Supabase`, bucket `chamados-anexos`
 - [x] Upload/download de anexos no portal — upload multipart (PDF/imagens/Word/Excel/ZIP, máx 10MB), listagem, download via URL assinada (expira 1h). `Anexo.EnviadoPorId/Nome` via `ICurrentUserService` (não client-supplied)
 - [x] Verificado de ponta a ponta contra o Supabase Storage real: upload, listagem, geração de URL e download real (conteúdo conferido byte a byte)
-- **2 bugs reais encontrados e corrigidos:** (1) API não subia sem a Service Role Key configurada — `ValidateOnBuild` do ASP.NET Core, corrigido com `NullStorageService` como fallback; (2) SDK `Supabase` v1.3.0 devolve `CreateSignedUrl` com um `?` sobrando no final, quebrando o JWT — corrigido com `TrimEnd('?')`. Ver `STATE.md` (Aprendizados) pro detalhe completo
+- [x] **Anexar já ao abrir chamado ou ao responder um comentário** (2026-07-24) — antes só dava na tela de Detalhe; múltiplos arquivos de uma vez, reaproveita o `comentarioId` que o backend já aceitava
+- [x] **Remover anexo (2026-07-24)** — exclusão real (Storage + banco), pop-up de confirmação, RBAC real: Admin remove qualquer um, Atendente/Solicitante só o que enviaram. Reverte a decisão original "nunca remove anexo" — ver `.specs/features/anexos-storage/spec.md`
+- **2 bugs reais encontrados e corrigidos (2026-07-21):** (1) API não subia sem a Service Role Key configurada — `ValidateOnBuild` do ASP.NET Core, corrigido com `NullStorageService` como fallback; (2) SDK `Supabase` v1.3.0 devolve `CreateSignedUrl` com um `?` sobrando no final, quebrando o JWT — corrigido com `TrimEnd('?')`. Ver `STATE.md` (Aprendizados) pro detalhe completo
 
-## 🔐 Fase 6 — Admin Completo + Log + Google Workspace (CÓDIGO COMPLETO — falta só o Client ID da TI)
+## 🔐 Fase 6 — Admin Completo + Log + Google Workspace (código do Google MANTIDO, mas SUBSTITUÍDO por login e-mail/senha)
 
-> **Pausada em 2026-07-14, retomada em 2026-07-15/18.** T01-T14 mergeados em 2026-07-15; F5a implementada em 2026-07-16; T09/F5b/T15 (login real Google) implementados em 2026-07-18. Falta só o Client ID real da TI (documento já entregue) pro login funcionar de ponta a ponta em ambiente real.
+> **ATUALIZAÇÃO 2026-07-24: a TI informou que o Client ID do Google OAuth está fora do plano da CAMARJ** — não é mais uma questão de aguardar, é uma mudança de direção. O login real via Google (T09/F5b, descrito abaixo) segue implementado e commitado, mas não vai ser usado em produção. Decisão: login por **e-mail + senha** no lugar do botão do Google, reaproveitando toda a infraestrutura de JWT/RBAC já existente. Ver `.specs/features/auth-email-senha/` (spec + tasks) para o detalhe completo — feature **EM ANDAMENTO**, começada em 2026-07-24.
+
+> **Pausada em 2026-07-14, retomada em 2026-07-15/18.** T01-T14 mergeados em 2026-07-15; F5a implementada em 2026-07-16; T09/F5b/T15 (login real Google) implementados em 2026-07-18 — histórico abaixo preservado como está, mesmo com a mudança de direção do login.
 
 > Corrigido em 2026-06-25: Camarj usa Google Workspace (Gmail corporativo), não Azure AD.
 > Planejado em 2026-07-01: features de Admin e auditoria.
@@ -157,3 +161,17 @@
 > As 3 telas só escondiam o link da sidebar pro Solicitante, sem bloquear a rota de verdade. Aplicado o mesmo padrão já usado em Relatório Mensal/Admin > Usuários.
 
 - [x] Bloqueio real (Alert + "Voltar") nas 3 telas pro Solicitante — sem guard novo no backend (mesma decisão do Relatório Mensal, dado não é mais sensível entre Admin/Atendente)
+
+## 🔐 Auth por E-mail e Senha (CONCLUÍDA — 2026-07-27)
+
+> Substitui o login Google OAuth (fora do plano da CAMARJ). Spec/design/tasks completos em `.specs/features/auth-email-senha/`. Decisão tomada em 2026-07-24: Google OAuth não vai poder ser usado em produção. Login por email+senha implementado.
+
+- [x] AUTH-01: Coluna `SenhaHash` + migration `AddSenhaHashUsuarioPerfil`
+- [x] AUTH-02: `IJwtTokenService` extraído e compartilhado
+- [x] AUTH-03: `POST /auth/login` (email+senha) — backend
+- [x] AUTH-04: Cadastro de usuário exige senha inicial (mín 8 caracteres)
+- [x] AUTH-05: `PATCH /usuarios/{id}/senha` (Admin redefine)
+- [x] AUTH-06: Testes unitários atualizados — 218 testes passando
+- [x] AUTH-07: Frontend: tela de login (email+senha) — substitui GoogleLogin
+- [x] AUTH-08: Frontend: campo de senha no cadastro de usuário
+- [x] AUTH-09: Frontend: botão "Redefinir senha" no Admin

@@ -1,14 +1,9 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using Google.Apis.Auth;
 using MediatR;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using ChamadosCamarj.Application.Common;
 using ChamadosCamarj.Application.Common.Exceptions;
 using ChamadosCamarj.Application.Features.Auth.DTOs;
-using ChamadosCamarj.Domain.Entities;
 using ChamadosCamarj.Domain.Interfaces;
 
 namespace ChamadosCamarj.Application.Features.Auth.Commands;
@@ -19,15 +14,18 @@ public class AutenticarGoogleCommandHandler : IRequestHandler<AutenticarGoogleCo
 
     private readonly IUsuarioPerfilRepository _usuarioPerfilRepository;
     private readonly IGoogleTokenValidator _googleTokenValidator;
+    private readonly IJwtTokenService _jwtTokenService;
     private readonly AuthSettings _authSettings;
 
     public AutenticarGoogleCommandHandler(
         IUsuarioPerfilRepository usuarioPerfilRepository,
         IGoogleTokenValidator googleTokenValidator,
+        IJwtTokenService jwtTokenService,
         IOptions<AuthSettings> authSettings)
     {
         _usuarioPerfilRepository = usuarioPerfilRepository;
         _googleTokenValidator = googleTokenValidator;
+        _jwtTokenService = jwtTokenService;
         _authSettings = authSettings.Value;
     }
 
@@ -56,31 +54,8 @@ public class AutenticarGoogleCommandHandler : IRequestHandler<AutenticarGoogleCo
         if (usuario is null || !usuario.Ativo)
             throw new ForbiddenException("E-mail não cadastrado — peça a um Admin para te cadastrar.");
 
-        var token = GerarToken(usuario);
+        var token = _jwtTokenService.GerarToken(usuario);
 
         return new AutenticacaoResponse(token, usuario.Id, usuario.Nome, usuario.Email, usuario.Perfil);
-    }
-
-    private string GerarToken(UsuarioPerfil usuario)
-    {
-        var chave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_authSettings.JwtSigningKey));
-        var credenciais = new SigningCredentials(chave, SecurityAlgorithms.HmacSha256);
-
-        var claims = new[]
-        {
-            new Claim(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, usuario.Email),
-            new Claim(ClaimTypes.Name, usuario.Nome),
-            new Claim("perfil", usuario.Perfil.ToString()),
-        };
-
-        var token = new JwtSecurityToken(
-            issuer: "ChamadosCamarj",
-            audience: "ChamadosCamarj.Frontend",
-            claims: claims,
-            expires: DateTime.UtcNow.AddHours(_authSettings.TokenExpiracaoHoras),
-            signingCredentials: credenciais);
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }

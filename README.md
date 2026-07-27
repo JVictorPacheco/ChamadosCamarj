@@ -7,9 +7,9 @@ Sistema de gestão de chamados corporativos da CAMARJ.
 - **Backend:** .NET 9 + Clean Architecture + CQRS (MediatR)
 - **Frontend:** React + TypeScript + Vite + TailwindCSS + Shadcn/ui
 - **Banco:** PostgreSQL (Supabase) — dev e prod na mesma instância
-- **Auth:** Google Workspace (Sign in with Google) — mockada até a Fase 6 (T09/T15)
+- **Auth:** Email e senha (PasswordHasher ASP.NET Core Identity)
 - **Email:** MailKit (IMAP) — Fase 4, ainda não implementado
-- **Anexos:** Supabase Storage (S3) — Fase 4, ainda não implementado
+- **Anexos:** Supabase Storage (S3) — implementado
 
 ## Estrutura
 
@@ -55,7 +55,7 @@ tests/
    npm install
    npm run dev
    ```
-   Acesse `http://localhost:5173`. O login é um seletor de perfil mockado (Admin/Atendente/Solicitante) salvo em `localStorage` — ainda não há login Google real.
+   Acesse `http://localhost:5173`. O login é por e-mail e senha (usuários cadastrados pelo Admin).
 
 > Dev e produção apontam para o **mesmo banco Supabase** — qualquer requisição feita localmente grava dados reais.
 

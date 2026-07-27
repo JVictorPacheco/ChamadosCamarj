@@ -81,6 +81,6 @@ Admin pode reatribuir em qualquer etapa não-final
 
 ## Autenticação
 
-[[🔐 Google Workspace]] — Login corporativo Gmail, **implementado (T09/T15, 2026-07-18)**. Falta só o Client ID real da TI pra funcionar de ponta a ponta.
+**Login ativo: email+senha** via ASP.NET Core Identity (`PasswordHasher`). Senhas são definidas pelo Admin ao cadastrar/editar o usuário na tela `Admin > Usuários`. Login Google OAuth está implementado mas **dormante** (TI informou que o Client ID está fora do plano CAMARJ). Spec em `.specs/features/auth-email-senha/spec.md`.
 
-> Perfil (Admin/Atendente/Solicitante) vem do JWT emitido no login com Google, buscado na tabela `UsuarioPerfil` (cadastrada/gerenciada pelo Admin em `Admin > Usuários`, ver F5a). Um e-mail `@camarj.com.br` sem cadastro recebe 403 ao tentar entrar.
+> Perfil (Admin/Atendente/Solicitante) vem do JWT emitido no login, buscado na tabela `UsuarioPerfil` (cadastrada/gerenciada pelo Admin em `Admin > Usuários`, ver F5a). Usuário sem cadastro não consegue entrar.
