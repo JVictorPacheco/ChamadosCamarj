@@ -241,6 +241,7 @@ Nenhum.
 | **Novas categorias + renomear existente** | **NOVO (2026-07-27).** Adicionar: Credenciado, Comercial, Contas Médicas. Renomear "Autorização" → "Autorização/Auditoria". Total: 8 categorias. **Ainda sem spec.** |
 | **Tema claro (light mode)** | **NOVO (2026-07-27).** Hoje só existe tema escuro. Adicionar toggle claro/escuro (padrão do shadcn/ui via `next-themes` ou CSS custom properties), respeitando a preferência do sistema. Afeta todas as telas. **Ainda sem spec.** |
 | **Logo CAMARJ no header/sidebar** | **NOVO (2026-07-27).** O logo da CAMARJ já aparece na tela de login, mas não no layout principal (sidebar/header do AppLayout). Adicionar o logo no topo da sidebar pra identidade visual. **Ainda sem spec.** |
+| **Toggle mostrar/ocultar senha (olhinho)** | **NOVO (2026-07-27).** Campos de senha (login, cadastro de usuário, redefinir senha, resetar senha) não têm botão pra revelar a senha digitada. Adicionar ícone de olho (👁) que alterna `type="password"` ↔ `type="text"`. **Ainda sem spec.** |
 
 ---
 
