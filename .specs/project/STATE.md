@@ -237,6 +237,8 @@ Nenhum.
 | Fase 4 (Email/IMAP) | Ainda não implementada — depende de senha de app do IMAP (`suporte@camarj.com.br`/`ti@camarj.com.br`), usuário ainda não tem |
 | ~~Resposta da TI sobre o Client ID do Google OAuth~~ | **OBSOLETO em 2026-07-24** — a TI informou que o Client ID está fora do plano da CAMARJ. Login Google (`AutenticarGoogleCommand`, T09/F5b) fica implementado mas dormant no backend; substituído por login e-mail/senha, ver `.specs/features/auth-email-senha/` |
 | ~~**Login e-mail/senha — retomar implementação**~~ | ✅ **CONCLUÍDO em 2026-07-27** — backend + frontend completos, 218 testes passando, migration `AddSenhaHashUsuarioPerfil` com Up/Down corretos, build limpo |
+| **Grupos/Equipes para visualização de chamados** | **NOVO (2026-07-27).** Usuários pertencem a um grupo (ex: Reembolso, Credenciado, etc.). Atendentes do mesmo grupo podem ver e interagir nos chamados uns dos outros — útil quando alguém sai de férias e o colega da mesma área precisa dar continuidade. **Ainda sem spec.** |
+| **Novas categorias + renomear existente** | **NOVO (2026-07-27).** Adicionar: Credenciado, Comercial, Contas Médicas. Renomear "Autorização" → "Autorização/Auditoria". Total: 8 categorias. **Ainda sem spec.** |
 
 ---
 
