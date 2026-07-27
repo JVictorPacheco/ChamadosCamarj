@@ -199,4 +199,5 @@
 - [ ] Toggle claro/escuro no AppLayout (via shadcn/ui ou CSS custom properties)
 - [ ] Respeitar preferência do sistema (`prefers-color-scheme`)
 - [ ] Logo CAMARJ no topo da sidebar (já existe na LoginPage, só adicionar no AppLayout)
+- [ ] Toggle mostrar/ocultar senha (ícone de olho 👁) em todos os campos de senha
 - [ ] Ainda sem spec — próxima sessão SDD
