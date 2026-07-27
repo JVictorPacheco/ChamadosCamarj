@@ -4,7 +4,7 @@
 - **Backend:** .NET 9 + Clean Architecture + CQRS (MediatR)
 - **Frontend:** React 19 + TS + Vite + TailwindCSS v4 + Shadcn/ui
 - **Banco:** PostgreSQL (Supabase)
-- **Auth:** Google Workspace (mock até Client ID da TI)
+- **Auth:** Email e senha via ASP.NET Core Identity (PasswordHasher)
 - **Anexos:** Supabase Storage
 - **Testes:** xUnit (backend) + Playwright (frontend E2E)
 

@@ -1,5 +1,7 @@
 # 🔐 Google Workspace — Autenticação Corporativa
 
+> ⚠️ **DORMENTE (2026-07-24):** O login Google OAuth está implementado mas DORMENTE — a TI informou que o Client ID está fora do plano da CAMARJ. O login ativo é por email+senha (ver spec em `.specs/features/auth-email-senha/spec.md`).
+
 > ⚠️ Decisão corrigida em 2026-06-25: a CAMARJ usa **Google Workspace** (Gmail corporativo), não Azure AD/Microsoft como assumido anteriormente.
 
 ## Por quê Google Workspace?

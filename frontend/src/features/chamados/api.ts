@@ -97,6 +97,10 @@ export function cancelarChamado(chamadoId: string): Promise<void> {
   return apiFetch<void>(`/chamados/${chamadoId}/cancelar`, { method: 'PATCH' })
 }
 
+export function reabrirChamado(chamadoId: string): Promise<void> {
+  return apiFetch<void>(`/chamados/${chamadoId}/reabrir`, { method: 'PATCH' })
+}
+
 export interface ReatribuirRequest {
   novoResponsavelId: string
   novoResponsavelNome: string

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/auth/AuthContext'
@@ -21,6 +21,7 @@ export function UsuariosPage() {
   const [usuarioSelecionado, setUsuarioSelecionado] = useState<UsuarioPerfilResponse | null>(null)
   const [alternandoId, setAlternandoId] = useState<string | null>(null)
   const [erroAlternar, setErroAlternar] = useState<string | null>(null)
+  const [usuarioAlternar, setUsuarioAlternar] = useState<UsuarioPerfilResponse | null>(null)
   const [redefinindoUsuario, setRedefinindoUsuario] = useState<UsuarioPerfilResponse | null>(null)
   const [novaSenha, setNovaSenha] = useState('')
   const [erroSenha, setErroSenha] = useState<string | null>(null)
@@ -125,7 +126,7 @@ export function UsuariosPage() {
                       variant={usuario.ativo ? 'destructive' : 'outline'}
                       size="sm"
                       disabled={alternandoId === usuario.id}
-                      onClick={() => alternarAtivo(usuario)}
+                      onClick={() => setUsuarioAlternar(usuario)}
                     >
                       {alternandoId === usuario.id ? '...' : usuario.ativo ? 'Desativar' : 'Reativar'}
                     </Button>
@@ -138,6 +139,36 @@ export function UsuariosPage() {
       )}
 
       <UsuarioFormDialog open={dialogAberto} onOpenChange={setDialogAberto} usuario={usuarioSelecionado} />
+
+      <Dialog open={!!usuarioAlternar} onOpenChange={(open) => { if (!open) setUsuarioAlternar(null) }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{usuarioAlternar?.ativo ? 'Desativar usuário' : 'Reativar usuário'}</DialogTitle>
+            <DialogDescription>
+              {usuarioAlternar?.ativo
+                ? `Tem certeza que deseja desativar ${usuarioAlternar?.nome}? O usuário não poderá fazer login.`
+                : `Tem certeza que deseja reativar ${usuarioAlternar?.nome}?`
+              }
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setUsuarioAlternar(null)}>
+              Cancelar
+            </Button>
+            <Button
+              variant={usuarioAlternar?.ativo ? 'destructive' : 'default'}
+              disabled={alternandoId === usuarioAlternar?.id}
+              onClick={() => {
+                if (!usuarioAlternar) return
+                alternarAtivo(usuarioAlternar)
+                setUsuarioAlternar(null)
+              }}
+            >
+              {alternandoId === usuarioAlternar?.id ? '...' : 'Confirmar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!redefinindoUsuario} onOpenChange={(open) => { if (!open) setRedefinindoUsuario(null) }}>
         <DialogContent>

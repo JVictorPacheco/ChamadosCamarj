@@ -4,6 +4,7 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { ApiError } from '@/lib/api'
 import { AuthProvider, useAuth } from './auth/AuthContext'
 import { LoginPage } from './auth/LoginPage'
+import { ResetarSenhaPage } from './auth/ResetarSenhaPage'
 import { AppLayout } from './layouts/AppLayout'
 import { SignalRProvider } from './hooks/useSignalR'
 import { AbrirChamadoPage } from './features/chamados/AbrirChamadoPage'
@@ -71,6 +72,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<LoginRoute />} />
+      <Route path="/resetar-senha" element={<ResetarSenhaPage />} />
       <Route element={<ProtectedRoute />}>
         <Route path="/chamados" element={<ChamadosListPage />} />
         <Route path="/chamados/novo" element={<AbrirChamadoPage />} />

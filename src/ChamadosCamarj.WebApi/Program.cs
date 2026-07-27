@@ -63,6 +63,15 @@ builder.Services.AddScoped<IGoogleTokenValidator, GoogleTokenValidator>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IPasswordHasher<UsuarioPerfil>, PasswordHasher<UsuarioPerfil>>();
 
+builder.Services.AddScoped<IEmailSender>(_ =>
+{
+    var smtpEmail = builder.Configuration["Email:SmtpEmail"] ?? "suporte@camarj.com.br";
+    var smtpSenha = builder.Configuration["Email:SmtpSenha"];
+    if (string.IsNullOrWhiteSpace(smtpSenha))
+        throw new InvalidOperationException("'Email:SmtpSenha' não configurada. Use dotnet user-secrets set.");
+    return new SmtpEmailSender(smtpEmail, smtpSenha);
+});
+
 // ─────────────────────────────
 // Supabase Storage (Anexos) — Fase 4, metade 1
 // ─────────────────────────────

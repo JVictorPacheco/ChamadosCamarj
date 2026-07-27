@@ -184,6 +184,18 @@ public class ChamadosController : ControllerBase
     }
 
     /// <summary>
+    /// Reabre um chamado que foi resolvido, fechado ou cancelado
+    /// </summary>
+    [HttpPatch("{id:guid}/reabrir")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Reabrir(Guid id, CancellationToken cancellationToken)
+    {
+        await _mediator.Send(new ReabrirChamadoCommand(id, _currentUser.UsuarioId, _currentUser.Nome), cancellationToken);
+        return NoContent();
+    }
+
+    /// <summary>
     /// Força o encerramento de um chamado a partir de qualquer status não-final, com justificativa obrigatória (Admin)
     /// </summary>
     [HttpPatch("{id:guid}/forcar-encerramento")]

@@ -1,7 +1,7 @@
 # Spec — Login por E-mail e Senha (substitui Google OAuth)
 
-> Status: **EM ANDAMENTO** — backend quase completo (falta confirmar build/testes depois das últimas correções), frontend não iniciado.
-> Criado em: 2026-07-24.
+> Status: **CONCLUÍDO** — backend + frontend implementados, 218 testes passando, build limpo.
+> Criado em: 2026-07-24. Concluído em: 2026-07-27.
 > Decidido com o usuário na mesma sessão em que foi criado — ver `.specs/project/STATE.md` (sessão 2026-07-24) pro contexto completo da conversa.
 
 ## Problem Statement
@@ -73,8 +73,8 @@ Decisão: substituir "Sign in with Google" por login tradicional **e-mail + senh
 | AUTH-04 | Cadastro de usuário exige senha inicial | ✅ Done (backend) |
 | AUTH-05 | `PATCH /usuarios/{id}/senha` (Admin redefine) | ✅ Done (backend) |
 | AUTH-06 | Testes unitários atualizados pros novos construtores | ✅ Done (não verificado com `dotnet build`/`dotnet test` ainda — ver `tasks.md`) |
-| AUTH-07 | Frontend: tela de login (email+senha) | ⏳ Pending |
-| AUTH-08 | Frontend: campo de senha no cadastro de usuário | ⏳ Pending |
-| AUTH-09 | Frontend: botão "Redefinir senha" no Admin | ⏳ Pending |
+| AUTH-07 | Frontend: tela de login (email+senha) | ✅ Done |
+| AUTH-08 | Frontend: campo de senha no cadastro de usuário | ✅ Done |
+| AUTH-09 | Frontend: botão "Redefinir senha" no Admin | ✅ Done |
 
-**Coverage:** 9 total, 6 done (backend), 3 pending (frontend). Ver `tasks.md` para o detalhe arquivo-a-arquivo de como retomar.
+**Coverage:** 9 total, 9 done. Ver `tasks.md` para o detalhe.

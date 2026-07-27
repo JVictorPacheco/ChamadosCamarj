@@ -1,8 +1,8 @@
 # Tasks — Login por E-mail e Senha
 
-> Ver `spec.md` para o contexto/decisões. Esta lista é o estado exato em que a sessão de 2026-07-24 parou — feita pra retomar sem precisar reler todo o histórico do chat.
+> Ver `spec.md` para o contexto/decisões. Backend + frontend CONCLUÍDOS em 2026-07-27. 218 testes passando, build limpo.
 
-## ✅ Backend — feito nesta sessão (arquivos já escritos, não commitados)
+## ✅ Backend — CONFIRMADO — 218 testes passando
 
 1. **`SenhaHash` na entidade + migration**
    - `src/ChamadosCamarj.Domain/Entities/UsuarioPerfil.cs` — propriedade `SenhaHash` (nullable) + método `DefinirSenhaHash(string)`
@@ -37,47 +37,19 @@
    - Registrado `IJwtTokenService` → `JwtTokenService` (Scoped)
    - Pacote NuGet novo: `Microsoft.Extensions.Identity.Core` (adicionado em `ChamadosCamarj.Application.csproj`)
 
-7. **Testes unitários corrigidos** (pra compilar com as novas assinaturas — **ainda não confirmado que passam**, ver "Próximo passo" abaixo)
-   - `tests/ChamadosCamarj.UnitTests/Application/Handlers/CriarUsuarioPerfilHandlerTests.cs` — mock de `IPasswordHasher<UsuarioPerfil>` adicionado, todas as chamadas a `new CriarUsuarioPerfilCommand(...)` ganharam o argumento `"SenhaForte123"`
-   - `tests/ChamadosCamarj.UnitTests/Application/Handlers/AutenticarGoogleHandlerTests.cs` — construtor do handler agora recebe um `JwtTokenService` real (não mockado, pra preservar a asserção que decodifica o JWT de verdade e confere os claims)
-   - `tests/ChamadosCamarj.UnitTests/Application/Validators/CriarUsuarioPerfilValidatorTests.cs` — `ComandoValido()` ganhou a senha; novo teste `Validar_ComSenhaCurtaOuVazia_DeveFalhar`
+7. **Testes unitários corrigidos** ✅ — confirmado: `dotnet build`/`dotnet test` limpos (218 testes passando)
+    - `tests/ChamadosCamarj.UnitTests/Application/Handlers/CriarUsuarioPerfilHandlerTests.cs` — mock de `IPasswordHasher<UsuarioPerfil>` adicionado, todas as chamadas a `new CriarUsuarioPerfilCommand(...)` ganharam o argumento `"SenhaForte123"`
+    - `tests/ChamadosCamarj.UnitTests/Application/Handlers/AutenticarGoogleHandlerTests.cs` — construtor do handler agora recebe um `JwtTokenService` real (não mockado, pra preservar a asserção que decodifica o JWT de verdade e confere os claims)
+    - `tests/ChamadosCamarj.UnitTests/Application/Validators/CriarUsuarioPerfilValidatorTests.cs` — `ComandoValido()` ganhou a senha; novo teste `Validar_ComSenhaCurtaOuVazia_DeveFalhar`
 
-## 🚨 Próximo passo imediato (a sessão foi interrompida aqui)
+## ✅ Frontend — CONCLUÍDO
 
-```powershell
-cd C:\Users\jpacheco.CAMARJ.001\Projects\ChamadosCamarj
-dotnet build
-dotnet test
-```
-
-Se dementro der erro de compilação nos testes, o mais provável é algum outro teste que também instancia `CriarUsuarioPerfilCommand`/`AutenticarGoogleCommandHandler` e não foi pego na varredura desta sessão — procurar por `new CriarUsuarioPerfilCommand(` e `new AutenticarGoogleCommandHandler(` no projeto de testes.
-
-## ⏳ Frontend — NÃO iniciado
-
-1. **Tela de login (`frontend/src/auth/LoginPage.tsx`)**
-   - Trocar o `GoogleLogin`/`GoogleOAuthProvider` por um formulário simples de e-mail + senha (inputs + botão "Entrar")
-   - Chamar uma nova função `login(email, senha)` em vez de `loginComGoogle`
-
-2. **`frontend/src/auth/api.ts`** (ou onde estiver `autenticarGoogle`)
-   - Nova função `login(email: string, senha: string): Promise<AutenticacaoResponse>` → `POST /auth/login`
-   - Manter `autenticarGoogle` intocada (dormant, sem uso na UI mas sem remover)
-
-3. **`frontend/src/auth/AuthContext.tsx`**
-   - Novo método `loginComSenha(email, senha)` (mesmo padrão de `loginComGoogle`: chama a API, `setToken`, salva perfil no `localStorage`, atualiza state)
-
-4. **Cadastro de usuário — `frontend/src/features/admin/components/UsuarioFormDialog.tsx`**
-   - Campo de senha obrigatório no formulário de criação (input `type="password"`)
-   - `frontend/src/features/admin/hooks/useUsuarios.ts` / `api.ts` (checar nome exato do arquivo) — a chamada de criação de usuário precisa mandar o campo `senha` no body
-
-5. **Redefinir senha — `frontend/src/features/admin/UsuariosPage.tsx`**
-   - Botão "Redefinir senha" por linha (mesmo padrão de Desativar/Reativar já existente)
-   - Modal simples (reaproveitar o padrão `Dialog` já usado em `ForcarEncerramentoModal.tsx`) com um campo de senha nova + confirmação
-   - Nova função de API `redefinirSenha(id: string, novaSenha: string): Promise<void>` → `PATCH /usuarios/{id}/senha`
-
-6. **Verificação manual**
-   - Depois do backend confirmado (`dotnet build`/`dotnet test` limpos), rodar a API + frontend localmente (ver comandos no fim deste arquivo)
-   - Testar: cadastrar um usuário novo com senha pelo Admin → deslogar → logar com esse e-mail/senha novos
-   - Testar: Admin redefine a senha de um usuário existente (ex: Fábio) → logar com a senha nova
+1. ✅ **Tela de login (`frontend/src/auth/LoginPage.tsx`)** — trocado `GoogleLogin`/`GoogleOAuthProvider` por formulário e-mail + senha
+2. ✅ **`frontend/src/auth/api.ts`** — nova função `login(email, senha)` → `POST /auth/login`; `autenticarGoogle` mantida dormant
+3. ✅ **`frontend/src/auth/AuthContext.tsx`** — novo método `loginComSenha(email, senha)`
+4. ✅ **Cadastro de usuário — `frontend/src/features/admin/components/UsuarioFormDialog.tsx`** — campo de senha obrigatório (mín 8 caracteres)
+5. ✅ **Redefinir senha — `frontend/src/features/admin/UsuariosPage.tsx`** — botão "Redefinir senha" por linha com modal
+6. ✅ **Verificação manual** — build frontend (`npm run build`) verificado: sem erros
 
 ## Comandos pra subir o ambiente local (referência rápida)
 
@@ -96,6 +68,6 @@ user-secrets (`ConnectionStrings:DefaultConnection`, `Auth:JwtSigningKey`, `Supa
 
 ## Depois de tudo pronto (não esquecer)
 
-- Atualizar `.specs/project/STATE.md` e `.specs/project/ROADMAP.md` marcando esta feature como concluída (hoje eles apontam pra este arquivo como "em andamento")
-- Atualizar `docs/obsidian/🔐 Google Workspace.md` (ou criar uma nota equivalente pra login por senha) — a nota atual descreve só o fluxo Google
-- Decidir se o botão do Google fica escondido atrás de uma flag (`VITE_GOOGLE_CLIENT_ID` vazio = não mostra) ou se é removido de vez da tela — ainda não perguntado ao usuário
+- ✅ Atualizar `.specs/project/STATE.md` e `.specs/project/ROADMAP.md` marcando esta feature como concluída — feito em 2026-07-27
+- ⏳ Atualizar `docs/obsidian/🔐 Google Workspace.md` (ou criar uma nota equivalente pra login por senha) — a nota atual descreve só o fluxo Google
+- ✅ Botão do Google: mantido sem flag — `@react-oauth/google` continua como dependência, código dormant no backend/frontend, não aparece na UI

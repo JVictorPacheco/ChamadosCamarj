@@ -38,8 +38,14 @@
 - Senha do Victor configurada: `Teste123!` — os demais usuários (Fábio, Ana, Letícia) precisam ter senha definida via Admin → Redefinir senha
 - Porta 5000 ocupada pelo AirPlay do macOS — usar `http://localhost:5002` para API no Mac. `.env` do frontend criado com `VITE_API_BASE_URL=http://localhost:5000/api` (porta normal, só mudar pra 5002 no Mac)
 - Context7 MCP configurado (remote), `dotnet-context-mcp@0.2.0` (local), `shadcn` (local via `.mcp.json`)
-- **FIX ME:** recriar a migration `AddSenhaHashUsuarioPerfil` com o `Up()` da coluna — hoje só existe manualmente no Supabase, não em migration real. Se fizer deploy em outro ambiente, a coluna não será criada
-- **Pendente:** aplicar migration e testar login de ponta a ponta no Windows
+
+**Sessão de 2026-07-27 — feature auth-email-senha CONCLUÍDA + docs cleanup.**
+- Frontend UX: confirmation dialogs adicionados para Encerrar, Cancelar, Resolver, Desativar/Reativar usuário, Logout
+- Migration `AddSenhaHashUsuarioPerfil` corrigida — `Up()` e `Down()` preenchidos corretamente, coluna `SenhaHash` criada pela migration (não mais manual no Supabase)
+- ROADMAP.md: seção duplicada removida
+- Docs cleanup: README.md, AGENTS.md, STATE.md, HANDOFF.md, spec.md, tasks.md atualizados
+- Build: 0 erros, 218 testes passando, `npm run build` limpo
+- Feature auth-email-senha: spec marcada como CONCLUÍDO, todos os 9 requisitos (AUTH-01 a AUTH-09) ✅
 
 **Sessão de 2026-07-21 (continuação): revisão de processo (SDD) + qualidade de código (features recentes) contra documentação oficial.** Usuário pediu leitura de specdriven.ai (metodologia canônica de Spec-Driven Development) pra comparar com nosso uso do skill `tlc-spec-driven`, além de checar se o código segue boas práticas oficiais (via MCP `microsoft-learn` pro backend, `context7` genérico pro frontend — não existe MCP dedicado de React, só o `angular` (Angular CLI, não serve pra este projeto React/Vite)).
 
@@ -194,7 +200,7 @@ Outros 15 itens (6 Médio + 9 Baixo) **documentados em `.specs/codebase/CONCERNS
 | Banco dev e prod | PostgreSQL via Supabase — mesma instância para os dois ambientes |
 | Conexão Supabase | **Session pooler** (`aws-1-us-east-2.pooler.supabase.com:5432`), não "Direct connection" (IPv6-only) nem "Transaction pooler" (incompatível com prepared statements do EF Core) |
 | Senha do banco | `dotnet user-secrets` local (dev) — nunca em `appsettings.json` |
-| Auth | **Google Workspace (Sign in with Google)** — corrigido em 2026-06-25, não é Azure AD/Microsoft. Mockada na Fase 3-5, real na Fase 6. Contas são **por setor** (ex: autorizacao@camarj.com.br) — perfil (Admin/Atendente/Solicitante) derivado de mapeamento conta→perfil no backend |
+| Auth | **Email e senha** (PasswordHasher ASP.NET Core Identity). Login Google Workspace (T09/F5b) está implementado mas dormant — descontinuado porque o Client ID está fora do plano da CAMARJ (TI, 2026-07-24). Contas são por e-mail individual — perfil (Admin/Atendente/Solicitante) definido no cadastro pelo Admin |
 | Anexos | Supabase Storage — implementar na Fase 4 |
 | Email | MailKit IMAP — suporte@camarj.com.br / ti@camarj.com.br |
 | Frontend | React 19 + TS + Vite + TailwindCSS v4 + Shadcn/ui |
@@ -230,7 +236,7 @@ Nenhum.
 | Hospedagem em produção | Onde a API vai rodar (VM, Docker, Azure App Service etc.) — não depende mais do OAuth do Google (login agora é e-mail/senha), mas segue em aberto |
 | Fase 4 (Email/IMAP) | Ainda não implementada — depende de senha de app do IMAP (`suporte@camarj.com.br`/`ti@camarj.com.br`), usuário ainda não tem |
 | ~~Resposta da TI sobre o Client ID do Google OAuth~~ | **OBSOLETO em 2026-07-24** — a TI informou que o Client ID está fora do plano da CAMARJ. Login Google (`AutenticarGoogleCommand`, T09/F5b) fica implementado mas dormant no backend; substituído por login e-mail/senha, ver `.specs/features/auth-email-senha/` |
-| **Login e-mail/senha — retomar implementação** | Backend quase pronto (falta confirmar `dotnet build`/`dotnet test`), frontend não iniciado. Ver `.specs/features/auth-email-senha/tasks.md` pro passo a passo exato |
+| ~~**Login e-mail/senha — retomar implementação**~~ | ✅ **CONCLUÍDO em 2026-07-27** — backend + frontend completos, 218 testes passando, migration `AddSenhaHashUsuarioPerfil` com Up/Down corretos, build limpo |
 
 ---
 

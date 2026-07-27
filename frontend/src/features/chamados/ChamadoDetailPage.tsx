@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useAuth } from '@/auth/AuthContext'
 import { ApiError } from '@/lib/api'
@@ -22,6 +23,7 @@ import {
   useResolverChamado,
   useFecharChamado,
   useCancelarChamado,
+  useReabrirChamado,
 } from './hooks/useAcoesChamado'
 import type { ChamadoResponse } from '@/types/api'
 
@@ -31,9 +33,11 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
   const resolver = useResolverChamado(chamado.id)
   const fechar = useFecharChamado(chamado.id)
   const cancelar = useCancelarChamado(chamado.id)
+  const reabrir = useReabrirChamado(chamado.id)
   const [reatribuirAberto, setReatribuirAberto] = useState(false)
   const [prioridadeAberto, setPrioridadeAberto] = useState(false)
   const [forcarEncerramentoAberto, setForcarEncerramentoAberto] = useState(false)
+  const [confirmarAcao, setConfirmarAcao] = useState<'resolver' | 'encerrar' | 'cancelar' | 'reabrir' | null>(null)
 
   const isAdmin = perfil?.tipo === 'Admin'
   const isAtendente = perfil?.tipo === 'Admin' || perfil?.tipo === 'Atendente'
@@ -42,7 +46,29 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
   const statusFinal = status === 'Fechado' || status === 'Cancelado'
 
   const isPending =
-    atribuir.isPending || resolver.isPending || fechar.isPending || cancelar.isPending
+    atribuir.isPending || resolver.isPending || fechar.isPending || cancelar.isPending || reabrir.isPending
+
+  const executarAcao = () => {
+    switch (confirmarAcao) {
+      case 'resolver': resolver.mutate(); break
+      case 'encerrar': fechar.mutate(); break
+      case 'cancelar': cancelar.mutate(); break
+      case 'reabrir': reabrir.mutate(); break
+    }
+    setConfirmarAcao(null)
+  }
+
+  const tituloConfirmacao =
+    confirmarAcao === 'resolver' ? 'Resolver chamado' :
+    confirmarAcao === 'encerrar' ? 'Encerrar chamado' :
+    confirmarAcao === 'cancelar' ? 'Cancelar chamado' :
+    confirmarAcao === 'reabrir' ? 'Reabrir chamado' : ''
+
+  const descricaoConfirmacao =
+    confirmarAcao === 'resolver' ? 'Confirma que este chamado foi solucionado?' :
+    confirmarAcao === 'encerrar' ? 'Tem certeza que deseja encerrar este chamado? Esta ação não pode ser desfeita.' :
+    confirmarAcao === 'cancelar' ? 'Tem certeza que deseja cancelar este chamado? Esta ação não pode ser desfeita.' :
+    confirmarAcao === 'reabrir' ? 'O chamado voltará para o status Em Andamento e o responsável será removido.' : ''
 
   return (
     <div className="flex flex-wrap gap-2">
@@ -56,7 +82,7 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
         <Button
           size="sm"
           disabled={isPending}
-          onClick={() => resolver.mutate()}
+          onClick={() => setConfirmarAcao('resolver')}
         >
           {resolver.isPending ? 'Resolvendo...' : 'Resolver'}
         </Button>
@@ -66,7 +92,7 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
         <Button
           size="sm"
           disabled={isPending}
-          onClick={() => fechar.mutate()}
+          onClick={() => setConfirmarAcao('encerrar')}
         >
           {fechar.isPending ? 'Encerrando...' : 'Encerrar'}
         </Button>
@@ -77,9 +103,15 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
           size="sm"
           variant="destructive"
           disabled={isPending}
-          onClick={() => cancelar.mutate()}
+          onClick={() => setConfirmarAcao('cancelar')}
         >
           {cancelar.isPending ? 'Cancelando...' : 'Cancelar'}
+        </Button>
+      )}
+
+      {isAtendente && (status === 'Resolvido' || status === 'Fechado' || status === 'Cancelado') && (
+        <Button size="sm" variant="outline" disabled={isPending} onClick={() => setConfirmarAcao('reabrir')}>
+          {reabrir.isPending ? 'Reabrindo...' : 'Reabrir'}
         </Button>
       )}
 
@@ -101,14 +133,35 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
         </Button>
       )}
 
-      {(atribuir.isError || resolver.isError || fechar.isError || cancelar.isError) && (
+      {(atribuir.isError || resolver.isError || fechar.isError || cancelar.isError || reabrir.isError) && (
         <Alert variant="destructive" className="w-full">
           <AlertDescription>
-            {(atribuir.error || resolver.error || fechar.error || cancelar.error)?.message ??
+            {(atribuir.error || resolver.error || fechar.error || cancelar.error || reabrir.error)?.message ??
               'Erro ao executar a ação. Tente novamente.'}
           </AlertDescription>
         </Alert>
       )}
+
+      <Dialog open={confirmarAcao !== null} onOpenChange={(open) => { if (!open) setConfirmarAcao(null) }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{tituloConfirmacao}</DialogTitle>
+            <DialogDescription>{descricaoConfirmacao}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmarAcao(null)}>
+              Voltar
+            </Button>
+            <Button
+              variant={confirmarAcao === 'cancelar' ? 'destructive' : 'default'}
+              onClick={executarAcao}
+              disabled={isPending}
+            >
+              {isPending ? 'Processando...' : 'Confirmar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <ReatribuirModal
         open={reatribuirAberto}
@@ -144,10 +197,22 @@ export function ChamadoDetailPage() {
     return <p className="p-4 text-sm text-muted-foreground">Carregando...</p>
   }
 
-  if (error instanceof ApiError && error.status === 404) {
+  if (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      return (
+        <div className="flex flex-col items-center gap-3 p-8 text-center">
+          <p className="text-sm text-muted-foreground">Chamado não encontrado.</p>
+          <Button asChild variant="outline">
+            <Link to="/chamados">Voltar para a lista</Link>
+          </Button>
+        </div>
+      )
+    }
     return (
       <div className="flex flex-col items-center gap-3 p-8 text-center">
-        <p className="text-sm text-muted-foreground">Chamado não encontrado.</p>
+        <Alert variant="destructive" className="max-w-md">
+          <AlertDescription>Erro ao carregar o chamado. Tente novamente.</AlertDescription>
+        </Alert>
         <Button asChild variant="outline">
           <Link to="/chamados">Voltar para a lista</Link>
         </Button>

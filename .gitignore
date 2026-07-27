@@ -15,3 +15,6 @@ Thumbs.db
 *.db-wal
 .obsidian/workspace.json
 .obsidian/workspace-mobile.json
+scripts/LeitorEmail/
+emails/
+ler-emails.ps1

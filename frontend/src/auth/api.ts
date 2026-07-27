@@ -60,3 +60,17 @@ export function redefinirSenha(id: string, novaSenha: string): Promise<void> {
     body: JSON.stringify({ novaSenha }),
   })
 }
+
+export function esqueciSenha(email: string): Promise<{ mensagem: string }> {
+  return apiFetch<{ mensagem: string }>('/auth/esqueci-senha', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  })
+}
+
+export function resetarSenha(token: string, novaSenha: string): Promise<{ mensagem: string }> {
+  return apiFetch<{ mensagem: string }>('/auth/resetar-senha', {
+    method: 'POST',
+    body: JSON.stringify({ token, novaSenha }),
+  })
+}
