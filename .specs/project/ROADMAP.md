@@ -1,6 +1,6 @@
 # Roadmap — ChamadosCamarj
 
-> Última atualização: 2026-07-21
+> Última atualização: 2026-07-27
 
 ## ✅ Fase 0 — Setup
 
@@ -182,3 +182,18 @@
 > As 3 telas só escondiam o link da sidebar pro Solicitante, sem bloquear a rota de verdade. Aplicado o mesmo padrão já usado em Relatório Mensal/Admin > Usuários.
 
 - [x] Bloqueio real (Alert + "Voltar") nas 3 telas pro Solicitante — sem guard novo no backend (mesma decisão do Relatório Mensal, dado não é mais sensível entre Admin/Atendente)
+
+## 🔐 Auth por E-mail e Senha (CONCLUÍDA — 2026-07-27)
+
+> Substitui o login Google OAuth (fora do plano da CAMARJ). Spec/design/tasks completos em `.specs/features/auth-email-senha/`. Decisão tomada em 2026-07-24: Google OAuth não vai poder ser usado em produção. Login por email+senha implementado.
+
+- [x] AUTH-01: Coluna `SenhaHash` + migration `AddSenhaHashUsuarioPerfil`
+- [x] AUTH-02: `IJwtTokenService` extraído e compartilhado
+- [x] AUTH-03: `POST /auth/login` (email+senha) — backend
+- [x] AUTH-04: Cadastro de usuário exige senha inicial (mín 8 caracteres)
+- [x] AUTH-05: `PATCH /usuarios/{id}/senha` (Admin redefine)
+- [x] AUTH-06: Testes unitários atualizados — 218 testes passando
+- [x] AUTH-07: Frontend: tela de login (email+senha) — substitui GoogleLogin
+- [x] AUTH-08: Frontend: campo de senha no cadastro de usuário
+- [x] AUTH-09: Frontend: botão "Redefinir senha" no Admin
+- [ ] Migration aplicada no Supabase real (roda automático no próximo `dotnet run`)

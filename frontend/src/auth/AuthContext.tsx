@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import { autenticarGoogle, type AutenticacaoResponse } from './api'
+import { autenticarGoogle, login, type AutenticacaoResponse } from './api'
 import { clearToken, registrarLogoutAutomatico, setToken } from '@/lib/api'
 import type { TipoPerfil } from '@/types/api'
 
@@ -17,6 +17,7 @@ const STORAGE_KEY = 'chamados-camarj:perfil'
 interface AuthContextValue {
   perfil: Perfil | null
   loginComGoogle: (idToken: string) => Promise<void>
+  loginComSenha: (email: string, senha: string) => Promise<void>
   logout: () => void
 }
 
@@ -60,7 +61,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setPerfil(perfilLogado)
   }
 
-  return <AuthContext.Provider value={{ perfil, loginComGoogle, logout }}>{children}</AuthContext.Provider>
+  const loginComSenha = async (email: string, senha: string) => {
+    const resposta = await login(email, senha)
+    setToken(resposta.token)
+    const perfilLogado = paraPerfil(resposta)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(perfilLogado))
+    setPerfil(perfilLogado)
+  }
+
+  return <AuthContext.Provider value={{ perfil, loginComGoogle, loginComSenha, logout }}>{children}</AuthContext.Provider>
 }
 
 export function useAuth(): AuthContextValue {

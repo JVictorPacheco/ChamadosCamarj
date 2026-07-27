@@ -4,8 +4,11 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { useAuth } from '@/auth/AuthContext'
-import { useAtualizarUsuario, useUsuarios } from './hooks/useUsuarios'
+import { useAtualizarUsuario, useRedefinirSenha, useUsuarios } from './hooks/useUsuarios'
 import { UsuarioFormDialog } from './components/UsuarioFormDialog'
 import type { UsuarioPerfilResponse } from '@/types/api'
 
@@ -18,6 +21,10 @@ export function UsuariosPage() {
   const [usuarioSelecionado, setUsuarioSelecionado] = useState<UsuarioPerfilResponse | null>(null)
   const [alternandoId, setAlternandoId] = useState<string | null>(null)
   const [erroAlternar, setErroAlternar] = useState<string | null>(null)
+  const [redefinindoUsuario, setRedefinindoUsuario] = useState<UsuarioPerfilResponse | null>(null)
+  const [novaSenha, setNovaSenha] = useState('')
+  const [erroSenha, setErroSenha] = useState<string | null>(null)
+  const redefinirSenhaMutation = useRedefinirSenha()
 
   const abrirNovo = () => {
     setUsuarioSelecionado(null)
@@ -108,6 +115,13 @@ export function UsuariosPage() {
                       Editar
                     </Button>
                     <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => { setRedefinindoUsuario(usuario); setNovaSenha(''); setErroSenha(null) }}
+                    >
+                      Redefinir senha
+                    </Button>
+                    <Button
                       variant={usuario.ativo ? 'destructive' : 'outline'}
                       size="sm"
                       disabled={alternandoId === usuario.id}
@@ -124,6 +138,55 @@ export function UsuariosPage() {
       )}
 
       <UsuarioFormDialog open={dialogAberto} onOpenChange={setDialogAberto} usuario={usuarioSelecionado} />
+
+      <Dialog open={!!redefinindoUsuario} onOpenChange={(open) => { if (!open) setRedefinindoUsuario(null) }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Redefinir senha — {redefinindoUsuario?.nome}</DialogTitle>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="nova-senha">Nova senha</Label>
+              <Input
+                id="nova-senha"
+                type="password"
+                placeholder="Mínimo 8 caracteres"
+                value={novaSenha}
+                onChange={(e) => setNovaSenha(e.target.value)}
+              />
+            </div>
+
+            {erroSenha && (
+              <Alert variant="destructive">
+                <AlertDescription>{erroSenha}</AlertDescription>
+              </Alert>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setRedefinindoUsuario(null)}>
+              Cancelar
+            </Button>
+            <Button
+              disabled={redefinirSenhaMutation.isPending || novaSenha.length < 8}
+              onClick={() => {
+                if (!redefinindoUsuario) return
+                setErroSenha(null)
+                redefinirSenhaMutation.mutate(
+                  { id: redefinindoUsuario.id, novaSenha },
+                  {
+                    onSuccess: () => setRedefinindoUsuario(null),
+                    onError: (err) => setErroSenha(err instanceof Error ? err.message : 'Erro ao redefinir senha.'),
+                  },
+                )
+              }}
+            >
+              {redefinirSenhaMutation.isPending ? 'Salvando...' : 'Salvar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

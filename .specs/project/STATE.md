@@ -1,6 +1,6 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-07-21
+> Atualizado em: 2026-07-27
 
 ---
 
@@ -19,6 +19,27 @@
 ---
 
 ## 📍 Onde estamos
+
+**Sessão de 2026-07-27 (nova parceira, opencode): orquestração + frontend auth-email-senha concluído.**
+- Setup de orquestração criado (`opencode.json` com 5 agentes: spec, build-backend, build-frontend, review, explorar — todos modelos Go)
+- MCPs configurados: Context7 (docs), shadcn (componentes), dotnet-context (análise Roslyn)
+- Backend da auth-email-senha verificado: **218 testes passando, build limpo**
+- Frontend da auth-email-senha implementado:
+  - `LoginPage.tsx`: substituído Google Login por formulário email + senha
+  - `AuthContext.tsx`: adicionado `loginComSenha`
+  - `api.ts`: adicionados `login()`, `redefinirSenha()`, e campo `senha` em `CriarUsuarioRequest`
+  - `UsuarioFormDialog.tsx`: campo de senha obrigatório no cadastro (mín 8 caracteres)
+  - `UsuariosPage.tsx`: botão "Redefinir senha" com modal
+  - `useUsuarios.ts`: hook `useRedefinirSenha()`
+- Build frontend (`npm run build`) verificado: ✅ sem erros
+- Dependência `@react-oauth/google` mantida (código do Google login dorme no backend/frontend)
+- Migration `AddSenhaHashUsuarioPerfil` ainda NÃO aplicada no Supabase real (roda automaticamente no próximo `dotnet run`)
+- Coluna `SenhaHash` adicionada manualmente ao Supabase (migration vazia — Up/Down vazios, bug do EF não detectar a mudança)
+- Senha do Victor configurada: `Teste123!` — os demais usuários (Fábio, Ana, Letícia) precisam ter senha definida via Admin → Redefinir senha
+- Porta 5000 ocupada pelo AirPlay do macOS — usar `http://localhost:5002` para API no Mac. `.env` do frontend criado com `VITE_API_BASE_URL=http://localhost:5000/api` (porta normal, só mudar pra 5002 no Mac)
+- Context7 MCP configurado (remote), `dotnet-context-mcp@0.2.0` (local), `shadcn` (local via `.mcp.json`)
+- **FIX ME:** recriar a migration `AddSenhaHashUsuarioPerfil` com o `Up()` da coluna — hoje só existe manualmente no Supabase, não em migration real. Se fizer deploy em outro ambiente, a coluna não será criada
+- **Pendente:** aplicar migration e testar login de ponta a ponta no Windows
 
 **Sessão de 2026-07-21 (continuação): revisão de processo (SDD) + qualidade de código (features recentes) contra documentação oficial.** Usuário pediu leitura de specdriven.ai (metodologia canônica de Spec-Driven Development) pra comparar com nosso uso do skill `tlc-spec-driven`, além de checar se o código segue boas práticas oficiais (via MCP `microsoft-learn` pro backend, `context7` genérico pro frontend — não existe MCP dedicado de React, só o `angular` (Angular CLI, não serve pra este projeto React/Vite)).
 
