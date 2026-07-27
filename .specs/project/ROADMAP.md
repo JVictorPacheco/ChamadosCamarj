@@ -175,3 +175,21 @@
 - [x] AUTH-07: Frontend: tela de login (email+senha) — substitui GoogleLogin
 - [x] AUTH-08: Frontend: campo de senha no cadastro de usuário
 - [x] AUTH-09: Frontend: botão "Redefinir senha" no Admin
+
+## 👥 Grupos/Equipes para Chamados (PLANEJADO — 2026-07-27)
+
+> Usuários pertencem a um grupo (ex: Reembolso, Credenciado, Comercial, Contas Médicas, Autorização/Auditoria). Atendentes do mesmo grupo podem ver e interagir nos chamados dos colegas — cobre férias, ausências e trabalho em equipe.
+
+- [ ] Tabela `Grupo` + relação `UsuarioPerfil.GrupoId`
+- [ ] Nova regra de RBAC: Atendente vê chamados do seu grupo (não só os próprios)
+- [ ] Admin continua vendo tudo
+- [ ] Ainda sem spec — próxima sessão SDD
+
+## 📂 Novas Categorias (PLANEJADO — 2026-07-27)
+
+- [ ] Renomear "Autorização" → "Autorização/Auditoria"
+- [ ] Adicionar: Credenciado
+- [ ] Adicionar: Comercial
+- [ ] Adicionar: Contas Médicas
+- [ ] Total: 8 categorias (eram 5)
+- [ ] Seed e migration necessários
