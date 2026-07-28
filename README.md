@@ -60,3 +60,13 @@ tests/
 > Dev e produção apontam para o **mesmo banco Supabase** — qualquer requisição feita localmente grava dados reais.
 
 > Para o estado atual do projeto (fases concluídas, decisões, pendências), veja `.specs/project/STATE.md`.
+
+## Deploy em Produção
+
+| Peça | Onde | URL |
+|------|------|-----|
+| Frontend | Cloudflare Pages (grátis) | `https://chamadoscamarj.pages.dev` |
+| Backend | Azure App Service F1 (grátis) | `https://chamadoscamarj-api.azurewebsites.net` |
+| Banco | Supabase (grátis) | `aws-1-us-east-2.pooler.supabase.com` |
+
+Deploy do backend é automático via GitHub Actions a cada push na `main`. Veja `docs/DEPLOY-AZURE.md` para o setup completo (gratuito).
