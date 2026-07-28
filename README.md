@@ -69,4 +69,21 @@ tests/
 | Backend | Azure App Service F1 (grátis) | `https://chamadoscamarj-api.azurewebsites.net` |
 | Banco | Supabase (grátis) | `aws-1-us-east-2.pooler.supabase.com` |
 
-Deploy do backend é automático via GitHub Actions a cada push na `main`. Veja `docs/DEPLOY-AZURE.md` para o setup completo (gratuito).
+### Como colocar em produção (3 passos)
+
+**1. Frontend — já está no ar**
+- Já deployado no Cloudflare Pages (`https://chamadoscamarj.pages.dev`)
+- Deploy automático a cada push na branch `main`
+- Env var no dashboard: `VITE_API_BASE_URL = https://chamadoscamarj-api.azurewebsites.net/api`
+
+**2. Backend — criar Azure App Service (fazer UMA vez)**
+- Acesse https://portal.azure.com com a conta Microsoft CAMARJ
+- Crie um App Service: nome `chamadoscamarj-api`, .NET 9, Linux, plano **Free F1**
+- Adicione as env vars (todas listadas em `docs/DEPLOY-AZURE.md`)
+- Baixe o "Publish Profile" e cole como secret `AZURE_WEBAPP_PUBLISH_PROFILE` em https://github.com/JVictorPacheco/ChamadosCamarj/settings/secrets/actions
+
+**3. Disparar deploy**
+- Push na `main` → GitHub Actions faz build + testa + deploy automaticamente
+- A API fica em `https://chamadoscamarj-api.azurewebsites.net`
+
+> Custo total: **R$ 0,00** (tudo free tier). Guia completo em `docs/DEPLOY-AZURE.md`.
