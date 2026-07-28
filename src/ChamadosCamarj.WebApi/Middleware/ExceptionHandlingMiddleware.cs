@@ -43,7 +43,7 @@ public class ExceptionHandlingMiddleware
             var erros = ex.Errors.Select(e => new { campo = e.PropertyName, erro = e.ErrorMessage });
             await WriteResponseAsync(context, HttpStatusCode.BadRequest, new { errors = erros });
         }
-        catch (InvalidOperationException ex)
+        catch (BadRequestException ex)
         {
             await WriteResponseAsync(context, HttpStatusCode.BadRequest, new { message = ex.Message });
         }
@@ -54,10 +54,12 @@ public class ExceptionHandlingMiddleware
         }
     }
 
+    private static readonly JsonSerializerOptions _jsonOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
     private static Task WriteResponseAsync(HttpContext context, HttpStatusCode statusCode, object body)
     {
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)statusCode;
-        return context.Response.WriteAsync(JsonSerializer.Serialize(body));
+        return context.Response.WriteAsync(JsonSerializer.Serialize(body, _jsonOptions));
     }
 }

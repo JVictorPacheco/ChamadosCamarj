@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { autenticarGoogle, login, type AutenticacaoResponse } from './api'
 import { clearToken, registrarLogoutAutomatico, setToken } from '@/lib/api'
 import type { TipoPerfil } from '@/types/api'
@@ -69,7 +69,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setPerfil(perfilLogado)
   }
 
-  return <AuthContext.Provider value={{ perfil, loginComGoogle, loginComSenha, logout }}>{children}</AuthContext.Provider>
+  const value = useMemo(() => ({ perfil, loginComGoogle, loginComSenha, logout }), [perfil])
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 export function useAuth(): AuthContextValue {

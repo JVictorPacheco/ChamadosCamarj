@@ -24,7 +24,8 @@ public class ListarChamadosQueryHandlerTests
             .Setup(r => r.ListarAsync(
                 It.IsAny<int>(), It.IsAny<int>(), It.IsAny<StatusChamado?>(), It.IsAny<PrioridadeChamado?>(),
                 It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<string?>(), It.IsAny<string?>(),
-                It.IsAny<IEnumerable<StatusChamado>?>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<CancellationToken>()))
+                It.IsAny<IEnumerable<StatusChamado>?>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
+                It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Enumerable.Empty<Chamado>(), 0));
 
         var query = new ListarChamadosQuery(SolicitanteEmail: "ana.colaboradora@camarj.com.br");
@@ -32,7 +33,7 @@ public class ListarChamadosQueryHandlerTests
 
         _repositoryMock.Verify(r => r.ListarAsync(
             1, 10, null, null, null, null, null, "ana.colaboradora@camarj.com.br",
-            null, null, null, It.IsAny<CancellationToken>()),
+            null, null, null, null, null, It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -45,7 +46,8 @@ public class ListarChamadosQueryHandlerTests
             .Setup(r => r.ListarAsync(
                 It.IsAny<int>(), It.IsAny<int>(), It.IsAny<StatusChamado?>(), It.IsAny<PrioridadeChamado?>(),
                 It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<string?>(), "ana.colaboradora@camarj.com.br",
-                It.IsAny<IEnumerable<StatusChamado>?>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<CancellationToken>()))
+                It.IsAny<IEnumerable<StatusChamado>?>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
+                It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((new[] { chamado }, 1));
 
         var query = new ListarChamadosQuery(SolicitanteEmail: "ana.colaboradora@camarj.com.br");
@@ -63,9 +65,10 @@ public class ListarChamadosQueryHandlerTests
             .Setup(r => r.ListarAsync(
                 It.IsAny<int>(), It.IsAny<int>(), It.IsAny<StatusChamado?>(), It.IsAny<PrioridadeChamado?>(),
                 It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<string?>(), It.IsAny<string?>(),
-                It.IsAny<IEnumerable<StatusChamado>?>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<CancellationToken>()))
-            .Callback<int, int, StatusChamado?, PrioridadeChamado?, Guid?, Guid?, string?, string?, IEnumerable<StatusChamado>?, DateTime?, DateTime?, CancellationToken>(
-                (_, _, _, _, _, _, _, _, statusEntre, _, _, _) => statusCapturado = statusEntre)
+                It.IsAny<IEnumerable<StatusChamado>?>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
+                It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
+            .Callback<int, int, StatusChamado?, PrioridadeChamado?, Guid?, Guid?, string?, string?, IEnumerable<StatusChamado>?, DateTime?, DateTime?, Guid?, Guid?, CancellationToken>(
+                (_, _, _, _, _, _, _, _, statusEntre, _, _, _, _, _) => statusCapturado = statusEntre)
             .ReturnsAsync((Enumerable.Empty<Chamado>(), 0));
 
         var query = new ListarChamadosQuery(Finalizados: true);
@@ -77,14 +80,15 @@ public class ListarChamadosQueryHandlerTests
     [Fact]
     public async Task Handle_SemFinalizados_NaoDevePassarFiltroDeStatusEntre()
     {
-        IEnumerable<StatusChamado>? statusCapturado = [StatusChamado.Aberto]; // valor não-nulo pra garantir que o callback rodou
+        IEnumerable<StatusChamado>? statusCapturado = [StatusChamado.Aberto];
         _repositoryMock
             .Setup(r => r.ListarAsync(
                 It.IsAny<int>(), It.IsAny<int>(), It.IsAny<StatusChamado?>(), It.IsAny<PrioridadeChamado?>(),
                 It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<string?>(), It.IsAny<string?>(),
-                It.IsAny<IEnumerable<StatusChamado>?>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<CancellationToken>()))
-            .Callback<int, int, StatusChamado?, PrioridadeChamado?, Guid?, Guid?, string?, string?, IEnumerable<StatusChamado>?, DateTime?, DateTime?, CancellationToken>(
-                (_, _, _, _, _, _, _, _, statusEntre, _, _, _) => statusCapturado = statusEntre)
+                It.IsAny<IEnumerable<StatusChamado>?>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
+                It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
+            .Callback<int, int, StatusChamado?, PrioridadeChamado?, Guid?, Guid?, string?, string?, IEnumerable<StatusChamado>?, DateTime?, DateTime?, Guid?, Guid?, CancellationToken>(
+                (_, _, _, _, _, _, _, _, statusEntre, _, _, _, _, _) => statusCapturado = statusEntre)
             .ReturnsAsync((Enumerable.Empty<Chamado>(), 0));
 
         var query = new ListarChamadosQuery();
@@ -96,8 +100,6 @@ public class ListarChamadosQueryHandlerTests
     [Fact]
     public async Task Handle_DevePassarDataInicioEDataFimComoUtcParaORepositorio()
     {
-        // ASP.NET Core faz model binding de DateTime a partir da query string com Kind=Unspecified,
-        // mas a coluna DataCriacao é "timestamp with time zone" no Postgres — só aceita UTC.
         var inicio = new DateTime(2026, 7, 1, 0, 0, 0, DateTimeKind.Unspecified);
         var fim = new DateTime(2026, 7, 31, 0, 0, 0, DateTimeKind.Unspecified);
 
@@ -108,9 +110,10 @@ public class ListarChamadosQueryHandlerTests
             .Setup(r => r.ListarAsync(
                 It.IsAny<int>(), It.IsAny<int>(), It.IsAny<StatusChamado?>(), It.IsAny<PrioridadeChamado?>(),
                 It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<string?>(), It.IsAny<string?>(),
-                It.IsAny<IEnumerable<StatusChamado>?>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<CancellationToken>()))
-            .Callback<int, int, StatusChamado?, PrioridadeChamado?, Guid?, Guid?, string?, string?, IEnumerable<StatusChamado>?, DateTime?, DateTime?, CancellationToken>(
-                (_, _, _, _, _, _, _, _, _, dataInicio, dataFim, _) =>
+                It.IsAny<IEnumerable<StatusChamado>?>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
+                It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
+            .Callback<int, int, StatusChamado?, PrioridadeChamado?, Guid?, Guid?, string?, string?, IEnumerable<StatusChamado>?, DateTime?, DateTime?, Guid?, Guid?, CancellationToken>(
+                (_, _, _, _, _, _, _, _, _, dataInicio, dataFim, _, _, _) =>
                 {
                     inicioCapturado = dataInicio;
                     fimCapturado = dataFim;
@@ -124,7 +127,6 @@ public class ListarChamadosQueryHandlerTests
         inicioCapturado!.Value.Should().Be(new DateTime(2026, 7, 1, 0, 0, 0, DateTimeKind.Utc));
 
         fimCapturado!.Value.Kind.Should().Be(DateTimeKind.Utc);
-        // DataFim vira o fim do dia (23:59:59.999...), não a meia-noite, pra incluir o dia inteiro.
         fimCapturado!.Value.Date.Should().Be(new DateTime(2026, 7, 31, 0, 0, 0, DateTimeKind.Utc));
         fimCapturado!.Value.TimeOfDay.Should().BeGreaterThan(new TimeSpan(0, 23, 59, 59));
     }

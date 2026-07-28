@@ -27,4 +27,13 @@ public class CurrentUserService : ICurrentUserService
     public string Nome => User?.FindFirstValue(ClaimTypes.Name) ?? string.Empty;
 
     public string Perfil => User?.FindFirstValue("perfil") ?? string.Empty;
+
+    public Guid? GrupoId
+    {
+        get
+        {
+            var valor = User?.FindFirstValue("grupo_id");
+            return Guid.TryParse(valor, out var id) ? id : null;
+        }
+    }
 }

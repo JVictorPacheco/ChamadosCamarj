@@ -12,6 +12,7 @@
 - **Código (identificadores):** Português para nomes de domínio (`Chamado`, `UsuarioPerfil`, `SenhaHash`, `reatribuirChamado`). Inglês para termos técnicos/genéricos (`cancellationToken`, `onSuccess`, `isPending`).
 - **Mensagens de erro/validação:** Português (`"Email é obrigatório."`, `"Chamado não encontrado."`).
 - **Comentários no código:** Português, só quando a lógica não for autoexplicativa. Sem comentários óbvios.
+- **HTML lang:** `pt-BR` no `index.html`.
 
 ### 1.2 Nomenclatura
 - PascalCase para classes, métodos, propriedades, records.
@@ -894,7 +895,7 @@ function AppRoutes() {
 - Tailwind v4 com `@import "tailwindcss"` (não `@tailwind base/components/utilities`).
 - Tema inline via `@theme inline { ... }` com variáveis CSS.
 - **Nunca usar cores hardcoded.** Usar tokens: `text-foreground`, `bg-card`, `text-muted-foreground`, `border-border`.
-- Tema escuro forçado via `<html class="dark">` em `main.tsx`.
+- Tema gerenciado pelo `ThemeProvider` em `hooks/useTheme.tsx`. O `<html>` não tem `class="dark"` hardcoded. O provider lê/prefere localStorage, aplica/remove a classe `.dark` no `<html>` dinamicamente.
 - Fonte `font-serif` para telas editoriais (Login), `font-heading` (= `font-sans`) para o resto.
 
 ### 3.10 TypeScript
@@ -917,6 +918,21 @@ export interface ChamadoResponse {
 - Enums como **type unions de string** (não `enum` do TS), porque o backend serializa como string.
 - Interfaces para DTOs em `types/api.ts`.
 - Tipos de request específicos da feature podem ficar em `features/{feature}/api.ts`.
+
+### 3.11 Componentes de Input Customizados (PasswordInput)
+- Usa o padrão `forwardRef` + spread props para compatibilidade com `react-hook-form`
+- Import de `@/components/PasswordInput`
+- Usa ícones `Eye`/`EyeOff` do `lucide-react` para toggle de visibilidade
+- `tabIndex={-1}` no botão de toggle para não atrapalhar a tabulação do formulário
+
+### 3.12 Tema (ThemeProvider / useTheme)
+- `ThemeProvider` definido em `hooks/useTheme.tsx`
+- Padrão: `createContext` + componente `ThemeProvider` + hook `useTheme()`
+- Envolve toda a aplicação em `App.tsx`
+- Botão de toggle no `SidebarFooter` com ícones `Sun`/`Moon` (`lucide-react`)
+- Persiste preferência em `localStorage` na chave `camarj-theme`
+- Respeita a media query `prefers-color-scheme`
+- CSS já possui variáveis tanto em `:root` (tema claro) quanto em `.dark` (tema escuro)
 
 ---
 

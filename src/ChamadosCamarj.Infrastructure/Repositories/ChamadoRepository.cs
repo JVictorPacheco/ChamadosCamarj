@@ -60,6 +60,7 @@ public class ChamadoRepository : IChamadoRepository
             .Include(c => c.Comentarios)
             .Include(c => c.Anexos)
             .AsNoTracking()
+            .AsSplitQuery()
             .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
     }
 
@@ -160,9 +161,18 @@ public class ChamadoRepository : IChamadoRepository
         IEnumerable<Domain.Enums.StatusChamado>? statusEntre = null,
         DateTime? dataInicio = null,
         DateTime? dataFim = null,
+        Guid? usuarioLogadoId = null,
+        Guid? grupoId = null,
         CancellationToken cancellationToken = default)
     {
         var query = _dbSet.AsNoTracking().AsQueryable();
+
+        if (grupoId.HasValue && usuarioLogadoId.HasValue)
+        {
+            query = query.Where(c => c.ResponsavelId.HasValue &&
+                (c.ResponsavelId == usuarioLogadoId.Value ||
+                 _context.UsuariosPerfil.Any(u => u.Id == c.ResponsavelId && u.GrupoId == grupoId.Value)));
+        }
 
         if (status.HasValue)
             query = query.Where(c => c.Status == status.Value);
@@ -200,8 +210,7 @@ public class ChamadoRepository : IChamadoRepository
 
         var items = await query
             .Include(c => c.Categoria)
-            .Include(c => c.Comentarios)
-            .Include(c => c.Anexos)
+            .AsSplitQuery()
             .OrderByDescending(c => c.DataCriacao)
             .Skip((pagina - 1) * tamanhoPagina)
             .Take(tamanhoPagina)

@@ -25,7 +25,7 @@ public class AtualizarUsuarioPerfilHandlerTests
         _repositoryMock.Setup(r => r.ObterPorIdAsync(id, It.IsAny<CancellationToken>()))
             .ReturnsAsync((UsuarioPerfil?)null);
 
-        var command = new AtualizarUsuarioPerfilCommand(id, "Novo Nome", Perfil.Admin, true, "Admin");
+        var command = new AtualizarUsuarioPerfilCommand(id, "Novo Nome", Perfil.Admin, true, PerfilRequisitante: "Admin");
         var response = await _handler.Handle(command, CancellationToken.None);
 
         response.Should().BeNull();
@@ -39,7 +39,7 @@ public class AtualizarUsuarioPerfilHandlerTests
         _repositoryMock.Setup(r => r.ObterPorIdAsync(usuario.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(usuario);
 
-        var command = new AtualizarUsuarioPerfilCommand(usuario.Id, "Fábio Silva", Perfil.Admin, true, "Admin");
+        var command = new AtualizarUsuarioPerfilCommand(usuario.Id, "Fábio Silva", Perfil.Admin, true, PerfilRequisitante: "Admin");
         var response = await _handler.Handle(command, CancellationToken.None);
 
         response.Should().NotBeNull();
@@ -55,7 +55,7 @@ public class AtualizarUsuarioPerfilHandlerTests
         _repositoryMock.Setup(r => r.ObterPorIdAsync(usuario.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(usuario);
 
-        var command = new AtualizarUsuarioPerfilCommand(usuario.Id, "Fábio", Perfil.Atendente, false, "Admin");
+        var command = new AtualizarUsuarioPerfilCommand(usuario.Id, "Fábio", Perfil.Atendente, false, PerfilRequisitante: "Admin");
         var response = await _handler.Handle(command, CancellationToken.None);
 
         response!.Ativo.Should().BeFalse();
@@ -70,7 +70,7 @@ public class AtualizarUsuarioPerfilHandlerTests
         _repositoryMock.Setup(r => r.ObterPorIdAsync(usuario.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(usuario);
 
-        var command = new AtualizarUsuarioPerfilCommand(usuario.Id, "Fábio", Perfil.Atendente, true, "Admin");
+        var command = new AtualizarUsuarioPerfilCommand(usuario.Id, "Fábio", Perfil.Atendente, true, PerfilRequisitante: "Admin");
         var response = await _handler.Handle(command, CancellationToken.None);
 
         response!.Ativo.Should().BeTrue();
@@ -84,7 +84,7 @@ public class AtualizarUsuarioPerfilHandlerTests
         _repositoryMock.Setup(r => r.ObterPorIdAsync(usuario.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(usuario);
 
-        var command = new AtualizarUsuarioPerfilCommand(usuario.Id, "Fábio", Perfil.Atendente, true, "Solicitante");
+        var command = new AtualizarUsuarioPerfilCommand(usuario.Id, "Fábio", Perfil.Atendente, true, PerfilRequisitante: "Solicitante");
 
         var act = async () => await _handler.Handle(command, CancellationToken.None);
         await act.Should().ThrowAsync<ForbiddenException>();
@@ -106,7 +106,7 @@ public class AtualizarUsuarioPerfilHandlerTests
             .ReturnsAsync(new List<UsuarioPerfil> { unicoAdmin, atendente });
 
         // Ativo = false enquanto mantém o Perfil Admin
-        var command = new AtualizarUsuarioPerfilCommand(unicoAdmin.Id, "Victor", Perfil.Admin, false, "Admin");
+        var command = new AtualizarUsuarioPerfilCommand(unicoAdmin.Id, "Victor", Perfil.Admin, false, PerfilRequisitante: "Admin");
 
         var act = async () => await _handler.Handle(command, CancellationToken.None);
         await act.Should().ThrowAsync<ConflictException>();
@@ -125,7 +125,7 @@ public class AtualizarUsuarioPerfilHandlerTests
             .ReturnsAsync(new List<UsuarioPerfil> { unicoAdmin });
 
         // Continua ativo, mas deixa de ser Admin
-        var command = new AtualizarUsuarioPerfilCommand(unicoAdmin.Id, "Victor", Perfil.Atendente, true, "Admin");
+        var command = new AtualizarUsuarioPerfilCommand(unicoAdmin.Id, "Victor", Perfil.Atendente, true, PerfilRequisitante: "Admin");
 
         var act = async () => await _handler.Handle(command, CancellationToken.None);
         await act.Should().ThrowAsync<ConflictException>();
@@ -142,7 +142,7 @@ public class AtualizarUsuarioPerfilHandlerTests
         _repositoryMock.Setup(r => r.ListarAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<UsuarioPerfil> { admin1, admin2 });
 
-        var command = new AtualizarUsuarioPerfilCommand(admin1.Id, "Victor", Perfil.Admin, false, "Admin");
+        var command = new AtualizarUsuarioPerfilCommand(admin1.Id, "Victor", Perfil.Admin, false, PerfilRequisitante: "Admin");
         var response = await _handler.Handle(command, CancellationToken.None);
 
         response!.Ativo.Should().BeFalse();
@@ -160,7 +160,7 @@ public class AtualizarUsuarioPerfilHandlerTests
         _repositoryMock.Setup(r => r.ObterPorIdAsync(adminInativo.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(adminInativo);
 
-        var command = new AtualizarUsuarioPerfilCommand(adminInativo.Id, "Victor", Perfil.Atendente, false, "Admin");
+        var command = new AtualizarUsuarioPerfilCommand(adminInativo.Id, "Victor", Perfil.Atendente, false, PerfilRequisitante: "Admin");
         var response = await _handler.Handle(command, CancellationToken.None);
 
         response!.Perfil.Should().Be(Perfil.Atendente);

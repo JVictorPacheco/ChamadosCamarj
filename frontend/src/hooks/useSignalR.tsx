@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback, useRef, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState, useCallback, useRef, type ReactNode } from 'react'
 import {
   HubConnectionBuilder,
   type HubConnection,
@@ -69,8 +69,10 @@ export function SignalRProvider({ children }: { children: ReactNode }) {
     }
   }, [notify])
 
+  const value = useMemo(() => ({ connection, isConnected, lastEvent, subscribe }), [connection, isConnected, lastEvent])
+
   return (
-    <SignalRContext.Provider value={{ connection, isConnected, lastEvent, subscribe }}>
+    <SignalRContext.Provider value={value}>
       {children}
     </SignalRContext.Provider>
   )

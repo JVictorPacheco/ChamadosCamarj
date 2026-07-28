@@ -176,28 +176,32 @@
 - [x] AUTH-08: Frontend: campo de senha no cadastro de usuário
 - [x] AUTH-09: Frontend: botão "Redefinir senha" no Admin
 
-## 👥 Grupos/Equipes para Chamados (PLANEJADO — 2026-07-27)
+## 👥 Grupos/Equipes para Chamados (CONCLUÍDO — 2026-07-28)
 
 > Usuários pertencem a um grupo (ex: Reembolso, Credenciado, Comercial, Contas Médicas, Autorização/Auditoria). Atendentes do mesmo grupo podem ver e interagir nos chamados dos colegas — cobre férias, ausências e trabalho em equipe.
 
-- [ ] Tabela `Grupo` + relação `UsuarioPerfil.GrupoId`
-- [ ] Nova regra de RBAC: Atendente vê chamados do seu grupo (não só os próprios)
-- [ ] Admin continua vendo tudo
-- [ ] Ainda sem spec — próxima sessão SDD
+- [x] Tabela `Grupo` + relação `UsuarioPerfil.GrupoId`
+- [x] Migration `AddGrupo` com seed de 6 grupos
+- [x] Nova regra de RBAC: Atendente vê chamados do seu grupo (não só os próprios)
+- [x] Admin gerencia Grupos (CRUD) — tela `/admin/grupos`
+- [x] `grupo_id` claim no JWT via `ICurrentUserService`
+- [x] Frontend: GruposPage, GrupoFormDialog, dropdown no UsuarioFormDialog, coluna na UsuariosPage
+- [x] 218 testes passando, build limpo
 
-## 📂 Novas Categorias (PLANEJADO — 2026-07-27)
+## 📂 Novas Categorias (CONCLUÍDO — 2026-07-28)
 
-- [ ] Renomear "Autorização" → "Autorização/Auditoria"
-- [ ] Adicionar: Credenciado
-- [ ] Adicionar: Comercial
-- [ ] Adicionar: Contas Médicas
-- [ ] Total: 8 categorias (eram 5)
-- [ ] Seed e migration necessários
+- [x] Renomear "Autorização" → "Autorização/Auditoria"
+- [x] Adicionar: Credenciado
+- [x] Adicionar: Comercial
+- [x] Adicionar: Contas Médicas
+- [x] Total: 8 categorias (eram 5)
+- [x] Seeder com upsert inteligente (funciona em banco novo e existente)
 
-## 🎨 Tema Claro + Logo CAMARJ (PLANEJADO — 2026-07-27)
+## 🎨 Tema Claro + Logo CAMARJ + Olhinho (CONCLUÍDO — 2026-07-28)
 
-- [ ] Toggle claro/escuro no AppLayout (via shadcn/ui ou CSS custom properties)
-- [ ] Respeitar preferência do sistema (`prefers-color-scheme`)
-- [ ] Logo CAMARJ no topo da sidebar (já existe na LoginPage, só adicionar no AppLayout)
-- [ ] Toggle mostrar/ocultar senha (ícone de olho 👁) em todos os campos de senha
-- [ ] Ainda sem spec — próxima sessão SDD
+- [x] Toggle claro/escuro na LoginPage, ResetarSenhaPage e AppLayout
+- [x] Respeitar preferência do sistema (`prefers-color-scheme`) + persistir em localStorage
+- [x] Logo CAMARJ no topo da sidebar
+- [x] Toggle mostrar/ocultar senha (ícone de olho 👁) em todos os campos de senha
+- [x] Tema claro: branco + verde institucional CAMARJ (teal-600)
+- [x] ThemeProvider + useTheme hook

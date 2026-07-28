@@ -23,12 +23,12 @@ public class UsuarioPerfilRepository : IUsuarioPerfilRepository
 
     public async Task<UsuarioPerfil?> ObterPorIdAsync(Guid id, CancellationToken ct)
     {
-        return await _dbSet.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id, ct);
+        return await _dbSet.AsNoTracking().Include(u => u.Grupo).FirstOrDefaultAsync(u => u.Id == id, ct);
     }
 
     public async Task<IEnumerable<UsuarioPerfil>> ListarAsync(CancellationToken ct)
     {
-        return await _dbSet.AsNoTracking().OrderBy(u => u.Nome).ToListAsync(ct);
+        return await _dbSet.AsNoTracking().Include(u => u.Grupo).OrderBy(u => u.Nome).ToListAsync(ct);
     }
 
     public async Task AdicionarAsync(UsuarioPerfil usuario, CancellationToken ct)

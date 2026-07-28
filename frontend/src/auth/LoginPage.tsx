@@ -2,16 +2,20 @@ import { useState } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/PasswordInput'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
+import { Sun, Moon } from 'lucide-react'
 import { useAuth } from './AuthContext'
+import { useTheme } from '@/hooks/useTheme'
 import { ApiError } from '@/lib/api'
 import { esqueciSenha } from './api'
 import logoCamarj from '../assets/logo-camarj.png'
 
 export function LoginPage() {
   const { loginComSenha } = useAuth()
+  const { theme, toggleTheme } = useTheme()
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
   const [erro, setErro] = useState<string | null>(null)
@@ -66,6 +70,14 @@ export function LoginPage() {
 
   return (
     <div className="relative flex min-h-svh flex-col items-center justify-center gap-10 overflow-hidden p-6">
+      <button
+        type="button"
+        onClick={toggleTheme}
+        className="absolute top-4 right-4 rounded-lg p-2 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+        aria-label={theme === 'dark' ? 'Alternar para tema claro' : 'Alternar para tema escuro'}
+      >
+        {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+      </button>
       <div className="flex flex-col items-center gap-5">
         <img
           src={logoCamarj}
@@ -102,9 +114,8 @@ export function LoginPage() {
 
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="senha">Senha</Label>
-              <Input
+              <PasswordInput
                 id="senha"
-                type="password"
                 placeholder="Sua senha"
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}

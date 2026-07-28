@@ -2,13 +2,16 @@ import { useState } from 'react'
 import { useSearchParams, Link } from 'react-router'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/PasswordInput'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Sun, Moon } from 'lucide-react'
+import { useTheme } from '@/hooks/useTheme'
 import { resetarSenha } from './api'
 import logoCamarj from '../assets/logo-camarj.png'
 
 export function ResetarSenhaPage() {
+  const { theme, toggleTheme } = useTheme()
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token') ?? ''
 
@@ -46,7 +49,15 @@ export function ResetarSenhaPage() {
 
   if (!token) {
     return (
-      <div className="flex min-h-svh items-center justify-center p-6">
+      <div className="relative flex min-h-svh items-center justify-center p-6">
+        <button
+          type="button"
+          onClick={toggleTheme}
+          className="absolute top-4 right-4 rounded-lg p-2 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          aria-label={theme === 'dark' ? 'Alternar para tema claro' : 'Alternar para tema escuro'}
+        >
+          {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+        </button>
         <Card className="w-full max-w-md border-border/60 shadow-2xl">
           <CardHeader>
             <CardTitle className="font-serif text-2xl">Link inválido</CardTitle>
@@ -66,6 +77,14 @@ export function ResetarSenhaPage() {
 
   return (
     <div className="relative flex min-h-svh flex-col items-center justify-center gap-10 overflow-hidden p-6">
+      <button
+        type="button"
+        onClick={toggleTheme}
+        className="absolute top-4 right-4 rounded-lg p-2 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+        aria-label={theme === 'dark' ? 'Alternar para tema claro' : 'Alternar para tema escuro'}
+      >
+        {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+      </button>
       <div className="flex flex-col items-center gap-5">
         <img
           src={logoCamarj}
@@ -96,9 +115,8 @@ export function ResetarSenhaPage() {
             <form onSubmit={onSubmit} className="flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="nova-senha">Nova senha</Label>
-                <Input
+                <PasswordInput
                   id="nova-senha"
-                  type="password"
                   placeholder="Mínimo 8 caracteres"
                   value={novaSenha}
                   onChange={(e) => setNovaSenha(e.target.value)}
@@ -109,9 +127,8 @@ export function ResetarSenhaPage() {
 
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="confirmar-senha">Confirmar senha</Label>
-                <Input
+                <PasswordInput
                   id="confirmar-senha"
-                  type="password"
                   placeholder="Digite novamente"
                   value={confirmarSenha}
                   onChange={(e) => setConfirmarSenha(e.target.value)}

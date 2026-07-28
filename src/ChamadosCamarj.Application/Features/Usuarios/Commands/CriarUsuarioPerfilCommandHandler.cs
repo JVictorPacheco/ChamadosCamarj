@@ -35,7 +35,7 @@ public class CriarUsuarioPerfilCommandHandler : IRequestHandler<CriarUsuarioPerf
 
             // E-mail pertence a um usuário desativado: reativa o registro existente em vez de
             // inserir um novo, já que o índice único de Email não distingue ativo/inativo.
-            existente.Atualizar(request.Nome, request.Perfil);
+            existente.Atualizar(request.Nome, request.Perfil, request.GrupoId);
             existente.DefinirSenhaHash(_passwordHasher.HashPassword(existente, request.Senha));
             existente.Ativar();
             await _usuarioPerfilRepository.AtualizarAsync(existente, cancellationToken);
@@ -44,6 +44,9 @@ public class CriarUsuarioPerfilCommandHandler : IRequestHandler<CriarUsuarioPerf
 
         var usuario = new UsuarioPerfil(request.Email, request.Nome, request.Perfil);
         usuario.DefinirSenhaHash(_passwordHasher.HashPassword(usuario, request.Senha));
+
+        if (request.GrupoId.HasValue)
+            usuario.DefinirGrupo(request.GrupoId.Value);
 
         await _usuarioPerfilRepository.AdicionarAsync(usuario, cancellationToken);
 

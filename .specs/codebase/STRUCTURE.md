@@ -28,12 +28,17 @@ ChamadosCamarj/
 │   │   │   ├── Chamado.cs           ← Entidade principal (rich domain model)
 │   │   │   ├── Comentario.cs        ← Comentário público ou interno
 │   │   │   ├── Categoria.cs         ← Categoria do chamado
-│   │   │   └── Anexo.cs             ← Arquivo anexado (storage path)
+│   │   │   ├── Anexo.cs             ← Arquivo anexado (storage path)
+│   │   │   ├── HistoricoEntrada.cs  ← Registro de ações no chamado
+│   │   │   ├── UsuarioPerfil.cs     ← Usuário com perfil e senha
+│   │   │   └── Grupo.cs             ← Grupos/Equipes (planejado)
 │   │   ├── Enums/
 │   │   │   ├── StatusChamado.cs     ← Aberto, EmAndamento, Resolvido, Fechado, Cancelado
 │   │   │   ├── PrioridadeChamado.cs ← Baixa, Media, Alta, Urgente
 │   │   │   ├── OrigemChamado.cs     ← Portal, Email, API
-│   │   │   └── TipoComentario.cs   ← Publico, Interno
+│   │   │   ├── TipoComentario.cs   ← Publico, Interno
+│   │   │   ├── Perfil.cs            ← Admin, Atendente, Solicitante
+│   │   │   └── AcaoHistorico.cs     ← Ações registradas no histórico
 │   │   └── Interfaces/
 │   │       ├── IChamadoRepository.cs
 │   │       ├── ICategoriaRepository.cs
@@ -44,7 +49,15 @@ ChamadosCamarj/
 │   │   ├── Common/
 │   │   │   ├── Behaviours/
 │   │   │   │   └── ValidationBehaviour.cs ← Pipeline MediatR
-│   │   │   └── Exceptions/
+│   │   │   ├── IJwtTokenService.cs
+│   │   │   ├── JwtTokenService.cs
+│   │   │   ├── ResetTokenHelper.cs
+│   │   │   ├── IEmailSender.cs
+│   │   │   ├── ICurrentUserService.cs
+│   │   │   ├── AuthSettings.cs
+│   │   │   ├── Exceptions/
+│   │   │   └── Authorization/
+│   │   │       └── PerfilRequisitanteGuard.cs
 │   │   ├── Features/
 │   │   │   ├── Chamados/
 │   │   │   │   ├── Commands/
@@ -69,9 +82,13 @@ ChamadosCamarj/
 │   │   │   │       ├── AtualizarChamadoCommandValidator.cs
 │   │   │   │       ├── AtribuirChamadoCommandValidator.cs
 │   │   │   │       └── ComentarChamadoCommandValidator.cs
-│   │   │   └── Categorias/
-│   │   │       ├── DTOs/CategoriaResponse.cs
-│   │   │       └── Queries/ListarCategoriasQuery.cs + Handler ← usado via MediatR no controller
+│   │   │   ├── Categorias/
+│   │   │   │   ├── DTOs/CategoriaResponse.cs
+│   │   │   │   └── Queries/ListarCategoriasQuery.cs + Handler ← usado via MediatR no controller
+│   │   │   ├── Auth/                   ← Commands: Login, EsqueciSenha, ResetarSenha
+│   │   │   ├── Usuarios/               ← CRUD Commands/Queries
+│   │   │   ├── Relatorios/
+│   │   │   └── Dashboard/
 │   │   └── Mappings/
 │   │       └── ChamadoMappings.cs   ← Extension: Chamado → ChamadoResponse
 │   │
@@ -82,14 +99,30 @@ ChamadosCamarj/
 │   │   │   └── DatabaseSeeder.cs    ← chamado por Program.cs (SeedAsync)
 │   │   ├── Migrations/
 │   │   │   └── 20260619130320_InitialCreate.cs ← Schema PostgreSQL, inclui FK ComentarioId em Anexos
-│   │   └── Repositories/
-│   │       ├── ChamadoRepository.cs
-│   │       └── CategoriaRepository.cs
+│   │   ├── Repositories/
+│   │   │   ├── ChamadoRepository.cs
+│   │   │   ├── CategoriaRepository.cs
+│   │   │   ├── HistoricoRepository.cs
+│   │   │   └── UsuarioPerfilRepository.cs
+│   │   └── Services/
+│   │       ├── SmtpEmailSender.cs
+│   │       ├── SupabaseStorageService.cs
+│   │       ├── NullStorageService.cs
+│   │       └── GoogleTokenValidator.cs
 │   │
 │   └── ChamadosCamarj.WebApi/
 │       ├── Controllers/
 │       │   ├── ChamadosController.cs   ← GET (+ filtro solicitanteEmail), GET/{id}, GET/{id}/comentarios, POST, PUT, PATCH atribuir/resolver/fechar/cancelar, POST comentarios
-│       │   └── CategoriasController.cs ← GET via IMediator
+│       │   ├── CategoriasController.cs ← GET via IMediator
+│       │   ├── AuthController.cs       ← Login, cadastro, esqueci-senha, resetar-senha
+│       │   ├── UsuariosController.cs   ← CRUD de usuários
+│       │   └── RelatoriosController.cs
+│       ├── Services/
+│       │   └── CurrentUserService.cs   ← Extrai claims JWT do HttpContext
+│       ├── Hubs/
+│       │   └── ChamadosHub.cs          ← SignalR para notificações em tempo real
+│       ├── Middleware/
+│       │   └── ExceptionHandlingMiddleware.cs
 │       ├── Properties/launchSettings.json
 │       ├── appsettings.json            ← ConnectionString PostgreSQL/Supabase (sem senha)
 │       ├── appsettings.Development.json
@@ -100,25 +133,34 @@ ChamadosCamarj/
 │   │   └── fluxo-completo.spec.ts   ← Playwright: login mock → abrir → detalhe → comentar → listar → click no card
 │   ├── playwright.config.ts
 │   ├── src/
-│   │   ├── App.tsx                  ← Rotas (React Router), QueryClient (retry custom p/ 4xx), providers
+│   │   ├── App.tsx                  ← Rotas (React Router), QueryClient, providers (Auth, Theme, Query, SignalR)
 │   │   ├── auth/
-│   │   │   ├── AuthContext.tsx      ← Auth mockada: 3 perfis fixos, persistido em localStorage
-│   │   │   └── ProfileSelector.tsx  ← Tela `/login`
+│   │   │   ├── AuthContext.tsx      ← AuthContext com login email/senha, persistido em localStorage
+│   │   │   ├── LoginPage.tsx        ← Tela de login com email e senha
+│   │   │   ├── ResetarSenhaPage.tsx ← Tela de reset de senha
+│   │   │   └── api.ts               ← Funções de auth (login, esqueciSenha, resetarSenha)
 │   │   ├── layouts/
 │   │   │   └── AppLayout.tsx        ← Sidebar (shadcn `Sidebar`) + outlet + sair
+│   │   ├── hooks/
+│   │   │   ├── useTheme.tsx         ← ThemeProvider, useTheme: toggle entre claro/escuro
+│   │   │   └── useSignalR.tsx       ← Conexão SignalR para notificações em tempo real
 │   │   ├── lib/
 │   │   │   ├── api.ts               ← `apiFetch`/`ApiError` (cliente HTTP tipado)
 │   │   │   └── utils.ts
 │   │   ├── types/
 │   │   │   └── api.ts               ← Tipos TS espelhando os DTOs reais do backend
-│   │   ├── components/ui/           ← shadcn/ui (button, card, sidebar, select, etc.)
-│   │   └── features/chamados/
-│   │       ├── api.ts                       ← 6 funções (listarChamados, obterChamado, abrirChamado, listarComentarios, comentar, listarCategorias)
-│   │       ├── hooks/                       ← useChamados, useChamado, useComentarios, useCategorias, useAbrirChamado, useComentar
-│   │       ├── components/                  ← StatusBadge, PrioridadeBadge, SlaBadge, ChamadoCard, FiltroChamados, ComentarioList, ComentarioForm
-│   │       ├── AbrirChamadoPage.tsx         ← `/chamados/novo`
-│   │       ├── ChamadosListPage.tsx         ← `/chamados`
-│   │       └── ChamadoDetailPage.tsx        ← `/chamados/:id`
+│   │   ├── components/
+│   │   │   ├── ui/                  ← shadcn/ui (button, card, sidebar, select, tooltip, etc.)
+│   │   │   └── PasswordInput.tsx    ← Input de senha com forwardRef + toggle de visibilidade
+│   │   └── features/
+│   │       ├── chamados/
+│   │       │   ├── api.ts
+│   │       │   ├── hooks/
+│   │       │   ├── components/
+│   │       │   └── *Page.tsx
+│   │       ├── admin/
+│   │       ├── dashboard/
+│   │       └── relatorio-mensal/
 │   └── package.json
 │
 ├── docker-compose.yml               ← PostgreSQL local (não usado desde a migração para Supabase)
@@ -126,8 +168,6 @@ ChamadosCamarj/
 └── README.md
 ```
 
-## Notas sobre o que está faltando
+## Notas sobre o estado atual
 
-- Frontend React — Fase 3 (Portal do Solicitante) **completa**. Ações de Atendente (Kanban, resolver/fechar/cancelar na UI), upload de anexos, e Admin ficam pras Fases 4-6
-- `IEmailReceiverService` e `IStorageService` — interfaces existem, sem implementação (Fase 4)
-- Decisão de hospedagem em produção e injeção da connection string lá — pendente, não bloqueia o Frontend
+- Fase 5-8 completas, auth email-senha implementada, deploy Azure + Cloudflare Pages configurado. Pendências: Grupos/Equipes (planejado, sem spec).

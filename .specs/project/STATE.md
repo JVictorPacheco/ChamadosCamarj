@@ -1,6 +1,6 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-07-27
+> Atualizado em: 2026-07-28
 
 ---
 
@@ -19,6 +19,50 @@
 ---
 
 ## 📍 Onde estamos
+
+**Sessão de 2026-07-28 (openCode, retomada pós-férias): 5 features concluídas + revisão de boas práticas + deploy Azure.**
+
+### 5 Features concluídas
+1. **Toggle olhinho** 👁 — componente `PasswordInput` com `forwardRef` (compatível com react-hook-form), ícone `Eye`/`EyeOff` do lucide-react, aplicado nos 5 campos de senha (Login, ResetarSenha, UsuariosPage, UsuarioFormDialog)
+2. **Tema claro CAMARJ** ☀️ — paleta branco + verde institucional (teal-600: `#0d9488`). `ThemeProvider` + `useTheme` hook em `hooks/useTheme.tsx`. Toggle sol/lua em LoginPage, ResetarSenhaPage e AppLayout. Salvo em localStorage (`camarj-theme`), respeita `prefers-color-scheme`.
+3. **Logo CAMARJ no sidebar** 🏢 — logo + "Portal de Chamados" no `SidebarHeader` do AppLayout. Mesmo import do LoginPage.
+4. **Novas categorias** 📂 — 8 categorias (eram 5). "Autorização" → "Autorização/Auditoria". Novas: Credenciado, Comercial, Contas Médicas. Seeder com upsert inteligente (FindAsync + insert/update por GUID).
+5. **Grupos/Equipes** 👥 — entidade `Grupo`, migration `AddGrupo`, 6 grupos seed. `UsuarioPerfil.GrupoId`. RBAC: Atendente vê chamados do seu grupo. `grupo_id` claim no JWT. CRUD de Grupos (Admin). Spec em `.specs/features/grupos-equipes/spec.md`.
+
+### Revisão de boas práticas
+**Frontend:**
+- `isLoading` → `isPending` (TanStack Query v5)
+- `strict: true` no tsconfig
+- `useMemo` nos contextos (AuthProvider, ThemeProvider, SignalRProvider)
+- `staleTime: 30_000` global no QueryClient
+- `tabIndex={-1}` removido do PasswordInput (acessibilidade)
+- ThemeContext unificado com `null` + throw
+
+**Backend:**
+- N+1 corrigido: `Include(Comentarios, Anexos)` removido do ListarAsync + `AsSplitQuery()`
+- Autor de comentário: `_currentUser.Nome` do JWT, não do body (segurança)
+- `InvalidOperationException` → `BadRequestException` customizada (middleware)
+- JSON de erro em `CamelCase`
+- Rate limiting: 10 req/min no `/auth/login`
+- Health checks: `AddHealthChecks().AddNpgSql()` + `/health`
+
+### Deploy Azure
+- GitHub Actions workflow: `.github/workflows/deploy-azure.yml`
+- Guia de deploy Azure App Service Free F1: `docs/DEPLOY-AZURE.md`
+- README atualizado com URLs de produção
+
+### Documentação atualizada
+- `.specs/codebase/CONVENTIONS.md` — PasswordInput, ThemeProvider, forwardRef pattern
+- `.specs/codebase/STACK.md` — auth atual, CI/CD, hosting
+- `.specs/codebase/STRUCTURE.md` — entidades, features, serviços atuais
+- `.specs/codebase/TESTING.md` — 218 testes
+- `.specs/project/ROADMAP.md` — Grupos, Categorias, Tema marcados ✅
+- `.specs/features/grupos-equipes/spec.md` — spec completa
+
+### Status final
+- **218 testes** backend passando, **0 erros** TypeScript, **build limpo**
+- Branch: `develop`, ~60 arquivos modificados/criados
+- Sem blockers ativos
 
 **Sessão de 2026-07-27 (nova parceira, opencode): orquestração + frontend auth-email-senha concluído.**
 - Setup de orquestração criado (`opencode.json` com 5 agentes: spec, build-backend, build-frontend, review, explorar — todos modelos Go)
@@ -233,15 +277,15 @@ Nenhum.
 
 | Pendência | Detalhe |
 |-----------|---------|
-| Hospedagem em produção | Onde a API vai rodar (VM, Docker, Azure App Service etc.) — não depende mais do OAuth do Google (login agora é e-mail/senha), mas segue em aberto |
+| Hospedagem em produção | Onde a API vai rodar — Azure App Service Free F1 configurado (GitHub Actions + guia), mas ainda não ativado (falta criar o App Service no portal Azure) |
 | Fase 4 (Email/IMAP) | Ainda não implementada — depende de senha de app do IMAP (`suporte@camarj.com.br`/`ti@camarj.com.br`), usuário ainda não tem |
 | ~~Resposta da TI sobre o Client ID do Google OAuth~~ | **OBSOLETO em 2026-07-24** — a TI informou que o Client ID está fora do plano da CAMARJ. Login Google (`AutenticarGoogleCommand`, T09/F5b) fica implementado mas dormant no backend; substituído por login e-mail/senha, ver `.specs/features/auth-email-senha/` |
 | ~~**Login e-mail/senha — retomar implementação**~~ | ✅ **CONCLUÍDO em 2026-07-27** — backend + frontend completos, 218 testes passando, migration `AddSenhaHashUsuarioPerfil` com Up/Down corretos, build limpo |
-| **Grupos/Equipes para visualização de chamados** | **NOVO (2026-07-27).** Usuários pertencem a um grupo (ex: Reembolso, Credenciado, etc.). Atendentes do mesmo grupo podem ver e interagir nos chamados uns dos outros — útil quando alguém sai de férias e o colega da mesma área precisa dar continuidade. **Ainda sem spec.** |
-| **Novas categorias + renomear existente** | **NOVO (2026-07-27).** Adicionar: Credenciado, Comercial, Contas Médicas. Renomear "Autorização" → "Autorização/Auditoria". Total: 8 categorias. **Ainda sem spec.** |
-| **Tema claro (light mode)** | **NOVO (2026-07-27).** Hoje só existe tema escuro. Adicionar toggle claro/escuro (padrão do shadcn/ui via `next-themes` ou CSS custom properties), respeitando a preferência do sistema. Afeta todas as telas. **Ainda sem spec.** |
-| **Logo CAMARJ no header/sidebar** | **NOVO (2026-07-27).** O logo da CAMARJ já aparece na tela de login, mas não no layout principal (sidebar/header do AppLayout). Adicionar o logo no topo da sidebar pra identidade visual. **Ainda sem spec.** |
-| **Toggle mostrar/ocultar senha (olhinho)** | **NOVO (2026-07-27).** Campos de senha (login, cadastro de usuário, redefinir senha, resetar senha) não têm botão pra revelar a senha digitada. Adicionar ícone de olho (👁) que alterna `type="password"` ↔ `type="text"`. **Ainda sem spec.** |
+| ~~**Grupos/Equipes para visualização de chamados**~~ | ✅ **CONCLUÍDO em 2026-07-28**. Spec em `.specs/features/grupos-equipes/spec.md` |
+| ~~**Novas categorias + renomear existente**~~ | ✅ **CONCLUÍDO em 2026-07-28**. 8 categorias (eram 5), seeder com upsert inteligente |
+| ~~**Tema claro (light mode)**~~ | ✅ **CONCLUÍDO em 2026-07-28**. Paleta branco + verde CAMARJ, toggle em Login/ResetarSenha/AppLayout |
+| ~~**Logo CAMARJ no header/sidebar**~~ | ✅ **CONCLUÍDO em 2026-07-28**. Logo + "Portal de Chamados" no SidebarHeader |
+| ~~**Toggle mostrar/ocultar senha (olhinho)**~~ | ✅ **CONCLUÍDO em 2026-07-28**. PasswordInput com forwardRef, 5 campos atualizados |
 
 ---
 

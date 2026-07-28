@@ -21,13 +21,16 @@ public class JwtTokenService : IJwtTokenService
         var chave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_authSettings.JwtSigningKey));
         var credenciais = new SigningCredentials(chave, SecurityAlgorithms.HmacSha256);
 
-        var claims = new[]
+        var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, usuario.Email),
             new Claim(ClaimTypes.Name, usuario.Nome),
             new Claim("perfil", usuario.Perfil.ToString()),
         };
+
+        if (usuario.GrupoId.HasValue)
+            claims.Add(new Claim("grupo_id", usuario.GrupoId.Value.ToString()));
 
         var token = new JwtSecurityToken(
             issuer: "ChamadosCamarj",

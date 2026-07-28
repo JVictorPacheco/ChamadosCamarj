@@ -11,6 +11,8 @@ public static class UsuarioPerfilMappings
             usuarioPerfil.Email,
             usuarioPerfil.Nome,
             usuarioPerfil.Perfil,
-            usuarioPerfil.Ativo
+            usuarioPerfil.Ativo,
+            usuarioPerfil.GrupoId,
+            usuarioPerfil.Grupo?.Nome
         );
 }

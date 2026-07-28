@@ -104,4 +104,13 @@ export interface UsuarioPerfilResponse {
   nome: string;
   perfil: TipoPerfil;
   ativo: boolean;
+  grupoId?: string | null;
+  grupoNome?: string | null;
+}
+
+export interface GrupoResponse {
+  id: string;
+  nome: string;
+  descricao: string;
+  ativo: boolean;
 }

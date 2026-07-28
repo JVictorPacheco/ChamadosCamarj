@@ -230,6 +230,38 @@ namespace ChamadosCamarj.Infrastructure.Migrations
                     b.ToTable("Comentarios", (string)null);
                 });
 
+            modelBuilder.Entity("ChamadosCamarj.Domain.Entities.Grupo", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("DataAtualizacao")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DataCriacao")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Nome")
+                        .IsUnique();
+
+                    b.ToTable("Grupos", (string)null);
+                });
+
             modelBuilder.Entity("ChamadosCamarj.Domain.Entities.HistoricoEntrada", b =>
                 {
                     b.Property<Guid>("Id")
@@ -297,6 +329,9 @@ namespace ChamadosCamarj.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<Guid?>("GrupoId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Nome")
                         .IsRequired()
                         .HasMaxLength(150)
@@ -315,6 +350,8 @@ namespace ChamadosCamarj.Infrastructure.Migrations
 
                     b.HasIndex("Email")
                         .IsUnique();
+
+                    b.HasIndex("GrupoId");
 
                     b.ToTable("UsuariosPerfil", (string)null);
                 });
@@ -359,6 +396,16 @@ namespace ChamadosCamarj.Infrastructure.Migrations
                     b.Navigation("Chamado");
                 });
 
+            modelBuilder.Entity("ChamadosCamarj.Domain.Entities.UsuarioPerfil", b =>
+                {
+                    b.HasOne("ChamadosCamarj.Domain.Entities.Grupo", "Grupo")
+                        .WithMany("Usuarios")
+                        .HasForeignKey("GrupoId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Grupo");
+                });
+
             modelBuilder.Entity("ChamadosCamarj.Domain.Entities.Categoria", b =>
                 {
                     b.Navigation("Chamados");
@@ -369,6 +416,11 @@ namespace ChamadosCamarj.Infrastructure.Migrations
                     b.Navigation("Anexos");
 
                     b.Navigation("Comentarios");
+                });
+
+            modelBuilder.Entity("ChamadosCamarj.Domain.Entities.Grupo", b =>
+                {
+                    b.Navigation("Usuarios");
                 });
 #pragma warning restore 612, 618
         }
