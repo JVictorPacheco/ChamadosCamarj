@@ -15,7 +15,7 @@ interface ReatribuirModalProps {
 export function ReatribuirModal({ open, onOpenChange, chamadoId, responsavelAtualId }: ReatribuirModalProps) {
   const [novoResponsavelId, setNovoResponsavelId] = useState('')
   const { mutate, isPending, error, reset } = useReatribuirChamado(chamadoId)
-  const { data: atendentes, isLoading: carregandoAtendentes, isError: erroAtendentes } = useAtendentes()
+  const { data: atendentes, isPending: carregandoAtendentes, isError: erroAtendentes } = useAtendentes()
 
   const opcoes = (atendentes ?? []).filter((atendente) => atendente.id !== responsavelAtualId)
 

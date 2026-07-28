@@ -42,7 +42,7 @@ public class AtualizarUsuarioPerfilCommandHandler : IRequestHandler<AtualizarUsu
         else if (!request.Ativo && usuario.Ativo)
             usuario.Desativar();
 
-        usuario.Atualizar(request.Nome, request.Perfil);
+        usuario.Atualizar(request.Nome, request.Perfil, request.GrupoId);
 
         await _usuarioPerfilRepository.AtualizarAsync(usuario, cancellationToken);
 

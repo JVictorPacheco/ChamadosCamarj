@@ -53,6 +53,8 @@ public class ListarChamadosQueryHandler : IRequestHandler<ListarChamadosQuery, P
             statusEntre,
             dataInicio,
             dataFim,
+            request.UsuarioLogadoId,
+            request.GrupoId,
             cancellationToken);
 
         return new PagedResult<ChamadoResponse>(

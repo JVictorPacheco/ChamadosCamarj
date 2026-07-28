@@ -42,7 +42,8 @@ public class ChamadosController : ControllerBase
         [FromQuery] DateTime? dataFim = null,
         CancellationToken cancellationToken = default)
     {
-        var query = new ListarChamadosQuery(pagina, tamanhoPagina, status, prioridade, responsavelId, categoriaId, busca, solicitanteEmail, finalizados, dataInicio, dataFim);
+        var query = new ListarChamadosQuery(pagina, tamanhoPagina, status, prioridade, responsavelId, categoriaId, busca, solicitanteEmail, finalizados, dataInicio, dataFim,
+            _currentUser.UsuarioId, _currentUser.GrupoId);
         var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
     }
@@ -262,7 +263,7 @@ public class ChamadosController : ControllerBase
         [FromBody] ComentarChamadoRequest request,
         CancellationToken cancellationToken)
     {
-        var command = new ComentarChamadoCommand(id, request.Autor, request.Conteudo, request.Interno);
+        var command = new ComentarChamadoCommand(id, _currentUser.Nome, request.Conteudo, request.Interno);
         var result = await _mediator.Send(command, cancellationToken);
         return CreatedAtAction(nameof(ListarComentarios), new { id }, result);
     }

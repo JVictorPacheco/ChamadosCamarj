@@ -7,5 +7,7 @@ public record UsuarioPerfilResponse(
     string Email,
     string Nome,
     Perfil Perfil,
-    bool Ativo
+    bool Ativo,
+    Guid? GrupoId = null,
+    string? GrupoNome = null
 );

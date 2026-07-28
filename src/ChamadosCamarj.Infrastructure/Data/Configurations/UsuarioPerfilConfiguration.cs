@@ -31,6 +31,14 @@ public class UsuarioPerfilConfiguration : IEntityTypeConfiguration<UsuarioPerfil
         builder.Property(u => u.SenhaHash)
             .HasMaxLength(500);
 
+        builder.Property(u => u.GrupoId)
+            .IsRequired(false);
+
+        builder.HasOne(u => u.Grupo)
+            .WithMany(g => g.Usuarios)
+            .HasForeignKey(u => u.GrupoId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         builder.HasIndex(u => u.Email)
             .IsUnique();
     }

@@ -9,5 +9,6 @@ public record CriarUsuarioPerfilCommand(
     string Nome,
     Perfil Perfil,
     string Senha,
+    Guid? GrupoId = null,
     string? PerfilRequisitante = null
 ) : IRequest<UsuarioPerfilResponse>;

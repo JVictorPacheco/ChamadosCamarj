@@ -25,6 +25,8 @@ public class UsuarioPerfil : BaseEntity
     public Perfil Perfil { get; private set; }
     public bool Ativo { get; private set; }
     public string? SenhaHash { get; private set; }
+    public Guid? GrupoId { get; private set; }
+    public Grupo? Grupo { get; private set; }
 
     public void DefinirSenhaHash(string senhaHash)
     {
@@ -35,13 +37,20 @@ public class UsuarioPerfil : BaseEntity
         DataAtualizacao = DateTime.UtcNow;
     }
 
-    public void Atualizar(string nome, Perfil perfil)
+    public void Atualizar(string nome, Perfil perfil, Guid? grupoId = null)
     {
         if (string.IsNullOrWhiteSpace(nome))
             throw new ArgumentException("Nome é obrigatório.", nameof(nome));
 
         Nome = nome;
         Perfil = perfil;
+        GrupoId = grupoId;
+        DataAtualizacao = DateTime.UtcNow;
+    }
+
+    public void DefinirGrupo(Guid? grupoId)
+    {
+        GrupoId = grupoId;
         DataAtualizacao = DateTime.UtcNow;
     }
 

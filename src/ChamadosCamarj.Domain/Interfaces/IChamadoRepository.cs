@@ -35,6 +35,8 @@ public interface IChamadoRepository
         IEnumerable<StatusChamado>? statusEntre = null,
         DateTime? dataInicio = null,
         DateTime? dataFim = null,
+        Guid? usuarioLogadoId = null,
+        Guid? grupoId = null,
         CancellationToken cancellationToken = default);
 
     // Verificações

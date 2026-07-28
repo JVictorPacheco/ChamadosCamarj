@@ -3,12 +3,14 @@ import { Controller, useForm } from 'react-hook-form'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/PasswordInput'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ApiError } from '@/lib/api'
 import { useAtualizarUsuario, useCriarUsuario } from '../hooks/useUsuarios'
+import { useGrupos } from '../hooks/useGrupos'
 import type { TipoPerfil, UsuarioPerfilResponse } from '@/types/api'
 
 interface UsuarioFormDialogProps {
@@ -23,17 +25,19 @@ interface FormValues {
   perfil: TipoPerfil
   ativo: boolean
   senha: string
+  grupoId: string
 }
 
 const PERFIS: TipoPerfil[] = ['Admin', 'Atendente', 'Solicitante']
 
-const VALORES_PADRAO: FormValues = { nome: '', email: '', perfil: 'Solicitante', ativo: true, senha: '' }
+const VALORES_PADRAO: FormValues = { nome: '', email: '', perfil: 'Solicitante', ativo: true, senha: '', grupoId: '' }
 
 export function UsuarioFormDialog({ open, onOpenChange, usuario }: UsuarioFormDialogProps) {
   const emEdicao = !!usuario
   const { mutate: criar, isPending: criando, error: erroCriar, reset: resetCriar } = useCriarUsuario()
   const { mutate: atualizar, isPending: atualizando, error: erroAtualizar, reset: resetAtualizar } =
     useAtualizarUsuario()
+  const { data: grupos } = useGrupos()
 
   const isPending = criando || atualizando
   const erro = erroCriar ?? erroAtualizar
@@ -52,7 +56,7 @@ export function UsuarioFormDialog({ open, onOpenChange, usuario }: UsuarioFormDi
 
     reset(
       usuario
-        ? { nome: usuario.nome, email: usuario.email, perfil: usuario.perfil, ativo: usuario.ativo, senha: '' }
+        ? { nome: usuario.nome, email: usuario.email, perfil: usuario.perfil, ativo: usuario.ativo, senha: '', grupoId: usuario.grupoId ?? '' }
         : VALORES_PADRAO,
     )
     resetCriar()
@@ -77,16 +81,18 @@ export function UsuarioFormDialog({ open, onOpenChange, usuario }: UsuarioFormDi
   }
 
   const onSubmit = (values: FormValues) => {
+    const grupoId = values.grupoId || null
+
     if (emEdicao && usuario) {
       atualizar(
-        { id: usuario.id, dados: { nome: values.nome, perfil: values.perfil, ativo: values.ativo } },
+        { id: usuario.id, dados: { nome: values.nome, perfil: values.perfil, ativo: values.ativo, grupoId } },
         { onSuccess: () => fechar(false), onError: tratarErro },
       )
       return
     }
 
     criar(
-      { email: values.email, nome: values.nome, perfil: values.perfil, senha: values.senha },
+      { email: values.email, nome: values.nome, perfil: values.perfil, senha: values.senha, grupoId },
       { onSuccess: () => fechar(false), onError: tratarErro },
     )
   }
@@ -122,9 +128,8 @@ export function UsuarioFormDialog({ open, onOpenChange, usuario }: UsuarioFormDi
           {!emEdicao && (
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="senha">Senha</Label>
-              <Input
+              <PasswordInput
                 id="senha"
-                type="password"
                 {...register('senha', { required: !emEdicao && 'Senha é obrigatória.', minLength: { value: 8, message: 'Mínimo 8 caracteres.' } })}
               />
               {errors.senha && <p className="text-sm text-destructive">{errors.senha.message}</p>}
@@ -153,6 +158,29 @@ export function UsuarioFormDialog({ open, onOpenChange, usuario }: UsuarioFormDi
               )}
             />
             {errors.perfil && <p className="text-sm text-destructive">{errors.perfil.message}</p>}
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label>Grupo</Label>
+            <Controller
+              control={control}
+              name="grupoId"
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Nenhum" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Nenhum</SelectItem>
+                    {(grupos ?? []).map((g) => (
+                      <SelectItem key={g.id} value={g.id}>
+                        {g.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </div>
 
           {emEdicao && (

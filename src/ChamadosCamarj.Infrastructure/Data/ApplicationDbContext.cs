@@ -13,6 +13,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Anexo> Anexos => Set<Anexo>();
     public DbSet<HistoricoEntrada> Historico => Set<HistoricoEntrada>();
     public DbSet<UsuarioPerfil> UsuariosPerfil => Set<UsuarioPerfil>();
+    public DbSet<Grupo> Grupos => Set<Grupo>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

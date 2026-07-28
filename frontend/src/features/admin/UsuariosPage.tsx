@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/PasswordInput'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/auth/AuthContext'
 import { useAtualizarUsuario, useRedefinirSenha, useUsuarios } from './hooks/useUsuarios'
@@ -41,7 +41,7 @@ export function UsuariosPage() {
     setAlternandoId(usuario.id)
     setErroAlternar(null)
     atualizarUsuario.mutate(
-      { id: usuario.id, dados: { nome: usuario.nome, perfil: usuario.perfil, ativo: !usuario.ativo } },
+      { id: usuario.id, dados: { nome: usuario.nome, perfil: usuario.perfil, ativo: !usuario.ativo, grupoId: usuario.grupoId } },
       {
         onError: () =>
           setErroAlternar(`Não foi possível ${usuario.ativo ? 'desativar' : 'reativar'} ${usuario.nome}. Tente novamente.`),
@@ -96,6 +96,7 @@ export function UsuariosPage() {
                 <TableHead>Nome</TableHead>
                 <TableHead>E-mail</TableHead>
                 <TableHead>Perfil</TableHead>
+                <TableHead>Grupo</TableHead>
                 <TableHead>Ativo</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
@@ -106,6 +107,7 @@ export function UsuariosPage() {
                   <TableCell>{usuario.nome}</TableCell>
                   <TableCell>{usuario.email}</TableCell>
                   <TableCell>{usuario.perfil}</TableCell>
+                  <TableCell>{usuario.grupoNome ?? '—'}</TableCell>
                   <TableCell>
                     <Badge variant={usuario.ativo ? 'default' : 'secondary'}>
                       {usuario.ativo ? 'Ativo' : 'Inativo'}
@@ -179,9 +181,8 @@ export function UsuariosPage() {
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="nova-senha">Nova senha</Label>
-              <Input
+              <PasswordInput
                 id="nova-senha"
-                type="password"
                 placeholder="Mínimo 8 caracteres"
                 value={novaSenha}
                 onChange={(e) => setNovaSenha(e.target.value)}

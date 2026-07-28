@@ -16,7 +16,7 @@
 | Scalar.AspNetCore | latest | UI de documentação OpenAPI |
 | MailKit | planned | IMAP — captura de e-mails (Fase 4) |
 | Serilog | planned | Logging estruturado (Fase futura) |
-| SignalR | planned | Notificações em tempo real (Fase 5) |
+| SignalR | ✅ Implementado (Fase 5) | Notificações em tempo real |
 
 ## Pacotes principais (Frontend — `frontend/`, Fase 3 completa)
 
@@ -32,16 +32,17 @@
 | React Hook Form | 7.x | Formulários (`AbrirChamadoPage`) |
 | @playwright/test | 1.61.x | Teste E2E (`frontend/e2e/`) |
 
-## Auth (Frontend, Fase 3)
+## Auth (Frontend)
 
-Mockada — `AuthContext` com 3 perfis fixos (Admin/Atendente/Solicitante) salvos em `localStorage`, sem chamada real ao Azure AD. Login corporativo real (Microsoft Entra ID) fica pra **Fase 6** — depende de acesso ao tenant da Camarj, ainda não disponível.
+Email e senha via ASP.NET Core Identity PasswordHasher (login, cadastro, redefinir senha, reset por e-mail). Login Google Workspace implementado mas dormant (descontinuado pela TI).
 
 ## Infraestrutura
 
 - **Dev e Prod:** PostgreSQL via Supabase (mesma instância) — conexão via Session pooler, senha em `dotnet user-secrets` (dev)
 - **Storage:** Supabase Storage (S3-compatible)
-- **Auth:** Azure AD (Microsoft Entra ID)
-- **CI/CD:** GitHub Actions (planejado)
+- **CI/CD:** GitHub Actions para deploy no Azure App Service (`.github/workflows/deploy-azure.yml`)
+- **Frontend hosting:** Cloudflare Pages (grátis, deploy automático no push da main)
+- **Backend hosting:** Azure App Service Free F1 (grátis, .NET 9 nativo)
 - **Containers:** `docker-compose.yml` existe mas não é mais usado para o banco (era PostgreSQL local antes da migração para Supabase)
 
 ## Ferramentas de dev

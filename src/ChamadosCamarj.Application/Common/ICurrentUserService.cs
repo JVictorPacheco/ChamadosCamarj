@@ -9,4 +9,5 @@ public interface ICurrentUserService
     Guid UsuarioId { get; }
     string Nome { get; }
     string Perfil { get; }
+    Guid? GrupoId { get; }
 }

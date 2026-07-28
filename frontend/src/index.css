@@ -53,24 +53,25 @@
 }
 
 :root {
+    /* Tema Claro CAMARJ — branco + verde institucional */
     --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
+    --foreground: #0a1413;
     --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
+    --card-foreground: #0a1413;
     --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
+    --popover-foreground: #0a1413;
+    --primary: #0d9488;
+    --primary-foreground: oklch(1 0 0);
+    --secondary: #ccfbf1;
+    --secondary-foreground: #0f766e;
+    --muted: #f0fdfa;
+    --muted-foreground: #115e59;
+    --accent: #ccfbf1;
+    --accent-foreground: #0d9488;
     --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
+    --border: #99f6e4;
+    --input: #ccfbf1;
+    --ring: #5eead4;
     /* Paleta categórica validada (dataviz skill, node scripts/validate_palette.js — ALL CHECKS PASS contra superfície #ffffff) */
     --chart-1: #2a78d6;
     --chart-2: #1baf7a;
@@ -80,14 +81,14 @@
     --status-good: #0ca30c;
     --status-critical: #d03b3b;
     --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+    --sidebar: #f0fdfa;
+    --sidebar-foreground: #042f2e;
+    --sidebar-primary: #0d9488;
+    --sidebar-primary-foreground: oklch(1 0 0);
+    --sidebar-accent: #ccfbf1;
+    --sidebar-accent-foreground: #0d9488;
+    --sidebar-border: #99f6e4;
+    --sidebar-ring: #5eead4;
 }
 
 .dark {
