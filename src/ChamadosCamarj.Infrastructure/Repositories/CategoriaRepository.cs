@@ -48,4 +48,15 @@ public class CategoriaRepository : ICategoriaRepository
     {
         return await _dbSet.AnyAsync(c => c.Id == id, cancellationToken);
     }
+
+    public async Task RemoverAsync(Categoria categoria, CancellationToken cancellationToken = default)
+    {
+        _dbSet.Remove(categoria);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<bool> PossuiChamadosAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _context.Chamados.AnyAsync(c => c.CategoriaId == id, cancellationToken);
+    }
 }

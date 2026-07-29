@@ -4,9 +4,11 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { useAuth } from '@/auth/AuthContext'
-import { useCategoriasAdmin } from './hooks/useCategorias'
+import { useCategoriasAdmin, useExcluirCategoria } from './hooks/useCategorias'
 import { CategoriaFormDialog } from './components/CategoriaFormDialog'
+import { ApiError } from '@/lib/api'
 import type { CategoriaResponse } from '@/types/api'
 
 export function CategoriasPage() {
@@ -15,6 +17,8 @@ export function CategoriasPage() {
   const { data: categorias, isPending, isError } = useCategoriasAdmin()
   const [dialogAberto, setDialogAberto] = useState(false)
   const [categoriaSelecionada, setCategoriaSelecionada] = useState<CategoriaResponse | null>(null)
+  const [excluindoCategoria, setExcluindoCategoria] = useState<CategoriaResponse | null>(null)
+  const excluirMutation = useExcluirCategoria()
 
   const abrirNovo = () => {
     setCategoriaSelecionada(null)
@@ -24,6 +28,13 @@ export function CategoriasPage() {
   const abrirEdicao = (categoria: CategoriaResponse) => {
     setCategoriaSelecionada(categoria)
     setDialogAberto(true)
+  }
+
+  const confirmarExclusao = () => {
+    if (!excluindoCategoria) return
+    excluirMutation.mutate(excluindoCategoria.id, {
+      onSettled: () => setExcluindoCategoria(null),
+    })
   }
 
   if (!isAdmin) {
@@ -83,6 +94,13 @@ export function CategoriasPage() {
                     <Button variant="outline" size="sm" onClick={() => abrirEdicao(categoria)}>
                       Editar
                     </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => setExcluindoCategoria(categoria)}
+                    >
+                      Excluir
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -92,6 +110,36 @@ export function CategoriasPage() {
       )}
 
       <CategoriaFormDialog open={dialogAberto} onOpenChange={setDialogAberto} categoria={categoriaSelecionada} />
+
+      <Dialog open={!!excluindoCategoria} onOpenChange={(open) => { if (!open) setExcluindoCategoria(null) }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Excluir categoria</DialogTitle>
+            <DialogDescription>
+              Tem certeza que deseja excluir a categoria "{excluindoCategoria?.nome}"? Esta ação não pode ser desfeita. Categorias com chamados vinculados não poderão ser excluídas.
+            </DialogDescription>
+          </DialogHeader>
+          {excluirMutation.isError && (
+            <Alert variant="destructive">
+              <AlertDescription>
+                {excluirMutation.error instanceof ApiError ? excluirMutation.error.message : 'Erro ao excluir categoria.'}
+              </AlertDescription>
+            </Alert>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setExcluindoCategoria(null)}>
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={excluirMutation.isPending}
+              onClick={confirmarExclusao}
+            >
+              {excluirMutation.isPending ? 'Excluindo...' : 'Excluir'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

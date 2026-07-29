@@ -1,6 +1,9 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using ChamadosCamarj.Application.Common;
+using ChamadosCamarj.Application.Common.Exceptions;
+using ChamadosCamarj.Application.Common.Authorization;
+using ChamadosCamarj.Domain.Interfaces;
 using ChamadosCamarj.Application.Features.Categorias.Commands;
 using ChamadosCamarj.Application.Features.Categorias.DTOs;
 using ChamadosCamarj.Application.Features.Categorias.Queries;
@@ -14,11 +17,13 @@ public class CategoriasController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly ICurrentUserService _currentUser;
+    private readonly ICategoriaRepository _categoriaRepository;
 
-    public CategoriasController(IMediator mediator, ICurrentUserService currentUser)
+    public CategoriasController(IMediator mediator, ICurrentUserService currentUser, ICategoriaRepository categoriaRepository)
     {
         _mediator = mediator;
         _currentUser = currentUser;
+        _categoriaRepository = categoriaRepository;
     }
 
     /// <summary>
@@ -65,6 +70,32 @@ public class CategoriasController : ControllerBase
 
         if (result is null)
             return NotFound(new { message = "Categoria não encontrada." });
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Exclui uma categoria (somente Admin). Categorias com chamados vinculados não podem ser excluídas.
+    /// </summary>
+    [HttpDelete("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Excluir(
+        Guid id,
+        CancellationToken cancellationToken)
+    {
+        PerfilRequisitanteGuard.ExigirAdmin(_currentUser.Perfil);
+
+        var categoria = await _categoriaRepository.ObterPorIdAsync(id, cancellationToken);
+        if (categoria is null)
+            return NotFound(new { message = "Categoria não encontrada." });
+
+        if (await _categoriaRepository.PossuiChamadosAsync(id, cancellationToken))
+            return Conflict(new { message = "Não é possível excluir esta categoria porque existem chamados vinculados a ela. Desative-a em vez disso." });
+
+        await _categoriaRepository.RemoverAsync(categoria, cancellationToken);
 
         return NoContent();
     }

@@ -28,3 +28,7 @@ export function criarCategoria(dados: { nome: string; descricao: string }): Prom
 export function atualizarCategoria(id: string, dados: { nome: string; descricao: string; ativa: boolean }): Promise<CategoriaResponse> {
   return apiFetch<CategoriaResponse>(`/categorias/${id}`, { method: 'PUT', body: JSON.stringify(dados) })
 }
+
+export function excluirCategoria(id: string): Promise<void> {
+  return apiFetch<void>(`/categorias/${id}`, { method: 'DELETE' })
+}
