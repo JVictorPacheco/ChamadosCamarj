@@ -118,7 +118,9 @@
 - [x] **Forçar encerramento** — Admin fecha um chamado direto de qualquer status não-final (Aberto/EmAndamento/Resolvido), com motivo obrigatório auditado no histórico (`AcaoHistorico.EncerramentoForcado`). Implementado e verificado em 2026-07-19 (`.specs/features/forcar-encerramento/`) — falta só o clique real no navegador, bloqueado pelo Client ID do Google (mesma pendência do T09/F5b)
 - [x] ~~Mapeamento conta→perfil no backend~~ → entra pelo F5a (tabela `UsuarioPerfil`)
 - [x] **RBAC real (baseado em claims do token Google) IMPLEMENTADO** — `ICurrentUserService` lê `perfil`/`sub`/`name` dos claims do JWT em todos os Controllers
-- [ ] Admin: gerenciar categorias, usuários e configurações do sistema
+- [x] Admin: gerenciar categorias (CRUD) — implementado em 2026-07-28
+- [x] Admin: gerenciar grupos (CRUD) — implementado em 2026-07-28
+- [x] Admin: gerenciar usuários (CRUD) — implementado em 2026-07-16
 
 ## 📈 Fase 7 — Relatório Mensal (CONCLUÍDA — antecipada)
 

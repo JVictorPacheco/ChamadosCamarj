@@ -16,7 +16,7 @@ import { Separator } from '@/components/ui/separator'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { useAuth } from '@/auth/AuthContext'
 import { useTheme } from '@/hooks/useTheme'
-import { Kanban, LayoutDashboard, Inbox, FileBarChart, Users, Archive, Sun, Moon, FolderKanban } from 'lucide-react'
+import { Kanban, LayoutDashboard, Inbox, FileBarChart, Users, Archive, Sun, Moon, Tags, FolderKanban } from 'lucide-react'
 import logoCamarj from '../assets/logo-camarj.png'
 
 export function AppLayout() {
@@ -121,6 +121,14 @@ export function AppLayout() {
                     <Link to="/admin/usuarios">
                       <Users className="h-4 w-4" />
                       Usuários
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={location.pathname === '/admin/categorias'}>
+                    <Link to="/admin/categorias">
+                      <Tags className="h-4 w-4" />
+                      Categorias
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
