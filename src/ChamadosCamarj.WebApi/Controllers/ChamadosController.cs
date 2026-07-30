@@ -166,9 +166,12 @@ public class ChamadosController : ControllerBase
     [HttpPatch("{id:guid}/fechar")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Fechar(Guid id, CancellationToken cancellationToken)
+    public async Task<IActionResult> Fechar(Guid id, [FromBody] CancelarChamadoRequest? request, CancellationToken cancellationToken)
     {
-        await _mediator.Send(new FecharChamadoCommand(id, _currentUser.UsuarioId, _currentUser.Nome), cancellationToken);
+        var motivo = request?.Motivo is not null
+            ? Enum.Parse<Domain.Enums.MotivoEncerramento>(request.Motivo, ignoreCase: true)
+            : Domain.Enums.MotivoEncerramento.Resolvido;
+        await _mediator.Send(new FecharChamadoCommand(id, motivo, request?.MotivoOutro, _currentUser.UsuarioId, _currentUser.Nome), cancellationToken);
         return NoContent();
     }
 
@@ -178,9 +181,10 @@ public class ChamadosController : ControllerBase
     [HttpPatch("{id:guid}/cancelar")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Cancelar(Guid id, CancellationToken cancellationToken)
+    public async Task<IActionResult> Cancelar(Guid id, [FromBody] CancelarChamadoRequest request, CancellationToken cancellationToken)
     {
-        await _mediator.Send(new CancelarChamadoCommand(id, _currentUser.UsuarioId, _currentUser.Nome), cancellationToken);
+        var motivo = Enum.Parse<Domain.Enums.MotivoEncerramento>(request.Motivo, ignoreCase: true);
+        await _mediator.Send(new CancelarChamadoCommand(id, motivo, request.MotivoOutro, _currentUser.UsuarioId, _currentUser.Nome), cancellationToken);
         return NoContent();
     }
 
@@ -209,7 +213,8 @@ public class ChamadosController : ControllerBase
         [FromBody] ForcarEncerramentoRequest request,
         CancellationToken cancellationToken)
     {
-        var command = new ForcarEncerramentoChamadoCommand(id, request.Motivo, _currentUser.UsuarioId, _currentUser.Nome, _currentUser.Perfil);
+        var motivo = Enum.Parse<Domain.Enums.MotivoEncerramento>(request.Motivo, ignoreCase: true);
+        var command = new ForcarEncerramentoChamadoCommand(id, motivo, request.MotivoOutro, _currentUser.UsuarioId, _currentUser.Nome, _currentUser.Perfil);
         await _mediator.Send(command, cancellationToken);
         return NoContent();
     }

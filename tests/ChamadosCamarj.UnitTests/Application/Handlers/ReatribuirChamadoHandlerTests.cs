@@ -6,6 +6,7 @@ using ChamadosCamarj.Domain.Interfaces;
 using FluentAssertions;
 using MediatR;
 using Moq;
+using ChamadosCamarj.Application.Common.Interfaces;
 
 namespace ChamadosCamarj.UnitTests.Application.Handlers;
 
@@ -14,6 +15,7 @@ public class ReatribuirChamadoHandlerTests
     private readonly Mock<IChamadoRepository> _chamadoRepositoryMock = new();
     private readonly Mock<IHistoricoRepository> _historicoRepositoryMock = new();
     private readonly Mock<IPublisher> _publisherMock = new();
+    private readonly Mock<IUnitOfWork> _unitOfWorkMock = new();
     private readonly ReatribuirChamadoCommandHandler _handler;
 
     public ReatribuirChamadoHandlerTests()
@@ -21,7 +23,8 @@ public class ReatribuirChamadoHandlerTests
         _handler = new ReatribuirChamadoCommandHandler(
             _chamadoRepositoryMock.Object,
             _historicoRepositoryMock.Object,
-            _publisherMock.Object);
+            _publisherMock.Object,
+            _unitOfWorkMock.Object);
     }
 
     [Fact]

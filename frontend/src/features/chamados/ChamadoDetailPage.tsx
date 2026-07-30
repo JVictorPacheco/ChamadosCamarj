@@ -16,7 +16,6 @@ import { AlterarPrioridadeModal } from './components/AlterarPrioridadeModal'
 import { ForcarEncerramentoModal } from './components/ForcarEncerramentoModal'
 import { TimelineHistorico } from './components/TimelineHistorico'
 import { AnexosList } from './components/AnexosList'
-import { UploadAnexoForm } from './components/UploadAnexoForm'
 import { useChamado } from './hooks/useChamado'
 import {
   useAtribuirChamado,
@@ -71,16 +70,15 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
     confirmarAcao === 'reabrir' ? 'O chamado voltará para o status Em Andamento e o responsável será removido.' : ''
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-3">
       {isAtendente && status === 'Aberto' && (
-        <Button size="sm" disabled={isPending} onClick={() => atribuir.mutate()}>
+        <Button disabled={isPending} onClick={() => atribuir.mutate()}>
           {atribuir.isPending ? 'Assumindo...' : 'Assumir'}
         </Button>
       )}
 
       {isAtendente && status === 'EmAndamento' && (
         <Button
-          size="sm"
           disabled={isPending}
           onClick={() => setConfirmarAcao('resolver')}
         >
@@ -90,7 +88,6 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
 
       {isAtendente && status === 'Resolvido' && (
         <Button
-          size="sm"
           disabled={isPending}
           onClick={() => setConfirmarAcao('encerrar')}
         >
@@ -100,7 +97,6 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
 
       {(isAtendente || isSolicitante) && (status === 'Aberto' || status === 'EmAndamento') && (
         <Button
-          size="sm"
           variant="destructive"
           disabled={isPending}
           onClick={() => setConfirmarAcao('cancelar')}
@@ -110,25 +106,25 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
       )}
 
       {isAtendente && (status === 'Resolvido' || status === 'Fechado' || status === 'Cancelado') && (
-        <Button size="sm" variant="outline" disabled={isPending} onClick={() => setConfirmarAcao('reabrir')}>
+        <Button variant="outline" disabled={isPending} onClick={() => setConfirmarAcao('reabrir')}>
           {reabrir.isPending ? 'Reabrindo...' : 'Reabrir'}
         </Button>
       )}
 
       {isAdmin && !statusFinal && (
-        <Button size="sm" variant="outline" onClick={() => setReatribuirAberto(true)}>
+        <Button variant="outline" onClick={() => setReatribuirAberto(true)}>
           Reatribuir
         </Button>
       )}
 
       {isAdmin && !statusFinal && (
-        <Button size="sm" variant="outline" onClick={() => setPrioridadeAberto(true)}>
+        <Button variant="outline" onClick={() => setPrioridadeAberto(true)}>
           Alterar prioridade
         </Button>
       )}
 
       {isAdmin && !statusFinal && (
-        <Button size="sm" variant="destructive" onClick={() => setForcarEncerramentoAberto(true)}>
+        <Button variant="destructive" onClick={() => setForcarEncerramentoAberto(true)}>
           Forçar Encerramento
         </Button>
       )}
@@ -238,12 +234,12 @@ export function ChamadoDetailPage() {
   }
 
   return (
-    <div className="flex max-w-2xl flex-col gap-4 p-4">
-      <Button asChild variant="ghost" size="sm" className="self-start">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 p-8">
+      <Button asChild variant="ghost" size="default" className="self-start">
         <Link to="/chamados">← Voltar</Link>
       </Button>
 
-      <h1 className="text-xl font-heading">
+      <h1 className="text-3xl font-heading">
         <span className="mr-2 text-muted-foreground">{formatarNumeroChamado(chamado.numero)}</span>
         {chamado.titulo}
       </h1>
@@ -262,17 +258,17 @@ export function ChamadoDetailPage() {
         </Alert>
       )}
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-4 text-lg">
         <StatusBadge status={chamado.status} />
         <PrioridadeBadge prioridade={chamado.prioridade} />
-        <SlaBadge dataLimite={chamado.dataLimite} status={chamado.status} />
+        <SlaBadge dataLimite={chamado.dataLimite} status={chamado.status} slaStatus={chamado.slaStatus} slaLabel={chamado.slaLabel} />
       </div>
 
       <BotoesAcao chamado={chamado} />
 
-      <p className="text-sm">{chamado.descricao}</p>
+      <p className="text-lg leading-relaxed">{chamado.descricao}</p>
 
-      <dl className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
+      <dl className="grid grid-cols-2 gap-6 text-lg text-muted-foreground">
         <div>
           <dt className="font-medium text-foreground">Categoria</dt>
           <dd>{chamado.categoriaNome ?? 'Sem categoria'}</dd>
@@ -301,16 +297,21 @@ export function ChamadoDetailPage() {
         )}
       </dl>
 
-      <h2 className="text-base font-heading">Anexos</h2>
-      <AnexosList chamadoId={chamado.id} />
-      <UploadAnexoForm chamadoId={chamado.id} />
+      <section className="space-y-4">
+        <h2 className="text-xl font-heading">Anexos</h2>
+        <AnexosList chamadoId={chamado.id} />
+      </section>
 
-      <h2 className="text-base font-heading">Comentários</h2>
-      <ComentarioList chamadoId={chamado.id} />
-      <ComentarioForm chamadoId={chamado.id} autor={perfil?.nome ?? ''} />
+      <section className="space-y-4">
+        <h2 className="text-xl font-heading">Comentários</h2>
+        <ComentarioList chamadoId={chamado.id} />
+        <ComentarioForm chamadoId={chamado.id} autor={perfil?.nome ?? ''} />
+      </section>
 
-      <h2 className="text-base font-heading">Histórico</h2>
-      <TimelineHistorico chamadoId={chamado.id} />
+      <section className="space-y-4">
+        <h2 className="text-xl font-heading">Histórico</h2>
+        <TimelineHistorico chamadoId={chamado.id} />
+      </section>
     </div>
   )
 }

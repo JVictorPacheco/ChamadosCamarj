@@ -3,6 +3,7 @@ export interface DashboardMetrics {
   tempoMedioResolucaoHoras: number | null
   porCategoria: { categoriaNome: string; quantidade: number }[]
   porPrioridade: { prioridade: string; quantidade: number }[]
+  slaCompliance: { totalResolvidos: number; dentroPrazo: number; percentual: number } | null
 }
 
 export interface DistribuicaoResponse {

@@ -7,6 +7,7 @@ using ChamadosCamarj.Application.Mappings;
 using ChamadosCamarj.Domain.Entities;
 using ChamadosCamarj.Domain.Interfaces;
 using ChamadosCamarj.Domain.Enums;
+using ChamadosCamarj.Application.Common.Interfaces;
 
 namespace ChamadosCamarj.Application.Features.Chamados.Commands;
 
@@ -16,17 +17,20 @@ public class AbrirChamadoCommandHandler : IRequestHandler<AbrirChamadoCommand, C
     private readonly ICategoriaRepository _categoriaRepository;
     private readonly IHistoricoRepository _historicoRepository;
     private readonly IPublisher _publisher;
+    private readonly IUnitOfWork _unitOfWork;
 
     public AbrirChamadoCommandHandler(
         IChamadoRepository chamadoRepository,
         ICategoriaRepository categoriaRepository,
         IHistoricoRepository historicoRepository,
-        IPublisher publisher)
+        IPublisher publisher,
+        IUnitOfWork unitOfWork)
     {
         _chamadoRepository = chamadoRepository;
         _categoriaRepository = categoriaRepository;
         _historicoRepository = historicoRepository;
         _publisher = publisher;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<ChamadoResponse> Handle(AbrirChamadoCommand request, CancellationToken cancellationToken)
@@ -44,6 +48,8 @@ public class AbrirChamadoCommandHandler : IRequestHandler<AbrirChamadoCommand, C
             request.Prioridade
         );
 
+        await using var _ = _unitOfWork;
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
         await _chamadoRepository.AdicionarAsync(chamado, cancellationToken);
 
         // Registrar no histórico
@@ -54,6 +60,8 @@ public class AbrirChamadoCommandHandler : IRequestHandler<AbrirChamadoCommand, C
             usuarioNome: request.SolicitanteNome,
             cancellationToken: cancellationToken
         );
+
+        await _unitOfWork.CommitAsync(cancellationToken);
 
         await _publisher.Publish(new ChamadoCriadoNotification(
             chamado.Id,

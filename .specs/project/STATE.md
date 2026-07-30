@@ -1,6 +1,6 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-07-28
+> Atualizado em: 2026-07-30
 
 ---
 
@@ -19,6 +19,20 @@
 ---
 
 ## 📍 Onde estamos
+
+**Sessão de 2026-07-30 (openCode, orquestração de modelos + code review + SLA + Motivo encerramento + E2E + Dashboard).**
+
+### Resumo da sessão
+- **Orquestração ajustada:** spec→Kimi K3, build-backend→GLM-5.2, build-frontend→K2.7 Code, review→Grok 4.5
+- **Code review completo:** 7.5/10, 10+ bugs corrigidos (Dockerfile, transações em 10 handlers, N+1, CORS configurável, chave reset separada)
+- **Usuários limpos:** apenas `suporte@camarj.com.br` (Admin) no banco
+- **SLA tracking:** badges verde/amarelo/vermelho com "Faltam Xh Ymin" / "Atrasado" no `ChamadoCard` e `DetalhePage`
+- **Motivo de encerramento:** enum `MotivoEncerramento` (Resolvido, CanceladoSolicitante, AbertoIndevidamente, Duplicata, SemResposta, Outro), migration `AddMotivoEncerramentoChamado`, validação com `When(Outro)` obrigatório
+- **Dashboard:** card de SLA do mês + gráfico de chamados por prioridade
+- **Testes E2E:** 12 testes Playwright (login, chamados, admin, dashboard, fluxo completo)
+- **Layout Detalhe:** aumentado para `max-w-6xl` com `text-3xl`/`text-lg`/`text-xl`, seções agrupadas, botão duplicado de anexo removido
+- **Reset de senha:** SMTP configurado com senha fornecida, handler tratado para não quebrar sem config
+- **215 testes backend**, 0 falhas, 12 E2E, 0 falhas, frontend build limpo
 
 **Sessão de 2026-07-28 (openCode, retomada pós-férias): 5 features concluídas + revisão de boas práticas + deploy Azure.**
 

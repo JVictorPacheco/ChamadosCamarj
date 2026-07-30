@@ -25,7 +25,8 @@ public class ResetarSenhaCommandHandler : IRequestHandler<ResetarSenhaCommand, b
 
     public async Task<bool> Handle(ResetarSenhaCommand request, CancellationToken cancellationToken)
     {
-        var email = ResetTokenHelper.ValidarToken(request.Token, _authSettings.JwtSigningKey);
+        var resetKey = _authSettings.ResetTokenSigningKey ?? _authSettings.JwtSigningKey;
+        var email = ResetTokenHelper.ValidarToken(request.Token, resetKey);
         if (email is null) return false;
 
         var usuario = await _usuarioPerfilRepository.ObterPorEmailAsync(email, cancellationToken);
