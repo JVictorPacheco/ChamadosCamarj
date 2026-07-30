@@ -47,13 +47,20 @@ export function DashboardPage() {
 
       {!isPending && metrics && (
         <>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             <DashboardKpi titulo="Resolvidos Hoje" valor={metrics.totalResolvidosHoje} />
             <DashboardKpi
               titulo="Tempo Médio"
               valor={metrics.tempoMedioResolucaoHoras != null ? `${metrics.tempoMedioResolucaoHoras}h` : '—'}
               subtexto="Resolução"
             />
+            {metrics.slaCompliance && (
+              <DashboardKpi
+                titulo="SLA (mês)"
+                valor={`${metrics.slaCompliance.percentual}%`}
+                subtexto={`${metrics.slaCompliance.dentroPrazo} de ${metrics.slaCompliance.totalResolvidos} chamados`}
+              />
+            )}
           </div>
 
           <div className="rounded-lg border bg-card p-4">
@@ -89,6 +96,15 @@ export function DashboardPage() {
             <h2 className="mb-3 text-sm font-heading">Chamados Ativos por Categoria</h2>
             {metrics.porCategoria.length > 0 ? (
               <CategoriaChart data={metrics.porCategoria} />
+            ) : (
+              <p className="py-8 text-center text-sm text-muted-foreground">Nenhum chamado ativo.</p>
+            )}
+          </div>
+
+          <div className="rounded-lg border bg-card p-4">
+            <h2 className="mb-3 text-sm font-heading">Chamados Ativos por Prioridade</h2>
+            {metrics.porPrioridade.length > 0 ? (
+              <CategoriaChart data={metrics.porPrioridade.map(p => ({ categoriaNome: p.prioridade, quantidade: p.quantidade }))} />
             ) : (
               <p className="py-8 text-center text-sm text-muted-foreground">Nenhum chamado ativo.</p>
             )}

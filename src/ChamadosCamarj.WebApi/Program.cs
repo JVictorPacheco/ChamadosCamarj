@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using ChamadosCamarj.Application.Common;
+using ChamadosCamarj.Application.Common.Interfaces;
 using ChamadosCamarj.Domain.Entities;
 using ChamadosCamarj.Application.Common.Behaviours;
 using ChamadosCamarj.Domain.Interfaces;
@@ -62,16 +63,20 @@ builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
 builder.Services.AddScoped<IHistoricoRepository, HistoricoRepository>();
 builder.Services.AddScoped<IUsuarioPerfilRepository, UsuarioPerfilRepository>();
 builder.Services.AddScoped<IGrupoRepository, GrupoRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IGoogleTokenValidator, GoogleTokenValidator>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IPasswordHasher<UsuarioPerfil>, PasswordHasher<UsuarioPerfil>>();
 
-builder.Services.AddScoped<IEmailSender>(_ =>
+builder.Services.AddScoped<IEmailSender?>(_ =>
 {
     var smtpEmail = builder.Configuration["Email:SmtpEmail"] ?? "suporte@camarj.com.br";
     var smtpSenha = builder.Configuration["Email:SmtpSenha"];
     if (string.IsNullOrWhiteSpace(smtpSenha))
-        throw new InvalidOperationException("'Email:SmtpSenha' não configurada. Use dotnet user-secrets set.");
+    {
+        Console.WriteLine("⚠ Email:SmtpSenha não configurada. Reset de senha por email desabilitado.");
+        return null;
+    }
     return new SmtpEmailSender(smtpEmail, smtpSenha);
 });
 
@@ -181,12 +186,14 @@ builder.Services.AddRateLimiter(options =>
 builder.Services.AddHealthChecks()
     .AddNpgSql(connectionString!, name: "postgres", tags: new[] { "db" });
 
-// CORS (React dev)
+// CORS — origens permitidas da config (environment variable ou appsettings)
+var corsOrigins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>()
+    ?? ["http://localhost:5173", "http://localhost:3000", "https://chamadoscamarj.pages.dev"];
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "http://localhost:3000", "https://chamadoscamarj.pages.dev")
+        policy.WithOrigins(corsOrigins)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();

@@ -210,6 +210,8 @@ public class ChamadoRepository : IChamadoRepository
 
         var items = await query
             .Include(c => c.Categoria)
+            .Include(c => c.Comentarios)
+            .Include(c => c.Anexos)
             .AsSplitQuery()
             .OrderByDescending(c => c.DataCriacao)
             .Skip((pagina - 1) * tamanhoPagina)
@@ -235,6 +237,22 @@ public class ChamadoRepository : IChamadoRepository
             .GroupBy(c => c.Status)
             .Select(g => new { Status = g.Key, Quantidade = g.Count() })
             .ToDictionaryAsync(x => x.Status, x => x.Quantidade, cancellationToken);
+    }
+
+    public async Task<(int TotalResolvidos, int DentroPrazo)> ContarSlaComplianceAsync(DateTime inicio, DateTime fim, CancellationToken cancellationToken = default)
+    {
+        var resolvidos = await _dbSet
+            .AsNoTracking()
+            .Where(c => c.DataConclusao.HasValue
+                && c.DataConclusao >= inicio
+                && c.DataConclusao <= fim
+                && (c.Status == Domain.Enums.StatusChamado.Resolvido || c.Status == Domain.Enums.StatusChamado.Fechado))
+            .Select(c => new { c.DataConclusao, c.DataLimite })
+            .ToListAsync(cancellationToken);
+
+        var total = resolvidos.Count;
+        var dentroPrazo = resolvidos.Count(r => r.DataLimite.HasValue && r.DataConclusao <= r.DataLimite);
+        return (total, dentroPrazo);
     }
 
     public async Task<int> ContarResolvidosHojeAsync(CancellationToken cancellationToken = default)

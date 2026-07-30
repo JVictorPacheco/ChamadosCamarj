@@ -2,9 +2,16 @@
 
 ## Status atual
 
-**Backend:** 218 testes de backend passando (`tests/ChamadosCamarj.UnitTests/`) — Domain, Application Handlers (auth, usuarios, chamados, anexos, relatorios), Validators.
+**Backend:** 215 testes de backend passando (`tests/ChamadosCamarj.UnitTests/`) — Domain, Application Handlers (auth, usuarios, chamados, anexos, relatorios), Validators.
 
-**Frontend:** Testes E2E com Playwright (`frontend/e2e/`) cobrindo fluxos principais. `npm run build` (TS + Vite) é o gate check de tipo/import. Decisão do usuário: sem testes unitários/componente isolados — verificação manual no navegador + E2E cobrem o necessário.
+**Frontend:** 12 testes E2E com Playwright (`frontend/e2e/`):
+- `login.spec.ts` — sucesso e credenciais inválidas
+- `chamados.spec.ts` — abrir chamado, listar, arquivo
+- `admin.spec.ts` — usuários, categorias, grupos
+- `dashboard.spec.ts` — dashboard, fila, relatório mensal
+- `fluxo-completo.spec.ts` — login → abrir → comentar → listar
+
+`npm run build` (TS + Vite) é o gate check de tipo/import.
 
 ## Backend — cobertura atual
 

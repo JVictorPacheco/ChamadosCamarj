@@ -18,7 +18,7 @@ export function ChamadoCard({ chamado }: { chamado: ChamadoResponse }) {
       <CardContent className="flex flex-wrap items-center gap-2">
         <StatusBadge status={chamado.status} />
         <PrioridadeBadge prioridade={chamado.prioridade} />
-        <SlaBadge dataLimite={chamado.dataLimite} status={chamado.status} />
+        <SlaBadge dataLimite={chamado.dataLimite} status={chamado.status} slaStatus={chamado.slaStatus} slaLabel={chamado.slaLabel} />
         <span className="ml-auto text-xs text-muted-foreground">
           {new Date(chamado.dataCriacao).toLocaleDateString('pt-BR')}
         </span>

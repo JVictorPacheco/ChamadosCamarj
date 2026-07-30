@@ -1,4 +1,11 @@
 export type StatusChamado = "Aberto" | "EmAndamento" | "Resolvido" | "Fechado" | "Cancelado";
+export type MotivoEncerramento =
+  | "Resolvido"
+  | "CanceladoSolicitante"
+  | "AbertoIndevidamente"
+  | "Duplicata"
+  | "SemResposta"
+  | "Outro";
 export type PrioridadeChamado = "Baixa" | "Media" | "Alta" | "Urgente";
 export type TipoComentario = "Publico" | "Interno";
 export type AcaoHistorico =
@@ -13,6 +20,8 @@ export type AcaoHistorico =
   | "StatusAlterado"
   | "EncerramentoForcado"
   | "Reaberto";
+
+export type SlaStatus = "DentroPrazo" | "Atencao" | "Atrasado";
 
 export interface ChamadoResponse {
   id: string;
@@ -33,6 +42,11 @@ export interface ChamadoResponse {
   dataAtualizacao: string | null;
   quantidadeComentarios: number;
   quantidadeAnexos: number;
+  slaStatus: SlaStatus;
+  slaLabel: string;
+  slaHorasRestantes: number | null;
+  motivoEncerramento: MotivoEncerramento | null;
+  motivoOutro: string | null;
 }
 
 export interface ComentarioResponse {

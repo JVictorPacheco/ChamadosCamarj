@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 using ChamadosCamarj.Application.Common;
 using ChamadosCamarj.Domain.Interfaces;
 
@@ -8,17 +9,20 @@ namespace ChamadosCamarj.Application.Features.Auth.Commands;
 public class EsqueciSenhaCommandHandler : IRequestHandler<EsqueciSenhaCommand>
 {
     private readonly IUsuarioPerfilRepository _usuarioPerfilRepository;
-    private readonly IEmailSender _emailSender;
+    private readonly IEmailSender? _emailSender;
     private readonly AuthSettings _authSettings;
+    private readonly ILogger<EsqueciSenhaCommandHandler> _logger;
 
     public EsqueciSenhaCommandHandler(
         IUsuarioPerfilRepository usuarioPerfilRepository,
-        IEmailSender emailSender,
-        IOptions<AuthSettings> authSettings)
+        IEmailSender? emailSender,
+        IOptions<AuthSettings> authSettings,
+        ILogger<EsqueciSenhaCommandHandler> logger)
     {
         _usuarioPerfilRepository = usuarioPerfilRepository;
         _emailSender = emailSender;
         _authSettings = authSettings.Value;
+        _logger = logger;
     }
 
     public async Task Handle(EsqueciSenhaCommand request, CancellationToken cancellationToken)
@@ -27,7 +31,14 @@ public class EsqueciSenhaCommandHandler : IRequestHandler<EsqueciSenhaCommand>
 
         if (usuario is null || !usuario.Ativo) return;
 
-        var token = ResetTokenHelper.GerarToken(usuario.Email, _authSettings.JwtSigningKey, TimeSpan.FromHours(1));
+        if (_emailSender is null)
+        {
+            _logger.LogWarning("Email não configurado (Email:SmtpSenha). Reset de senha não enviado para {Email}.", request.Email);
+            return;
+        }
+
+        var resetKey = _authSettings.ResetTokenSigningKey ?? _authSettings.JwtSigningKey;
+        var token = ResetTokenHelper.GerarToken(usuario.Email, resetKey, TimeSpan.FromHours(1));
         var link = $"{_authSettings.FrontendBaseUrl}/resetar-senha?token={Uri.EscapeDataString(token)}";
 
         var html = $"""
@@ -43,6 +54,13 @@ public class EsqueciSenhaCommandHandler : IRequestHandler<EsqueciSenhaCommand>
             </div>
             """;
 
-        await _emailSender.EnviarAsync(usuario.Email, "Redefinição de senha — Chamados CAMARJ", html);
+        try
+        {
+            await _emailSender.EnviarAsync(usuario.Email, "Redefinição de senha — Chamados CAMARJ", html);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Falha ao enviar email de reset para {Email}.", request.Email);
+        }
     }
 }

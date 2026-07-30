@@ -1,5 +1,7 @@
+using ChamadosCamarj.Application.Common;
 using ChamadosCamarj.Application.Features.Chamados.DTOs;
 using ChamadosCamarj.Domain.Entities;
+using ChamadosCamarj.Domain.Enums;
 
 namespace ChamadosCamarj.Application.Mappings;
 
@@ -24,6 +26,11 @@ public static class ChamadoMappings
             chamado.DataCriacao,
             chamado.DataAtualizacao,
             chamado.Comentarios.Count,
-            chamado.Anexos.Count
+            chamado.Anexos.Count,
+            SlaCalculo.CalcularStatus(chamado.DataLimite),
+            SlaCalculo.FormatarLabel(chamado.DataLimite),
+            SlaCalculo.CalcularHorasRestantes(chamado.DataLimite),
+            chamado.MotivoEncerramento,
+            chamado.MotivoOutro
         );
 }

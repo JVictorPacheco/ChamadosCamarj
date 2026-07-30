@@ -8,15 +8,15 @@ COPY . .
 # Restaurar dependências
 RUN dotnet restore
 
-# Build
-RUN dotnet build -c Release
+# Build + Publish
+RUN dotnet publish src/ChamadosCamarj.WebApi/ChamadosCamarj.WebApi.csproj -c Release -o /app/publish
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
 
 WORKDIR /app
 
-COPY --from=build /app/src/ChamadosCamarj.WebApi/bin/Release/net9.0 .
+COPY --from=build /app/publish .
 
 # Health check
 HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=5 \
