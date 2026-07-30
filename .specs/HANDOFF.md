@@ -1,8 +1,8 @@
 # Handoff
 
-**Date:** 2026-07-28
-**Session:** 5 features + boas práticas + deploy Azure + Grupos/Equipes — CONCLUÍDO
-**Branch:** `develop`, ~60 arquivos modificados/criados
+**Date:** 2026-07-30
+**Session:** Code review + SLA tracking + Motivo encerramento + E2E + Dashboard + Ajustes layout
+**Branch:** `develop`, 67 arquivos modificados/criados
 
 ## Completed ✓
 
@@ -23,20 +23,24 @@
 - Docs: CONVENTIONS, STACK, STRUCTURE, TESTING, ROADMAP atualizados
 
 ### Numbers
-- 218 testes backend passando
+- 215 testes backend passando
+- 12 testes E2E Playwright passando
 - 0 erros TypeScript
 - Build limpo
 
 ## In Progress / Pending
-Nada em execução.
+- Deploy Azure: criar App Service no portal (GitHub Actions + guia prontos)
+- Fase 4 Email: `EmailReceiverService` (IMAP) — depende de senha de app
+- SLA: alertas SignalR + filtro por SLA na listagem
+- Motivo: filtro por motivo na listagem de finalizados
+- Dashboard: gráfico de evolução mensal do SLA
 
 ## Blockers
 Nenhum.
 
 ## Context — MUITO IMPORTANTE PRA RETOMAR
 - **Ler `.specs/project/STATE.md` primeiro** — regras de processo (Constitution) no topo.
-- Branch: `develop`, ~60 arquivos modificados (ainda não commitados).
-- Migration `AddGrupo` NÃO aplicada no Supabase real — aplica automaticamente no próximo `dotnet run`.
-- Para aplicar no Supabase real: `dotnet run` ou `dotnet ef database update`.
-- Túnel Cloudflare precisa ser iniciado manualmente se for usar produção (até migrar pro Azure).
+- Branch: `develop`.
+- Migration `AddMotivoEncerramentoChamado` já aplicada no Supabase real.
+- SMTP configurado com senha de app do Gmail (reset de senha funcional).
 - Ao abrir PR: base `develop`, não `main`.
