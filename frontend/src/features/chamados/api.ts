@@ -24,6 +24,8 @@ export interface ListarChamadosFiltros {
   finalizados?: boolean
   dataInicio?: string
   dataFim?: string
+  slaStatus?: string
+  motivoEncerramento?: string
 }
 
 function buildQueryString<T extends object>(filtros: T): string {

@@ -43,6 +43,7 @@ export function ArquivoChamadosPage() {
         onChange={handleFiltrosChange}
         statusOptions={STATUS_FINALIZADOS}
         mostrarPeriodo
+        mostrarMotivo
       />
 
       {isError && (

@@ -36,7 +36,7 @@ export function ChamadosListPage() {
         {isAdmin ? 'Todos os Chamados' : isAtendente ? 'Chamados em Atendimento' : 'Meus Chamados'}
       </h1>
 
-      <FiltroChamados value={filtros} onChange={handleFiltrosChange} />
+      <FiltroChamados value={filtros} onChange={handleFiltrosChange} mostrarSla />
 
       {isError && (
         <Alert variant="destructive">

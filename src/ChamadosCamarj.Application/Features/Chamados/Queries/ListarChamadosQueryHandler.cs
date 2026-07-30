@@ -1,4 +1,5 @@
 using MediatR;
+using ChamadosCamarj.Application.Common;
 using ChamadosCamarj.Application.Features.Chamados.DTOs;
 using ChamadosCamarj.Application.Mappings;
 using ChamadosCamarj.Domain.Interfaces;
@@ -41,6 +42,16 @@ public class ListarChamadosQueryHandler : IRequestHandler<ListarChamadosQuery, P
             ? DateTime.SpecifyKind(request.DataFim.Value.Date, DateTimeKind.Utc).AddDays(1).AddTicks(-1)
             : null;
 
+        Domain.Enums.MotivoEncerramento? motivoEncerramento = null;
+        if (!string.IsNullOrWhiteSpace(request.MotivoEncerramento) &&
+            Enum.TryParse<Domain.Enums.MotivoEncerramento>(request.MotivoEncerramento, ignoreCase: true, out var motivoParsed))
+            motivoEncerramento = motivoParsed;
+
+        SlaStatus? slaStatus = null;
+        if (!string.IsNullOrWhiteSpace(request.SlaStatus) &&
+            Enum.TryParse<SlaStatus>(request.SlaStatus, ignoreCase: true, out var slaParsed))
+            slaStatus = slaParsed;
+
         var (items, total) = await _chamadoRepository.ListarAsync(
             request.Pagina,
             request.TamanhoPagina,
@@ -57,8 +68,16 @@ public class ListarChamadosQueryHandler : IRequestHandler<ListarChamadosQuery, P
             request.GrupoId,
             cancellationToken);
 
+        // Motivo filter (in-memory since it's a simple enum)
+        if (motivoEncerramento.HasValue && items.Any())
+            items = items.Where(c => c.MotivoEncerramento == motivoEncerramento.Value);
+
+        // SLA filter (in-memory, uses UtcNow)
+        if (slaStatus.HasValue && items.Any())
+            items = items.Where(c => SlaCalculo.CalcularStatus(c.DataLimite) == slaStatus.Value);
+
         return new PagedResult<ChamadoResponse>(
-            items.Select(c => c.ToResponse()),
+            items.Select(c => c.ToResponse()).ToList(),
             total,
             request.Pagina,
             request.TamanhoPagina);

@@ -52,6 +52,11 @@ Alternar com Tab entre agents. Usar @review e @explorar.
 2. **Specify → Design → Tasks → Execute** (auto-sized por complexidade)
 3. **Gate checks** obrigatórios: `dotnet test` + `npm run build` antes de finalizar
 
-## Branch
-- `develop` é a branch ativa. Nunca commitar direto em `main`.
-- Ao abrir PR, conferir base: `develop`, não `main`.
+## Git Flow
+- `main` — produção (sempre estável)
+- `develop` — integração (branch ativa)
+- `feature/*` — branches para cada grupo de trabalho (criar de `develop`, mergear em `develop`)
+- `release/*` — preparação de release (criar de `develop`, mergear em `main` + `develop`)
+- `hotfix/*` — correção urgente em produção (criar de `main`, mergear em `main` + `develop`)
+- Nunca commitar direto em `main`. Ao abrir PR, base: `develop`, não `main`.
+- Commits atômicos: um commit por funcionalidade/bug, com mensagem descritiva.
