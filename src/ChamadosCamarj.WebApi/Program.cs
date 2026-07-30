@@ -171,6 +171,7 @@ builder.Services.AddControllers()
 // ─────────────────────────────
 // SignalR — notificações em tempo real
 builder.Services.AddSignalR();
+builder.Services.AddHostedService<SlaMonitorService>();
 
 builder.Services.AddRateLimiter(options =>
 {
