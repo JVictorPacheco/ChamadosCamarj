@@ -136,6 +136,36 @@ export function RelatorioMensalPage() {
             )}
           </div>
 
+          {relatorio.slaEvolucao && relatorio.slaEvolucao.some((e) => e.percentual !== null) && (
+            <div className="rounded-lg border bg-card p-4">
+              <h2 className="mb-3 text-sm font-heading">Evolução do SLA (últimos 6 meses)</h2>
+              <div className="flex items-end gap-2" style={{ height: 120 }}>
+                {relatorio.slaEvolucao.map((item) => {
+                  const altura = item.percentual != null ? Math.max(item.percentual, 5) : 5
+                  const cor = item.percentual != null
+                    ? item.percentual >= 90 ? 'var(--status-good)'
+                      : item.percentual >= 70 ? 'var(--chart-3)'
+                      : 'var(--status-critical)'
+                    : 'var(--muted-foreground)'
+                  return (
+                    <div key={`${item.ano}-${item.mes}`} className="flex flex-1 flex-col items-center gap-1">
+                      <span className="text-xs text-muted-foreground">
+                        {item.percentual != null ? `${item.percentual}%` : '—'}
+                      </span>
+                      <div
+                        className="w-full rounded-t"
+                        style={{ height: `${altura}%`, backgroundColor: cor, minHeight: 8 }}
+                      />
+                      <span className="text-xs text-muted-foreground">
+                        {String(item.mes).padStart(2, '0')}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
           <div className="rounded-lg border bg-card p-4">
             <h2 className="mb-3 text-sm font-heading">Por categoria</h2>
             {relatorio.porCategoria.length > 0 ? (

@@ -16,8 +16,17 @@ export interface ComentarioAdicionadoPayload {
   conteudo: string
 }
 
+export interface SlaAlertaPayload {
+  chamadoId: string
+  numero: number
+  titulo: string
+  mensagem: string
+}
+
 export type SignalREvent =
   | { type: 'ChamadoCriado'; payload: ChamadoCriadoPayload }
   | { type: 'StatusAlterado'; payload: StatusAlteradoPayload }
   | { type: 'ComentarioAdicionado'; payload: ComentarioAdicionadoPayload }
   | { type: 'MetricasAtualizadas' }
+  | { type: 'SlaAtencao'; payload: SlaAlertaPayload }
+  | { type: 'SlaAtrasado'; payload: SlaAlertaPayload }

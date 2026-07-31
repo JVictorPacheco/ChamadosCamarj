@@ -10,6 +10,10 @@
       "type": "remote",
       "url": "https://mcp.context7.com/mcp"
     },
+    "microsoft-learn": {
+      "type": "remote",
+      "url": "https://mcp.microsoft.com/learn"
+    },
     "dotnet-context": {
       "type": "local",
       "command": ["npx", "dotnet-context-mcp@0.2.0"],
@@ -28,14 +32,14 @@
       "template": "!`powershell -NoProfile -File ler-emails.ps1 -Limite 10`\n\nLeia os arquivos .md na pasta emails/ (ordenados por data, mais recentes primeiro).\n\nSe houver mais de 3 emails, liste todos com um resumo de 1 linha cada (assunto + quem enviou).\nSe o usuario pedir detalhes de algum, leia o arquivo completo.\n\nFiltre:\n- Spam / notificacoes automaticas do Google: ignore (so mencione se perguntarem)\n- Emails de pessoas reais: resuma com atencao (quem, o que quer, qual urgencia)\n- Se houver solicitacao de chamado/help, destaque com prioridade\n\nResponda em portugues, tom direto, sem firula.",
       "description": "Baixa e resume emails nao lidos do suporte@camarj.com.br",
       "agent": "spec",
-      "model": "opencode-go/deepseek-v4-flash"
+      "model": "opencode-go/kimi-k3"
     }
   },
   "agent": {
     "spec": {
       "mode": "primary",
-      "model": "opencode-go/deepseek-v4-flash",
-      "description": "Cria specs SDD — rápido e barato",
+      "model": "opencode-go/kimi-k3",
+      "description": "Cria specs SDD — raciocínio profundo para especificar",
       "temperature": 0.2,
       "steps": 5,
       "permission": {
@@ -45,7 +49,7 @@
     },
     "build-backend": {
       "mode": "primary",
-      "model": "opencode-go/deepseek-v4-pro",
+      "model": "opencode-go/glm-5.2",
       "description": "Implementa C#, .NET, EF Core, CQRS",
       "temperature": 0.1,
       "permission": {
@@ -55,7 +59,7 @@
     },
     "build-frontend": {
       "mode": "primary",
-      "model": "opencode-go/deepseek-v4-pro",
+      "model": "opencode-go/kimi-k2.7-code",
       "description": "Implementa React, TypeScript, Tailwind, shadcn",
       "temperature": 0.1,
       "permission": {
@@ -65,7 +69,7 @@
     },
     "review": {
       "mode": "subagent",
-      "model": "opencode-go/deepseek-v4-pro",
+      "model": "opencode-go/grok-4.5",
       "description": "Revisão de código, segurança e boas práticas",
       "temperature": 0.1,
       "permission": {

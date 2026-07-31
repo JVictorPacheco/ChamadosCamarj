@@ -133,6 +133,12 @@ namespace ChamadosCamarj.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int?>("MotivoEncerramento")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("MotivoOutro")
+                        .HasColumnType("text");
+
                     b.Property<int>("Numero")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")

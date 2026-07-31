@@ -1,4 +1,5 @@
 using MediatR;
+using ChamadosCamarj.Application.Common;
 using ChamadosCamarj.Application.Features.Chamados.DTOs;
 using ChamadosCamarj.Application.Mappings;
 using ChamadosCamarj.Domain.Interfaces;
@@ -41,26 +42,43 @@ public class ListarChamadosQueryHandler : IRequestHandler<ListarChamadosQuery, P
             ? DateTime.SpecifyKind(request.DataFim.Value.Date, DateTimeKind.Utc).AddDays(1).AddTicks(-1)
             : null;
 
+        Domain.Enums.MotivoEncerramento? motivoEncerramento = null;
+        if (!string.IsNullOrWhiteSpace(request.MotivoEncerramento) &&
+            Enum.TryParse<Domain.Enums.MotivoEncerramento>(request.MotivoEncerramento, ignoreCase: true, out var motivoParsed))
+            motivoEncerramento = motivoParsed;
+
+        SlaStatus? slaStatus = null;
+        if (!string.IsNullOrWhiteSpace(request.SlaStatus) &&
+            Enum.TryParse<SlaStatus>(request.SlaStatus, ignoreCase: true, out var slaParsed))
+            slaStatus = slaParsed;
+
+        // Se há filtro SLA (calculado em memória), carregamos todos sem paginação e filtramos
+        if (slaStatus.HasValue)
+        {
+            var (todos, totalIgnorado) = await _chamadoRepository.ListarAsync(
+                1, int.MaxValue, status, prioridade, request.ResponsavelId,
+                request.CategoriaId, request.Busca, request.SolicitanteEmail,
+                statusEntre, dataInicio, dataFim, request.UsuarioLogadoId,
+                request.GrupoId, null, cancellationToken);
+
+            var filtrados = todos.Where(c => SlaCalculo.CalcularStatus(c.DataLimite) == slaStatus.Value).ToList();
+            var totalFiltrado = filtrados.Count;
+            var paginados = filtrados.Skip((request.Pagina - 1) * request.TamanhoPagina).Take(request.TamanhoPagina).ToList();
+
+            return new PagedResult<ChamadoResponse>(
+                paginados.Select(c => c.ToResponse()).ToList(),
+                totalFiltrado, request.Pagina, request.TamanhoPagina);
+        }
+
         var (items, total) = await _chamadoRepository.ListarAsync(
-            request.Pagina,
-            request.TamanhoPagina,
-            status,
-            prioridade,
-            request.ResponsavelId,
-            request.CategoriaId,
-            request.Busca,
-            request.SolicitanteEmail,
-            statusEntre,
-            dataInicio,
-            dataFim,
-            request.UsuarioLogadoId,
-            request.GrupoId,
+            request.Pagina, request.TamanhoPagina, status, prioridade,
+            request.ResponsavelId, request.CategoriaId, request.Busca,
+            request.SolicitanteEmail, statusEntre, dataInicio, dataFim,
+            request.UsuarioLogadoId, request.GrupoId, motivoEncerramento,
             cancellationToken);
 
         return new PagedResult<ChamadoResponse>(
-            items.Select(c => c.ToResponse()),
-            total,
-            request.Pagina,
-            request.TamanhoPagina);
+            items.Select(c => c.ToResponse()).ToList(),
+            total, request.Pagina, request.TamanhoPagina);
     }
 }

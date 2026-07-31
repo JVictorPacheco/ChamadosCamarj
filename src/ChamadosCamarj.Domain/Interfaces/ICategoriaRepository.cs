@@ -10,4 +10,6 @@ public interface ICategoriaRepository
     Task<IEnumerable<Categoria>> ObterTodasAsync(CancellationToken cancellationToken = default);
     Task<IEnumerable<Categoria>> ObterAtivasAsync(CancellationToken cancellationToken = default);
     Task<bool> ExisteAsync(Guid id, CancellationToken cancellationToken = default);
+    Task RemoverAsync(Categoria categoria, CancellationToken cancellationToken = default);
+    Task<bool> PossuiChamadosAsync(Guid id, CancellationToken cancellationToken = default);
 }

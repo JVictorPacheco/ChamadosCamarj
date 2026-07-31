@@ -17,6 +17,7 @@ import { FilaAtendimentoPage } from './features/chamados/FilaAtendimentoPage'
 import { DashboardPage } from './features/dashboard/DashboardPage'
 import { RelatorioMensalPage } from './features/relatorio-mensal/RelatorioMensalPage'
 import { UsuariosPage } from './features/admin/UsuariosPage'
+import { CategoriasPage } from './features/admin/CategoriasPage'
 import { GruposPage } from './features/admin/GruposPage'
 
 const queryClient = new QueryClient({
@@ -88,6 +89,7 @@ function AppRoutes() {
         <Route path="/atendimento/fila" element={<FilaAtendimentoPage />} />
         <Route path="/atendimento/relatorio-mensal" element={<RelatorioMensalPage />} />
         <Route path="/admin/usuarios" element={<UsuariosPage />} />
+        <Route path="/admin/categorias" element={<CategoriasPage />} />
         <Route path="/admin/grupos" element={<GruposPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/chamados" replace />} />

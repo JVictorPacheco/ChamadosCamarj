@@ -1,8 +1,10 @@
 import { test, expect } from '@playwright/test'
 
-test('fluxo completo: login mock -> abrir chamado -> detalhe -> comentar -> listar', async ({ page }) => {
+test('fluxo completo: login -> abrir chamado -> detalhe -> comentar -> listar', async ({ page }) => {
   await page.goto('/login')
-  await page.getByRole('button', { name: 'Entrar como Solicitante' }).click()
+  await page.locator('#email').fill('suporte@camarj.com.br')
+  await page.locator('#senha').fill('Akira.321')
+  await page.getByRole('button', { name: /Entrar|Login/i }).click()
   await page.waitForURL('**/chamados')
 
   await page.getByRole('link', { name: 'Abrir Chamado' }).click()

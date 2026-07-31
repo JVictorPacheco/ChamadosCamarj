@@ -6,6 +6,7 @@ using ChamadosCamarj.Domain.Interfaces;
 using FluentAssertions;
 using MediatR;
 using Moq;
+using ChamadosCamarj.Application.Common.Interfaces;
 
 namespace ChamadosCamarj.UnitTests.Application.Handlers;
 
@@ -23,6 +24,7 @@ public class DemoTestChamadoCompletoWorkflow
     private readonly Mock<IChamadoRepository> _chamadoRepositoryMock = new();
     private readonly Mock<IHistoricoRepository> _historicoRepositoryMock = new();
     private readonly Mock<IPublisher> _publisherMock = new();
+    private readonly Mock<IUnitOfWork> _unitOfWorkMock = new();
 
     [Fact(DisplayName = "🎯 Demo Completo: Workflow de um Chamado de Suporte (Ticket)")]
     public async Task Demo_ChamadoCompletoDoInicio()
@@ -68,7 +70,8 @@ public class DemoTestChamadoCompletoWorkflow
         var atribuirHandler = new AtribuirChamadoCommandHandler(
             _chamadoRepositoryMock.Object,
             _historicoRepositoryMock.Object,
-            _publisherMock.Object);
+            _publisherMock.Object,
+            _unitOfWorkMock.Object);
 
         var atribuirCommand = new AtribuirChamadoCommand(chamadoId, victorId, "Victor");
         await atribuirHandler.Handle(atribuirCommand, CancellationToken.None);
@@ -91,7 +94,8 @@ public class DemoTestChamadoCompletoWorkflow
         var prioridadeHandler = new AlterarPrioridadeChamadoCommandHandler(
             _chamadoRepositoryMock.Object,
             _historicoRepositoryMock.Object,
-            _publisherMock.Object);
+            _publisherMock.Object,
+            _unitOfWorkMock.Object);
 
         var prioridadeCommand = new AlterarPrioridadeChamadoCommand(chamadoId, "Urgente");
         await prioridadeHandler.Handle(prioridadeCommand, CancellationToken.None);
@@ -115,7 +119,8 @@ public class DemoTestChamadoCompletoWorkflow
         var reatribuirHandler = new ReatribuirChamadoCommandHandler(
             _chamadoRepositoryMock.Object,
             _historicoRepositoryMock.Object,
-            _publisherMock.Object);
+            _publisherMock.Object,
+            _unitOfWorkMock.Object);
 
         var reatribuirCommand = new ReatribuirChamadoCommand(chamadoId, fabioId, "Fábio");
         await reatribuirHandler.Handle(reatribuirCommand, CancellationToken.None);
