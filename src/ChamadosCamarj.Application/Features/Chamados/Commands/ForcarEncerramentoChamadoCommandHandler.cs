@@ -57,10 +57,14 @@ public class ForcarEncerramentoChamadoCommandHandler : IRequestHandler<ForcarEnc
         );
         await _historicoRepository.AdicionarAsync(historico, cancellationToken);
 
+        var textoComentario = $"Chamado encerrado forçadamente. Motivo: {motivoLabel}.";
+        if (!string.IsNullOrWhiteSpace(request.Observacao))
+            textoComentario += $" Observação: {request.Observacao.Trim()}";
+
         var comentario = new Comentario(
             request.Id,
             request.UsuarioNome,
-            $"Chamado encerrado forçadamente. Motivo: {motivoLabel}.",
+            textoComentario,
             TipoComentario.Publico
         );
         await _chamadoRepository.AdicionarComentarioAsync(comentario, cancellationToken);

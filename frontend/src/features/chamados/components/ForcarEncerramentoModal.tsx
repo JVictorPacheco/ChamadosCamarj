@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
 import { useForcarEncerramentoChamado } from '../hooks/useAcoesChamado'
 import type { MotivoEncerramento } from '@/types/api'
 
@@ -27,19 +28,21 @@ interface ForcarEncerramentoModalProps {
 export function ForcarEncerramentoModal({ open, onOpenChange, chamadoId }: ForcarEncerramentoModalProps) {
   const [motivo, setMotivo] = useState<MotivoEncerramento>('AbertoIndevidamente')
   const [motivoOutro, setMotivoOutro] = useState('')
+  const [observacao, setObservacao] = useState('')
   const { mutate, isPending, error, reset } = useForcarEncerramentoChamado(chamadoId)
 
   const fechar = (proximoEstado: boolean) => {
     if (!proximoEstado) {
       setMotivo('AbertoIndevidamente')
       setMotivoOutro('')
+      setObservacao('')
       reset()
     }
     onOpenChange(proximoEstado)
   }
 
   const confirmar = () => {
-    mutate({ motivo, motivoOutro: motivoOutro.trim() || undefined }, { onSuccess: () => fechar(false) })
+    mutate({ motivo, motivoOutro: motivoOutro.trim() || undefined, observacao: observacao.trim() || undefined }, { onSuccess: () => fechar(false) })
   }
 
   const motivoValido = motivo !== 'Outro' || motivoOutro.trim().length >= MOTIVO_OUTRO_MIN
@@ -86,6 +89,18 @@ export function ForcarEncerramentoModal({ open, onOpenChange, chamadoId }: Forca
               />
             </div>
           )}
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="forcar-observacao" className="text-sm">
+              Comentário (opcional)
+            </Label>
+            <Textarea
+              id="forcar-observacao"
+              value={observacao}
+              onChange={(e) => setObservacao(e.target.value)}
+              placeholder="Escreva uma observação sobre o encerramento..."
+              rows={4}
+            />
+          </div>
         </div>
 
         {error && <p className="text-sm text-destructive">{error.message}</p>}

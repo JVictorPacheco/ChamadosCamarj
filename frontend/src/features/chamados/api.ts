@@ -92,17 +92,17 @@ export function resolverChamado(chamadoId: string): Promise<void> {
   return apiFetch<void>(`/chamados/${chamadoId}/resolver`, { method: 'PATCH' })
 }
 
-export function fecharChamado(chamadoId: string, motivo: MotivoEncerramento, motivoOutro?: string): Promise<void> {
+export function fecharChamado(chamadoId: string, motivo: MotivoEncerramento, motivoOutro?: string, observacao?: string): Promise<void> {
   return apiFetch<void>(`/chamados/${chamadoId}/fechar`, {
     method: 'PATCH',
-    body: JSON.stringify({ motivo, motivoOutro }),
+    body: JSON.stringify({ motivo, motivoOutro, observacao }),
   })
 }
 
-export function cancelarChamado(chamadoId: string, motivo: MotivoEncerramento, motivoOutro?: string): Promise<void> {
+export function cancelarChamado(chamadoId: string, motivo: MotivoEncerramento, motivoOutro?: string, observacao?: string): Promise<void> {
   return apiFetch<void>(`/chamados/${chamadoId}/cancelar`, {
     method: 'PATCH',
-    body: JSON.stringify({ motivo, motivoOutro }),
+    body: JSON.stringify({ motivo, motivoOutro, observacao }),
   })
 }
 
@@ -129,10 +129,10 @@ export function alterarPrioridade(chamadoId: string, novaPrioridade: PrioridadeC
   })
 }
 
-export function forcarEncerramento(chamadoId: string, motivo: MotivoEncerramento, motivoOutro?: string): Promise<void> {
+export function forcarEncerramento(chamadoId: string, motivo: MotivoEncerramento, motivoOutro?: string, observacao?: string): Promise<void> {
   return apiFetch<void>(`/chamados/${chamadoId}/forcar-encerramento`, {
     method: 'PATCH',
-    body: JSON.stringify({ motivo, motivoOutro }),
+    body: JSON.stringify({ motivo, motivoOutro, observacao }),
   })
 }
 

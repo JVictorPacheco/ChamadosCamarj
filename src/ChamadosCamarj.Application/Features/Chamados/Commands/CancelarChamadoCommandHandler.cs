@@ -48,10 +48,14 @@ public class CancelarChamadoCommandHandler : IRequestHandler<CancelarChamadoComm
             cancellationToken: cancellationToken
         );
 
+        var textoComentario = $"Chamado cancelado. Motivo: {motivoLabel}.";
+        if (!string.IsNullOrWhiteSpace(request.Observacao))
+            textoComentario += $" Observação: {request.Observacao.Trim()}";
+
         var comentario = new Comentario(
             request.Id,
             request.UsuarioNome,
-            $"Chamado cancelado. Motivo: {motivoLabel}.",
+            textoComentario,
             TipoComentario.Publico
         );
         await _chamadoRepository.AdicionarComentarioAsync(comentario, cancellationToken);

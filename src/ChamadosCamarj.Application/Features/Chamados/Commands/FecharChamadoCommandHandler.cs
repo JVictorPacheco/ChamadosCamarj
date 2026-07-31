@@ -39,10 +39,14 @@ public class FecharChamadoCommandHandler : IRequestHandler<FecharChamadoCommand>
             ? $"{request.Motivo}: {request.MotivoOutro}"
             : request.Motivo.ToString();
 
+        var textoComentario = $"Chamado encerrado. Motivo: {motivoLabel}.";
+        if (!string.IsNullOrWhiteSpace(request.Observacao))
+            textoComentario += $" Observação: {request.Observacao.Trim()}";
+
         var comentario = new Comentario(
             request.Id,
             request.UsuarioNome,
-            $"Chamado encerrado. Motivo: {motivoLabel}.",
+            textoComentario,
             TipoComentario.Publico
         );
         await _chamadoRepository.AdicionarComentarioAsync(comentario, cancellationToken);

@@ -38,7 +38,7 @@ public class ForcarEncerramentoChamadoHandlerTests
         _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
 
-        var command = new ForcarEncerramentoChamadoCommand(chamadoId, MotivoEncerramento.Duplicata, null, Guid.NewGuid(), "Victor", "Admin");
+        var command = new ForcarEncerramentoChamadoCommand(chamadoId, MotivoEncerramento.Duplicata, null, null, Guid.NewGuid(), "Victor", "Admin");
         await _handler.Handle(command, CancellationToken.None);
 
         chamado.Status.Should().Be(StatusChamado.Fechado);
@@ -77,7 +77,7 @@ public class ForcarEncerramentoChamadoHandlerTests
     public async Task Handle_ComoAtendente_DeveLancarForbiddenException()
     {
         var chamadoId = Guid.NewGuid();
-        var command = new ForcarEncerramentoChamadoCommand(chamadoId, MotivoEncerramento.AbertoIndevidamente, null, Guid.NewGuid(), "Fábio", "Atendente");
+        var command = new ForcarEncerramentoChamadoCommand(chamadoId, MotivoEncerramento.AbertoIndevidamente, null, null, Guid.NewGuid(), "Fábio", "Atendente");
 
         var act = async () => await _handler.Handle(command, CancellationToken.None);
         await act.Should().ThrowAsync<ForbiddenException>();

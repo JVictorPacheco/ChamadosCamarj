@@ -6,6 +6,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/auth/AuthContext'
 import { ApiError } from '@/lib/api'
 import { formatarNumeroChamado } from '@/lib/utils'
@@ -51,6 +52,7 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
   const [confirmarAcao, setConfirmarAcao] = useState<'resolver' | 'encerrar' | 'cancelar' | 'reabrir' | null>(null)
   const [motivoSelecionado, setMotivoSelecionado] = useState<MotivoEncerramento>('Resolvido')
   const [motivoOutroTexto, setMotivoOutroTexto] = useState('')
+  const [observacaoTexto, setObservacaoTexto] = useState('')
 
   const isAdmin = perfil?.tipo === 'Admin'
   const isAtendente = perfil?.tipo === 'Admin' || perfil?.tipo === 'Atendente'
@@ -66,13 +68,14 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
   const executarAcao = () => {
     switch (confirmarAcao) {
       case 'resolver': resolver.mutate(); break
-      case 'encerrar': fechar.mutate({ motivo: motivoSelecionado, motivoOutro: motivoOutroTexto || undefined }); break
-      case 'cancelar': cancelar.mutate({ motivo: motivoSelecionado, motivoOutro: motivoOutroTexto || undefined }); break
+      case 'encerrar': fechar.mutate({ motivo: motivoSelecionado, motivoOutro: motivoOutroTexto || undefined, observacao: observacaoTexto.trim() || undefined }); break
+      case 'cancelar': cancelar.mutate({ motivo: motivoSelecionado, motivoOutro: motivoOutroTexto || undefined, observacao: observacaoTexto.trim() || undefined }); break
       case 'reabrir': reabrir.mutate(); break
     }
     setConfirmarAcao(null)
     setMotivoSelecionado('Resolvido')
     setMotivoOutroTexto('')
+    setObservacaoTexto('')
   }
 
   const abrirConfirmacao = (acao: 'resolver' | 'encerrar' | 'cancelar' | 'reabrir') => {
@@ -200,6 +203,18 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
                   />
                 </div>
               )}
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="observacao-comentario" className="text-sm">
+                  Comentário (opcional)
+                </Label>
+                <Textarea
+                  id="observacao-comentario"
+                  value={observacaoTexto}
+                  onChange={(e) => setObservacaoTexto(e.target.value)}
+                  placeholder="Escreva uma observação sobre o encerramento..."
+                  rows={4}
+                />
+              </div>
             </div>
           )}
           <DialogFooter>
