@@ -16,6 +16,8 @@ function invalidarChamado(queryClient: ReturnType<typeof useQueryClient>, id: st
   queryClient.invalidateQueries({ queryKey: ['chamado', id] })
   queryClient.invalidateQueries({ queryKey: ['chamados'] })
   queryClient.invalidateQueries({ queryKey: ['historico', id] })
+  queryClient.invalidateQueries({ queryKey: ['comentarios', id] })
+  queryClient.invalidateQueries({ queryKey: ['anexos', id] })
 }
 
 export function useAtribuirChamado(chamadoId: string) {
