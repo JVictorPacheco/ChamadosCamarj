@@ -23,6 +23,12 @@ export interface ComparacaoMesAnteriorResponse {
   variacaoCanceladosPercentual: number | null
 }
 
+export interface SlaEvolucaoItem {
+  ano: number
+  mes: number
+  percentual: number | null
+}
+
 export interface RelatorioMensalResponse {
   ano: number
   mes: number
@@ -35,4 +41,5 @@ export interface RelatorioMensalResponse {
   porCategoria: PorCategoriaItem[]
   porAtendente: PorAtendenteItem[] | null
   comparacao: ComparacaoMesAnteriorResponse | null
+  slaEvolucao: SlaEvolucaoItem[] | null
 }

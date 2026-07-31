@@ -2,7 +2,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useCategorias } from '../hooks/useCategorias'
-import type { PrioridadeChamado, StatusChamado } from '@/types/api'
+import type { PrioridadeChamado, StatusChamado, SlaStatus, MotivoEncerramento } from '@/types/api'
 
 export interface FiltroChamadosValue {
   status?: StatusChamado
@@ -11,10 +11,14 @@ export interface FiltroChamadosValue {
   prioridade?: PrioridadeChamado
   dataInicio?: string
   dataFim?: string
+  slaStatus?: SlaStatus
+  motivoEncerramento?: MotivoEncerramento
 }
 
 const STATUS_OPTIONS_PADRAO: StatusChamado[] = ['Aberto', 'EmAndamento', 'Resolvido', 'Fechado', 'Cancelado']
 const PRIORIDADE_OPTIONS: PrioridadeChamado[] = ['Baixa', 'Media', 'Alta', 'Urgente']
+const SLA_OPTIONS: SlaStatus[] = ['DentroPrazo', 'Atencao', 'Atrasado']
+const MOTIVO_OPTIONS: MotivoEncerramento[] = ['Resolvido', 'CanceladoSolicitante', 'AbertoIndevidamente', 'Duplicata', 'SemResposta', 'Outro']
 const TODOS = 'todos'
 
 interface FiltroChamadosProps {
@@ -22,6 +26,8 @@ interface FiltroChamadosProps {
   onChange: (value: FiltroChamadosValue) => void
   statusOptions?: StatusChamado[]
   mostrarPeriodo?: boolean
+  mostrarSla?: boolean
+  mostrarMotivo?: boolean
 }
 
 export function FiltroChamados({
@@ -29,6 +35,8 @@ export function FiltroChamados({
   onChange,
   statusOptions = STATUS_OPTIONS_PADRAO,
   mostrarPeriodo = false,
+  mostrarSla = false,
+  mostrarMotivo = false,
 }: FiltroChamadosProps) {
   const { data: categorias } = useCategorias()
 
@@ -96,6 +104,50 @@ export function FiltroChamados({
         value={value.busca ?? ''}
         onChange={(e) => onChange({ ...value, busca: e.target.value || undefined })}
       />
+
+      {mostrarSla && (
+        <Select
+          value={value.slaStatus ?? TODOS}
+          onValueChange={(sla) =>
+            onChange({ ...value, slaStatus: sla === TODOS ? undefined : (sla as SlaStatus) })
+          }
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="SLA" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={TODOS}>Todos</SelectItem>
+            {SLA_OPTIONS.map((sla) => (
+              <SelectItem key={sla} value={sla}>
+                {sla === 'DentroPrazo' ? 'No prazo' : sla === 'Atencao' ? 'Atenção' : 'Atrasado'}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+
+      {mostrarMotivo && (
+        <Select
+          value={value.motivoEncerramento ?? TODOS}
+          onValueChange={(motivo) =>
+            onChange({ ...value, motivoEncerramento: motivo === TODOS ? undefined : (motivo as MotivoEncerramento) })
+          }
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Motivo" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={TODOS}>Todos os motivos</SelectItem>
+            {MOTIVO_OPTIONS.map((motivo) => (
+              <SelectItem key={motivo} value={motivo}>
+                {motivo === 'CanceladoSolicitante' ? 'Cancelado pelo solicitante'
+                  : motivo === 'AbertoIndevidamente' ? 'Aberto indevidamente'
+                  : motivo}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
 
       {mostrarPeriodo && (
         <>

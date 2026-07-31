@@ -6,6 +6,7 @@ using ChamadosCamarj.Domain.Interfaces;
 using FluentAssertions;
 using MediatR;
 using Moq;
+using ChamadosCamarj.Application.Common.Interfaces;
 
 namespace ChamadosCamarj.UnitTests.Application.Handlers;
 
@@ -14,6 +15,7 @@ public class ForcarEncerramentoChamadoHandlerTests
     private readonly Mock<IChamadoRepository> _chamadoRepositoryMock = new();
     private readonly Mock<IHistoricoRepository> _historicoRepositoryMock = new();
     private readonly Mock<IPublisher> _publisherMock = new();
+    private readonly Mock<IUnitOfWork> _unitOfWorkMock = new();
     private readonly ForcarEncerramentoChamadoCommandHandler _handler;
 
     public ForcarEncerramentoChamadoHandlerTests()
@@ -21,7 +23,8 @@ public class ForcarEncerramentoChamadoHandlerTests
         _handler = new ForcarEncerramentoChamadoCommandHandler(
             _chamadoRepositoryMock.Object,
             _historicoRepositoryMock.Object,
-            _publisherMock.Object);
+            _publisherMock.Object,
+            _unitOfWorkMock.Object);
     }
 
     private static Chamado CriarChamado() => new("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
@@ -35,7 +38,7 @@ public class ForcarEncerramentoChamadoHandlerTests
         _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
 
-        var command = new ForcarEncerramentoChamadoCommand(chamadoId, "Chamado duplicado, aberto por engano.", Guid.NewGuid(), "Victor", "Admin");
+        var command = new ForcarEncerramentoChamadoCommand(chamadoId, MotivoEncerramento.Duplicata, null, null, Guid.NewGuid(), "Victor", "Admin");
         await _handler.Handle(command, CancellationToken.None);
 
         chamado.Status.Should().Be(StatusChamado.Fechado);
@@ -46,7 +49,7 @@ public class ForcarEncerramentoChamadoHandlerTests
                 It.Is<HistoricoEntrada>(h =>
                     h.Acao == AcaoHistorico.EncerramentoForcado &&
                     h.DetalheAnterior == "Aberto" &&
-                    h.DetalheNovo == "Chamado duplicado, aberto por engano."),
+                    h.DetalheNovo == "Duplicata"),
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -60,12 +63,12 @@ public class ForcarEncerramentoChamadoHandlerTests
         _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
 
-        var command = new ForcarEncerramentoChamadoCommand(chamadoId, "   Motivo com espaços nas pontas.   ", PerfilRequisitante: "Admin");
+        var command = new ForcarEncerramentoChamadoCommand(chamadoId, MotivoEncerramento.Outro, "Aberto por engano.", PerfilRequisitante: "Admin");
         await _handler.Handle(command, CancellationToken.None);
 
         _historicoRepositoryMock.Verify(
             r => r.AdicionarAsync(
-                It.Is<HistoricoEntrada>(h => h.DetalheNovo == "Motivo com espaços nas pontas."),
+                It.Is<HistoricoEntrada>(h => h.DetalheNovo == "Outro: Aberto por engano."),
                 It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -74,7 +77,7 @@ public class ForcarEncerramentoChamadoHandlerTests
     public async Task Handle_ComoAtendente_DeveLancarForbiddenException()
     {
         var chamadoId = Guid.NewGuid();
-        var command = new ForcarEncerramentoChamadoCommand(chamadoId, "Motivo válido com mais de dez caracteres.", Guid.NewGuid(), "Fábio", "Atendente");
+        var command = new ForcarEncerramentoChamadoCommand(chamadoId, MotivoEncerramento.AbertoIndevidamente, null, null, Guid.NewGuid(), "Fábio", "Atendente");
 
         var act = async () => await _handler.Handle(command, CancellationToken.None);
         await act.Should().ThrowAsync<ForbiddenException>();
@@ -85,7 +88,7 @@ public class ForcarEncerramentoChamadoHandlerTests
     [Fact]
     public async Task Handle_SemPerfilRequisitante_DeveLancarForbiddenException()
     {
-        var command = new ForcarEncerramentoChamadoCommand(Guid.NewGuid(), "Motivo válido com mais de dez caracteres.");
+        var command = new ForcarEncerramentoChamadoCommand(Guid.NewGuid(), MotivoEncerramento.AbertoIndevidamente);
 
         var act = async () => await _handler.Handle(command, CancellationToken.None);
         await act.Should().ThrowAsync<ForbiddenException>();
@@ -98,7 +101,7 @@ public class ForcarEncerramentoChamadoHandlerTests
         _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync((Chamado?)null);
 
-        var command = new ForcarEncerramentoChamadoCommand(chamadoId, "Motivo válido com mais de dez caracteres.", PerfilRequisitante: "Admin");
+        var command = new ForcarEncerramentoChamadoCommand(chamadoId, MotivoEncerramento.AbertoIndevidamente, null, PerfilRequisitante: "Admin");
 
         var act = async () => await _handler.Handle(command, CancellationToken.None);
         await act.Should().ThrowAsync<NotFoundException>();
@@ -116,7 +119,7 @@ public class ForcarEncerramentoChamadoHandlerTests
         _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
 
-        var command = new ForcarEncerramentoChamadoCommand(chamadoId, "Motivo válido com mais de dez caracteres.", PerfilRequisitante: "Admin");
+        var command = new ForcarEncerramentoChamadoCommand(chamadoId, MotivoEncerramento.AbertoIndevidamente, null, PerfilRequisitante: "Admin");
 
         var act = async () => await _handler.Handle(command, CancellationToken.None);
         await act.Should().ThrowAsync<InvalidOperationException>();
@@ -136,7 +139,7 @@ public class ForcarEncerramentoChamadoHandlerTests
         _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
 
-        var command = new ForcarEncerramentoChamadoCommand(chamadoId, "Encerrando manualmente após validação.", PerfilRequisitante: "Admin");
+        var command = new ForcarEncerramentoChamadoCommand(chamadoId, MotivoEncerramento.AbertoIndevidamente, null, PerfilRequisitante: "Admin");
         await _handler.Handle(command, CancellationToken.None);
 
         chamado.Status.Should().Be(StatusChamado.Fechado);

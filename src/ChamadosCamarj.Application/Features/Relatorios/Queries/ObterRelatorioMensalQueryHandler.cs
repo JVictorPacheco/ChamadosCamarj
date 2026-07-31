@@ -73,6 +73,26 @@ public class ObterRelatorioMensalQueryHandler : IRequestHandler<ObterRelatorioMe
 
         var comparacao = await CalcularComparacaoAsync(request, inicio, abertos.Count, resolvidos.Count, cancelados.Count, cancellationToken);
 
+        // SLA evolution: last 6 months
+        var slaEvolucao = new List<SlaEvolucaoItem>();
+        for (int i = 5; i >= 0; i--)
+        {
+            var mesEvol = inicio.AddMonths(-i);
+            var fimEvol = mesEvol.AddMonths(1);
+            var eventosEvol = await _historicoRepository.ObterEventosParaRelatorioAsync(
+                [AcaoHistorico.Resolvido], mesEvol, fimEvol, cancellationToken);
+            if (request.ResponsavelId is { } respId)
+                eventosEvol = eventosEvol.Where(e => e.ResponsavelId == respId).ToList();
+
+            var comSlaEvol = eventosEvol.Where(e => e.DataLimite.HasValue).ToList();
+            var dentroEvol = comSlaEvol.Count(e => e.DataConclusao!.Value <= e.DataLimite!.Value);
+            var pctEvol = comSlaEvol.Count > 0
+                ? Math.Round(dentroEvol * 100.0 / comSlaEvol.Count, 1)
+                : (double?)null;
+
+            slaEvolucao.Add(new SlaEvolucaoItem(mesEvol.Year, mesEvol.Month, pctEvol));
+        }
+
         return new RelatorioMensalResponse(
             request.Ano,
             request.Mes,
@@ -84,7 +104,8 @@ public class ObterRelatorioMensalQueryHandler : IRequestHandler<ObterRelatorioMe
             sla,
             porCategoria,
             porAtendente,
-            comparacao
+            comparacao,
+            slaEvolucao
         );
     }
 

@@ -37,6 +37,7 @@ public interface IChamadoRepository
         DateTime? dataFim = null,
         Guid? usuarioLogadoId = null,
         Guid? grupoId = null,
+        Domain.Enums.MotivoEncerramento? motivoEncerramento = null,
         CancellationToken cancellationToken = default);
 
     // Verificações
@@ -44,6 +45,7 @@ public interface IChamadoRepository
 
     // Dashboard / Métricas
     Task<int> ContarPorStatusAsync(StatusChamado status, CancellationToken cancellationToken = default);
+    Task<(int TotalResolvidos, int DentroPrazo)> ContarSlaComplianceAsync(DateTime inicio, DateTime fim, CancellationToken cancellationToken = default);
     Task<Dictionary<StatusChamado, int>> ContarPorStatusAgrupadoAsync(CancellationToken cancellationToken = default);
     Task<int> ContarResolvidosHojeAsync(CancellationToken cancellationToken = default);
     Task<double?> ObterTempoMedioResolucaoHorasAsync(CancellationToken cancellationToken = default);

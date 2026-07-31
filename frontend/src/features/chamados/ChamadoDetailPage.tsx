@@ -3,6 +3,10 @@ import { Link, useLocation, useParams } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/auth/AuthContext'
 import { ApiError } from '@/lib/api'
 import { formatarNumeroChamado } from '@/lib/utils'
@@ -16,7 +20,6 @@ import { AlterarPrioridadeModal } from './components/AlterarPrioridadeModal'
 import { ForcarEncerramentoModal } from './components/ForcarEncerramentoModal'
 import { TimelineHistorico } from './components/TimelineHistorico'
 import { AnexosList } from './components/AnexosList'
-import { UploadAnexoForm } from './components/UploadAnexoForm'
 import { useChamado } from './hooks/useChamado'
 import {
   useAtribuirChamado,
@@ -25,7 +28,16 @@ import {
   useCancelarChamado,
   useReabrirChamado,
 } from './hooks/useAcoesChamado'
-import type { ChamadoResponse } from '@/types/api'
+import type { ChamadoResponse, MotivoEncerramento } from '@/types/api'
+
+const MOTIVO_LABELS: Record<MotivoEncerramento, string> = {
+  Resolvido: 'Resolvido',
+  CanceladoSolicitante: 'Cancelado pelo solicitante',
+  AbertoIndevidamente: 'Aberto indevidamente',
+  Duplicata: 'Duplicata',
+  SemResposta: 'Sem resposta do solicitante',
+  Outro: 'Outro',
+}
 
 function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
   const { perfil } = useAuth()
@@ -38,6 +50,9 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
   const [prioridadeAberto, setPrioridadeAberto] = useState(false)
   const [forcarEncerramentoAberto, setForcarEncerramentoAberto] = useState(false)
   const [confirmarAcao, setConfirmarAcao] = useState<'resolver' | 'encerrar' | 'cancelar' | 'reabrir' | null>(null)
+  const [motivoSelecionado, setMotivoSelecionado] = useState<MotivoEncerramento>('Resolvido')
+  const [motivoOutroTexto, setMotivoOutroTexto] = useState('')
+  const [observacaoTexto, setObservacaoTexto] = useState('')
 
   const isAdmin = perfil?.tipo === 'Admin'
   const isAtendente = perfil?.tipo === 'Admin' || perfil?.tipo === 'Atendente'
@@ -48,14 +63,25 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
   const isPending =
     atribuir.isPending || resolver.isPending || fechar.isPending || cancelar.isPending || reabrir.isPending
 
+  const precisaMotivo = confirmarAcao === 'encerrar' || confirmarAcao === 'cancelar'
+
   const executarAcao = () => {
     switch (confirmarAcao) {
       case 'resolver': resolver.mutate(); break
-      case 'encerrar': fechar.mutate(); break
-      case 'cancelar': cancelar.mutate(); break
+      case 'encerrar': fechar.mutate({ motivo: motivoSelecionado, motivoOutro: motivoOutroTexto || undefined, observacao: observacaoTexto.trim() || undefined }); break
+      case 'cancelar': cancelar.mutate({ motivo: motivoSelecionado, motivoOutro: motivoOutroTexto || undefined, observacao: observacaoTexto.trim() || undefined }); break
       case 'reabrir': reabrir.mutate(); break
     }
     setConfirmarAcao(null)
+    setMotivoSelecionado('Resolvido')
+    setMotivoOutroTexto('')
+    setObservacaoTexto('')
+  }
+
+  const abrirConfirmacao = (acao: 'resolver' | 'encerrar' | 'cancelar' | 'reabrir') => {
+    setConfirmarAcao(acao)
+    if (acao === 'encerrar') setMotivoSelecionado('Resolvido')
+    if (acao === 'cancelar') setMotivoSelecionado('CanceladoSolicitante')
   }
 
   const tituloConfirmacao =
@@ -71,18 +97,17 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
     confirmarAcao === 'reabrir' ? 'O chamado voltará para o status Em Andamento e o responsável será removido.' : ''
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-3">
       {isAtendente && status === 'Aberto' && (
-        <Button size="sm" disabled={isPending} onClick={() => atribuir.mutate()}>
+        <Button disabled={isPending} onClick={() => atribuir.mutate()}>
           {atribuir.isPending ? 'Assumindo...' : 'Assumir'}
         </Button>
       )}
 
       {isAtendente && status === 'EmAndamento' && (
         <Button
-          size="sm"
           disabled={isPending}
-          onClick={() => setConfirmarAcao('resolver')}
+          onClick={() => abrirConfirmacao('resolver')}
         >
           {resolver.isPending ? 'Resolvendo...' : 'Resolver'}
         </Button>
@@ -90,9 +115,8 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
 
       {isAtendente && status === 'Resolvido' && (
         <Button
-          size="sm"
           disabled={isPending}
-          onClick={() => setConfirmarAcao('encerrar')}
+          onClick={() => abrirConfirmacao('encerrar')}
         >
           {fechar.isPending ? 'Encerrando...' : 'Encerrar'}
         </Button>
@@ -100,35 +124,34 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
 
       {(isAtendente || isSolicitante) && (status === 'Aberto' || status === 'EmAndamento') && (
         <Button
-          size="sm"
           variant="destructive"
           disabled={isPending}
-          onClick={() => setConfirmarAcao('cancelar')}
+          onClick={() => abrirConfirmacao('cancelar')}
         >
           {cancelar.isPending ? 'Cancelando...' : 'Cancelar'}
         </Button>
       )}
 
       {isAtendente && (status === 'Resolvido' || status === 'Fechado' || status === 'Cancelado') && (
-        <Button size="sm" variant="outline" disabled={isPending} onClick={() => setConfirmarAcao('reabrir')}>
+        <Button variant="outline" disabled={isPending} onClick={() => abrirConfirmacao('reabrir')}>
           {reabrir.isPending ? 'Reabrindo...' : 'Reabrir'}
         </Button>
       )}
 
       {isAdmin && !statusFinal && (
-        <Button size="sm" variant="outline" onClick={() => setReatribuirAberto(true)}>
+        <Button variant="outline" onClick={() => setReatribuirAberto(true)}>
           Reatribuir
         </Button>
       )}
 
       {isAdmin && !statusFinal && (
-        <Button size="sm" variant="outline" onClick={() => setPrioridadeAberto(true)}>
+        <Button variant="outline" onClick={() => setPrioridadeAberto(true)}>
           Alterar prioridade
         </Button>
       )}
 
       {isAdmin && !statusFinal && (
-        <Button size="sm" variant="destructive" onClick={() => setForcarEncerramentoAberto(true)}>
+        <Button variant="destructive" onClick={() => setForcarEncerramentoAberto(true)}>
           Forçar Encerramento
         </Button>
       )}
@@ -148,6 +171,52 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
             <DialogTitle>{tituloConfirmacao}</DialogTitle>
             <DialogDescription>{descricaoConfirmacao}</DialogDescription>
           </DialogHeader>
+          {precisaMotivo && (
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="motivo-encerramento" className="text-sm">
+                  Motivo de {confirmarAcao === 'encerrar' ? 'encerramento' : 'cancelamento'}
+                </Label>
+                <Select value={motivoSelecionado} onValueChange={(v) => setMotivoSelecionado(v as MotivoEncerramento)}>
+                  <SelectTrigger id="motivo-encerramento">
+                    <SelectValue placeholder="Selecione o motivo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(Object.keys(MOTIVO_LABELS) as MotivoEncerramento[]).map((motivo) => (
+                      <SelectItem key={motivo} value={motivo}>
+                        {MOTIVO_LABELS[motivo]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {motivoSelecionado === 'Outro' && (
+                <div className="flex flex-col gap-1">
+                  <Label htmlFor="motivo-outro" className="text-sm">
+                    Descreva o motivo
+                  </Label>
+                  <Input
+                    id="motivo-outro"
+                    value={motivoOutroTexto}
+                    onChange={(e) => setMotivoOutroTexto(e.target.value)}
+                    placeholder="Ex: Chamado aberto por engano"
+                  />
+                </div>
+              )}
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="observacao-comentario" className="text-sm">
+                  Comentário (opcional)
+                </Label>
+                <Textarea
+                  id="observacao-comentario"
+                  value={observacaoTexto}
+                  onChange={(e) => setObservacaoTexto(e.target.value)}
+                  placeholder="Escreva uma observação sobre o encerramento..."
+                  rows={4}
+                />
+              </div>
+            </div>
+          )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmarAcao(null)}>
               Voltar
@@ -155,7 +224,7 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
             <Button
               variant={confirmarAcao === 'cancelar' ? 'destructive' : 'default'}
               onClick={executarAcao}
-              disabled={isPending}
+              disabled={isPending || (motivoSelecionado === 'Outro' && !motivoOutroTexto.trim())}
             >
               {isPending ? 'Processando...' : 'Confirmar'}
             </Button>
@@ -238,12 +307,12 @@ export function ChamadoDetailPage() {
   }
 
   return (
-    <div className="flex max-w-2xl flex-col gap-4 p-4">
-      <Button asChild variant="ghost" size="sm" className="self-start">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 p-8">
+      <Button asChild variant="ghost" size="default" className="self-start">
         <Link to="/chamados">← Voltar</Link>
       </Button>
 
-      <h1 className="text-xl font-heading">
+      <h1 className="text-3xl font-heading">
         <span className="mr-2 text-muted-foreground">{formatarNumeroChamado(chamado.numero)}</span>
         {chamado.titulo}
       </h1>
@@ -262,17 +331,17 @@ export function ChamadoDetailPage() {
         </Alert>
       )}
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-4 text-lg">
         <StatusBadge status={chamado.status} />
         <PrioridadeBadge prioridade={chamado.prioridade} />
-        <SlaBadge dataLimite={chamado.dataLimite} status={chamado.status} />
+        <SlaBadge dataLimite={chamado.dataLimite} status={chamado.status} slaStatus={chamado.slaStatus} slaLabel={chamado.slaLabel} />
       </div>
 
       <BotoesAcao chamado={chamado} />
 
-      <p className="text-sm">{chamado.descricao}</p>
+      <p className="text-lg leading-relaxed">{chamado.descricao}</p>
 
-      <dl className="grid grid-cols-2 gap-2 text-sm text-muted-foreground">
+      <dl className="grid grid-cols-2 gap-6 text-lg text-muted-foreground">
         <div>
           <dt className="font-medium text-foreground">Categoria</dt>
           <dd>{chamado.categoriaNome ?? 'Sem categoria'}</dd>
@@ -299,18 +368,31 @@ export function ChamadoDetailPage() {
             <dd>{new Date(chamado.dataConclusao).toLocaleString('pt-BR')}</dd>
           </div>
         )}
+        {chamado.motivoEncerramento && (
+          <div>
+            <dt className="font-medium text-foreground">Motivo de encerramento</dt>
+            <dd>
+              {chamado.motivoEncerramento === 'CanceladoSolicitante' ? 'Cancelado pelo solicitante'
+                : chamado.motivoEncerramento === 'AbertoIndevidamente' ? 'Aberto indevidamente'
+                : chamado.motivoEncerramento}
+              {chamado.motivoOutro && `: ${chamado.motivoOutro}`}
+            </dd>
+          </div>
+        )}
       </dl>
 
-      <h2 className="text-base font-heading">Anexos</h2>
       <AnexosList chamadoId={chamado.id} />
-      <UploadAnexoForm chamadoId={chamado.id} />
 
-      <h2 className="text-base font-heading">Comentários</h2>
-      <ComentarioList chamadoId={chamado.id} />
-      <ComentarioForm chamadoId={chamado.id} autor={perfil?.nome ?? ''} />
+      <section className="space-y-4">
+        <h2 className="text-xl font-heading">Comentários</h2>
+        <ComentarioList chamadoId={chamado.id} />
+        <ComentarioForm chamadoId={chamado.id} autor={perfil?.nome ?? ''} />
+      </section>
 
-      <h2 className="text-base font-heading">Histórico</h2>
-      <TimelineHistorico chamadoId={chamado.id} />
+      <section className="space-y-4">
+        <h2 className="text-xl font-heading">Histórico</h2>
+        <TimelineHistorico chamadoId={chamado.id} />
+      </section>
     </div>
   )
 }

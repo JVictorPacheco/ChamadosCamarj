@@ -1,6 +1,6 @@
 # Roadmap — ChamadosCamarj
 
-> Última atualização: 2026-07-27
+> Última atualização: 2026-07-30
 
 ## ✅ Fase 0 — Setup
 
@@ -198,6 +198,45 @@
 - [x] Adicionar: Contas Médicas
 - [x] Total: 8 categorias (eram 5)
 - [x] Seeder com upsert inteligente (funciona em banco novo e existente)
+
+## ⏱️ SLA Tracking + Alertas (CONCLUÍDO — 2026-07-30)
+
+> Badges visuais de SLA no ChamadoCard e DetalhePage. Cálculo feito no backend via `SlaCalculo` e exposto no `ChamadoResponse`.
+
+- [x] Enum `SlaStatus` + `SlaCalculo` em Application/Common
+- [x] Campos `slaStatus`, `slaLabel`, `slaHorasRestantes` no `ChamadoResponse`
+- [x] Badge colorido (verde/amarelo/vermelho) no `SlaBadge` componente
+- [x] Dashboard: card de SLA compliance do mês
+- [ ] Alertas SignalR de SLA (pendente)
+- [ ] Filtro por SLA na listagem (pendente)
+
+## 🏷️ Motivo de Encerramento (CONCLUÍDO — 2026-07-30)
+
+> Enum que registra por que um chamado foi encerrado/cancelado — essencial para auditoria.
+
+- [x] Enum `MotivoEncerramento` no Domain
+- [x] Propriedades `MotivoEncerramento` e `MotivoOutro` no `Chamado`
+- [x] Migration `AddMotivoEncerramentoChamado` aplicada
+- [x] Commands atualizados (Fechar, Cancelar, ForcarEncerrar) com motivo obrigatório
+- [x] Validação `ForcarEncerramentoChamadoCommandValidator` com `When(Outro)`
+- [x] Histórico registra o motivo: "Cancelado. Motivo: CanceladoSolicitante"
+- [ ] Filtro por motivo na listagem (pendente)
+
+## 🧪 Testes E2E (Playwright) (CONCLUÍDO — 2026-07-30)
+
+> 12 testes E2E cobrindo login, chamados, admin, dashboard, fluxo completo.
+
+- [x] login.spec.ts (sucesso + erro)
+- [x] chamados.spec.ts (abrir, listar, arquivo)
+- [x] admin.spec.ts (usuários, categorias, grupos)
+- [x] dashboard.spec.ts (dashboard, fila, relatório)
+- [x] fluxo-completo.spec.ts (login → abrir → comentar → listar)
+
+## 📊 Dashboard + Relatório — melhorias (CONCLUÍDO — 2026-07-30)
+
+- [x] SLA compliance card no Dashboard
+- [x] Gráfico de chamados por prioridade
+- [ ] Gráfico de evolução mensal do SLA no Relatório (pendente)
 
 ## 🎨 Tema Claro + Logo CAMARJ + Olhinho (CONCLUÍDO — 2026-07-28)
 

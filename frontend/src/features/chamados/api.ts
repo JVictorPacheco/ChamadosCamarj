@@ -7,6 +7,7 @@ import type {
   ComentarChamadoRequest,
   ComentarioResponse,
   HistoricoResponse,
+  MotivoEncerramento,
   PagedResult,
   PrioridadeChamado,
   StatusChamado,
@@ -24,6 +25,8 @@ export interface ListarChamadosFiltros {
   finalizados?: boolean
   dataInicio?: string
   dataFim?: string
+  slaStatus?: string
+  motivoEncerramento?: string
 }
 
 function buildQueryString<T extends object>(filtros: T): string {
@@ -89,12 +92,18 @@ export function resolverChamado(chamadoId: string): Promise<void> {
   return apiFetch<void>(`/chamados/${chamadoId}/resolver`, { method: 'PATCH' })
 }
 
-export function fecharChamado(chamadoId: string): Promise<void> {
-  return apiFetch<void>(`/chamados/${chamadoId}/fechar`, { method: 'PATCH' })
+export function fecharChamado(chamadoId: string, motivo: MotivoEncerramento, motivoOutro?: string, observacao?: string): Promise<void> {
+  return apiFetch<void>(`/chamados/${chamadoId}/fechar`, {
+    method: 'PATCH',
+    body: JSON.stringify({ motivo, motivoOutro, observacao }),
+  })
 }
 
-export function cancelarChamado(chamadoId: string): Promise<void> {
-  return apiFetch<void>(`/chamados/${chamadoId}/cancelar`, { method: 'PATCH' })
+export function cancelarChamado(chamadoId: string, motivo: MotivoEncerramento, motivoOutro?: string, observacao?: string): Promise<void> {
+  return apiFetch<void>(`/chamados/${chamadoId}/cancelar`, {
+    method: 'PATCH',
+    body: JSON.stringify({ motivo, motivoOutro, observacao }),
+  })
 }
 
 export function reabrirChamado(chamadoId: string): Promise<void> {
@@ -120,10 +129,10 @@ export function alterarPrioridade(chamadoId: string, novaPrioridade: PrioridadeC
   })
 }
 
-export function forcarEncerramento(chamadoId: string, motivo: string): Promise<void> {
+export function forcarEncerramento(chamadoId: string, motivo: MotivoEncerramento, motivoOutro?: string, observacao?: string): Promise<void> {
   return apiFetch<void>(`/chamados/${chamadoId}/forcar-encerramento`, {
     method: 'PATCH',
-    body: JSON.stringify({ motivo }),
+    body: JSON.stringify({ motivo, motivoOutro, observacao }),
   })
 }
 
