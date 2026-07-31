@@ -381,10 +381,7 @@ export function ChamadoDetailPage() {
         )}
       </dl>
 
-      <section className="space-y-4">
-        <h2 className="text-xl font-heading">Anexos</h2>
-        <AnexosList chamadoId={chamado.id} />
-      </section>
+      <AnexosList chamadoId={chamado.id} />
 
       <section className="space-y-4">
         <h2 className="text-xl font-heading">Comentários</h2>

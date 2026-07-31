@@ -100,26 +100,29 @@ export function AnexosList({ chamadoId }: { chamadoId: string }) {
   const { data: anexos, isPending } = useAnexos(chamadoId)
 
   if (isPending) {
-    return <p className="text-sm text-muted-foreground">Carregando anexos...</p>
+    return null
   }
 
   if (!anexos || anexos.length === 0) {
-    return <p className="text-sm text-muted-foreground">Nenhum anexo.</p>
+    return null
   }
 
   return (
-    <ul className="flex flex-col gap-2">
-      {anexos.map((anexo) => (
-        <LinhaAnexo
-          key={anexo.id}
-          chamadoId={chamadoId}
-          anexoId={anexo.id}
-          nomeArquivo={anexo.nomeArquivo}
-          tamanhoBytes={anexo.tamanhoBytes}
-          enviadoPorId={anexo.enviadoPorId}
-          enviadoPorNome={anexo.enviadoPorNome}
-        />
-      ))}
-    </ul>
+    <section className="space-y-4">
+      <h2 className="text-xl font-heading">Anexos</h2>
+      <ul className="flex flex-col gap-2">
+        {anexos.map((anexo) => (
+          <LinhaAnexo
+            key={anexo.id}
+            chamadoId={chamadoId}
+            anexoId={anexo.id}
+            nomeArquivo={anexo.nomeArquivo}
+            tamanhoBytes={anexo.tamanhoBytes}
+            enviadoPorId={anexo.enviadoPorId}
+            enviadoPorNome={anexo.enviadoPorNome}
+          />
+        ))}
+      </ul>
+    </section>
   )
 }
