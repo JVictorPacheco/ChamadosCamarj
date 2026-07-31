@@ -14,6 +14,7 @@ public static class HistoricoExtensions
         string? detalheNovo = null,
         string usuarioNome = "Sistema",
         Guid? usuarioId = null,
+        OrigemEntrada origem = OrigemEntrada.Humano,
         CancellationToken cancellationToken = default)
     {
         var historico = HistoricoEntrada.Criar(
@@ -22,7 +23,8 @@ public static class HistoricoExtensions
             usuarioId,
             acao,
             detalheAnterior,
-            detalheNovo
+            detalheNovo,
+            origem
         );
 
         await repository.AdicionarAsync(historico, cancellationToken);
