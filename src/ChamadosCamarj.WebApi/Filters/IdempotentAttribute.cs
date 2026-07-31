@@ -15,10 +15,7 @@ public class IdempotentAttribute : ActionFilterAttribute
         if (!context.HttpContext.Request.Headers.TryGetValue(HeaderName, out var keyValues) ||
             string.IsNullOrWhiteSpace(keyValues.FirstOrDefault()))
         {
-            context.Result = new BadRequestObjectResult(new
-            {
-                message = $"Header '{HeaderName}' obrigatorio para operacoes de mutacao."
-            });
+            await next();
             return;
         }
 
