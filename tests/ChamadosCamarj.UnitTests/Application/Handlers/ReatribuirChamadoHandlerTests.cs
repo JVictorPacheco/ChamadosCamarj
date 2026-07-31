@@ -38,7 +38,7 @@ public class ReatribuirChamadoHandlerTests
         // Atribuir primeiro
         chamado.Atribuir(atualResponsavelId, "Victor");
         
-        _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
+        _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
 
         var command = new ReatribuirChamadoCommand(chamadoId, novoResponsavelId, "Fábio");
@@ -60,7 +60,7 @@ public class ReatribuirChamadoHandlerTests
         var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
         // Chamado está aberto (sem responsável)
 
-        _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
+        _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
 
         var command = new ReatribuirChamadoCommand(chamadoId, novoResponsavelId, "Victor");
@@ -79,7 +79,7 @@ public class ReatribuirChamadoHandlerTests
         chamado.Resolver();
         chamado.Fechar();
 
-        _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
+        _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
 
         var command = new ReatribuirChamadoCommand(chamadoId, Guid.NewGuid(), "Fábio");
@@ -92,7 +92,7 @@ public class ReatribuirChamadoHandlerTests
     public async Task Handle_QuandoChamadoNaoExiste_DeveLancarNotFoundException()
     {
         var chamadoId = Guid.NewGuid();
-        _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
+        _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync((Chamado?)null);
 
         var command = new ReatribuirChamadoCommand(chamadoId, Guid.NewGuid(), "Victor");
@@ -108,7 +108,7 @@ public class ReatribuirChamadoHandlerTests
         var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
         chamado.Atribuir(Guid.NewGuid(), "Victor");
 
-        _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
+        _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
 
         var command = new ReatribuirChamadoCommand(chamadoId, Guid.NewGuid(), "Fábio");

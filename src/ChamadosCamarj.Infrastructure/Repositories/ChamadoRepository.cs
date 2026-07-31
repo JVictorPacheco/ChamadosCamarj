@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using ChamadosCamarj.Domain.Entities;
 using ChamadosCamarj.Domain.Interfaces;
 using ChamadosCamarj.Infrastructure.Data;
+using ChamadosCamarj.Application.Common.Exceptions;
 
 namespace ChamadosCamarj.Infrastructure.Repositories;
 
@@ -31,8 +32,15 @@ public class ChamadoRepository : IChamadoRepository
         if (chamado == null)
             throw new ArgumentNullException(nameof(chamado));
 
-        _dbSet.Update(chamado);
-        await _context.SaveChangesAsync(cancellationToken);
+        try
+        {
+            _dbSet.Update(chamado);
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConflictException("Este chamado foi modificado por outro usuario. Recarregue a pagina e tente novamente.");
+        }
     }
 
     public async Task AdicionarComentarioAsync(Comentario comentario, CancellationToken cancellationToken = default)
@@ -60,6 +68,16 @@ public class ChamadoRepository : IChamadoRepository
             .Include(c => c.Comentarios)
             .Include(c => c.Anexos)
             .AsNoTracking()
+            .AsSplitQuery()
+            .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
+    }
+
+    public async Task<Chamado?> ObterPorIdComTrackingAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Include(c => c.Categoria)
+            .Include(c => c.Comentarios)
+            .Include(c => c.Anexos)
             .AsSplitQuery()
             .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
     }

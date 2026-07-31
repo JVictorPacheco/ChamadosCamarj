@@ -30,7 +30,7 @@ public class ResolverFecharCancelarHandlerTests
         var chamado = ChamadoAberto();
         chamado.Atribuir(Guid.NewGuid(), "Victor");
 
-        _repositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
+        _repositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
 
         var handler = new ResolverChamadoCommandHandler(_repositoryMock.Object, _historicoRepositoryMock.Object, _publisherMock.Object, _unitOfWorkMock.Object);
@@ -44,7 +44,7 @@ public class ResolverFecharCancelarHandlerTests
     [Fact]
     public async Task Resolver_QuandoNaoExiste_DeveLancarNotFoundException()
     {
-        _repositoryMock.Setup(r => r.ObterPorIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+        _repositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Chamado?)null);
 
         var handler = new ResolverChamadoCommandHandler(_repositoryMock.Object, _historicoRepositoryMock.Object, _publisherMock.Object, _unitOfWorkMock.Object);
@@ -63,7 +63,7 @@ public class ResolverFecharCancelarHandlerTests
         chamado.Atribuir(Guid.NewGuid(), "Victor");
         chamado.Resolver();
 
-        _repositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
+        _repositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
 
         var handler = new FecharChamadoCommandHandler(_repositoryMock.Object, _historicoRepositoryMock.Object, _publisherMock.Object, _unitOfWorkMock.Object);
@@ -76,7 +76,7 @@ public class ResolverFecharCancelarHandlerTests
     [Fact]
     public async Task Fechar_QuandoNaoExiste_DeveLancarNotFoundException()
     {
-        _repositoryMock.Setup(r => r.ObterPorIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+        _repositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Chamado?)null);
 
         var handler = new FecharChamadoCommandHandler(_repositoryMock.Object, _historicoRepositoryMock.Object, _publisherMock.Object, _unitOfWorkMock.Object);
@@ -93,7 +93,7 @@ public class ResolverFecharCancelarHandlerTests
         var chamadoId = Guid.NewGuid();
         var chamado = ChamadoAberto();
 
-        _repositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
+        _repositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
 
         var handler = new CancelarChamadoCommandHandler(_repositoryMock.Object, _historicoRepositoryMock.Object, _publisherMock.Object, _unitOfWorkMock.Object);
@@ -106,7 +106,7 @@ public class ResolverFecharCancelarHandlerTests
     [Fact]
     public async Task Cancelar_QuandoNaoExiste_DeveLancarNotFoundException()
     {
-        _repositoryMock.Setup(r => r.ObterPorIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+        _repositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Chamado?)null);
 
         var handler = new CancelarChamadoCommandHandler(_repositoryMock.Object, _historicoRepositoryMock.Object, _publisherMock.Object, _unitOfWorkMock.Object);

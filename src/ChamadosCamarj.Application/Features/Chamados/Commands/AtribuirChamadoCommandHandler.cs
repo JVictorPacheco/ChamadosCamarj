@@ -29,7 +29,7 @@ public class AtribuirChamadoCommandHandler : IRequestHandler<AtribuirChamadoComm
 
     public async Task Handle(AtribuirChamadoCommand request, CancellationToken cancellationToken)
     {
-        var chamado = await _chamadoRepository.ObterPorIdAsync(request.Id, cancellationToken)
+        var chamado = await _chamadoRepository.ObterPorIdComTrackingAsync(request.Id, cancellationToken)
             ?? throw new NotFoundException("Chamado", request.Id);
 
         chamado.Atribuir(request.ResponsavelId, request.ResponsavelNome);

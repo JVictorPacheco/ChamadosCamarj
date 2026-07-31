@@ -4,6 +4,7 @@ using ChamadosCamarj.Application.Common;
 using ChamadosCamarj.Application.Features.Chamados.Commands;
 using ChamadosCamarj.Application.Features.Chamados.DTOs;
 using ChamadosCamarj.Application.Features.Chamados.Queries;
+using ChamadosCamarj.WebApi.Filters;
 
 namespace ChamadosCamarj.WebApi.Controllers;
 
@@ -72,6 +73,7 @@ public class ChamadosController : ControllerBase
     /// Abre um novo chamado
     /// </summary>
     [HttpPost]
+    [Idempotent]
     [ProducesResponseType(typeof(ChamadoResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ChamadoResponse>> Abrir(
@@ -265,8 +267,9 @@ public class ChamadosController : ControllerBase
     /// Adiciona um comentário a um chamado
     /// </summary>
     [HttpPost("{id:guid}/comentarios")]
+    [Idempotent]
     [ProducesResponseType(typeof(ComentarioResponse), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ComentarioResponse>> Comentar(
         Guid id,
         [FromBody] ComentarChamadoRequest request,
@@ -281,6 +284,7 @@ public class ChamadosController : ControllerBase
     /// Anexa um arquivo a um chamado (ou a um comentário específico)
     /// </summary>
     [HttpPost("{id:guid}/anexos")]
+    [Idempotent]
     [ProducesResponseType(typeof(AnexoResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
