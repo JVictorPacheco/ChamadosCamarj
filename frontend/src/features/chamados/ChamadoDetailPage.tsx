@@ -3,6 +3,9 @@ import { Link, useLocation, useParams } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useAuth } from '@/auth/AuthContext'
 import { ApiError } from '@/lib/api'
 import { formatarNumeroChamado } from '@/lib/utils'
@@ -24,7 +27,16 @@ import {
   useCancelarChamado,
   useReabrirChamado,
 } from './hooks/useAcoesChamado'
-import type { ChamadoResponse } from '@/types/api'
+import type { ChamadoResponse, MotivoEncerramento } from '@/types/api'
+
+const MOTIVO_LABELS: Record<MotivoEncerramento, string> = {
+  Resolvido: 'Resolvido',
+  CanceladoSolicitante: 'Cancelado pelo solicitante',
+  AbertoIndevidamente: 'Aberto indevidamente',
+  Duplicata: 'Duplicata',
+  SemResposta: 'Sem resposta do solicitante',
+  Outro: 'Outro',
+}
 
 function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
   const { perfil } = useAuth()
@@ -37,6 +49,8 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
   const [prioridadeAberto, setPrioridadeAberto] = useState(false)
   const [forcarEncerramentoAberto, setForcarEncerramentoAberto] = useState(false)
   const [confirmarAcao, setConfirmarAcao] = useState<'resolver' | 'encerrar' | 'cancelar' | 'reabrir' | null>(null)
+  const [motivoSelecionado, setMotivoSelecionado] = useState<MotivoEncerramento>('Resolvido')
+  const [motivoOutroTexto, setMotivoOutroTexto] = useState('')
 
   const isAdmin = perfil?.tipo === 'Admin'
   const isAtendente = perfil?.tipo === 'Admin' || perfil?.tipo === 'Atendente'
@@ -47,14 +61,24 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
   const isPending =
     atribuir.isPending || resolver.isPending || fechar.isPending || cancelar.isPending || reabrir.isPending
 
+  const precisaMotivo = confirmarAcao === 'encerrar' || confirmarAcao === 'cancelar'
+
   const executarAcao = () => {
     switch (confirmarAcao) {
       case 'resolver': resolver.mutate(); break
-      case 'encerrar': fechar.mutate(); break
-      case 'cancelar': cancelar.mutate(); break
+      case 'encerrar': fechar.mutate({ motivo: motivoSelecionado, motivoOutro: motivoOutroTexto || undefined }); break
+      case 'cancelar': cancelar.mutate({ motivo: motivoSelecionado, motivoOutro: motivoOutroTexto || undefined }); break
       case 'reabrir': reabrir.mutate(); break
     }
     setConfirmarAcao(null)
+    setMotivoSelecionado('Resolvido')
+    setMotivoOutroTexto('')
+  }
+
+  const abrirConfirmacao = (acao: 'resolver' | 'encerrar' | 'cancelar' | 'reabrir') => {
+    setConfirmarAcao(acao)
+    if (acao === 'encerrar') setMotivoSelecionado('Resolvido')
+    if (acao === 'cancelar') setMotivoSelecionado('CanceladoSolicitante')
   }
 
   const tituloConfirmacao =
@@ -80,7 +104,7 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
       {isAtendente && status === 'EmAndamento' && (
         <Button
           disabled={isPending}
-          onClick={() => setConfirmarAcao('resolver')}
+          onClick={() => abrirConfirmacao('resolver')}
         >
           {resolver.isPending ? 'Resolvendo...' : 'Resolver'}
         </Button>
@@ -89,7 +113,7 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
       {isAtendente && status === 'Resolvido' && (
         <Button
           disabled={isPending}
-          onClick={() => setConfirmarAcao('encerrar')}
+          onClick={() => abrirConfirmacao('encerrar')}
         >
           {fechar.isPending ? 'Encerrando...' : 'Encerrar'}
         </Button>
@@ -99,14 +123,14 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
         <Button
           variant="destructive"
           disabled={isPending}
-          onClick={() => setConfirmarAcao('cancelar')}
+          onClick={() => abrirConfirmacao('cancelar')}
         >
           {cancelar.isPending ? 'Cancelando...' : 'Cancelar'}
         </Button>
       )}
 
       {isAtendente && (status === 'Resolvido' || status === 'Fechado' || status === 'Cancelado') && (
-        <Button variant="outline" disabled={isPending} onClick={() => setConfirmarAcao('reabrir')}>
+        <Button variant="outline" disabled={isPending} onClick={() => abrirConfirmacao('reabrir')}>
           {reabrir.isPending ? 'Reabrindo...' : 'Reabrir'}
         </Button>
       )}
@@ -144,6 +168,40 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
             <DialogTitle>{tituloConfirmacao}</DialogTitle>
             <DialogDescription>{descricaoConfirmacao}</DialogDescription>
           </DialogHeader>
+          {precisaMotivo && (
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="motivo-encerramento" className="text-sm">
+                  Motivo de {confirmarAcao === 'encerrar' ? 'encerramento' : 'cancelamento'}
+                </Label>
+                <Select value={motivoSelecionado} onValueChange={(v) => setMotivoSelecionado(v as MotivoEncerramento)}>
+                  <SelectTrigger id="motivo-encerramento">
+                    <SelectValue placeholder="Selecione o motivo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(Object.keys(MOTIVO_LABELS) as MotivoEncerramento[]).map((motivo) => (
+                      <SelectItem key={motivo} value={motivo}>
+                        {MOTIVO_LABELS[motivo]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {motivoSelecionado === 'Outro' && (
+                <div className="flex flex-col gap-1">
+                  <Label htmlFor="motivo-outro" className="text-sm">
+                    Descreva o motivo
+                  </Label>
+                  <Input
+                    id="motivo-outro"
+                    value={motivoOutroTexto}
+                    onChange={(e) => setMotivoOutroTexto(e.target.value)}
+                    placeholder="Ex: Chamado aberto por engano"
+                  />
+                </div>
+              )}
+            </div>
+          )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmarAcao(null)}>
               Voltar
@@ -151,7 +209,7 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
             <Button
               variant={confirmarAcao === 'cancelar' ? 'destructive' : 'default'}
               onClick={executarAcao}
-              disabled={isPending}
+              disabled={isPending || (motivoSelecionado === 'Outro' && !motivoOutroTexto.trim())}
             >
               {isPending ? 'Processando...' : 'Confirmar'}
             </Button>

@@ -40,11 +40,13 @@ public class ChamadosController : ControllerBase
         [FromQuery] bool? finalizados = null,
         [FromQuery] DateTime? dataInicio = null,
         [FromQuery] DateTime? dataFim = null,
+        [FromQuery] string? slaStatus = null,
+        [FromQuery] string? motivoEncerramento = null,
         CancellationToken cancellationToken = default)
     {
         var query = new ListarChamadosQuery(
             pagina, tamanhoPagina, status, prioridade, responsavelId, categoriaId, busca,
-            solicitanteEmail, finalizados, dataInicio, dataFim,
+            solicitanteEmail, finalizados, dataInicio, dataFim, slaStatus, motivoEncerramento,
             UsuarioLogadoId: _currentUser.UsuarioId, GrupoId: _currentUser.GrupoId);
         var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);

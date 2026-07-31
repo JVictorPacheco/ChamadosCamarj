@@ -1,11 +1,22 @@
 import { useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useForcarEncerramentoChamado } from '../hooks/useAcoesChamado'
+import type { MotivoEncerramento } from '@/types/api'
 
-const MOTIVO_MIN = 10
-const MOTIVO_MAX = 500
+const MOTIVO_LABELS: Record<MotivoEncerramento, string> = {
+  Resolvido: 'Resolvido',
+  CanceladoSolicitante: 'Cancelado pelo solicitante',
+  AbertoIndevidamente: 'Aberto indevidamente',
+  Duplicata: 'Duplicata',
+  SemResposta: 'Sem resposta do solicitante',
+  Outro: 'Outro',
+}
+
+const MOTIVO_OUTRO_MIN = 5
 
 interface ForcarEncerramentoModalProps {
   open: boolean
@@ -14,22 +25,24 @@ interface ForcarEncerramentoModalProps {
 }
 
 export function ForcarEncerramentoModal({ open, onOpenChange, chamadoId }: ForcarEncerramentoModalProps) {
-  const [motivo, setMotivo] = useState('')
+  const [motivo, setMotivo] = useState<MotivoEncerramento>('AbertoIndevidamente')
+  const [motivoOutro, setMotivoOutro] = useState('')
   const { mutate, isPending, error, reset } = useForcarEncerramentoChamado(chamadoId)
 
   const fechar = (proximoEstado: boolean) => {
     if (!proximoEstado) {
-      setMotivo('')
+      setMotivo('AbertoIndevidamente')
+      setMotivoOutro('')
       reset()
     }
     onOpenChange(proximoEstado)
   }
 
   const confirmar = () => {
-    mutate(motivo.trim(), { onSuccess: () => fechar(false) })
+    mutate({ motivo, motivoOutro: motivoOutro.trim() || undefined }, { onSuccess: () => fechar(false) })
   }
 
-  const motivoValido = motivo.trim().length >= MOTIVO_MIN && motivo.length <= MOTIVO_MAX
+  const motivoValido = motivo !== 'Outro' || motivoOutro.trim().length >= MOTIVO_OUTRO_MIN
 
   return (
     <Dialog open={open} onOpenChange={fechar}>
@@ -37,21 +50,42 @@ export function ForcarEncerramentoModal({ open, onOpenChange, chamadoId }: Forca
         <DialogHeader>
           <DialogTitle>Forçar encerramento</DialogTitle>
           <DialogDescription>
-            Fecha o chamado imediatamente, fora do fluxo normal. Essa ação é registrada no histórico do chamado.
+            Fecha o chamado imediatamente, fora do fluxo normal. Essa ação é registrada no histórico e nos comentários do chamado.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-1">
-          <Textarea
-            value={motivo}
-            onChange={(e) => setMotivo(e.target.value)}
-            placeholder="Explique por que este chamado está sendo encerrado fora do fluxo normal..."
-            maxLength={MOTIVO_MAX}
-            rows={4}
-          />
-          <p className="text-xs text-muted-foreground text-right">
-            {motivo.length}/{MOTIVO_MAX} (mínimo {MOTIVO_MIN})
-          </p>
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="forcar-motivo" className="text-sm">
+              Motivo do encerramento
+            </Label>
+            <Select value={motivo} onValueChange={(v) => setMotivo(v as MotivoEncerramento)}>
+              <SelectTrigger id="forcar-motivo">
+                <SelectValue placeholder="Selecione o motivo" />
+              </SelectTrigger>
+              <SelectContent>
+                {(Object.keys(MOTIVO_LABELS) as MotivoEncerramento[]).map((m) => (
+                  <SelectItem key={m} value={m}>
+                    {MOTIVO_LABELS[m]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {motivo === 'Outro' && (
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="forcar-motivo-outro" className="text-sm">
+                Descreva o motivo (mínimo {MOTIVO_OUTRO_MIN} caracteres)
+              </Label>
+              <Input
+                id="forcar-motivo-outro"
+                value={motivoOutro}
+                onChange={(e) => setMotivoOutro(e.target.value)}
+                placeholder="Ex: Chamado aberto por engano"
+              />
+            </div>
+          )}
         </div>
 
         {error && <p className="text-sm text-destructive">{error.message}</p>}

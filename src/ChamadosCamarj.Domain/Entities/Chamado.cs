@@ -100,12 +100,17 @@ public class Chamado : BaseEntity
         DataAtualizacao = DateTime.UtcNow;
     }
 
-    public void Fechar()
+    public void Fechar(Domain.Enums.MotivoEncerramento? motivo = null, string? motivoOutro = null)
     {
         if (Status != StatusChamado.Resolvido)
             throw new InvalidOperationException("Só é possível fechar um chamado que já foi resolvido.");
 
         Status = StatusChamado.Fechado;
+        if (motivo.HasValue)
+        {
+            MotivoEncerramento = motivo.Value;
+            MotivoOutro = motivo.Value == Domain.Enums.MotivoEncerramento.Outro ? motivoOutro : null;
+        }
         DataAtualizacao = DateTime.UtcNow;
     }
 

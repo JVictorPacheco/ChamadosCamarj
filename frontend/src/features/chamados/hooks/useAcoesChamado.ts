@@ -10,7 +10,7 @@ import {
   forcarEncerramento,
 } from '@/features/chamados/api'
 import type { ReatribuirRequest } from '@/features/chamados/api'
-import type { PrioridadeChamado } from '@/types/api'
+import type { MotivoEncerramento, PrioridadeChamado } from '@/types/api'
 
 function invalidarChamado(queryClient: ReturnType<typeof useQueryClient>, id: string) {
   queryClient.invalidateQueries({ queryKey: ['chamado', id] })
@@ -37,7 +37,8 @@ export function useResolverChamado(chamadoId: string) {
 export function useFecharChamado(chamadoId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: () => fecharChamado(chamadoId),
+    mutationFn: (dados: { motivo: MotivoEncerramento; motivoOutro?: string }) =>
+      fecharChamado(chamadoId, dados.motivo, dados.motivoOutro),
     onSuccess: () => invalidarChamado(queryClient, chamadoId),
   })
 }
@@ -45,7 +46,8 @@ export function useFecharChamado(chamadoId: string) {
 export function useCancelarChamado(chamadoId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: () => cancelarChamado(chamadoId),
+    mutationFn: (dados: { motivo: MotivoEncerramento; motivoOutro?: string }) =>
+      cancelarChamado(chamadoId, dados.motivo, dados.motivoOutro),
     onSuccess: () => invalidarChamado(queryClient, chamadoId),
   })
 }
@@ -77,7 +79,8 @@ export function useAlterarPrioridadeChamado(chamadoId: string) {
 export function useForcarEncerramentoChamado(chamadoId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (motivo: string) => forcarEncerramento(chamadoId, motivo),
+    mutationFn: (dados: { motivo: MotivoEncerramento; motivoOutro?: string }) =>
+      forcarEncerramento(chamadoId, dados.motivo, dados.motivoOutro),
     onSuccess: () => invalidarChamado(queryClient, chamadoId),
   })
 }
