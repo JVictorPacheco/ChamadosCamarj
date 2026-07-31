@@ -52,34 +52,33 @@ public class ListarChamadosQueryHandler : IRequestHandler<ListarChamadosQuery, P
             Enum.TryParse<SlaStatus>(request.SlaStatus, ignoreCase: true, out var slaParsed))
             slaStatus = slaParsed;
 
+        // Se há filtro SLA (calculado em memória), carregamos todos sem paginação e filtramos
+        if (slaStatus.HasValue)
+        {
+            var (todos, totalIgnorado) = await _chamadoRepository.ListarAsync(
+                1, int.MaxValue, status, prioridade, request.ResponsavelId,
+                request.CategoriaId, request.Busca, request.SolicitanteEmail,
+                statusEntre, dataInicio, dataFim, request.UsuarioLogadoId,
+                request.GrupoId, null, cancellationToken);
+
+            var filtrados = todos.Where(c => SlaCalculo.CalcularStatus(c.DataLimite) == slaStatus.Value).ToList();
+            var totalFiltrado = filtrados.Count;
+            var paginados = filtrados.Skip((request.Pagina - 1) * request.TamanhoPagina).Take(request.TamanhoPagina).ToList();
+
+            return new PagedResult<ChamadoResponse>(
+                paginados.Select(c => c.ToResponse()).ToList(),
+                totalFiltrado, request.Pagina, request.TamanhoPagina);
+        }
+
         var (items, total) = await _chamadoRepository.ListarAsync(
-            request.Pagina,
-            request.TamanhoPagina,
-            status,
-            prioridade,
-            request.ResponsavelId,
-            request.CategoriaId,
-            request.Busca,
-            request.SolicitanteEmail,
-            statusEntre,
-            dataInicio,
-            dataFim,
-            request.UsuarioLogadoId,
-            request.GrupoId,
+            request.Pagina, request.TamanhoPagina, status, prioridade,
+            request.ResponsavelId, request.CategoriaId, request.Busca,
+            request.SolicitanteEmail, statusEntre, dataInicio, dataFim,
+            request.UsuarioLogadoId, request.GrupoId, motivoEncerramento,
             cancellationToken);
-
-        // Motivo filter (in-memory since it's a simple enum)
-        if (motivoEncerramento.HasValue && items.Any())
-            items = items.Where(c => c.MotivoEncerramento == motivoEncerramento.Value);
-
-        // SLA filter (in-memory, uses UtcNow)
-        if (slaStatus.HasValue && items.Any())
-            items = items.Where(c => SlaCalculo.CalcularStatus(c.DataLimite) == slaStatus.Value);
 
         return new PagedResult<ChamadoResponse>(
             items.Select(c => c.ToResponse()).ToList(),
-            total,
-            request.Pagina,
-            request.TamanhoPagina);
+            total, request.Pagina, request.TamanhoPagina);
     }
 }

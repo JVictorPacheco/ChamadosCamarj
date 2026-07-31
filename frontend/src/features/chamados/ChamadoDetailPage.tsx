@@ -295,6 +295,17 @@ export function ChamadoDetailPage() {
             <dd>{new Date(chamado.dataConclusao).toLocaleString('pt-BR')}</dd>
           </div>
         )}
+        {chamado.motivoEncerramento && (
+          <div>
+            <dt className="font-medium text-foreground">Motivo de encerramento</dt>
+            <dd>
+              {chamado.motivoEncerramento === 'CanceladoSolicitante' ? 'Cancelado pelo solicitante'
+                : chamado.motivoEncerramento === 'AbertoIndevidamente' ? 'Aberto indevidamente'
+                : chamado.motivoEncerramento}
+              {chamado.motivoOutro && `: ${chamado.motivoOutro}`}
+            </dd>
+          </div>
+        )}
       </dl>
 
       <section className="space-y-4">

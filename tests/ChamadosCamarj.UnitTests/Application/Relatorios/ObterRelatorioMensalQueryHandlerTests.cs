@@ -17,6 +17,7 @@ public class ObterRelatorioMensalQueryHandlerTests
     public ObterRelatorioMensalQueryHandlerTests()
     {
         _handler = new ObterRelatorioMensalQueryHandler(_historicoRepositoryMock.Object);
+        SetupEventosPadrao();
     }
 
     private static EventoRelatorioItem Evento(
@@ -48,6 +49,14 @@ public class ObterRelatorioMensalQueryHandlerTests
             .Setup(r => r.ObterEventosParaRelatorioAsync(
                 It.IsAny<IEnumerable<AcaoHistorico>>(), inicio, fim, It.IsAny<CancellationToken>()))
             .ReturnsAsync(eventos);
+    }
+
+    private void SetupEventosPadrao()
+    {
+        _historicoRepositoryMock
+            .Setup(r => r.ObterEventosParaRelatorioAsync(
+                It.IsAny<IEnumerable<AcaoHistorico>>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([]);
     }
 
     [Fact]
