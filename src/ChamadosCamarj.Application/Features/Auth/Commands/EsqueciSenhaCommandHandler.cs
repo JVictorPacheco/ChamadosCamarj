@@ -56,11 +56,12 @@ public class EsqueciSenhaCommandHandler : IRequestHandler<EsqueciSenhaCommand>
 
         try
         {
-            await _emailSender.EnviarAsync(usuario.Email, "Redefinição de senha — Chamados CAMARJ", html);
+            await _emailSender.EnviarAsync(usuario.Email, "Redefinicao de senha — Chamados CAMARJ", html);
+            _logger.LogInformation("Email de reset enviado com sucesso para {Email}", request.Email);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Falha ao enviar email de reset para {Email}.", request.Email);
+            _logger.LogError(ex, "Falha ao enviar email de reset para {Email}. Erro: {Erro}. Verifique Email:SmtpSenha e se a senha de app do Gmail ainda e valida.", request.Email, ex.Message);
         }
     }
 }
