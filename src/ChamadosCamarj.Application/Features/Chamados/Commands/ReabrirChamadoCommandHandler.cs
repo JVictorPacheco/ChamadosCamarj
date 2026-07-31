@@ -25,7 +25,7 @@ public class ReabrirChamadoCommandHandler : IRequestHandler<ReabrirChamadoComman
 
     public async Task Handle(ReabrirChamadoCommand request, CancellationToken cancellationToken)
     {
-        var chamado = await _chamadoRepository.ObterPorIdAsync(request.Id, cancellationToken)
+        var chamado = await _chamadoRepository.ObterPorIdComTrackingAsync(request.Id, cancellationToken)
             ?? throw new NotFoundException("Chamado", request.Id);
 
         chamado.Reabrir();

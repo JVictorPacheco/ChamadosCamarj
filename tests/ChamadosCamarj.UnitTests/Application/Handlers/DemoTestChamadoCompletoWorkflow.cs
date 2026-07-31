@@ -64,7 +64,7 @@ public class DemoTestChamadoCompletoWorkflow
         Console.WriteLine($"\n🎬 ACT 2: Victor (atendente) assume o chamado");
         Console.WriteLine($"   Victor ID: {victorId.ToString().Substring(0, 8)}...");
         
-        _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
+        _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
 
         var atribuirHandler = new AtribuirChamadoCommandHandler(
@@ -113,7 +113,7 @@ public class DemoTestChamadoCompletoWorkflow
         Console.WriteLine($"\n🎬 ACT 4: Victor reatribui para Fábio (especialista em email)");
         Console.WriteLine($"   De: Victor → Para: Fábio");
         
-        _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
+        _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
 
         var reatribuirHandler = new ReatribuirChamadoCommandHandler(

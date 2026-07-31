@@ -33,7 +33,7 @@ public class AlterarPrioridadeHandlerTests
         var chamadoId = Guid.NewGuid();
         var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid(), PrioridadeChamado.Media);
 
-        _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
+        _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
 
         var command = new AlterarPrioridadeChamadoCommand(chamadoId, "Urgente");
@@ -50,7 +50,7 @@ public class AlterarPrioridadeHandlerTests
         var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid(), PrioridadeChamado.Baixa);
         var dataLimiteAnterior = chamado.DataLimite;
 
-        _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
+        _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
 
         var command = new AlterarPrioridadeChamadoCommand(chamadoId, "Urgente");
@@ -70,7 +70,7 @@ public class AlterarPrioridadeHandlerTests
         var chamadoId = Guid.NewGuid();
         var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
 
-        _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
+        _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
 
         var command = new AlterarPrioridadeChamadoCommand(chamadoId, prioridade);
@@ -85,7 +85,7 @@ public class AlterarPrioridadeHandlerTests
         var chamadoId = Guid.NewGuid();
         var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
 
-        _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
+        _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
 
         var command = new AlterarPrioridadeChamadoCommand(chamadoId, "Criticíssima");
@@ -103,7 +103,7 @@ public class AlterarPrioridadeHandlerTests
         chamado.Resolver();
         chamado.Fechar();
 
-        _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
+        _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
 
         var command = new AlterarPrioridadeChamadoCommand(chamadoId, "Urgente");
@@ -118,7 +118,7 @@ public class AlterarPrioridadeHandlerTests
         var chamadoId = Guid.NewGuid();
         var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid(), PrioridadeChamado.Media);
 
-        _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
+        _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
 
         var command = new AlterarPrioridadeChamadoCommand(chamadoId, "Urgente");
@@ -138,7 +138,7 @@ public class AlterarPrioridadeHandlerTests
     public async Task Handle_QuandoChamadoNaoExiste_DeveLancarNotFoundException()
     {
         var chamadoId = Guid.NewGuid();
-        _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
+        _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync((Chamado?)null);
 
         var command = new AlterarPrioridadeChamadoCommand(chamadoId, "Urgente");

@@ -35,7 +35,7 @@ public class ForcarEncerramentoChamadoHandlerTests
         var chamadoId = Guid.NewGuid();
         var chamado = CriarChamado();
 
-        _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
+        _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
 
         var command = new ForcarEncerramentoChamadoCommand(chamadoId, MotivoEncerramento.Duplicata, null, null, Guid.NewGuid(), "Victor", "Admin");
@@ -60,7 +60,7 @@ public class ForcarEncerramentoChamadoHandlerTests
         var chamadoId = Guid.NewGuid();
         var chamado = CriarChamado();
 
-        _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
+        _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
 
         var command = new ForcarEncerramentoChamadoCommand(chamadoId, MotivoEncerramento.Outro, "Aberto por engano.", PerfilRequisitante: "Admin");
@@ -82,7 +82,7 @@ public class ForcarEncerramentoChamadoHandlerTests
         var act = async () => await _handler.Handle(command, CancellationToken.None);
         await act.Should().ThrowAsync<ForbiddenException>();
 
-        _chamadoRepositoryMock.Verify(r => r.ObterPorIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        _chamadoRepositoryMock.Verify(r => r.ObterPorIdComTrackingAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -98,7 +98,7 @@ public class ForcarEncerramentoChamadoHandlerTests
     public async Task Handle_QuandoChamadoNaoExiste_DeveLancarNotFoundException()
     {
         var chamadoId = Guid.NewGuid();
-        _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
+        _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync((Chamado?)null);
 
         var command = new ForcarEncerramentoChamadoCommand(chamadoId, MotivoEncerramento.AbertoIndevidamente, null, PerfilRequisitante: "Admin");
@@ -116,7 +116,7 @@ public class ForcarEncerramentoChamadoHandlerTests
         chamado.Resolver();
         chamado.Fechar();
 
-        _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
+        _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
 
         var command = new ForcarEncerramentoChamadoCommand(chamadoId, MotivoEncerramento.AbertoIndevidamente, null, PerfilRequisitante: "Admin");
@@ -136,7 +136,7 @@ public class ForcarEncerramentoChamadoHandlerTests
         chamado.Resolver();
         var dataConclusaoOriginal = chamado.DataConclusao;
 
-        _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
+        _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
 
         var command = new ForcarEncerramentoChamadoCommand(chamadoId, MotivoEncerramento.AbertoIndevidamente, null, PerfilRequisitante: "Admin");

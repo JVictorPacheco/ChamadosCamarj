@@ -30,7 +30,7 @@ public class AlterarPrioridadeChamadoCommandHandler : IRequestHandler<AlterarPri
 
     public async Task Handle(AlterarPrioridadeChamadoCommand request, CancellationToken cancellationToken)
     {
-        var chamado = await _chamadoRepository.ObterPorIdAsync(request.Id, cancellationToken)
+        var chamado = await _chamadoRepository.ObterPorIdComTrackingAsync(request.Id, cancellationToken)
             ?? throw new NotFoundException("Chamado", request.Id);
 
         if (!Enum.TryParse<PrioridadeChamado>(request.NovaPrioridade, true, out var novaPrioridade))

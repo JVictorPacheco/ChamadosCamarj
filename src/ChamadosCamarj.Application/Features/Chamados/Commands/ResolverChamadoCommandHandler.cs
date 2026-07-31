@@ -25,7 +25,7 @@ public class ResolverChamadoCommandHandler : IRequestHandler<ResolverChamadoComm
 
     public async Task Handle(ResolverChamadoCommand request, CancellationToken cancellationToken)
     {
-        var chamado = await _chamadoRepository.ObterPorIdAsync(request.Id, cancellationToken)
+        var chamado = await _chamadoRepository.ObterPorIdComTrackingAsync(request.Id, cancellationToken)
             ?? throw new NotFoundException("Chamado", request.Id);
 
         chamado.Resolver();

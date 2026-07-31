@@ -33,7 +33,7 @@ public class AlterarStatusChamadoHandlerTests
         var chamadoId = Guid.NewGuid();
         var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
 
-        _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
+        _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
 
         var command = new AlterarStatusChamadoCommand(chamadoId, StatusChamado.EmAndamento, Guid.NewGuid(), "Fábio");
@@ -50,7 +50,7 @@ public class AlterarStatusChamadoHandlerTests
         var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
         var usuarioId = Guid.NewGuid();
 
-        _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
+        _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
 
         var command = new AlterarStatusChamadoCommand(chamadoId, StatusChamado.EmAndamento, usuarioId, "Fábio");
@@ -74,7 +74,7 @@ public class AlterarStatusChamadoHandlerTests
         var chamadoId = Guid.NewGuid();
         var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
 
-        _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
+        _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
 
         var command = new AlterarStatusChamadoCommand(chamadoId, StatusChamado.EmAndamento);
@@ -91,7 +91,7 @@ public class AlterarStatusChamadoHandlerTests
     public async Task Handle_QuandoChamadoNaoExiste_DeveLancarNotFoundException()
     {
         var chamadoId = Guid.NewGuid();
-        _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
+        _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync((Chamado?)null);
 
         var command = new AlterarStatusChamadoCommand(chamadoId, StatusChamado.EmAndamento);
@@ -108,7 +108,7 @@ public class AlterarStatusChamadoHandlerTests
         var chamadoId = Guid.NewGuid();
         var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
 
-        _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
+        _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
 
         // Chamado está Aberto — não pode ir direto para Fechado

@@ -29,7 +29,7 @@ public class AlterarStatusChamadoCommandHandler : IRequestHandler<AlterarStatusC
 
     public async Task Handle(AlterarStatusChamadoCommand request, CancellationToken cancellationToken)
     {
-        var chamado = await _chamadoRepository.ObterPorIdAsync(request.Id, cancellationToken)
+        var chamado = await _chamadoRepository.ObterPorIdComTrackingAsync(request.Id, cancellationToken)
             ?? throw new NotFoundException("Chamado", request.Id);
 
         var statusAnterior = chamado.Status;

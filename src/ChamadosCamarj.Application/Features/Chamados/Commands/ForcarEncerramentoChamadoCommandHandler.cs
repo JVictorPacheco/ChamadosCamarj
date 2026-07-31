@@ -32,7 +32,7 @@ public class ForcarEncerramentoChamadoCommandHandler : IRequestHandler<ForcarEnc
     {
         PerfilRequisitanteGuard.ExigirAdmin(request.PerfilRequisitante);
 
-        var chamado = await _chamadoRepository.ObterPorIdAsync(request.Id, cancellationToken)
+        var chamado = await _chamadoRepository.ObterPorIdComTrackingAsync(request.Id, cancellationToken)
             ?? throw new NotFoundException("Chamado", request.Id);
 
         var statusAnterior = chamado.Status;

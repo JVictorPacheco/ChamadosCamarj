@@ -26,7 +26,7 @@ public class FecharChamadoCommandHandler : IRequestHandler<FecharChamadoCommand>
 
     public async Task Handle(FecharChamadoCommand request, CancellationToken cancellationToken)
     {
-        var chamado = await _chamadoRepository.ObterPorIdAsync(request.Id, cancellationToken)
+        var chamado = await _chamadoRepository.ObterPorIdComTrackingAsync(request.Id, cancellationToken)
             ?? throw new NotFoundException("Chamado", request.Id);
 
         chamado.Fechar(request.Motivo, request.MotivoOutro);

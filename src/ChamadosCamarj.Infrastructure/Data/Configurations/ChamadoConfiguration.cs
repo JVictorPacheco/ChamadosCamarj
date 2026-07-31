@@ -63,6 +63,8 @@ public class ChamadoConfiguration : IEntityTypeConfiguration<Chamado>
         builder.HasIndex(c => c.ResponsavelId);
         builder.HasIndex(c => c.DataLimite);
 
+        builder.UseXminAsConcurrencyToken();
+
         // Relacionamentos
         builder.HasOne(c => c.Categoria)
             .WithMany(cat => cat.Chamados)
