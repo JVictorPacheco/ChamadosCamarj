@@ -17,6 +17,9 @@
 | MailKit | planned | IMAP — captura de e-mails (Fase 4) |
 | Serilog | planned | Logging estruturado (Fase futura) |
 | SignalR | ✅ Implementado (Fase 5) | Notificações em tempo real |
+| EF Core Concurrency | ✅ Implementado | `IsConcurrencyToken()` — locking otimista via `DataAtualizacao` |
+| Auto-triagem | ✅ Implementado | `KeywordTriagemService` — sugestão de categoria/grupo por palavras-chave |
+| Idempotência | ✅ Implementado | `[Idempotent]` filter + `Idempotency-Key` header |
 
 ## Pacotes principais (Frontend — `frontend/`, Fase 3 completa)
 

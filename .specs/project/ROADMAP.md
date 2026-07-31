@@ -1,6 +1,6 @@
 # Roadmap — ChamadosCamarj
 
-> Última atualização: 2026-07-30
+> Última atualização: 2026-07-31
 
 ## ✅ Fase 0 — Setup
 
@@ -246,3 +246,19 @@
 - [x] Toggle mostrar/ocultar senha (ícone de olho 👁) em todos os campos de senha
 - [x] Tema claro: branco + verde institucional CAMARJ (teal-600)
 - [x] ThemeProvider + useTheme hook
+
+## 🔒 Fundamentos de Engenharia — Qualidade de Código (CONCLUÍDO — 2026-07-31)
+
+> 4 gaps de fundamentos identificados e resolvidos. Sessão focada em robustez e prevenção de bugs.
+
+- [x] **Gap #1 — Concorrência otimista:** `IsConcurrencyToken()` no `DataAtualizacao` do Chamado. 9 handlers atualizados para tracking queries. `DbUpdateConcurrencyException` → 409 Conflict.
+- [x] **Gap #2 — Idempotência:** Filtro `[Idempotent]` em POST/PATCH. Header `Idempotency-Key` opcional bloqueia duplicatas por 5 min via `MemoryCache`. Frontend com `gerarIdempotencyKey()`.
+- [x] **Gap #3 — Auto-triagem:** `KeywordTriagemService` mapeia palavras-chave → categoria + grupo. 8 categorias × 6 grupos. Endpoint `POST /api/chamados/sugerir-triagem`. Botão "Sugerir categoria" na tela de abertura.
+- [x] **Gap #4 — Observabilidade da IA:** Enum `OrigemEntrada` (Humano/Ia). Campo `Origem` no `HistoricoEntrada`. Migration aplicada. Preparado para auditoria de ações automatizadas.
+
+## 🎨 Tema + UX (CONCLUÍDO — 2026-07-31)
+
+- [x] Cores verdes mais intensas: claro `#d7efe5` (menta), escuro `#06241a` (verde profundo)
+- [x] Tema padrão: claro (antes era escuro)
+- [x] Favicon logo CAMARJ + título "CAMARJ - Portal de Chamados"
+- [x] Reset de senha: FrontendBaseUrl corrigido, CORS com domínio okurumin.com.br, logs SMTP melhorados

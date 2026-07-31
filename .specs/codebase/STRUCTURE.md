@@ -33,12 +33,14 @@ ChamadosCamarj/
 │   │   │   ├── UsuarioPerfil.cs     ← Usuário com perfil e senha
 │   │   │   └── Grupo.cs             ← Grupos/Equipes (planejado)
 │   │   ├── Enums/
-│   │   │   ├── StatusChamado.cs     ← Aberto, EmAndamento, Resolvido, Fechado, Cancelado
-│   │   │   ├── PrioridadeChamado.cs ← Baixa, Media, Alta, Urgente
-│   │   │   ├── OrigemChamado.cs     ← Portal, Email, API
-│   │   │   ├── TipoComentario.cs   ← Publico, Interno
-│   │   │   ├── Perfil.cs            ← Admin, Atendente, Solicitante
-│   │   │   └── AcaoHistorico.cs     ← Ações registradas no histórico
+│   │   │   ├── StatusChamado.cs      ← Aberto, EmAndamento, Resolvido, Fechado, Cancelado
+│   │   │   ├── PrioridadeChamado.cs  ← Baixa, Media, Alta, Urgente
+│   │   │   ├── OrigemChamado.cs      ← Portal, Email, API
+│   │   │   ├── TipoComentario.cs    ← Publico, Interno
+│   │   │   ├── Perfil.cs             ← Admin, Atendente, Solicitante
+│   │   │   ├── AcaoHistorico.cs      ← Ações registradas no histórico
+│   │   │   ├── MotivoEncerramento.cs ← Resolvido, CanceladoSolicitante, Duplicata...
+│   │   │   └── OrigemEntrada.cs      ← Humano, Ia — rastreia origem das ações
 │   │   └── Interfaces/
 │   │       ├── IChamadoRepository.cs
 │   │       ├── ICategoriaRepository.cs
@@ -54,7 +56,12 @@ ChamadosCamarj/
 │   │   │   ├── ResetTokenHelper.cs
 │   │   │   ├── IEmailSender.cs
 │   │   │   ├── ICurrentUserService.cs
+│   │   │   ├── ITriagemService.cs    ← Interface para triagem automática
+│   │   │   ├── TriagemSugestao.cs    ← DTO de sugestão (categoria, grupo, confiança)
 │   │   │   ├── AuthSettings.cs
+│   │   │   ├── SlaStatus.cs          ← Status SLA (NoPrazo, Proximo, Atrasado)
+│   │   │   ├── Interfaces/
+│   │   │   │   └── IUnitOfWork.cs    ← Transações
 │   │   │   ├── Exceptions/
 │   │   │   └── Authorization/
 │   │   │       └── PerfilRequisitanteGuard.cs
@@ -106,6 +113,7 @@ ChamadosCamarj/
 │   │   │   └── UsuarioPerfilRepository.cs
 │   │   └── Services/
 │   │       ├── SmtpEmailSender.cs
+│   │       ├── KeywordTriagemService.cs ← Triagem por palavras-chave (categoria + grupo)
 │   │       ├── SupabaseStorageService.cs
 │   │       ├── NullStorageService.cs
 │   │       └── GoogleTokenValidator.cs
@@ -117,8 +125,11 @@ ChamadosCamarj/
 │       │   ├── AuthController.cs       ← Login, cadastro, esqueci-senha, resetar-senha
 │       │   ├── UsuariosController.cs   ← CRUD de usuários
 │       │   └── RelatoriosController.cs
+│       ├── Filters/
+│       │   └── IdempotentAttribute.cs  ← Bloqueia requisições duplicadas (Idempotency-Key)
 │       ├── Services/
-│       │   └── CurrentUserService.cs   ← Extrai claims JWT do HttpContext
+│       │   ├── CurrentUserService.cs   ← Extrai claims JWT do HttpContext
+│       │   └── SlaMonitorService.cs    ← Background service para alertas de SLA
 │       ├── Hubs/
 │       │   └── ChamadosHub.cs          ← SignalR para notificações em tempo real
 │       ├── Middleware/
@@ -170,4 +181,6 @@ ChamadosCamarj/
 
 ## Notas sobre o estado atual
 
-- Fase 5-8 completas, auth email-senha implementada, deploy Azure + Cloudflare Pages configurado. Pendências: Grupos/Equipes (planejado, sem spec).
+- Fase 5-8 completas, auth email-senha implementada, deploy Azure + Cloudflare Pages configurado.
+- Fundamentos de engenharia implementados: concorrência otimista, idempotência, auto-triagem, observabilidade.
+- Grupos/Equipes implementados. Categorias expandidas (8). Tema verde menta + padrão claro.

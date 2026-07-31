@@ -34,10 +34,10 @@ npm run build                                  # gate check TS + Vite
 ```
 
 ## Agentes orquestrados (todos Go)
-- `spec` → specs SDD (DeepSeek V4 Flash)
-- `build-backend` → C#, .NET, EF Core (Kimi K2.7 Code)
+- `spec` → specs SDD (Kimi K3)
+- `build-backend` → C#, .NET, EF Core (GLM-5.2)
 - `build-frontend` → React, TS, Tailwind (Kimi K2.7 Code)
-- `review` → code review (Kimi K2.7 Code)
+- `review` → code review (Grok 4.5)
 - `explorar` → explorar código (DeepSeek V4 Flash)
 
 Alternar com Tab entre agents. Usar @review e @explorar.

@@ -1,6 +1,6 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-07-30
+> Atualizado em: 2026-07-31
 
 ---
 
@@ -19,6 +19,17 @@
 ---
 
 ## 📍 Onde estamos
+
+**Sessão de 2026-07-31 (openCode, qualidade de código + fundamentos de engenharia + UX).**
+
+### Resumo da sessão
+- **Concorrência otimista (Gap #1):** `IsConcurrencyToken()` no `DataAtualizacao` do `Chamado` — se dois atendentes modificarem o mesmo chamado, o segundo recebe 409 Conflict. Atualizados 9 handlers + repositório + catch no `ChamadoRepository.AtualizarAsync`.
+- **Idempotência (Gap #2):** Filtro `[Idempotent]` nos endpoints POST (Abrir, Comentar, Anexos). Header `Idempotency-Key` opcional — se presente, bloqueia duplicatas por 5 min. Frontend: helper `gerarIdempotencyKey()` + botões já desabilitados via `isPending`.
+- **Auto-triagem (Gap #3):** `KeywordTriagemService` — analisa título/descrição e sugere categoria + grupo por palavras-chave. 8 categorias × 6 grupos mapeados. Endpoint `POST /api/chamados/sugerir-triagem`. Frontend: botão "Sugerir categoria" na `AbrirChamadoPage`.
+- **Observabilidade (Gap #4):** Enum `OrigemEntrada` (Humano/Ia) + campo `Origem` no `HistoricoEntrada`. Migration `AddOrigemHistoricoEntrada`. Preparado para futuras ações automatizadas por IA.
+- **Tema:** Cores verdes intensas — claro `#d7efe5` (menta), escuro `#06241a` (verde profundo). Padrão agora é tema claro.
+- **UX:** Favicon logo CAMARJ + título "CAMARJ - Portal de Chamados" na aba. Reset de senha corrigido (FrontendBaseUrl, CORS, logs SMTP).
+- **215 testes backend**, 0 falhas, 12 E2E, 0 falhas, frontend build limpo.
 
 **Sessão de 2026-07-30 (openCode, orquestração de modelos + code review + SLA + Motivo encerramento + E2E + Dashboard).**
 
