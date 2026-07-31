@@ -4,6 +4,7 @@ using ChamadosCamarj.Application.Common;
 using ChamadosCamarj.Application.Features.Chamados.Commands;
 using ChamadosCamarj.Application.Features.Chamados.DTOs;
 using ChamadosCamarj.Application.Features.Chamados.Queries;
+using ChamadosCamarj.Application.Common.Interfaces;
 using ChamadosCamarj.WebApi.Filters;
 
 namespace ChamadosCamarj.WebApi.Controllers;
@@ -16,12 +17,14 @@ public class ChamadosController : ControllerBase
     private readonly IMediator _mediator;
     private readonly ILogger<ChamadosController> _logger;
     private readonly ICurrentUserService _currentUser;
+    private readonly ITriagemService _triagemService;
 
-    public ChamadosController(IMediator mediator, ILogger<ChamadosController> logger, ICurrentUserService currentUser)
+    public ChamadosController(IMediator mediator, ILogger<ChamadosController> logger, ICurrentUserService currentUser, ITriagemService triagemService)
     {
         _mediator = mediator;
         _logger = logger;
         _currentUser = currentUser;
+        _triagemService = triagemService;
     }
 
     /// <summary>
@@ -90,6 +93,19 @@ public class ChamadosController : ControllerBase
 
         var result = await _mediator.Send(command, cancellationToken);
         return CreatedAtAction(nameof(ObterPorId), new { id = result.Id }, result);
+    }
+
+    /// <summary>
+    /// Sugere categoria e grupo com base no titulo e descricao (triagem automatica)
+    /// </summary>
+    [HttpPost("sugerir-triagem")]
+    [ProducesResponseType(typeof(TriagemSugestao), StatusCodes.Status200OK)]
+    public async Task<ActionResult<TriagemSugestao>> SugerirTriagem(
+        [FromBody] SugerirTriagemRequest request,
+        CancellationToken cancellationToken)
+    {
+        var sugestao = await _triagemService.SugerirAsync(request.Titulo, request.Descricao, cancellationToken);
+        return Ok(sugestao);
     }
 
     /// <summary>

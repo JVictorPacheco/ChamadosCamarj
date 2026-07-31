@@ -67,6 +67,7 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IGoogleTokenValidator, GoogleTokenValidator>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IPasswordHasher<UsuarioPerfil>, PasswordHasher<UsuarioPerfil>>();
+builder.Services.AddScoped<ITriagemService, KeywordTriagemService>();
 
 builder.Services.AddScoped<IEmailSender?>(_ =>
 {

@@ -164,3 +164,19 @@ export function removerAnexo(chamadoId: string, anexoId: string): Promise<void> 
 export function listarHistorico(chamadoId: string): Promise<HistoricoResponse[]> {
   return apiFetch<HistoricoResponse[]>(`/chamados/${chamadoId}/historico`)
 }
+
+export interface TriagemSugestao {
+  categoriaId: string | null
+  categoriaNome: string | null
+  grupoId: string | null
+  grupoNome: string | null
+  confianca: number
+  temSugestao: boolean
+}
+
+export function sugerirTriagem(titulo: string, descricao: string): Promise<TriagemSugestao> {
+  return apiFetch<TriagemSugestao>('/chamados/sugerir-triagem', {
+    method: 'POST',
+    body: JSON.stringify({ titulo, descricao }),
+  })
+}

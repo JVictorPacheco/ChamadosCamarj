@@ -12,18 +12,18 @@ public class HistoricoEntrada : BaseEntity
     public string? DetalheAnterior { get; private set; }
     public string? DetalheNovo { get; private set; }
     public DateTime DataHora { get; private set; }
+    public OrigemEntrada Origem { get; private set; } = OrigemEntrada.Humano;
 
-    // Constructor para EF Core
     private HistoricoEntrada() { }
 
-    // Factory method com validação
     public static HistoricoEntrada Criar(
         Guid chamadoId,
         string usuarioNome,
         Guid? usuarioId,
         AcaoHistorico acao,
         string? detalheAnterior = null,
-        string? detalheNovo = null)
+        string? detalheNovo = null,
+        OrigemEntrada origem = OrigemEntrada.Humano)
     {
         if (chamadoId == Guid.Empty)
             throw new ArgumentException("ChamadoId não pode ser vazio", nameof(chamadoId));
@@ -39,7 +39,8 @@ public class HistoricoEntrada : BaseEntity
             Acao = acao,
             DetalheAnterior = detalheAnterior,
             DetalheNovo = detalheNovo,
-            DataHora = DateTime.UtcNow
+            DataHora = DateTime.UtcNow,
+            Origem = origem
         };
     }
 }

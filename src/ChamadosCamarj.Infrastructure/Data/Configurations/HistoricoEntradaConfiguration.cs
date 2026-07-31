@@ -38,6 +38,11 @@ public class HistoricoEntradaConfiguration : IEntityTypeConfiguration<HistoricoE
         builder.Property(h => h.DataHora)
             .IsRequired();
 
+        builder.Property(h => h.Origem)
+            .IsRequired()
+            .HasConversion<string>()
+            .HasMaxLength(10);
+
         // Índices para performance
         builder.HasIndex(h => h.ChamadoId)
             .HasName("IX_HistoricoEntradas_ChamadoId");

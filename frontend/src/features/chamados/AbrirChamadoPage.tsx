@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Controller, useForm } from 'react-hook-form'
+import { useState, useCallback } from 'react'
+import { Controller, useForm, useWatch } from 'react-hook-form'
 import { useNavigate } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { Input } from '@/components/ui/input'
@@ -13,7 +13,7 @@ import { ApiError } from '@/lib/api'
 import { useAbrirChamado } from './hooks/useAbrirChamado'
 import { useCategorias } from './hooks/useCategorias'
 import { SeletorArquivosMultiplo } from './components/SeletorArquivosMultiplo'
-import { uploadAnexo } from './api'
+import { uploadAnexo, sugerirTriagem, type TriagemSugestao } from './api'
 import type { PrioridadeChamado } from '@/types/api'
 
 interface FormValues {
@@ -33,13 +33,37 @@ export function AbrirChamadoPage() {
   const { mutate, isPending, error } = useAbrirChamado()
   const [arquivos, setArquivos] = useState<File[]>([])
   const [enviandoAnexos, setEnviandoAnexos] = useState(false)
+  const [sugestao, setSugestao] = useState<TriagemSugestao | null>(null)
+  const [sugerindo, setSugerindo] = useState(false)
   const {
     register,
     handleSubmit,
     control,
+    setValue,
     setError,
     formState: { errors },
   } = useForm<FormValues>({ defaultValues: { prioridade: 'Media', categoriaId: '' } })
+
+  const titulo = useWatch({ control, name: 'titulo' })
+  const descricao = useWatch({ control, name: 'descricao' })
+
+  const handleSugerir = useCallback(async () => {
+    const texto = (titulo ?? '').trim() + ' ' + (descricao ?? '').trim()
+    if (texto.length < 5) return
+
+    setSugerindo(true)
+    try {
+      const resultado = await sugerirTriagem(titulo ?? '', descricao ?? '')
+      if (resultado.temSugestao && resultado.categoriaId) {
+        setSugestao(resultado)
+        setValue('categoriaId', resultado.categoriaId)
+      }
+    } catch {
+      setSugestao(null)
+    } finally {
+      setSugerindo(false)
+    }
+  }, [titulo, descricao, setValue])
 
   const onSubmit = (values: FormValues) => {
     if (!perfil) return
@@ -109,7 +133,18 @@ export function AbrirChamadoPage() {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label>Categoria</Label>
+        <div className="flex items-center justify-between">
+          <Label>Categoria</Label>
+          <Button type="button" variant="ghost" size="sm" onClick={handleSugerir} disabled={sugerindo || isPending}>
+            {sugerindo ? 'Sugerindo...' : 'Sugerir categoria'}
+          </Button>
+        </div>
+        {sugestao?.temSugestao && (
+          <p className="text-xs text-muted-foreground">
+            Sugestão: {sugestao.categoriaNome}
+            {sugestao.grupoNome ? ` / Grupo: ${sugestao.grupoNome}` : ''}
+          </p>
+        )}
         <Controller
           control={control}
           name="categoriaId"
