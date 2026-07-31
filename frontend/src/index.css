@@ -54,23 +54,23 @@
 
 :root {
     /* Tema Claro CAMARJ — branco esverdeado bem clarinho + verde institucional */
-    --background: #f3f9f7;
+    --background: #d7efe5;
     --foreground: #0a1413;
-    --card: #fafdfc;
+    --card: #e6f6ef;
     --card-foreground: #0a1413;
-    --popover: #fafdfc;
+    --popover: #e6f6ef;
     --popover-foreground: #0a1413;
     --primary: #0d9488;
     --primary-foreground: #ffffff;
-    --secondary: #d4f0ea;
+    --secondary: #b7e5d5;
     --secondary-foreground: #0f766e;
-    --muted: #e8f4f0;
+    --muted: #c9eddf;
     --muted-foreground: #115e59;
-    --accent: #d4f0ea;
+    --accent: #b7e5d5;
     --accent-foreground: #0d9488;
     --destructive: oklch(0.577 0.245 27.325);
-    --border: #b8e0d8;
-    --input: #d4f0ea;
+    --border: #8ed3c1;
+    --input: #b7e5d5;
     --ring: #5eead4;
     --chart-1: #2a78d6;
     --chart-2: #1baf7a;
@@ -80,35 +80,35 @@
     --status-good: #0ca30c;
     --status-critical: #d03b3b;
     --radius: 0.625rem;
-    --sidebar: #eaf5f2;
+    --sidebar: #c9eddf;
     --sidebar-foreground: #042f2e;
     --sidebar-primary: #0d9488;
     --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent: #d4f0ea;
+    --sidebar-accent: #b7e5d5;
     --sidebar-accent-foreground: #0d9488;
-    --sidebar-border: #b8e0d8;
+    --sidebar-border: #8ed3c1;
     --sidebar-ring: #5eead4;
 }
 
 .dark {
     /* Tema Escuro CAMARJ — preto esverdeado */
-    --background: #040d0b;
+    --background: #06241a;
     --foreground: #e6edea;
-    --card: #081512;
+    --card: #0a2a1f;
     --card-foreground: #e6edea;
     --popover: #081512;
     --popover-foreground: #e6edea;
     --primary: #5eead4;
     --primary-foreground: #03100d;
-    --secondary: #0e1d19;
+    --secondary: #0e2b23;
     --secondary-foreground: #e6edea;
-    --muted: #0c1a17;
+    --muted: #093025;
     --muted-foreground: #8b9c97;
-    --accent: #0d1f1a;
+    --accent: #0d3026;
     --accent-foreground: #5eead4;
     --destructive: #e8714a;
-    --border: #172924;
-    --input: #172924;
+    --border: #16382c;
+    --input: #16382c;
     --ring: #5eead4;
     --chart-1: #5eead4;
     --chart-2: #60a5fa;
@@ -117,13 +117,13 @@
     --chart-5: #34d399;
     --status-good: #0ca30c;
     --status-critical: #d03b3b;
-    --sidebar: #040d0b;
+    --sidebar: #06241a;
     --sidebar-foreground: #8b9c97;
     --sidebar-primary: #5eead4;
     --sidebar-primary-foreground: #03100d;
-    --sidebar-accent: #0d1f1a;
+    --sidebar-accent: #0d3026;
     --sidebar-accent-foreground: #5eead4;
-    --sidebar-border: #172924;
+    --sidebar-border: #16382c;
     --sidebar-ring: #5eead4;
 }
 
