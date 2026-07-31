@@ -11,10 +11,12 @@ public record RelatorioMensalResponse(
     SlaResponse Sla,
     List<PorCategoriaItem> PorCategoria,
     List<PorAtendenteItem>? PorAtendente,
-    ComparacaoMesAnteriorResponse? Comparacao
+    ComparacaoMesAnteriorResponse? Comparacao,
+    List<SlaEvolucaoItem>? SlaEvolucao
 );
 
 public record SlaResponse(int TotalComPrazo, int DentroDoPrazo, int Estourados, double? PercentualCumprido);
+public record SlaEvolucaoItem(int Ano, int Mes, double? Percentual);
 
 public record PorCategoriaItem(string CategoriaNome, int Quantidade);
 

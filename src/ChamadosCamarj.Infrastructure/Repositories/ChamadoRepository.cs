@@ -163,6 +163,7 @@ public class ChamadoRepository : IChamadoRepository
         DateTime? dataFim = null,
         Guid? usuarioLogadoId = null,
         Guid? grupoId = null,
+        Domain.Enums.MotivoEncerramento? motivoEncerramento = null,
         CancellationToken cancellationToken = default)
     {
         var query = _dbSet.AsNoTracking().AsQueryable();
@@ -205,6 +206,9 @@ public class ChamadoRepository : IChamadoRepository
 
         if (dataFim.HasValue)
             query = query.Where(c => c.DataCriacao <= dataFim.Value);
+
+        if (motivoEncerramento.HasValue)
+            query = query.Where(c => c.MotivoEncerramento == motivoEncerramento.Value);
 
         var total = await query.CountAsync(cancellationToken);
 

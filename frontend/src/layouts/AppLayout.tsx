@@ -1,21 +1,23 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-  SidebarInset,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuButton,
   SidebarProvider,
+  SidebarInset,
 } from '@/components/ui/sidebar'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
+import { Separator } from '@/components/ui/separator'
 import { useAuth } from '@/auth/AuthContext'
 import { useTheme } from '@/hooks/useTheme'
+import { useSignalR } from '@/hooks/useSignalR'
 import { Kanban, LayoutDashboard, Inbox, FileBarChart, Users, Archive, Sun, Moon, Tags, FolderKanban } from 'lucide-react'
 import logoCamarj from '../assets/logo-camarj.png'
 
@@ -25,6 +27,18 @@ export function AppLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   const [confirmarLogout, setConfirmarLogout] = useState(false)
+  const [slaAlerta, setSlaAlerta] = useState<string | null>(null)
+  const { subscribe } = useSignalR()
+
+  useEffect(() => {
+    const unsub = subscribe((event) => {
+      if (event.type === 'SlaAtencao' || event.type === 'SlaAtrasado') {
+        setSlaAlerta(event.payload.mensagem)
+        setTimeout(() => setSlaAlerta(null), 8000)
+      }
+    })
+    return unsub
+  }, [subscribe])
 
   const sair = () => {
     logout()
@@ -164,6 +178,14 @@ export function AppLayout() {
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
+        {slaAlerta && (
+          <Alert variant="destructive" className="m-2">
+            <AlertDescription className="flex items-center justify-between">
+              {slaAlerta}
+              <button onClick={() => setSlaAlerta(null)} className="text-lg leading-none">&times;</button>
+            </AlertDescription>
+          </Alert>
+        )}
         <Outlet />
       </SidebarInset>
       <Dialog open={confirmarLogout} onOpenChange={setConfirmarLogout}>

@@ -43,15 +43,32 @@ public class ForcarEncerramentoChamadoCommandHandler : IRequestHandler<ForcarEnc
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
         await _chamadoRepository.AtualizarAsync(chamado, cancellationToken);
 
+        var motivoLabel = request.Motivo == MotivoEncerramento.Outro && !string.IsNullOrWhiteSpace(request.MotivoOutro)
+            ? $"{request.Motivo}: {request.MotivoOutro}"
+            : request.Motivo.ToString();
+
         var historico = HistoricoEntrada.Criar(
             chamado.Id,
             request.UsuarioNome,
             request.UsuarioId,
             AcaoHistorico.EncerramentoForcado,
             detalheAnterior: statusAnterior.ToString(),
-            detalheNovo: $"{request.Motivo}{(request.MotivoOutro is not null ? $": {request.MotivoOutro}" : "")}"
+            detalheNovo: motivoLabel
         );
         await _historicoRepository.AdicionarAsync(historico, cancellationToken);
+
+        var textoComentario = $"Chamado encerrado forçadamente. Motivo: {motivoLabel}.";
+        if (!string.IsNullOrWhiteSpace(request.Observacao))
+            textoComentario += $" Observação: {request.Observacao.Trim()}";
+
+        var comentario = new Comentario(
+            request.Id,
+            request.UsuarioNome,
+            textoComentario,
+            TipoComentario.Publico
+        );
+        await _chamadoRepository.AdicionarComentarioAsync(comentario, cancellationToken);
+
         await _unitOfWork.CommitAsync(cancellationToken);
 
         await _publisher.Publish(new StatusAlteradoNotification(

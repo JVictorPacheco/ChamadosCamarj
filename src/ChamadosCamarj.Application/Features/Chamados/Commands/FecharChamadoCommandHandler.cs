@@ -1,4 +1,5 @@
 using MediatR;
+using ChamadosCamarj.Domain.Entities;
 using ChamadosCamarj.Domain.Interfaces;
 using ChamadosCamarj.Application.Common.Exceptions;
 using ChamadosCamarj.Application.Common.Notifications;
@@ -28,16 +29,32 @@ public class FecharChamadoCommandHandler : IRequestHandler<FecharChamadoCommand>
         var chamado = await _chamadoRepository.ObterPorIdAsync(request.Id, cancellationToken)
             ?? throw new NotFoundException("Chamado", request.Id);
 
-        chamado.Fechar();
+        chamado.Fechar(request.Motivo, request.MotivoOutro);
 
         await using var _ = _unitOfWork;
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
         await _chamadoRepository.AtualizarAsync(chamado, cancellationToken);
 
+        var motivoLabel = request.Motivo == MotivoEncerramento.Outro && !string.IsNullOrWhiteSpace(request.MotivoOutro)
+            ? $"{request.Motivo}: {request.MotivoOutro}"
+            : request.Motivo.ToString();
+
+        var textoComentario = $"Chamado encerrado. Motivo: {motivoLabel}.";
+        if (!string.IsNullOrWhiteSpace(request.Observacao))
+            textoComentario += $" Observação: {request.Observacao.Trim()}";
+
+        var comentario = new Comentario(
+            request.Id,
+            request.UsuarioNome,
+            textoComentario,
+            TipoComentario.Publico
+        );
+        await _chamadoRepository.AdicionarComentarioAsync(comentario, cancellationToken);
+
         await _historicoRepository.RegistrarHistoricoAsync(
             chamado.Id,
             AcaoHistorico.Fechado,
-            detalheNovo: "Chamado fechado",
+            detalheNovo: motivoLabel,
             usuarioNome: request.UsuarioNome,
             usuarioId: request.UsuarioId,
             cancellationToken: cancellationToken

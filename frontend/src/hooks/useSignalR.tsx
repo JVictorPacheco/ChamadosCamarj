@@ -52,6 +52,8 @@ export function SignalRProvider({ children }: { children: ReactNode }) {
     conn.on('StatusAlterado', (payload) => notify({ type: 'StatusAlterado', payload }))
     conn.on('ComentarioAdicionado', (payload) => notify({ type: 'ComentarioAdicionado', payload }))
     conn.on('MetricasAtualizadas', () => notify({ type: 'MetricasAtualizadas' }))
+    conn.on('SlaAtencao', (payload) => notify({ type: 'SlaAtencao', payload }))
+    conn.on('SlaAtrasado', (payload) => notify({ type: 'SlaAtrasado', payload }))
 
     conn
       .start()
