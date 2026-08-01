@@ -39,7 +39,15 @@ public class AdicionarAnexoCommandHandler : IRequestHandler<AdicionarAnexoComman
             request.ComentarioId
         );
 
-        await _chamadoRepository.AdicionarAnexoAsync(anexo, cancellationToken);
+        try
+        {
+            await _chamadoRepository.AdicionarAnexoAsync(anexo, cancellationToken);
+        }
+        catch
+        {
+            await _storageService.RemoverAsync(caminho, CancellationToken.None);
+            throw;
+        }
 
         return new AnexoResponse(anexo.Id, anexo.NomeArquivo, anexo.TipoArquivo, anexo.TamanhoBytes, anexo.EnviadoPorId, anexo.EnviadoPorNome, anexo.DataCriacao);
     }
