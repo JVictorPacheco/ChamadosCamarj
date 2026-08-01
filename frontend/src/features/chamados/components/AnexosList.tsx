@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { useAuth } from '@/auth/AuthContext'
@@ -97,10 +98,18 @@ function LinhaAnexo({ chamadoId, anexoId, nomeArquivo, tamanhoBytes, enviadoPorI
 }
 
 export function AnexosList({ chamadoId }: { chamadoId: string }) {
-  const { data: anexos, isPending } = useAnexos(chamadoId)
+  const { data: anexos, isPending, isFetching } = useAnexos(chamadoId)
 
   if (isPending) {
-    return null
+    return (
+      <section className="space-y-4">
+        <h2 className="text-xl font-heading">Anexos</h2>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Carregando...
+        </div>
+      </section>
+    )
   }
 
   if (!anexos || anexos.length === 0) {
@@ -109,7 +118,10 @@ export function AnexosList({ chamadoId }: { chamadoId: string }) {
 
   return (
     <section className="space-y-4">
-      <h2 className="text-xl font-heading">Anexos</h2>
+      <div className="flex items-center gap-2">
+        <h2 className="text-xl font-heading">Anexos</h2>
+        {isFetching && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+      </div>
       <ul className="flex flex-col gap-2">
         {anexos.map((anexo) => (
           <LinhaAnexo
