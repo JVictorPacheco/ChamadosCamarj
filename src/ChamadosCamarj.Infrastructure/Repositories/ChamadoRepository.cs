@@ -187,11 +187,15 @@ public class ChamadoRepository : IChamadoRepository
     {
         var query = _dbSet.AsNoTracking().AsQueryable();
 
-        if (grupoId.HasValue && usuarioLogadoId.HasValue && perfil == "Atendente")
+        if (grupoId.HasValue && usuarioLogadoId.HasValue)
         {
-            query = query.Where(c => c.ResponsavelId.HasValue &&
-                (c.ResponsavelId == usuarioLogadoId.Value ||
-                 _context.UsuariosPerfil.Any(u => u.Id == c.ResponsavelId && u.GrupoId == grupoId.Value)));
+            query = query.Where(c =>
+                (c.ResponsavelId.HasValue &&
+                 (c.ResponsavelId == usuarioLogadoId.Value ||
+                  _context.UsuariosPerfil.Any(u => u.Id == c.ResponsavelId && u.GrupoId == grupoId.Value)))
+                ||
+                _context.UsuariosPerfil.Any(u => u.Id == usuarioLogadoId.Value && u.Email == c.SolicitanteEmail)
+            );
         }
 
         if (status.HasValue)
