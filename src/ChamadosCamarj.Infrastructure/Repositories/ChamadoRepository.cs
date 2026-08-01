@@ -182,11 +182,12 @@ public class ChamadoRepository : IChamadoRepository
         Guid? usuarioLogadoId = null,
         Guid? grupoId = null,
         Domain.Enums.MotivoEncerramento? motivoEncerramento = null,
+        string? perfil = null,
         CancellationToken cancellationToken = default)
     {
         var query = _dbSet.AsNoTracking().AsQueryable();
 
-        if (grupoId.HasValue && usuarioLogadoId.HasValue)
+        if (grupoId.HasValue && usuarioLogadoId.HasValue && perfil == "Atendente")
         {
             query = query.Where(c => c.ResponsavelId.HasValue &&
                 (c.ResponsavelId == usuarioLogadoId.Value ||
