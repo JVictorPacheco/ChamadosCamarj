@@ -103,11 +103,13 @@ Colaboradores frequentemente precisam anexar evidência a um chamado (print de e
 | Sem logging | LOW-MEDIUM | `SupabaseStorageService` sem logs — debug cego em produção | `ILogger<SupabaseStorageService>` com logs estruturados em todos os métodos |
 | UX — upload direto | — | Só dava pra anexar via comentário na DetailPage | `UploadAnexoForm` adicionado à `ChamadoDetailPage` |
 | UX — feedback visual | — | Nenhum indicador na lista durante upload (sensação de "travado") | Spinner + skeleton "Enviando arquivo..." via `useIsMutating` |
+| Testes — rollback | — | Sem cobertura do cenário de órfão | Novo teste `Handle_QuandoInsertNoBancoFalha_DeveRemoverArquivoOrfaoDoStorage` |
 
 ### Verificação (2026-08-01)
-- 215 testes backend passando
+- 216 testes backend, 0 falhas
 - Frontend build limpo
 - Teste manual: upload direto via DetailPage + upload via comentário, ambos com feedback visual confirmado
+- Teste em produção: funcional após configurar `Supabase__ServiceRoleKey`
 
 ## Bloqueio resolvido — verificação de ponta a ponta (2026-07-21)
 

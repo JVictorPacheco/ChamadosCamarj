@@ -1,30 +1,51 @@
 # Handoff
 
 **Date:** 2026-08-01
-**Session:** Resiliência de Anexos (Supabase Storage) + UX de Upload
-**Branch:** `main`, 6 arquivos alterados
+**Session:** Resiliência de Anexos + UX Upload + Perfis (Meus Chamados / Fila)
+**Branch:** `main` (`69be4bc`), 16 arquivos alterados
 
 ## Completed ✓
 
 ### Correções — Anexos/Storage
-- **Bug CRITICAL — Arquivos órfãos:** rollback no `AdicionarAnexoCommandHandler` — se insert no banco falha, remove o arquivo do Storage
-- **Bug MEDIUM — CancellationToken:** propagado para `Upload()` do SDK Supabase em `SupabaseStorageService`
-- **Bug LOW-MEDIUM — Logging:** `ILogger<SupabaseStorageService>` com logs estruturados em UploadAsync, ObterUrlAssinadaAsync, RemoverAsync
+- **Arquivos órfãos:** rollback no `AdicionarAnexoCommandHandler`
+- **CancellationToken:** propagado pro SDK Supabase
+- **Logging:** `ILogger` no `SupabaseStorageService`
+- **Teste:** rollback de órfão (216 testes total)
 
-### Melhorias UX — Anexos
-- **Upload direto:** `UploadAnexoForm` adicionado à `ChamadoDetailPage` — anexar sem precisar comentar
-- **Feedback visual:** `AnexosList` com spinner durante refetch + item "Enviando arquivo..." com Loader2 durante upload ativo (`useIsMutating` + prop `isUploading`)
-- **useUploadAnexo** ganhou `mutationKey: ['upload-anexo', chamadoId]` para uso com `useIsMutating`
+### UX — Anexos
+- `UploadAnexoForm` na `ChamadoDetailPage` (upload direto)
+- Spinner + skeleton "Enviando arquivo..." no `AnexosList` (`useIsMutating`)
+- `ComentarioForm` notifica `AnexosList` via `onUploadChange`
+
+### Perfis — Meus Chamados / Fila
+- **Solicitante via grupo:** vê próprios chamados + grupo
+- **Solicitante sem grupo:** só os que abriu
+- **Atendente via grupo:** todos não-atribuídos (Fila) + atribuídos ao grupo
+- Filtro de `solicitanteEmail` não duplica quando grupo ativo
+- Novo campo `Perfil` em `ListarChamadosQuery` e repository
+
+### Regras de visibilidade
+
+| Perfil | Grupo | Vê |
+|--------|-------|-----|
+| Atendente | Sim/Não | Todos abertos + atribuídos ao grupo |
+| Solicitante | Sim | Atribuídos ao grupo + próprios |
+| Solicitante | Não | Só próprios |
+| Admin | — | Todos |
+
+### Comentários
+- Públicos: todos veem
+- Internos: só Admin/Atendente (Solicitante nunca)
 
 ### Gate Checks
-- 215 testes backend, 0 falhas
+- 216 testes backend, 0 falhas
 - Frontend build limpo
 
-### Git Flow
-- `fix/upload-anexo-resiliencia` → `develop` → `main`
-- 3 commits atômicos
+### Pendência de Produção
+- `Supabase__ServiceRoleKey` como env var (sem ela, `NullStorageService` quebra upload)
 
 ## Handoff anterior (2026-07-31)
+...(mantido abaixo)
 
 
 
