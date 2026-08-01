@@ -12,9 +12,10 @@ import { SeletorArquivosMultiplo } from './SeletorArquivosMultiplo'
 interface ComentarioFormProps {
   chamadoId: string
   autor: string
+  onUploadChange?: (uploading: boolean) => void
 }
 
-export function ComentarioForm({ chamadoId, autor }: ComentarioFormProps) {
+export function ComentarioForm({ chamadoId, autor, onUploadChange }: ComentarioFormProps) {
   const { perfil } = useAuth()
   const queryClient = useQueryClient()
   const [conteudo, setConteudo] = useState('')
@@ -41,10 +42,12 @@ export function ComentarioForm({ chamadoId, autor }: ComentarioFormProps) {
           if (arquivos.length === 0) return
 
           setEnviandoAnexos(true)
+          onUploadChange?.(true)
           const resultados = await Promise.allSettled(
             arquivos.map((arquivo) => uploadAnexo(chamadoId, arquivo, comentario.id)),
           )
           setEnviandoAnexos(false)
+          onUploadChange?.(false)
           setArquivos([])
 
           const falhas = resultados.filter((r) => r.status === 'rejected').length
