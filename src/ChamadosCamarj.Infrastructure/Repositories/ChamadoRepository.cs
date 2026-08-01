@@ -189,13 +189,24 @@ public class ChamadoRepository : IChamadoRepository
 
         if (grupoId.HasValue && usuarioLogadoId.HasValue)
         {
-            query = query.Where(c =>
-                (c.ResponsavelId.HasValue &&
-                 (c.ResponsavelId == usuarioLogadoId.Value ||
-                  _context.UsuariosPerfil.Any(u => u.Id == c.ResponsavelId && u.GrupoId == grupoId.Value)))
-                ||
-                _context.UsuariosPerfil.Any(u => u.Id == usuarioLogadoId.Value && u.Email == c.SolicitanteEmail)
-            );
+            if (perfil == "Atendente")
+            {
+                query = query.Where(c =>
+                    !c.ResponsavelId.HasValue ||
+                    c.ResponsavelId == usuarioLogadoId.Value ||
+                    _context.UsuariosPerfil.Any(u => u.Id == c.ResponsavelId && u.GrupoId == grupoId.Value)
+                );
+            }
+            else
+            {
+                query = query.Where(c =>
+                    (c.ResponsavelId.HasValue &&
+                     (c.ResponsavelId == usuarioLogadoId.Value ||
+                      _context.UsuariosPerfil.Any(u => u.Id == c.ResponsavelId && u.GrupoId == grupoId.Value)))
+                    ||
+                    _context.UsuariosPerfil.Any(u => u.Id == usuarioLogadoId.Value && u.Email == c.SolicitanteEmail)
+                );
+            }
         }
 
         if (status.HasValue)
