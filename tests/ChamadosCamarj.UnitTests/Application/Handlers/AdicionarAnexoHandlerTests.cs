@@ -81,4 +81,29 @@ public class AdicionarAnexoHandlerTests
             It.Is<Anexo>(a => a.ComentarioId == comentarioId),
             It.IsAny<CancellationToken>()), Times.Once);
     }
+
+    [Fact]
+    public async Task Handle_QuandoInsertNoBancoFalha_DeveRemoverArquivoOrfaoDoStorage()
+    {
+        var chamadoId = Guid.NewGuid();
+        var usuarioId = Guid.NewGuid();
+
+        _chamadoRepositoryMock.Setup(r => r.ExisteAsync(chamadoId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        _storageServiceMock.Setup(s => s.UploadAsync(It.IsAny<string>(), "application/pdf", Stream.Null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string caminho, string _, Stream _, CancellationToken _) => caminho);
+        _chamadoRepositoryMock.Setup(r => r.AdicionarAnexoAsync(It.IsAny<Anexo>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("Falha simulada no banco"));
+
+        var command = new AdicionarAnexoCommand(chamadoId, null, "nota.pdf", "application/pdf", Stream.Null, 2048, usuarioId, "Victor");
+
+        var act = async () => await _handler.Handle(command, CancellationToken.None);
+        await act.Should().ThrowAsync<InvalidOperationException>();
+
+        _storageServiceMock.Verify(s => s.UploadAsync(
+            It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Once);
+        _storageServiceMock.Verify(s => s.RemoverAsync(
+            It.Is<string>(caminho => caminho.StartsWith(chamadoId.ToString())),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
 }
