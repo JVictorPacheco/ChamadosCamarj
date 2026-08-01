@@ -97,7 +97,7 @@ function LinhaAnexo({ chamadoId, anexoId, nomeArquivo, tamanhoBytes, enviadoPorI
   )
 }
 
-export function AnexosList({ chamadoId }: { chamadoId: string }) {
+export function AnexosList({ chamadoId, isUploading = false }: { chamadoId: string; isUploading?: boolean }) {
   const { data: anexos, isPending, isFetching } = useAnexos(chamadoId)
 
   if (isPending) {
@@ -112,7 +112,7 @@ export function AnexosList({ chamadoId }: { chamadoId: string }) {
     )
   }
 
-  if (!anexos || anexos.length === 0) {
+  if ((!anexos || anexos.length === 0) && !isUploading) {
     return null
   }
 
@@ -123,7 +123,7 @@ export function AnexosList({ chamadoId }: { chamadoId: string }) {
         {isFetching && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
       </div>
       <ul className="flex flex-col gap-2">
-        {anexos.map((anexo) => (
+        {anexos?.map((anexo) => (
           <LinhaAnexo
             key={anexo.id}
             chamadoId={chamadoId}
@@ -134,6 +134,12 @@ export function AnexosList({ chamadoId }: { chamadoId: string }) {
             enviadoPorNome={anexo.enviadoPorNome}
           />
         ))}
+        {isUploading && (
+          <li className="flex items-center gap-2 rounded-lg border border-border p-3 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Enviando arquivo...
+          </li>
+        )}
       </ul>
     </section>
   )
