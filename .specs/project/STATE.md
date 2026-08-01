@@ -4,29 +4,60 @@
 
 ---
 
-## Sessão de 2026-08-01 — Resiliência de Anexos (Supabase Storage) + UX de Upload
+## Sessão de 2026-08-01 — Resiliência de Anexos (Supabase Storage) + UX de Upload + Correção de Perfis (Meus Chamados / Fila)
 
-### Resumo da sessão
-- **Bug #1 (CRITICAL) — Arquivos órfãos no Supabase Storage:** se o upload pro Storage desse certo mas o insert no banco falhasse, o arquivo ficava permanentemente órfão. Corrigido com try-catch em `AdicionarAnexoCommandHandler`: se o banco falha, remove o arquivo do Storage (`RemoverAsync` com `CancellationToken.None`).
-- **Bug #2 (MEDIUM) — CancellationToken não propagado:** o `CancellationToken` não era passado pro método `Upload()` do SDK do Supabase. Corrigido em `SupabaseStorageService.UploadAsync`.
-- **Bug #3 (LOW-MEDIUM) — Sem logging no Storage:** `SupabaseStorageService` não tinha logging. Adicionado `ILogger<SupabaseStorageService>` com logs estruturados nos 3 métodos (`UploadAsync`, `ObterUrlAssinadaAsync`, `RemoverAsync`).
-- **UX — Upload direto na DetailPage:** `UploadAnexoForm` adicionado à `ChamadoDetailPage` — permite anexar arquivo sem precisar escrever comentário.
-- **UX — Indicador de carregamento na lista:** `AnexosList` agora mostra spinner durante refetch (`isFetching`) e um item "Enviando arquivo..." com ícone `Loader2` durante upload ativo (detectado via `useIsMutating` com `mutationKey` + prop `isUploading` do `ComentarioForm`).
-- **215 testes backend + build frontend limpos.**
+### Resumo completo da sessão
 
-### Arquivos alterados (6 arquivos, somente domínio de anexos)
-- `AdicionarAnexoCommandHandler.cs` — rollback de órfãos
-- `SupabaseStorageService.cs` — logging + cancellation token
-- `AnexosList.tsx` — spinner de carregamento + skeleton de upload
-- `ComentarioForm.tsx` — callback `onUploadChange`
-- `ChamadoDetailPage.tsx` — `UploadAnexoForm` + estado `enviandoAnexos`
-- `useAnexos.ts` — `mutationKey` no `useUploadAnexo`
+#### Correções — Anexos / Supabase Storage
+- **Bug #1 (CRITICAL) — Arquivos órfãos:** try-catch em `AdicionarAnexoCommandHandler`: se insert no banco falha, remove arquivo do Storage (`RemoverAsync` com `CancellationToken.None`).
+- **Bug #2 (MEDIUM) — CancellationToken:** propagado para `Upload()` do SDK Supabase em `SupabaseStorageService`.
+- **Bug #3 (LOW-MEDIUM) — Logging:** `ILogger<SupabaseStorageService>` com logs estruturados nos 3 métodos.
+- **Teste novo:** `Handle_QuandoInsertNoBancoFalha_DeveRemoverArquivoOrfaoDoStorage`
+
+#### Melhorias UX — Anexos
+- **Upload direto:** `UploadAnexoForm` adicionado à `ChamadoDetailPage` — anexar sem comentar.
+- **Feedback visual:** `AnexosList` com spinner durante refetch + item "Enviando arquivo..." com `Loader2` durante upload ativo (`useIsMutating` com `mutationKey`).
+- **ComentarioForm** notifica `AnexosList` via callback `onUploadChange`.
+
+#### Correções — Perfis (Meus Chamados / Fila)
+- **Solicitante via grupo não via próprios chamados:** filtro de grupo ampliado com OR branch `usuario é o solicitante` (match por email).
+- **Filtro duplicado de solicitanteEmail anulava filtro de grupo:** corrigido — quando grupo ativo, `solicitanteEmail` standalone não aplica.
+- **Atendente com grupo não via chamados não-atribuídos na Fila:** grupo filtro agora é role-aware — Atendente vê `!ResponsavelId.HasValue` (todos abertos) + atribuídos ao grupo. Solicitante/Admin sem alteração.
+- **Novo campo `Perfil`** em `ListarChamadosQuery` e `IChamadoRepository.ListarAsync` para diferenciar Atendente vs Solicitante.
+
+#### Regras finais de visibilidade (Meus Chamados / Fila)
+
+| Perfil | Grupo | Visibilidade |
+|--------|-------|-------------|
+| **Atendente** | Sim/Não | **Todos** não-atribuídos (`Aberto`) + atribuídos ao grupo |
+| **Solicitante** | Sim | Atribuídos ao grupo + os que ele mesmo abriu |
+| **Solicitante** | Não | Só os que ele abriu |
+| **Admin** | — | Todos |
+
+#### Comentários
+- Comentários **públicos**: todos os perfis veem
+- Comentários **internos**: só Admin e Atendente veem (Solicitante nunca vê, nem tem checkbox no frontend)
+
+### Arquivos alterados (16 arquivos)
+- Backend: `AdicionarAnexoCommandHandler.cs`, `SupabaseStorageService.cs`, `ChamadoRepository.cs`, `IChamadoRepository.cs`, `ListarChamadosQuery.cs`, `ListarChamadosQueryHandler.cs`, `ChamadosController.cs`
+- Frontend: `AnexosList.tsx`, `ComentarioForm.tsx`, `ChamadoDetailPage.tsx`, `useAnexos.ts`
+- Testes: `AdicionarAnexoHandlerTests.cs`, `ListarChamadosQueryHandlerTests.cs`
+- Docs: `STATE.md`, `HANDOFF.md`, `anexos-storage/spec.md`
+
+### Gate Checks
+- **216 testes backend**, 0 falhas
+- Frontend build limpo
 
 ### Git Flow
-- Branch `fix/upload-anexo-resiliencia` → develop → main
-- Commits atômicos: 3 commits (fix + feat spinner + feat UploadAnexoForm direto)
+- `fix/upload-anexo-resiliencia` → develop → main
+- ~8 commits atômicos, todos mergeados em develop e main
+
+### Pendência de produção
+- `Supabase__ServiceRoleKey` precisa estar configurada como env var no servidor para upload de anexos funcionar (sem ela, `NullStorageService` quebra)
 
 ---
+
+
 
 ## 🧭 Regras de Processo (Constitution) — sempre seguir, em toda sessão
 
