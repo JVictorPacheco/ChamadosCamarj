@@ -25,7 +25,7 @@ public class ListarChamadosQueryHandlerTests
                 It.IsAny<int>(), It.IsAny<int>(), It.IsAny<StatusChamado?>(), It.IsAny<PrioridadeChamado?>(),
                 It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<string?>(), It.IsAny<string?>(),
                 It.IsAny<IEnumerable<StatusChamado>?>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
-                It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<MotivoEncerramento?>(), It.IsAny<CancellationToken>()))
+                It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<MotivoEncerramento?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Enumerable.Empty<Chamado>(), 0));
 
         var query = new ListarChamadosQuery(SolicitanteEmail: "ana.colaboradora@camarj.com.br");
@@ -33,7 +33,7 @@ public class ListarChamadosQueryHandlerTests
 
         _repositoryMock.Verify(r => r.ListarAsync(
             1, 10, null, null, null, null, null, "ana.colaboradora@camarj.com.br",
-            null, null, null, null, null, null, It.IsAny<CancellationToken>()),
+            null, null, null, null, null, null, null, It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -47,7 +47,7 @@ public class ListarChamadosQueryHandlerTests
                 It.IsAny<int>(), It.IsAny<int>(), It.IsAny<StatusChamado?>(), It.IsAny<PrioridadeChamado?>(),
                 It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<string?>(), "ana.colaboradora@camarj.com.br",
                 It.IsAny<IEnumerable<StatusChamado>?>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
-                It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<MotivoEncerramento?>(), It.IsAny<CancellationToken>()))
+                It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<MotivoEncerramento?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((new[] { chamado }, 1));
 
         var query = new ListarChamadosQuery(SolicitanteEmail: "ana.colaboradora@camarj.com.br");
@@ -66,9 +66,9 @@ public class ListarChamadosQueryHandlerTests
                 It.IsAny<int>(), It.IsAny<int>(), It.IsAny<StatusChamado?>(), It.IsAny<PrioridadeChamado?>(),
                 It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<string?>(), It.IsAny<string?>(),
                 It.IsAny<IEnumerable<StatusChamado>?>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
-                It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<MotivoEncerramento?>(), It.IsAny<CancellationToken>()))
-            .Callback<int, int, StatusChamado?, PrioridadeChamado?, Guid?, Guid?, string?, string?, IEnumerable<StatusChamado>?, DateTime?, DateTime?, Guid?, Guid?, MotivoEncerramento?, CancellationToken>(
-                (_, _, _, _, _, _, _, _, statusEntre, _, _, _, _, _, _) => statusCapturado = statusEntre)
+                It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<MotivoEncerramento?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .Callback<int, int, StatusChamado?, PrioridadeChamado?, Guid?, Guid?, string?, string?, IEnumerable<StatusChamado>?, DateTime?, DateTime?, Guid?, Guid?, MotivoEncerramento?, string?, CancellationToken>(
+                (_, _, _, _, _, _, _, _, statusEntre, _, _, _, _, _, _, _) => statusCapturado = statusEntre)
             .ReturnsAsync((Enumerable.Empty<Chamado>(), 0));
 
         var query = new ListarChamadosQuery(Finalizados: true);
@@ -86,9 +86,9 @@ public class ListarChamadosQueryHandlerTests
                 It.IsAny<int>(), It.IsAny<int>(), It.IsAny<StatusChamado?>(), It.IsAny<PrioridadeChamado?>(),
                 It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<string?>(), It.IsAny<string?>(),
                 It.IsAny<IEnumerable<StatusChamado>?>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
-                It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<MotivoEncerramento?>(), It.IsAny<CancellationToken>()))
-            .Callback<int, int, StatusChamado?, PrioridadeChamado?, Guid?, Guid?, string?, string?, IEnumerable<StatusChamado>?, DateTime?, DateTime?, Guid?, Guid?, MotivoEncerramento?, CancellationToken>(
-                (_, _, _, _, _, _, _, _, statusEntre, _, _, _, _, _, _) => statusCapturado = statusEntre)
+                It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<MotivoEncerramento?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .Callback<int, int, StatusChamado?, PrioridadeChamado?, Guid?, Guid?, string?, string?, IEnumerable<StatusChamado>?, DateTime?, DateTime?, Guid?, Guid?, MotivoEncerramento?, string?, CancellationToken>(
+                (_, _, _, _, _, _, _, _, statusEntre, _, _, _, _, _, _, _) => statusCapturado = statusEntre)
             .ReturnsAsync((Enumerable.Empty<Chamado>(), 0));
 
         var query = new ListarChamadosQuery();
@@ -111,9 +111,9 @@ public class ListarChamadosQueryHandlerTests
                 It.IsAny<int>(), It.IsAny<int>(), It.IsAny<StatusChamado?>(), It.IsAny<PrioridadeChamado?>(),
                 It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<string?>(), It.IsAny<string?>(),
                 It.IsAny<IEnumerable<StatusChamado>?>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
-                It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<MotivoEncerramento?>(), It.IsAny<CancellationToken>()))
-            .Callback<int, int, StatusChamado?, PrioridadeChamado?, Guid?, Guid?, string?, string?, IEnumerable<StatusChamado>?, DateTime?, DateTime?, Guid?, Guid?, MotivoEncerramento?, CancellationToken>(
-                (_, _, _, _, _, _, _, _, _, dataInicio, dataFim, _, _, _, _) =>
+                It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<MotivoEncerramento?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .Callback<int, int, StatusChamado?, PrioridadeChamado?, Guid?, Guid?, string?, string?, IEnumerable<StatusChamado>?, DateTime?, DateTime?, Guid?, Guid?, MotivoEncerramento?, string?, CancellationToken>(
+                (_, _, _, _, _, _, _, _, _, dataInicio, dataFim, _, _, _, _, _) =>
                 {
                     inicioCapturado = dataInicio;
                     fimCapturado = dataFim;

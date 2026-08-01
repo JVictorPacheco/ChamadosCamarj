@@ -39,6 +39,7 @@ public interface IChamadoRepository
         Guid? usuarioLogadoId = null,
         Guid? grupoId = null,
         Domain.Enums.MotivoEncerramento? motivoEncerramento = null,
+        string? perfil = null,
         CancellationToken cancellationToken = default);
 
     // Verificações
