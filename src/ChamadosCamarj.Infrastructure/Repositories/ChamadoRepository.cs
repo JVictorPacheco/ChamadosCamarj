@@ -218,7 +218,7 @@ public class ChamadoRepository : IChamadoRepository
                 : query.Where(c => c.Titulo.Contains(busca) || c.Descricao.Contains(busca));
         }
 
-        if (!string.IsNullOrWhiteSpace(solicitanteEmail))
+        if (!string.IsNullOrWhiteSpace(solicitanteEmail) && !(grupoId.HasValue && usuarioLogadoId.HasValue))
             query = query.Where(c => c.SolicitanteEmail == solicitanteEmail);
 
         if (statusEntre is not null)
