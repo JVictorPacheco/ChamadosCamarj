@@ -1,16 +1,264 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-07-01
+> Atualizado em: 2026-07-31
+
+---
+
+## 🧭 Regras de Processo (Constitution) — sempre seguir, em toda sessão
+
+> Adotadas em 2026-07-21, depois de comparar nosso uso do skill `tlc-spec-driven` com a metodologia canônica de Spec-Driven Development (specdriven.ai — ciclo de 6 fases: Constitution → Specification → Clarification → Planning → Task Decomposition → Implementation/Iteration). Esta seção é permanente — não é um item de sessão, é uma regra de como trabalhar neste projeto daqui pra frente. Ela nasceu de 3 gaps reais encontrados na prática (ver histórico abaixo), e o pedido explícito do usuário foi resolvê-los, não só documentá-los.
+
+1. **Pergunta de clarificação sem resposta NÃO vira suposição silenciosa em decisão difícil de reverter.** Se uma pergunta de esclarecimento (via `AskUserQuestion` ou similar) ficar sem resposta e a decisão afetar comportamento de produto (não só detalhe técnico reversível), **parar e perguntar de novo antes de prosseguir pra Design/Execute** — ou, se for necessário seguir mesmo assim por prioridade de tempo, marcar isso de forma bem visível como "PENDENTE DE CONFIRMAÇÃO" tanto no início quanto no fim da sessão, nunca como "decisão tomada". (Gap 1, caso real: pergunta "quem pode anexar arquivo" da feature de Anexos ficou sem resposta e virou suposição documentada.)
+
+2. **Spec é atualizada ANTES do código, nunca depois — mesmo pra extensões pequenas/rápidas de uma feature já existente.** Antes de implementar qualquer mudança de comportamento (novo filtro, novo campo, ajuste de RBAC etc.), atualizar a `spec.md` correspondente primeiro (ou criar uma nova se a mudança não pertencer a nenhuma feature existente). Só depois implementar. (Gap 2, caso real: busca por número e RBAC real do Dashboard/Kanban/Fila foram implementados como "extensão rápida" e só documentados depois — corrigido retroativamente, mas o hábito certo é o oposto.)
+
+3. **Mudança de contrato compartilhado entre camadas é sinalizada ANTES de aplicar, não só relatada depois.** Se uma mudança remove/altera um método de uma interface usada por múltiplos consumidores, muda uma assinatura pública, ou qualquer coisa que outra camada/feature dependa — avisar o usuário antes de aplicar, não só narrar no resumo final. (Gap 3, caso real: remoção de `RemoverAsync`/`DownloadAsync` de `IStorageService` foi feita e só reportada depois.)
+
+**Como aplicar na prática:** ao iniciar uma feature nova ou uma extensão de feature existente neste projeto, revisar esta seção antes de seguir pro Design/Execute do skill `tlc-spec-driven`. Se notar que uma dessas 3 regras está prestes a ser quebrada, parar e avisar o usuário explicitamente, em vez de seguir e só documentar depois.
 
 ---
 
 ## 📍 Onde estamos
 
-**Fase 5 concluída** — Kanban + Dashboard + SignalR + Fila de Atendimento + Ações de Atendente (Assumir/Resolver/Fechar/Cancelar na UI). Branch `feature/fase-5-kanban-dashboard` mergeada em `develop` e `main` (2026-06-30). Bugs corrigidos pós-merge: botão Assumir na Fila (Link aninhado causava navegação conflitante), "Meus Chamados" diferenciado por perfil.
+**Sessão de 2026-07-31 (openCode, qualidade de código + fundamentos de engenharia + UX).**
 
-**Verificado manualmente pelo usuário** (2026-07-01): fluxo completo funcionando — Assumir na Fila, Resolver/Fechar/Cancelar no Detalhe, Kanban drag & drop, Dashboard com métricas.
+### Resumo da sessão
+- **Concorrência otimista (Gap #1):** `IsConcurrencyToken()` no `DataAtualizacao` do `Chamado` — se dois atendentes modificarem o mesmo chamado, o segundo recebe 409 Conflict. Atualizados 9 handlers + repositório + catch no `ChamadoRepository.AtualizarAsync`.
+- **Idempotência (Gap #2):** Filtro `[Idempotent]` nos endpoints POST (Abrir, Comentar, Anexos). Header `Idempotency-Key` opcional — se presente, bloqueia duplicatas por 5 min. Frontend: helper `gerarIdempotencyKey()` + botões já desabilitados via `isPending`.
+- **Auto-triagem (Gap #3):** `KeywordTriagemService` — analisa título/descrição e sugere categoria + grupo por palavras-chave. 8 categorias × 6 grupos mapeados. Endpoint `POST /api/chamados/sugerir-triagem`. Frontend: botão "Sugerir categoria" na `AbrirChamadoPage`.
+- **Observabilidade (Gap #4):** Enum `OrigemEntrada` (Humano/Ia) + campo `Origem` no `HistoricoEntrada`. Migration `AddOrigemHistoricoEntrada`. Preparado para futuras ações automatizadas por IA.
+- **Tema:** Cores verdes intensas — claro `#d7efe5` (menta), escuro `#06241a` (verde profundo). Padrão agora é tema claro.
+- **UX:** Favicon logo CAMARJ + título "CAMARJ - Portal de Chamados" na aba. Reset de senha corrigido (FrontendBaseUrl, CORS, logs SMTP).
+- **215 testes backend**, 0 falhas, 12 E2E, 0 falhas, frontend build limpo.
 
-**Próximo:** Fase 6 — Admin completo (Reatribuição entre atendentes, Log de histórico/auditoria, Comentários internos) + Google Workspace auth.
+**Sessão de 2026-07-30 (openCode, orquestração de modelos + code review + SLA + Motivo encerramento + E2E + Dashboard).**
+
+### Resumo da sessão
+- **Orquestração ajustada:** spec→Kimi K3, build-backend→GLM-5.2, build-frontend→K2.7 Code, review→Grok 4.5
+- **Code review completo:** 7.5/10, 10+ bugs corrigidos (Dockerfile, transações em 10 handlers, N+1, CORS configurável, chave reset separada)
+- **Usuários limpos:** apenas `suporte@camarj.com.br` (Admin) no banco
+- **SLA tracking:** badges verde/amarelo/vermelho com "Faltam Xh Ymin" / "Atrasado" no `ChamadoCard` e `DetalhePage`
+- **Motivo de encerramento:** enum `MotivoEncerramento` (Resolvido, CanceladoSolicitante, AbertoIndevidamente, Duplicata, SemResposta, Outro), migration `AddMotivoEncerramentoChamado`, validação com `When(Outro)` obrigatório
+- **Dashboard:** card de SLA do mês + gráfico de chamados por prioridade
+- **Testes E2E:** 12 testes Playwright (login, chamados, admin, dashboard, fluxo completo)
+- **Layout Detalhe:** aumentado para `max-w-6xl` com `text-3xl`/`text-lg`/`text-xl`, seções agrupadas, botão duplicado de anexo removido
+- **Reset de senha:** SMTP configurado com senha fornecida, handler tratado para não quebrar sem config
+- **215 testes backend**, 0 falhas, 12 E2E, 0 falhas, frontend build limpo
+
+**Sessão de 2026-07-28 (openCode, retomada pós-férias): 5 features concluídas + revisão de boas práticas + deploy Azure.**
+
+### 5 Features concluídas
+1. **Toggle olhinho** 👁 — componente `PasswordInput` com `forwardRef` (compatível com react-hook-form), ícone `Eye`/`EyeOff` do lucide-react, aplicado nos 5 campos de senha (Login, ResetarSenha, UsuariosPage, UsuarioFormDialog)
+2. **Tema claro CAMARJ** ☀️ — paleta branco + verde institucional (teal-600: `#0d9488`). `ThemeProvider` + `useTheme` hook em `hooks/useTheme.tsx`. Toggle sol/lua em LoginPage, ResetarSenhaPage e AppLayout. Salvo em localStorage (`camarj-theme`), respeita `prefers-color-scheme`.
+3. **Logo CAMARJ no sidebar** 🏢 — logo + "Portal de Chamados" no `SidebarHeader` do AppLayout. Mesmo import do LoginPage.
+4. **Novas categorias** 📂 — 8 categorias (eram 5). "Autorização" → "Autorização/Auditoria". Novas: Credenciado, Comercial, Contas Médicas. Seeder com upsert inteligente (FindAsync + insert/update por GUID).
+5. **Grupos/Equipes** 👥 — entidade `Grupo`, migration `AddGrupo`, 6 grupos seed. `UsuarioPerfil.GrupoId`. RBAC: Atendente vê chamados do seu grupo. `grupo_id` claim no JWT. CRUD de Grupos (Admin). Spec em `.specs/features/grupos-equipes/spec.md`.
+
+### Revisão de boas práticas
+**Frontend:**
+- `isLoading` → `isPending` (TanStack Query v5)
+- `strict: true` no tsconfig
+- `useMemo` nos contextos (AuthProvider, ThemeProvider, SignalRProvider)
+- `staleTime: 30_000` global no QueryClient
+- `tabIndex={-1}` removido do PasswordInput (acessibilidade)
+- ThemeContext unificado com `null` + throw
+
+**Backend:**
+- N+1 corrigido: `Include(Comentarios, Anexos)` removido do ListarAsync + `AsSplitQuery()`
+- Autor de comentário: `_currentUser.Nome` do JWT, não do body (segurança)
+- `InvalidOperationException` → `BadRequestException` customizada (middleware)
+- JSON de erro em `CamelCase`
+- Rate limiting: 10 req/min no `/auth/login`
+- Health checks: `AddHealthChecks().AddNpgSql()` + `/health`
+
+### Deploy Azure
+- GitHub Actions workflow: `.github/workflows/deploy-azure.yml`
+- Guia de deploy Azure App Service Free F1: `docs/DEPLOY-AZURE.md`
+- README atualizado com URLs de produção
+
+### Documentação atualizada
+- `.specs/codebase/CONVENTIONS.md` — PasswordInput, ThemeProvider, forwardRef pattern
+- `.specs/codebase/STACK.md` — auth atual, CI/CD, hosting
+- `.specs/codebase/STRUCTURE.md` — entidades, features, serviços atuais
+- `.specs/codebase/TESTING.md` — 218 testes
+- `.specs/project/ROADMAP.md` — Grupos, Categorias, Tema marcados ✅
+- `.specs/features/grupos-equipes/spec.md` — spec completa
+
+### Status final
+- **218 testes** backend passando, **0 erros** TypeScript, **build limpo**
+- Branch: `develop`, ~60 arquivos modificados/criados
+- Sem blockers ativos
+
+**Sessão de 2026-07-27 (nova parceira, opencode): orquestração + frontend auth-email-senha concluído.**
+- Setup de orquestração criado (`opencode.json` com 5 agentes: spec, build-backend, build-frontend, review, explorar — todos modelos Go)
+- MCPs configurados: Context7 (docs), shadcn (componentes), dotnet-context (análise Roslyn)
+- Backend da auth-email-senha verificado: **218 testes passando, build limpo**
+- Frontend da auth-email-senha implementado:
+  - `LoginPage.tsx`: substituído Google Login por formulário email + senha
+  - `AuthContext.tsx`: adicionado `loginComSenha`
+  - `api.ts`: adicionados `login()`, `redefinirSenha()`, e campo `senha` em `CriarUsuarioRequest`
+  - `UsuarioFormDialog.tsx`: campo de senha obrigatório no cadastro (mín 8 caracteres)
+  - `UsuariosPage.tsx`: botão "Redefinir senha" com modal
+  - `useUsuarios.ts`: hook `useRedefinirSenha()`
+- Build frontend (`npm run build`) verificado: ✅ sem erros
+- Dependência `@react-oauth/google` mantida (código do Google login dorme no backend/frontend)
+- Migration `AddSenhaHashUsuarioPerfil` ainda NÃO aplicada no Supabase real (roda automaticamente no próximo `dotnet run`)
+- Coluna `SenhaHash` adicionada manualmente ao Supabase (migration vazia — Up/Down vazios, bug do EF não detectar a mudança)
+- Senha do Victor configurada: `Teste123!` — os demais usuários (Fábio, Ana, Letícia) precisam ter senha definida via Admin → Redefinir senha
+- Porta 5000 ocupada pelo AirPlay do macOS — usar `http://localhost:5002` para API no Mac. `.env` do frontend criado com `VITE_API_BASE_URL=http://localhost:5000/api` (porta normal, só mudar pra 5002 no Mac)
+- Context7 MCP configurado (remote), `dotnet-context-mcp@0.2.0` (local), `shadcn` (local via `.mcp.json`)
+
+**Sessão de 2026-07-27 — feature auth-email-senha CONCLUÍDA + docs cleanup.**
+- Frontend UX: confirmation dialogs adicionados para Encerrar, Cancelar, Resolver, Desativar/Reativar usuário, Logout
+- Migration `AddSenhaHashUsuarioPerfil` corrigida — `Up()` e `Down()` preenchidos corretamente, coluna `SenhaHash` criada pela migration (não mais manual no Supabase)
+- ROADMAP.md: seção duplicada removida
+- Docs cleanup: README.md, AGENTS.md, STATE.md, HANDOFF.md, spec.md, tasks.md atualizados
+- Build: 0 erros, 218 testes passando, `npm run build` limpo
+- Feature auth-email-senha: spec marcada como CONCLUÍDO, todos os 9 requisitos (AUTH-01 a AUTH-09) ✅
+
+**Sessão de 2026-07-21 (continuação): revisão de processo (SDD) + qualidade de código (features recentes) contra documentação oficial.** Usuário pediu leitura de specdriven.ai (metodologia canônica de Spec-Driven Development) pra comparar com nosso uso do skill `tlc-spec-driven`, além de checar se o código segue boas práticas oficiais (via MCP `microsoft-learn` pro backend, `context7` genérico pro frontend — não existe MCP dedicado de React, só o `angular` (Angular CLI, não serve pra este projeto React/Vite)).
+
+**Gaps de processo identificados (comparando com o ciclo de 6 fases do specdriven.ai) — usuário pediu explicitamente pra resolvê-los, não só documentar. Adotados como regra permanente na seção "🧭 Regras de Processo (Constitution)" no topo deste arquivo:**
+1. Pergunta de clarificação sem resposta (caso do Anexos: "quem pode anexar") virou suposição documentada em vez de bloquear — o método pede verificação humana antes de prosseguir em decisões difíceis de reverter.
+2. "Spec antes do código" nem sempre seguido — busca por número e RBAC real foram implementados como extensão rápida, só documentados depois (corrigido retroativamente na sessão anterior, mas o hábito certo é atualizar a spec antes).
+3. Mudança de contrato entre camadas (remoção de `RemoverAsync`/`DownloadAsync` de `IStorageService`) feita e só reportada depois — o ideal seria sinalizar antes de aplicar, não só narrar depois.
+
+**Achado real de código, corrigido, commitado e MERGEADO:** `AdicionarAnexo` (Controller) passava `arquivo.FileName` (de `IFormFile`) direto pro Command sem sanitizar — a doc oficial da Microsoft (`Upload files in ASP.NET Core`) é explícita: nunca confiar no `FileName` sem remover o caminho antes de guardar/exibir. Corrigido com `Path.GetFileName(arquivo.FileName)` no Controller. **PR #18 (`fix/sanitizar-nome-arquivo-anexo` → `develop`) aberto e mergeado em 2026-07-22T01:48:55Z**, desta vez com o `base` certo (`develop`, não `main`). Também nesse PR: `.mcp.json` criado com o MCP oficial do shadcn/ui (`ui.shadcn.com/docs/mcp` — browse/search/instalação de componentes; não existe MCP dedicado de React, a lib não tem CLI/tooling própria pra isso) e a documentação inteira do projeto revisada/atualizada (`.specs/` + `docs/obsidian/`). 216 testes continuam passando (nenhum teste novo — Controllers não têm cobertura dedicada no projeto, mesmo padrão já estabelecido).
+
+**Nota: o `.mcp.json` só fica disponível numa sessão nova/reload do Claude Code** — não estava ativo na sessão em que foi criado.
+
+**Outros 2 pontos levantados, sem ação ainda:**
+- Comportamento de upload acima de 10MB (`[RequestSizeLimit]`) não foi testado manualmente — a doc oficial alerta que isso pode aparecer como reset de conexão em vez de um 4xx limpo, dependendo da configuração. Vale testar quando houver oportunidade.
+- `SupabaseStorageService`/`Supabase.Client` é inicializado manualmente (`new` + `InitializeAsync()`) antes do `builder.Build()`, diferente do padrão usado pra migrations do banco no mesmo arquivo (`app.Services.CreateScope()` depois do `Build()`). Funciona, mas é uma pequena inconsistência de estilo — não urgente.
+
+**Frontend das features recentes (`useAnexos`, `AnexosList`, `apiFetch` com `FormData`) checado contra a doc oficial do TanStack Query v5 via Context7: sem desvio encontrado** — `isPending` é a nomenclatura correta da v5 (não `isLoading`), e `mutationFn` de fato não recebe `AbortSignal` (diferente de `queryFn`), então a ausência de cancelamento no upload não é um gap.
+
+---
+
+## 📍 Onde estamos
+
+**Sessão de 2026-07-24 — MUDANÇA DE DIREÇÃO: TI informou que o Client ID do Google OAuth está fora do plano da CAMARJ.** Não é mais "aguardar a TI configurar" — o login real via Google (T09/F5b, implementado e commitado em 2026-07-18/19) não vai ser usado em produção. Decisão tomada com o usuário: substituir por login **e-mail + senha**, Admin cadastrando a senha inicial de cada usuário, reaproveitando quase toda a infraestrutura de JWT/RBAC já existente (só troca a forma de obter a identidade inicial — claims/issuer/audience continuam os mesmos). Reset de senha V1 é o Admin redefinindo manualmente pela tela (sem e-mail); autoatendimento fica pra quando a Fase 4 (Email/SMTP) estiver pronta. Spec/tasks completos em `.specs/features/auth-email-senha/`.
+
+**Backend implementado nesta sessão, mas a sessão foi interrompida ANTES de confirmar `dotnet build`/`dotnet test`** (o usuário pediu pra documentar tudo e fazer commit/push pra continuar depois, em vez de fechar o ciclo agora). Feito: coluna `SenhaHash` em `UsuarioPerfil` + migration (`AddSenhaHashUsuarioPerfil`, ainda não aplicada no Supabase real — aplica sozinha no próximo `dotnet run`), `IJwtTokenService` extraído do `AutenticarGoogleCommandHandler` (reaproveitado pelos dois fluxos de login), `POST /auth/login` (`LoginCommand`/Handler/Validator), `CriarUsuarioPerfilCommand` agora exige senha inicial (≥8 caracteres), `PATCH /usuarios/{id}/senha` pro Admin redefinir senha de qualquer usuário, `PasswordHasher<UsuarioPerfil>` (ASP.NET Core Identity, pacote `Microsoft.Extensions.Identity.Core`) registrado no DI. Testes unitários existentes (`CriarUsuarioPerfilHandlerTests`, `AutenticarGoogleHandlerTests`, `CriarUsuarioPerfilValidatorTests`) já corrigidos pras novas assinaturas de construtor, mas **sem confirmação de que compilam/passam** — é literalmente o próximo comando a rodar ao retomar (`dotnet build && dotnet test`, comando exato em `.specs/features/auth-email-senha/tasks.md`).
+
+**Frontend NÃO iniciado** — `LoginPage.tsx` ainda mostra o botão do Google, `UsuarioFormDialog.tsx` não tem campo de senha, não existe botão de "Redefinir senha" no Admin. Lista detalhada arquivo-a-arquivo em `.specs/features/auth-email-senha/tasks.md`.
+
+**Decisão consciente de manter o código do login Google no backend** (`POST /auth/google`, `AutenticarGoogleCommandHandler`, `GoogleTokenValidator`) em vez de remover — fica dormant, sem uso pelo frontend, mas pronto caso a decisão da TI mude no futuro.
+
+**Nota de sessão:** houve um erro pequeno ao criar a migration (`dotnet ef migrations add` com um `--output-dir` errado criou os arquivos numa pasta nova `Data/Migrations` em vez da pasta real `Migrations/`) — corrigido na hora (arquivos errados apagados, migration recriada no lugar certo). Se `dotnet ef migrations list` algum dia mostrar duplicidade ou a pasta `Data/Migrations` reaparecer, é resíduo desse erro que não devia mais existir.
+
+---
+
+**Sessão de 2026-07-24 (mais cedo, mesma sessão): feature de Anexos evoluída — anexar ao abrir/responder chamado, remover anexo (com RBAC real).** A pedido do usuário, testando a feature de Anexos (Fase 4) já em produção: (1) anexar arquivo(s) já na abertura do chamado e ao responder um comentário (antes só dava pra anexar depois, na tela de Detalhe) — múltiplos arquivos de uma vez, reaproveitando o endpoint de upload existente (`comentarioId` já era aceito pelo backend, só nunca tinha sido usado pelo frontend); (2) excluir anexo (exclusão de verdade — do Storage e do banco — com pop-up de confirmação), com RBAC real: Admin remove qualquer anexo, Atendente/Solicitante só os que eles mesmos enviaram (comparando com `EnviadoPorId`, que já vinha do token). Mudança de contrato sinalizada e aceita: `POST /chamados/{id}/comentarios` passou a retornar o comentário criado (antes era `204 No Content`) — necessário pra vincular o anexo ao comentário certo. `AnexoResponse` ganhou `EnviadoPorId` (aditivo). 216 testes de backend continuam passando, build de frontend limpo. **Verificado pelo usuário contra o Supabase real**, inclusive um caso real de arquivo órfão no Storage (sobra da limpeza geral de dados feita via SQL direto, que não chama a API de Storage) — identificado e limpo manualmente.
+
+**Nesta mesma sessão, a pedido do usuário: limpeza geral de dados de teste no Supabase real** (Chamados/Comentários/Anexos/HistoricoEntradas apagados via script direto no Postgres, mantendo Categorias e Usuários), sequência `ChamadosNumeroSeq` reiniciada pra 1. **Aprendizado registrado:** apagar direto via SQL não limpa o Storage — só o botão "Remover" do app (implementado nesta sessão) faz a limpeza dos dois lados.
+
+---
+
+**Sessão de 2026-07-21 (continuação): PR aberto acidentalmente contra `main` em vez de `develop`, mergeado, e corrigido.** O usuário criou o PR da branch `feature/anexos-storage` escolhendo `main` como destino por engano — o GitHub já tinha mergeado de verdade (não só aberto e fechado) antes de perceber. Diagnóstico: `main` e `develop` já estavam **exatamente idênticas** (mesmo commit, `4216f21`) antes desse acidente — então o merge não pulou nem quebrou nada, só deixou `main` 2 commits à frente de `develop` (a feature de Anexos). Correção aplicada: fast-forward simples de `develop` pros mesmos 2 commits (`git merge feature/anexos-storage` a partir de `develop`, sem conflito, sem revert). `develop` e `main` estão sincronizadas de novo em `72451a3`, build e 216 testes confirmados depois do fast-forward. **Nenhum dado ou código foi perdido — foi só uma questão de branch de destino, resolvida sem risco.** Lição prática: ao abrir PR neste repo, sempre conferir o dropdown `base` antes de confirmar — ele não fixa `develop` como lembrança, volta pro padrão do repo (`main`).
+
+**Sessão de 2026-07-21 (mesmo dia, mais cedo): Service Role Key do Supabase obtida e configurada — Storage de Anexos verificado de ponta a ponta contra o Supabase real.** Usuário conseguiu a `service_role` key (aba "Legacy anon, service_role API keys" do dashboard — o formato novo `sb_secret_...` não é compatível com o SDK C# usado, que é da geração JWT). Configurada em `user-secrets` (`Supabase:Url`, `Supabase:ServiceRoleKey`); bucket `chamados-anexos` criado via chamada direta à Storage REST API (sem precisar do dashboard).
+
+**Bug real encontrado e corrigido nesta verificação:** o SDK `Supabase` v1.3.0 devolve a URL de `CreateSignedUrl` com um **`?` solto no final**, que quebra o parse do JWT no servidor do Storage (`InvalidJWT: Failed to base64url decode the signature`) — não é uma issue já documentada publicamente (busca web não achou nada específico). Corrigido com `url.TrimEnd('?')` em `SupabaseStorageService.ObterUrlAssinadaAsync` — mitigação no nosso código, já que não dá pra corrigir o SDK de terceiros.
+
+**Verificação completa de ponta a ponta, tudo contra o Supabase real** (chamado de teste `CAM-40`, depois limpo): upload de um PDF real → `201`; listagem → anexo aparece certo; URL assinada gerada (após o fix); **download real da URL → `200`, conteúdo baixado bate byte a byte com o que foi enviado**. 216 testes de backend continuam passando. Arquivo removido do bucket e chamado de teste removido do banco ao final (cascade apagou o `Anexo` junto). **Feature 100% funcional e verificada, sem pendências.** Commitada (`a76ffcc` + `72451a3` com o fix do `TrimEnd`), pushada e mergeada em `develop`/`main` (ver entrada acima sobre o incidente do PR aberto contra `main` por engano, corrigido no mesmo dia).
+
+---
+
+**Sessão de 2026-07-20 (branch `feature/anexos-storage`, a partir de `develop`): Fase 4 iniciada — Storage de Anexos implementado (Design → Tasks → Execute completos), metade 1 de 2 (Email/IMAP fica pra quando a credencial chegar).** Upload de arquivo num chamado (PDF, imagens, Word, Excel, ZIP — máx 10MB), listagem de anexos e download via URL assinada do Supabase Storage (expira 1h). Backend: `Anexo` ganhou `EnviadoPorId`/`EnviadoPorNome` (preenchido via `ICurrentUserService`, não client-supplied — decisão consciente de não repetir o gap antigo que `Comentar.Autor` ainda tem), `IStorageService` revisado (`UploadAsync`/`ObterUrlAssinadaAsync`, removidos `DownloadAsync`/`RemoverAsync` sem uso), `SupabaseStorageService` real via pacote NuGet `Supabase` (API confirmada via Context7 + busca web antes de implementar). 3 endpoints novos no `ChamadosController`. Frontend: `AnexosList`/`UploadAnexoForm` no Detalhe do Chamado, `apiFetch` ajustado pra não fixar `Content-Type` quando o body é `FormData` (upload multipart). 216 testes passando (19 novos), `npm run build` limpo.
+
+**Duas decisões assumidas sem confirmação explícita do usuário** (pergunta ficou sem resposta): (1) qualquer perfil envolvido no chamado pode anexar; (2) anexo nunca é removido (`RemoverAsync` tirado da interface). Revisar se o usuário discordar.
+
+**Bug real encontrado e corrigido durante a verificação (fora do escopo original, mais sério que os anteriores):** a API **não subia de jeito nenhum** sem a Service Role Key do Supabase configurada — `ValidateOnBuild` do ASP.NET Core (ativo em Development) derruba a aplicação inteira no `Build()` porque `AdicionarAnexoCommandHandler` exige `IStorageService`, não registrado quando a chave está ausente. Diferente da tolerância já existente pro `GoogleClientId` (que não impede o boot), isso quebraria a API inteira, não só a feature de Anexos. Corrigido com `NullStorageService` (fallback registrado quando `Supabase:Url`/`ServiceRoleKey` estão vazios, lança erro claro só se alguém tentar usar a feature de verdade). Ver Aprendizados.
+
+**Verificado via curl contra a API + Supabase real** (chamado de teste `CAM-39` criado e depois removido): extensão inválida → 400; arquivo válido sem a chave → 400 com mensagem clara do `NullStorageService` (não crash); resto da API continua funcionando normal. **Upload/download reais contra o bucket do Supabase Storage NÃO foram testados** — segue bloqueado pela Service Role Key, que o usuário está buscando em paralelo, sem previsão. Branch `feature/anexos-storage` ainda não commitada nem enviada — aguardando decisão do usuário (commitar agora vs. esperar a chave pra testar de ponta a ponta antes).
+
+---
+
+**Sessão de 2026-07-19 (pós-merge do PR #15, direto em `develop`): limpeza + busca por número + RBAC real do Dashboard/Kanban/Fila.**
+- **Limpeza:** os 4 chamados de teste (`[TESTE E2E]` 1-4) removidos do Supabase real via script Npgsql direto (histórico + chamado, numa transação) — o app não tem endpoint de exclusão por decisão de produto, então foi o único jeito. Confirmado: 0 restantes, total voltou a 34. Os números CAM-35 a 38 ficam como buracos permanentes na sequência (normal, não são reaproveitados).
+- **Busca por número:** o campo de busca livre já existente (`FiltroChamados.tsx`) passou a reconhecer `"42"` ou `"CAM-42"` como número do chamado, além do texto em Título/Descrição já suportado — **sem nenhum filtro novo na UI**. Implementado em `ChamadoRepository.ListarAsync` (`ParseNumeroChamado`, tira o prefixo `CAM-` se houver e tenta parsear como int; se não parsear, cai só na busca de texto de sempre). Verificado contra o Supabase real: `busca=CAM-1` achou só o chamado #1; `busca=1` achou o #1 mais qualquer chamado com "1" no título (esperado — "1" é ambíguo); busca de texto puro não regrediu.
+- **RBAC real do Dashboard/Kanban/Fila:** as 3 telas só escondiam o link da sidebar pro Solicitante, sem bloquear a rota de verdade (pendência antiga, ver Aprendizados). Aplicado o mesmo padrão já usado em Relatório Mensal/Admin > Usuários — `if (perfil?.tipo === 'Solicitante') return <Alert>...<Link to="/chamados">Voltar</Link>` — nas 3 páginas. **Sem guard novo no backend** (mesma decisão do Relatório Mensal: o dado não é mais sensível entre Admin/Atendente, só não devia ser visível pro Solicitante).
+- 197 testes de backend passando (sem teste novo — repositório e páginas de página não têm cobertura dedicada no projeto, mesmo padrão já estabelecido), `npm run build` limpo. Feito numa branch nova a partir de `develop` (a `feature/forcar-encerramento` já tinha sido mergeada pelo PR #15). **PR #16 criado e MERGEADO em `develop`** (2026-07-20T22:25:29Z, 7 arquivos, 81 inserções/6 deleções).
+
+**Sessão de 2026-07-19 (continuação, mesma branch `feature/forcar-encerramento`): Número do Chamado implementado (`CAM-{número}`, sem zero-padding).** Coluna `Numero` (int) gerada por uma sequence do Postgres (`ChamadosNumeroSeq`), não pela aplicação — evita corrida entre criações concorrentes. Migration `AddNumeroChamado` faz backfill cronológico (`ORDER BY DataCriacao`, não por `Id` — `Guid` não tem ordem temporal) dos chamados já existentes e liga a sequence à coluna via `OWNED BY` (auto-limpa se a coluna for removida um dia). Aplicada e verificada contra o Supabase real: 37 chamados existentes numerados 1-37 em ordem cronológica exata, chamado novo criado depois recebeu 38 (sequência continua certa). Exibido em `CAM-{numero}` só no `ChamadoCard` (cobre Lista/Arquivo/Fila/Kanban, que reaproveitam o mesmo componente) e no cabeçalho do Detalhe — formatação centralizada em `formatarNumeroChamado()` (`frontend/src/lib/utils.ts`), nada duplicado. Busca/filtro por número ficou fora de escopo (spec em `.specs/features/numero-do-chamado/`). Mais um chamado de teste (`[TESTE E2E 4]`) ficou no banco real durante a verificação.
+
+**Sessão de 2026-07-19 (nova, branch `feature/forcar-encerramento`): "Forçar Encerramento" implementado via Design → Tasks → Execute completos, enquanto o login Google real segue bloqueado pelo Client ID da TI.** Admin agora fecha um chamado direto de qualquer status não-final (Aberto/EmAndamento/Resolvido), com motivo obrigatório (10-500 caracteres) auditado no histórico como `AcaoHistorico.EncerramentoForcado` (não confundido com um "Fechado" normal). Backend: `Chamado.ForcarEncerramento()` (preserva `DataConclusao` se já existir, senão preenche na hora), `ForcarEncerramentoChamadoCommand`/Handler/Validator, guard de Admin real via `PerfilRequisitanteGuard` (decisão consciente de não replicar o RBAC "soft" que Reatribuir/AlterarPrioridade/Fechar/Cancelar ainda têm — ver Pendências). Frontend: botão `destructive` no Detalhe do Chamado (só Admin, some se já finalizado) abrindo `ForcarEncerramentoModal` (mesmo padrão do `AlterarPrioridadeModal`). 195 testes passando (18 novos), `npm run build` limpo.
+
+**Bug real de auditoria encontrado e corrigido durante a verificação manual (fora do escopo original da feature):** `ICurrentUserService.UsuarioId` sempre retornava `Guid.Empty` — o ASP.NET Core remapeia por padrão claims JWT de nome curto (`sub`) pra URIs longas de `ClaimTypes`, e o código lia pelo nome curto (`JwtRegisteredClaimNames.Sub`). Isso zerava o `UsuarioId` de **todo** `HistoricoEntrada` gravado desde que o login Google real (T09/F5b) foi ao ar — Reatribuir, AlterarPrioridade, Fechar, Cancelar, Atribuir, e agora Forçar Encerramento (o `UsuarioNome` continuava certo, só o ID zerava). Corrigido com `options.MapInboundClaims = false;` em `Program.cs`. Detectado só porque a verificação manual desta sessão foi feita com tokens JWT mintados localmente (mesma `Auth:JwtSigningKey` do ambiente) contra a API + Supabase reais — sem precisar do Client ID da TI — e comparando o claim `sub` do token com o `usuarioId` gravado no histórico. Ver Aprendizados.
+
+**Verificação desta sessão foi só backend (curl) + `tsc`/build do frontend — não teve clique real no navegador.** O botão "Forçar Encerramento" existe e está corretamente condicionado (`isAdmin && !statusFinal`), mas confirmar visualmente segue bloqueado pela mesma razão de sempre: sem o Client ID real do Google, não dá pra logar de verdade na UI pra testar.
+
+**PR #15 (`feature/forcar-encerramento` → `develop`) criado e MERGEADO em 2026-07-19T20:50:40Z.** Ambas as features (Forçar Encerramento + Número do Chamado) estão oficialmente em `develop`. Quatro chamados de teste (`[TESTE E2E]` 1-4) ficaram gravados no Supabase real durante a verificação — o app não tem (por decisão de produto, ver Fase 8) nenhuma forma de apagar chamados; seguem lá até o usuário decidir removê-los manualmente via acesso direto ao banco. **Ao retomar:** fazer `git checkout develop && git pull` antes de continuar, é lá que está tudo agora — a branch `feature/forcar-encerramento` já cumpriu seu papel.
+
+---
+
+**Sessão de 2026-07-19 (continuação): T09/F5b COMMITADO (`8166ff0`) + tela de login redesenhada visualmente a pedido do usuário.** Depois do Execute completo (ver abaixo), o usuário testou no navegador e pediu polimento visual na `LoginPage`: logo maior (`h-44`), tipografia serifada nos títulos (`Source Serif 4`, self-hosted, só nessa tela via classe `font-serif` — sem alterar `--font-heading` usado no resto do app), textos maiores, botão do Google no tema `filled_black` (Google não permite recolorir o botão livremente — só há 3 temas oficiais). Duas iterações de ajuste do próprio usuário: um gradiente de fundo + brilho atrás do logo foram removidos (desfocava o logo), e o `ring` (borda) do logo também (ficava esverdeado no tema escuro). Tudo commitado junto no mesmo commit. **Usuário vai dar o push manualmente.**
+
+**Sessão de 2026-07-18 (continuação): T09/F5b (login real Google) IMPLEMENTADO por completo — Design → Tasks → Execute.** Pesquisa de documentação atual feita antes de desenhar (Context7: `Google.Apis.Auth`, `@react-oauth/google`; Microsoft Learn: boas práticas de JWT Bearer). Fluxo implementado: frontend manda id_token do Google (`GoogleLogin`/`GoogleOAuthProvider`) → backend valida via `IGoogleTokenValidator`/`GoogleJsonWebSignature.ValidateAsync` (interface própria, não estática, pra ficar testável) + confere domínio `@camarj.com.br` de novo no servidor (defesa em profundidade) → busca na tabela `UsuarioPerfil` (mesma do F5a) → emite JWT próprio (`AuthController`/`POST /auth/google`). Autenticação agora é **global por padrão** (`SetFallbackPolicy(RequireAuthenticatedUser)`) — todo endpoint exige token, exceto `/auth/google` e o Scalar (dev). `ICurrentUserService` substitui `UsuarioId`/`UsuarioNome`/`perfilRequisitante` client-supplied em todos os Controllers (Reatribuir/AlterarPrioridade/Resolver/Fechar/Cancelar/AlterarStatus/Atribuir/Usuarios/ListarComentarios).
+
+**3 decisões de segurança confirmadas com o usuário, todas implementadas:** (1) chave JWT simétrica; (2) token 8-12h sem refresh; (3) **logout automático por 20 minutos de inatividade** (`useInactivityLogout`, só frontend, wired em `AppLayout`).
+
+**Achados/correções durante o Execute (não estavam no design original):**
+- **SignalR quebraria com a auth global** — WebSocket não manda header `Authorization`; corrigido com `accessTokenFactory` no frontend + `OnMessageReceived` lendo o token da query string no backend (só pro caminho `/hubs`). `SignalRProvider` também precisou mudar de lugar: antes envolvia toda a `AppRoutes` (conectava antes do login existir, e nunca reconectava depois); agora só monta dentro de `ProtectedRoute`, remontando a cada login/logout.
+- **`/scalar` (doc da API) também ficou bloqueado pela policy global** — corrigido com `.AllowAnonymous()` explícito.
+- **`Atribuir` (assumir chamado) também tinha o mesmo problema client-supplied** que Reatribuir/etc. (não estava na lista original do design) — `ResponsavelId`/`ResponsavelNome` agora vêm do token, não do body.
+- **`ListarComentarios`** também recebia `perfilUsuario` como query param de qualquer um (um Solicitante podia mandar `perfilUsuario=Admin` e ver comentário interno) — corrigido, vem do token agora.
+- **Endpoint `GET /usuarios/por-email` removido** — só existia pro login mockado do F5a, que foi totalmente substituído; endpoint, Query, Handler e testes deletados.
+- **Limpeza:** removidos os pacotes `Microsoft.Identity.Web`/`Microsoft.Identity.Web.UI` (Azure AD, não usados em nenhum lugar do código — resíduo de scaffold anterior à correção "Camarj usa Google Workspace, não Azure AD").
+- **Bug próprio encontrado escrevendo o teste:** a checagem de domínio (`@camarj.com.br`) rodava ANTES de normalizar o e-mail (trim), então um e-mail com espaço extra falharia incorretamente — corrigido antes de virar um problema real.
+
+177 testes de backend passando, builds limpos nos dois lados, verificado manualmente (401 sem token, Scalar liberado, token do Google inválido tratado com 401 sem crash, `Auth:JwtSigningKey` já gerado e configurado via `user-secrets` — não depende da TI). **Único bloqueio real restante:** o Client ID (TI) e o teste de ponta a ponta com login de verdade.
+
+**Sessão de 2026-07-18: passo 2 dos 3 confirmados concluído — `arquivo-de-chamados` implementado via Design → Tasks → Execute completos.** Nova tela "Arquivo" (menu lateral, todos os perfis) lista só chamados Resolvido/Fechado/Cancelado, com filtros de status/prioridade/categoria/busca/período (mesmo RBAC de "Meus Chamados"). Backend: `Finalizados=true` + `DataInicio`/`DataFim` em `ListarChamadosQuery` (sem quebrar quem já usa `Status` como filtro único). 174 testes passando.
+
+**Bug real encontrado pelo usuário ao testar e corrigido na mesma sessão:** filtrar por qualquer data quebrava com 500 (`Cannot write DateTime with Kind=Unspecified to PostgreSQL type 'timestamp with time zone'`) — o model binding do ASP.NET Core cria `DateTime` sem `Kind` a partir da query string, mas a coluna é `timestamp with time zone`. Corrigido no `ListarChamadosQueryHandler` convertendo pra UTC explicitamente, com `DataFim` virando o fim do dia (23:59:59.999) em vez da meia-noite. Retestado pelo usuário, confirmado ok.
+
+**Ajuste de UX também feito durante a sessão (a pedido do usuário):** os campos de filtro de período apareciam em "Meus Chamados" também (reaproveitamento do componente `FiltroChamados`), sem nenhuma legenda visível — confuso. Corrigido: campos de data só aparecem no Arquivo (`mostrarPeriodo` prop, default `false`), agora com labels visíveis "De"/"Até".
+
+**Passo 3 dos 3 confirmados também concluído nesta mesma sessão:** documento `.specs/features/fase-6-admin-log/oauth-requisitos-ti.md` criado — explica pro time de TI (linguagem não-técnica) como criar o projeto/credenciais OAuth no Google Cloud Console (tipo "Internal", restrito a `camarj.com.br`), o que devolver pro dev (Client ID) e o que NÃO precisa (Client Secret, aprovação pública, cadastro de usuários). **Bloqueio sinalizado no próprio documento:** o redirect URI de produção depende da decisão de hospedagem (pendência já registrada abaixo) — não impede começar os passos 1-3 do documento, só o passo 4 final.
+
+**Os 3 passos confirmados pelo usuário em 2026-07-16 estão TODOS concluídos.** Próximo passo real (não mais parte da lista dos 3) seria retomar T09/T15 (Google OAuth real) — mas isso depende da TI de fato configurar o Client ID e da decisão de hospedagem em produção, então fica bloqueado até essas respostas chegarem.
+
+**Sessão de 2026-07-17: passo 1 dos 3 confirmados concluído — débito técnico resolvido.** Os 15 itens (D-01 a D-15) documentados em `.specs/codebase/CONCERNS.md` foram todos corrigidos (backend e frontend em paralelo, via 2 agentes + 1 correção manual complementar). Destaques: Kanban agora gera `HistoricoEntrada` (D-01, incluindo o `usuarioId`/`usuarioNome` reais no frontend, que tinha ficado faltando na primeira passada do agente); guarda contra autodesativar o último Admin (D-02); paginação de chamados validada (D-03); checagem de Admin movida pra dentro dos Handlers de Usuarios com um `PerfilRequisitanteGuard` compartilhado (D-09); mais 11 itens de consistência/qualidade menores. 2 decisões de design foram confirmadas explicitamente com o usuário (enum `AcaoHistorico.StatusAlterado` novo, e o guard compartilhado). 169 testes de backend passando, builds limpos nos dois lados. `CONCERNS.md` agora só tem os itens antigos (todos resolvidos) — nada em aberto. **Próximo: passo 2, implementar `arquivo-de-chamados` "com tudo certinho" (Design → Tasks → Execute completos).**
+
+**Sessão de 2026-07-16:** usuário testou a aplicação localmente pela primeira vez contra o Supabase real (reconectado com sucesso, ver Aprendizados sobre o bug do reset de senha). Aprovou o resultado da Fase 6/7 e pediu duas coisas: (1) uma tela nova pra chamados finalizados, sem apagar dados — spec criada em `.specs/features/arquivo-de-chamados/spec.md`, ainda **não implementada**; (2) revisão de dev sênior nas visualizações de Dashboard/Relatório Mensal — 4 melhorias **já implementadas, testadas e já commitadas/pushadas em `develop`** (tokens de cor do tema, labels diretos na rosca, cor de sinal na variação %, correção de um bug de cor cinza-puro no tema claro). Detalhes completos em `.specs/HANDOFF.md`.
+
+**Sessão de 2026-07-15 (paralela, mesclada em 2026-07-16):** decisão de dividir o login em **F5a** (mock por e-mail + cadastro de usuários, ver Decisões) antes do T09/T15 (Google real).
+
+**F5a IMPLEMENTADA de ponta a ponta em 2026-07-16** (T09a-T09e, via Execute do skill spec-driven, contra o Supabase real): enum `Perfil`, entidade/tabela `UsuarioPerfil`, `UsuariosController` (4 endpoints), `AuthContext`/`LoginPage` reescritos (login por e-mail, sem senha), tela `Admin > Usuários` (`/admin/usuarios`) com botão direto de Desativar/Reativar por linha. Usuários de teste criados: Victor (Admin, já existia no seed), Fábio (Atendente, já existia no seed), Ana Colaboradora (Solicitante, criada nesta sessão).
+
+**Revisão sênior completa (backend + frontend) feita antes do commit da F5a, a pedido do usuário.** 4 achados de severidade Alta corrigidos na hora:
+1. Backend: `CriarUsuarioPerfilCommandHandler` quebrava com 500 ao recadastrar um e-mail desativado (índice único não distingue ativo/inativo) — agora reativa o registro existente em vez de tentar inserir um novo.
+2. Frontend: botão Desativar/Reativar em `UsuariosPage` falhava em silêncio em caso de erro de rede — agora mostra alerta.
+3. Frontend: botão "Assumir" na Fila de Atendimento sem tratamento de erro (race condition entre atendentes) — agora mostra erro e invalida a fila.
+4. Frontend: Select de atendentes no modal de Reatribuir ficava vazio e silencioso se a busca falhasse — agora mostra erro.
+
+Outros 15 itens (6 Médio + 9 Baixo) **documentados em `.specs/codebase/CONCERNS.md` (seção "EM ABERTO") e ainda NÃO corrigidos** — usuário pediu explicitamente para não esquecer de tratá-los numa sessão futura (destaque: D-01 auditoria do Kanban, D-02 auto-lockout de Admin, D-03 paginação sem limite).
+
+**Bloqueio real de RBAC implementado em `/admin/usuarios`** (2026-07-16, mesmo padrão do Relatório Mensal): não-Admin que acessar a rota direto vê alerta de bloqueio + botão "Voltar", não só link escondido na sidebar — pendência do `tasks.md` resolvida.
+
+143 testes de backend passando, `npm run build` limpo nos dois lados. **Commitada e pushada em `develop`** (commits `76ce0d1` feat + `a0747a7` fix de um arquivo esquecido no primeiro commit — `UsuarioPerfilConfiguration.cs`). F5a está oficialmente em `develop`.
+
+**Fase 5 concluída** — Kanban + Dashboard + SignalR + Fila de Atendimento + Ações de Atendente. Mergeada em `develop`/`main` (2026-06-30). Dashboard bastante retrabalhado nesta sessão (ver abaixo).
+
+**Fase 6 — T01-T08 e T10-T14 concluídos, verificados e MERGEADOS em `develop`** via PR #13 ("Feature/fase 6 admin log"), mergeado em 2026-07-15T03:05Z. Faltam T09/T15 (login Google Workspace) — **pausados a pedido do usuário** pra adiantar o relatório mensal (Fase 7), e agora precedidos pelo F5a (ver acima).
+
+**Fase 7 (Relatório Mensal) CONCLUÍDA, verificada e também já em `develop`** (mesmo PR #13). Specify → Design → Tasks → Execute completos (`.specs/features/relatorio-mensal/`). Endpoint `GET /api/relatorios/mensal`, página `/atendimento/relatorio-mensal` com seletor de mês, KPIs com variação % vs mês anterior, rosca de SLA, quebra por categoria e por atendente, exportação CSV e PDF (via impressão). RBAC: Admin vê tudo, Atendente só os próprios números, Solicitante bloqueado (bloqueio de verdade, não só link escondido — ver Aprendizados).
+
+**IMPORTANTE pra retomar:** o checkout local ficou na branch `feature/fase-6-admin-log` (já mergeada, pode ser deletada/arquivada). Ao voltar, faça checkout em `develop` e dê `git pull` antes de continuar — é lá que está tudo agora.
+
+**Dashboard (Fase 5) retrabalhado em 2026-07-14/15:**
+- Cards de KPI simplificados: só "Resolvidos Hoje" e "Tempo Médio" (o resto virou redundante com a rosca)
+- Gráfico de "Tendência" (linha, 7 dias) substituído por rosca "Distribuição por situação": Aguardando/Assumido/Resolvido/Encerrado/Cancelado — é a situação **atual** dos chamados, não uma janela de tempo (decisão do usuário, corrigida depois de uma primeira tentativa errada baseada em `HistoricoEntrada`/período — ver Aprendizados)
+- Distingue **Resolvido** (`Chamado.Resolver()`, marcado como solucionado) de **Encerrado** (`Chamado.Fechar()`, confirmado e arquivado — só possível a partir de Resolvido) — antes só existia "Resolvido"
+- Endpoint `GET /api/dashboard/tendencia` virou `GET /api/dashboard/distribuicao` (sem parâmetro `dias`, é uma foto do momento)
+
+**Também descoberto em 2026-07-13:** os documentos de estado (`STATE.md`/`ROADMAP.md`/`HANDOFF.md`) na branch `develop` estavam desatualizados — diziam "próximo é Fase 4" quando na verdade Fase 5 e boa parte da Fase 6 já tinham sido feitas em branches não mergeadas.
+
+**Decisão de 2026-07-15 (sessão atual):** antes do T09/T15 real (Google Workspace), criar um passo intermediário **F5a** — não descartável, adianta o T09 de verdade: tabela `UsuarioPerfil` (e-mail→perfil), tela de Admin pra cadastrar usuários (email+nome+perfil), e login mockado por e-mail (sem senha) substituindo o `ProfileSelector` atual. O F5b (Google OAuth real) só troca depois a *fonte* do e-mail (digitado → vindo do token do Google) — reaproveita a mesma tabela sem mudança de schema. Detalhado em `.specs/features/fase-6-admin-log/spec.md` (F5a/F5b) + `design.md` + `tasks.md` (T09a-T09e).
+
+**Próximo — ordem CONFIRMADA pelo usuário em 2026-07-16 (sessão encerrada logo em seguida a pedido dele):** (1) resolver o débito técnico da revisão sênior (`CONCERNS.md`, 15 itens); (2) implementar `arquivo-de-chamados` "com tudo certinho" (Design → Tasks → Execute completos); (3) escrever o documento pra TI sobre pré-requisitos do Google OAuth. Depois disso, retomar T09/T15 reais. Fase 4 (Email/Storage) segue sem data. **Ao retomar, seguir essa ordem — não é uma sugestão, foi confirmada explicitamente.**
 
 ---
 
@@ -21,7 +269,7 @@
 | Banco dev e prod | PostgreSQL via Supabase — mesma instância para os dois ambientes |
 | Conexão Supabase | **Session pooler** (`aws-1-us-east-2.pooler.supabase.com:5432`), não "Direct connection" (IPv6-only) nem "Transaction pooler" (incompatível com prepared statements do EF Core) |
 | Senha do banco | `dotnet user-secrets` local (dev) — nunca em `appsettings.json` |
-| Auth | **Google Workspace (Sign in with Google)** — corrigido em 2026-06-25, não é Azure AD/Microsoft. Mockada na Fase 3-5, real na Fase 6. Contas são **por setor** (ex: autorizacao@camarj.com.br) — perfil (Admin/Atendente/Solicitante) derivado de mapeamento conta→perfil no backend |
+| Auth | **Email e senha** (PasswordHasher ASP.NET Core Identity). Login Google Workspace (T09/F5b) está implementado mas dormant — descontinuado porque o Client ID está fora do plano da CAMARJ (TI, 2026-07-24). Contas são por e-mail individual — perfil (Admin/Atendente/Solicitante) definido no cadastro pelo Admin |
 | Anexos | Supabase Storage — implementar na Fase 4 |
 | Email | MailKit IMAP — suporte@camarj.com.br / ti@camarj.com.br |
 | Frontend | React 19 + TS + Vite + TailwindCSS v4 + Shadcn/ui |
@@ -36,6 +284,11 @@
 | Filtragem "Meus Chamados" | Admin=todos os chamados, Atendente=chamados onde é responsável (`responsavelId`), Solicitante=chamados que abriu (`solicitanteEmail`) — decidido em 2026-07-01 |
 | Log de histórico | Entidade `HistoricoEntrada` para auditoria completa do fluxo de cada chamado — planejado para Fase 6 |
 | Reatribuição Admin | Admin pode mover chamado entre atendentes mesmo em `EmAndamento` via endpoint `/reatribuir` separado do `/atribuir` — planejado para Fase 6 |
+| Ordem Fase 6 vs Fase 7 | Fase 7 (Relatório Mensal) antecipada na frente de T09/T15 (Google auth) — decisão de 2026-07-14, motivada por prazo real de fechamento mensal pra superintendência |
+| Relatório mensal | É um documento de período fechado (mês), não uma view "semanal" do dashboard operacional — dashboard fica com números em tempo real, relatório é outra tela/exportação (Fase 7) |
+| F5a antes de F5b (2026-07-15) | Login mockado por e-mail + cadastro de usuários (Admin) vira um passo intermediário antes do Google OAuth real, em vez de pular direto pro T09 — motivado por ser mais seguro testar o modelo conta→perfil sem inventar um sistema de senha descartável. Tabela `UsuarioPerfil` é reaproveitada sem mudança quando o F5b (OAuth real) entrar |
+| Chamados finalizados nunca são apagados (2026-07-16) | Pedido do usuário era "remover" chamados Resolvidos/Cancelados da vista — decidido que a solução é uma tela separada de leitura filtrada (`.specs/features/arquivo-de-chamados/`), não exclusão. Apagar quebraria `HistoricoEntrada` e os números já fechados do Relatório Mensal |
+| Cores de gráfico usam tokens do tema (2026-07-16) | `DonutChart`/`CategoriaChart` passaram a usar `var(--chart-1..5)` e `var(--status-good/critical)` (definidos em `frontend/src/index.css`) em vez de hex fixo por chamada — validado com a skill `dataviz` (`validate_palette.js`) contra as superfícies reais do app (branco no claro, `#0f1c1a` no escuro) |
 
 ---
 
@@ -49,21 +302,41 @@ Nenhum.
 
 | Pendência | Detalhe |
 |-----------|---------|
-| Hospedagem em produção | Onde a API vai rodar (VM, Docker, Azure App Service etc.) e como a connection string será injetada |
-| Fase 4 | Email + Storage ainda não implementados — aguardando priorização |
+| Hospedagem em produção | Onde a API vai rodar — Azure App Service Free F1 configurado (GitHub Actions + guia), mas ainda não ativado (falta criar o App Service no portal Azure) |
+| Fase 4 (Email/IMAP) | Ainda não implementada — depende de senha de app do IMAP (`suporte@camarj.com.br`/`ti@camarj.com.br`), usuário ainda não tem |
+| ~~Resposta da TI sobre o Client ID do Google OAuth~~ | **OBSOLETO em 2026-07-24** — a TI informou que o Client ID está fora do plano da CAMARJ. Login Google (`AutenticarGoogleCommand`, T09/F5b) fica implementado mas dormant no backend; substituído por login e-mail/senha, ver `.specs/features/auth-email-senha/` |
+| ~~**Login e-mail/senha — retomar implementação**~~ | ✅ **CONCLUÍDO em 2026-07-27** — backend + frontend completos, 218 testes passando, migration `AddSenhaHashUsuarioPerfil` com Up/Down corretos, build limpo |
+| ~~**Grupos/Equipes para visualização de chamados**~~ | ✅ **CONCLUÍDO em 2026-07-28**. Spec em `.specs/features/grupos-equipes/spec.md` |
+| ~~**Novas categorias + renomear existente**~~ | ✅ **CONCLUÍDO em 2026-07-28**. 8 categorias (eram 5), seeder com upsert inteligente |
+| ~~**Tema claro (light mode)**~~ | ✅ **CONCLUÍDO em 2026-07-28**. Paleta branco + verde CAMARJ, toggle em Login/ResetarSenha/AppLayout |
+| ~~**Logo CAMARJ no header/sidebar**~~ | ✅ **CONCLUÍDO em 2026-07-28**. Logo + "Portal de Chamados" no SidebarHeader |
+| ~~**Toggle mostrar/ocultar senha (olhinho)**~~ | ✅ **CONCLUÍDO em 2026-07-28**. PasswordInput com forwardRef, 5 campos atualizados |
 
 ---
 
-## 📋 TODOs (ordenados por prioridade)
+## 📋 TODOs (ordenados por prioridade — os 3 confirmados em 2026-07-16 estão TODOS concluídos; itens abaixo ainda não têm prioridade formal confirmada)
 
-1. Implementar Reatribuição Admin — backend (`Chamado.Reatribuir()` + `ReatribuirChamadoCommand` + endpoint) + frontend (botão + select de atendente no detalhe)
-2. Implementar Log de Histórico — entidade `HistoricoEntrada`, registrar em cada transição de status/atribuição
-3. Comentários internos — visíveis só para Admin/Atendente (campo `Tipo` já existe no `Comentario`)
-4. Alterar prioridade — Admin pode alterar prioridade de qualquer chamado
-5. Login Google Workspace real (Fase 6) — substituir seletor mockado
+1. ~~Resolver o débito técnico documentado em `CONCERNS.md`~~ ✅ **CONCLUÍDO em 2026-07-17**
+2. ~~Implementar `arquivo-de-chamados` "com tudo certinho"~~ ✅ **CONCLUÍDO em 2026-07-18**
+3. ~~Escrever documento pro time de TI com os pré-requisitos de infra do Google Workspace OAuth~~ ✅ **CONCLUÍDO em 2026-07-18** — `.specs/features/fase-6-admin-log/oauth-requisitos-ti.md`
+4. ~~Implementar T09/F5b (login real Google Workspace)~~ ✅ **CONCLUÍDO em 2026-07-18** (código completo — Design → Tasks → Execute). **Falta só configurar o Client ID real quando a TI devolver** e fazer o teste de ponta a ponta
+5. ~~"Forçar encerramento" (Admin fechar/cancelar fora do fluxo normal)~~ ✅ **CONCLUÍDO em 2026-07-19** — ver `.specs/features/forcar-encerramento/`
+6. ~~Revisar se Dashboard/Kanban/Fila (soft-RBAC) precisam do mesmo tratamento que Relatório Mensal/Admin > Usuários~~ ✅ **CONCLUÍDO em 2026-07-19** — mesmo padrão de bloqueio (Alert + "Voltar", sem acesso real de rota) aplicado às 3 telas pra Solicitante. Backend não ganhou guard novo (mesmo padrão do Relatório Mensal, que também não tem — dado não é mais sensível entre Admin/Atendente, só não deveria ser visível pro Solicitante)
+7. Fase 4 (Email/Storage) segue sem data
 
 ## ✅ Concluído recentemente
 
+- **T09/F5b implementado, testado e COMMITADO** (`8166ff0`, 2026-07-18/19): login real via Google Workspace — `POST /auth/google`, JWT próprio (simétrico, 8-12h), autenticação global (`SetFallbackPolicy`), `ICurrentUserService` substituindo identidade client-supplied em todos os Controllers, logout automático por 20min de inatividade. SignalR e Scalar ajustados pra conviver com auth global. Tela de login redesenhada (logo maior, tipografia serifada, botão do Google no tema preto). 177 testes passando. Falta só o Client ID real da TI. **Usuário fará o push manualmente**
+- **`arquivo-de-chamados` implementado** (2026-07-18): tela "Arquivo" (todos os perfis, mesmo RBAC de "Meus Chamados"), filtros de status/prioridade/categoria/busca/período. Backend com `Finalizados=true` + `DataInicio`/`DataFim` em `ListarChamadosQuery`, sem quebrar filtros existentes. Bug de DateTime Kind=Unspecified vs Postgres timestamptz encontrado pelo usuário e corrigido na mesma sessão. Ajuste de UX: filtro de período só no Arquivo (não em "Meus Chamados"), com labels visíveis. 174 testes passando
+- **Débito técnico da revisão sênior resolvido** (2026-07-17): 15 itens (D-01 a D-15) de `CONCERNS.md` corrigidos — auditoria do Kanban, guarda contra autodesativar o último Admin, validação de paginação, `HistoricoEntrada` com ctor privado, dashboard com query unificada, checagem de Admin movida pra Handlers (`PerfilRequisitanteGuard`), indentação, reconexão do SignalR, cores hardcoded no Kanban, arquivo morto removido, consistência de non-null assertion, race condition no Dashboard. 169 testes passando, builds limpos
+- **F5a commitada e pushada em `develop`** (2026-07-16, commits `76ce0d1`/`a0747a7`): login mockado por e-mail + cadastro de usuários pelo Admin (T09a-T09e), revisão sênior com 4 bugs Altos corrigidos antes do commit, bloqueio real de RBAC em `/admin/usuarios`
+- **Melhorias de visualização de dados no Dashboard e Relatório Mensal** (2026-07-16): cores de gráfico migradas pra tokens do tema (`--chart-1..5`, `--status-good/critical`), bug de cor cinza-puro corrigido no modo claro, labels diretos nas fatias da rosca (resolve ilegibilidade no PDF exportado), cor de sinal na variação % do Relatório Mensal. Detalhes técnicos completos em `.specs/HANDOFF.md`
+- **Spec criada:** `.specs/features/arquivo-de-chamados/spec.md` — tela de chamados finalizados com filtro por período/prioridade, sem exclusão de dados (2026-07-16)
+- **PR #13 mergeado em `develop`** (2026-07-15T03:05Z) — Fase 6 completa (T01-T14) + Fase 7 (Relatório Mensal) inteira, 42 commits
+- Fase 7 (Relatório Mensal) completa: backend (endpoint + agregação via HistoricoEntrada + SLA + comparação mês anterior) e frontend (página + exportação CSV/PDF), RBAC com bloqueio real pro Solicitante — 2026-07-14/15
+- Dashboard: rosca "Distribuição por situação" substitui gráfico de Tendência; KPIs simplificados; distinção Resolvido vs Encerrado — 2026-07-14/15
+- Fase 6 T01-T14 completos e verificados via Playwright (reatribuir, alterar prioridade, histórico com usuário real, comentário interno) — 2026-07-14
+- Backend completo da Fase 6 (T01-T08): `HistoricoEntrada`, `ReatribuirChamadoCommand`, `AlterarPrioridadeChamadoCommand`, endpoints correspondentes, filtro de comentário interno — branch `feature/fase-6-admin-log`, até 2026-07-12
 - Fase 5 (`feature/fase-5-kanban-dashboard`) mergeada em `develop` e `main` (2026-06-30) — Kanban, Dashboard, SignalR, Fila de Atendimento
 - Ações de Atendente implementadas na UI: botões Assumir/Resolver/Fechar/Cancelar no detalhe do chamado + Assumir na Fila de Atendimento
 - Bug fix: botão Assumir na Fila (Link aninhado causava navegação conflitante — eliminado, card e botões agora são elementos independentes)
@@ -90,6 +363,12 @@ Nenhum.
 
 ## 🎓 Aprendizados
 
+- **ASP.NET Core `JwtBearerHandler` remapeia claims de nome curto (`sub`, `email` etc.) pra URIs longas de `ClaimTypes` por padrão** (`MapInboundClaims = true` é o default) — código que emite o claim com `JwtRegisteredClaimNames.Sub` ("sub") e depois lê de volta com o mesmo nome curto (`FindFirstValue(JwtRegisteredClaimNames.Sub)`) não acha nada, porque no `ClaimsPrincipal` o claim já virou `ClaimTypes.NameIdentifier`. Resultado silencioso: fallback pro valor default (`Guid.Empty`), sem exception, sem erro visível — só aparece revisando o dado gravado (nesse caso, auditoria com `UsuarioId` sempre zerado). Fix: `options.MapInboundClaims = false;` no `AddJwtBearer`. Ao introduzir JWT com claims custom, sempre conferir se o claim é lido de volta pelo mesmo *tipo* de nome (curto vs. URI longa) usado pra escrever — não só pelo mesmo *valor* de string.
+- **Testar um endpoint autenticado sem depender do login real (Google) é possível**: como o JWT é HMAC simétrico com uma chave já em `user-secrets` (`Auth:JwtSigningKey`) e o token não depende de nenhum lookup no banco (`ICurrentUserService` só lê claims), dá pra mintar um token válido localmente (mesmos claims/issuer/audience do `AutenticarGoogleCommandHandler`) num projeto C# descartável e testar a API real (inclusive contra o Supabase) via curl, sem esperar o Client ID da TI. Útil pra qualquer feature nova que dependa de perfil/identidade enquanto o OAuth real segue bloqueado.
+- **`ValidateOnBuild` do ASP.NET Core (padrão ativo em Development) derruba a aplicação inteira se QUALQUER Handler registrado no MediatR exigir uma dependência não registrada no DI — mesmo que ninguém nunca chame aquele endpoint.** Ao adicionar uma feature nova que depende de uma credencial externa ainda não disponível (Service Role Key do Supabase, nesse caso), registrar a interface **condicionalmente** (só quando a credencial existe) quebra o boot de TODA a API, não só da feature nova — sintoma: exceção de `InvalidOperationException: Unable to resolve service for type 'X'` no `Build()`, app não sobe de jeito nenhum. Fix: sempre registrar a interface, com uma implementação fallback (`NullStorageService`) que lança um erro claro só quando de fato chamada — nunca deixar uma interface sem nenhuma implementação registrada em nenhum cenário de configuração. Esse é o mesmo princípio de tolerância já usado pro `Auth:GoogleClientId` (a app sobe sem ele, só a Google login endpoint falha se chamado), só que aqui a falta dessa tolerância derrubava literalmente tudo, não só a feature nova — vale testar sempre "a app sobe sem a credencial nova?" antes de considerar uma feature com dependência externa como pronta.
+- **O SDK oficial `Supabase` pra .NET (v1.3.0) devolve a URL de `CreateSignedUrl` com um `?` sobrando no final** (ex: `...token=eyJ...TKXg?`), mesmo sem passar `TransformOptions` nem parâmetro de download. Como `?` só delimita query string na primeira ocorrência (RFC 3986), esse caractere extra vira parte literal do valor do `token`, quebrando a decodificação do JWT no servidor do Storage (`400 InvalidJWT: Failed to base64url decode the signature`) — não é uma issue documentada publicamente (busca web não achou nada específico até 2026-07-21). Mitigado com `url.TrimEnd('?')` antes de devolver a URL — sempre inspecionar o valor exato (`repr()`/bytes crus) que uma lib externa devolve antes de assumir que "só passou pelo shell errado", principalmente quando o erro do servidor for algo tão específico quanto "falha ao decodificar base64url".
+- **A migração recente do Supabase pra um novo formato de API key (`sb_secret_...`/`sb_publishable_...`) não é imediatamente compatível com todo SDK** — o dashboard mostra essas chaves novas por padrão na aba principal ("Publishable and secret API keys"), mas o pacote NuGet `Supabase` usado neste projeto foi feito pro formato JWT antigo (`service_role`, começa com `eyJ...`), disponível na aba separada "Legacy anon, service_role API keys". Ao integrar qualquer SDK oficial do Supabase, checar a versão do pacote antes de simplesmente copiar a chave que aparece primeiro no dashboard.
+
 - `EnsureCreated()` não aplica migrations — bom para dev rápido, perigoso para mudanças de schema
 - `ObterTodosAsync()` + filtro em memória é um padrão a evitar desde o início
 - `CategoriasController` foi uma exceção ao padrão CQRS — deve ser corrigido
@@ -102,3 +381,21 @@ Nenhum.
 - Branches criadas a partir de `develop` ANTES de um PR anterior ser mergeado não herdam commits desse PR — decisões de design/spec registradas só numa branch precisam ser replicadas manualmente
 - Link aninhado (`<a>` dentro de `<a>`) é HTML inválido e causa comportamento imprevisível nos eventos de clique — nunca envolver botões de ação em um `<Link>` pai; usar `useNavigate()` programaticamente no elemento clicável do card
 - `localStorage` persiste entre sessões — em auth mockada, o perfil anterior fica salvo; sempre confirmar qual perfil está ativo no footer da sidebar antes de testar
+- STATE.md/ROADMAP.md são só tão confiáveis quanto a branch em que foram lidos — uma branch de feature pode ficar muito à frente da `develop` sem que ninguém perceba, porque as docs só são atualizadas na branch onde o trabalho acontece. Ao retomar um projeto depois de um tempo, checar `git log`/branches remotas antes de confiar cegamente no STATE.md da branch atual
+- Arquivos gerados numa sessão anterior podem acabar no caminho errado (ex: dentro de `src/<ProjName>.Web/` em vez de `frontend/`) e usando convenções de um stack genérico (axios, toast, shadcn não instalado) em vez das reais do projeto — sempre conferir se um componente "pronto" está de fato no diretório certo e compila contra as libs realmente instaladas antes de assumir que uma tarefa está concluída
+- Uma migration EF Core só é válida com os 3 artefatos em sincronia: arquivo `.cs` (Up/Down), `.Designer.cs` e `ApplicationDbContextModelSnapshot.cs`. Se só o primeiro existe, `dotnet ef migrations list` nem reconhece a migration, e o app trava no startup com "pending model changes" — mesmo a tabela já existindo fisicamente no banco (criada manualmente numa sessão anterior). Sinal de alerta: `git log` de um arquivo de migration mostra só 1 commit em vez dos 3 arquivos de costume
+- Sem autenticação real, comandos que alteram estado (Reatribuir, AlterarPrioridade, Resolver, Fechar, Cancelar) não têm de onde tirar "quem está fazendo isso" — se o command só recebe `Guid Id`, o handler não tem escolha a não ser hardcodar um valor fixo ("Sistema") no histórico/auditoria. Ao adicionar auditoria numa feature, checar se o command carrega identidade de ator, não só o dado da ação em si
+- `ObterTendenciaAsync` (Dashboard, Fase 5) tinha um bug sutil de data: contava "resolvidos" usando a data de **criação** do chamado, não a de resolução (`DataConclusao`) — um chamado aberto num dia e resolvido em outro aparecia "resolvido" no dia errado. Corrigido junto com a Fase 7 por estar diretamente ligado ao requisito de dados verdadeiros do usuário
+- Nem toda "métrica de gráfico" deve virar "métrica de período" só porque outra parte do sistema (o Relatório Mensal, nesse caso) trabalha com período — perguntar explicitamente se o gráfico é uma foto do momento (snapshot) ou uma janela de tempo (eventos) antes de desenhar a query. Uma primeira tentativa da rosca do Dashboard assumiu "eventos dos últimos 7 dias" via `HistoricoEntrada` quando o usuário só queria a situação atual (`ContarPorStatusAsync`, já existente) — retrabalho evitável se a pergunta tivesse sido feita antes de implementar
+- `Resolvido` e `Encerrado/Fechado` são passos distintos do ciclo de vida do chamado (`Resolver()` marca como solucionado; `Fechar()` confirma e arquiva, só a partir de `Resolvido`) — não tratar como sinônimos em métricas/relatórios
+- RBAC de UI neste projeto é "soft" por padrão (só esconde o link da sidebar, não bloqueia a rota) — aceitável pra telas com dado já visível em outro lugar (Dashboard, Kanban), mas uma tela nova que expõe dado mais sensível (ex: desempenho individual por atendente no Relatório Mensal) pode precisar de bloqueio de verdade (redirect/alerta), mesmo destoando do padrão das telas mais antigas — avaliar caso a caso, não copiar o padrão automaticamente
+- EF Core: dá pra fazer `JOIN` direto em LINQ (`from x in a join y in b on x.FkId equals y.Id select ...`) contra outro `DbSet` do mesmo `DbContext` sem precisar de navigation property configurada na entidade — útil quando a entidade (ex: `HistoricoEntrada`) foi desenhada sem relacionamento de navegação pro que ela referencia
+- Sempre conferir `dotnet user-secrets list` no início de uma sessão antes de rodar/testar a API — o `user-secrets` local pode estar apontando pro banco errado (ex: Postgres local via Docker em vez do Supabase real) por causa de troubleshooting de uma sessão anterior, e isso não aparece em lugar nenhum do código/git (user-secrets não é versionado). Toda "verificação com dados reais" feita nessas condições precisa ser refeita contra o banco real antes de dar como definitiva
+- **Reset de senha do Supabase:** no dashboard, o campo que mostra uma senha "gerada" não a aplica de verdade até o botão de confirmar/reset ser clicado — copiar a sugestão sem confirmar deixa a senha antiga válida, e a conexão falha com `28P01: password authentication failed` mesmo com a senha "certa". Pra isolar esse tipo de problema rápido: testar a connection string fora do `dotnet run` (ex: script `.cs` de arquivo único com `#:package Npgsql@...`) e comparar o erro com um projeto/usuário propositalmente inválido — `tenant/user not found` confirma que a connection string está certa e sobrou só a senha; `password authentication failed` com o projeto certo confirma que é mesmo a senha
+- Recharts v3 (`Pie` com `label` customizado): os labels só aparecem depois que a animação de entrada termina (`showLabels: !isAnimating` no código-fonte) — num teste automatizado ou num print disparado cedo demais, os labels simplesmente não existem no DOM ainda. Setar `isAnimationActive={false}` na `Pie` quando o gráfico precisa ter os valores sempre visíveis (ex: relatório exportável em PDF) resolve de forma determinística, em vez de torcer pro timing dar certo
+- Ao commitar uma feature grande implementada por múltiplos subagentes em paralelo/sequência (caso da F5a), `git add` com uma lista explícita de caminhos é mais arriscado que parece — um arquivo criado por um subagente (`UsuarioPerfilConfiguration.cs`, criado no T09a) ficou de fora da lista e só foi percebido depois do commit, num `git status` de checagem. `dotnet build` não pega isso porque o arquivo existe no disco, só não está no commit — a lacuna só aparece num clone limpo. Depois de um `git add` explícito em cenário assim, rodar `git status -s` de novo ANTES do commit e comparar contra a lista de arquivos que os subagentes relataram ter criado
+- **Filtro de data + EF Core + Npgsql:** um `DateTime?` vindo de model binding de query string (`[FromQuery] DateTime?`) chega com `Kind=Unspecified`. Se a coluna do Postgres for `timestamp with time zone` (padrão do projeto pra datas), o Npgsql recusa em runtime com `Cannot write DateTime with Kind=Unspecified..., only UTC is supported` — só aparece quando o filtro é de fato usado, não no build/testes com mock. Sempre que um parâmetro de data novo entrar numa query filtrando uma coluna `timestamptz`, converter explicitamente com `DateTime.SpecifyKind(valor, DateTimeKind.Utc)` antes de repassar pro repositório. Detalhe extra: filtro de "data final" deve virar o **fim do dia** (`.AddDays(1).AddTicks(-1)`), não a meia-noite, senão um período de 1 dia só (`dataInicio == dataFim`) não retorna nada criado depois de 00:00
+- **Ativar autenticação global (`SetFallbackPolicy(RequireAuthenticatedUser)`) tem efeitos colaterais em endpoints que não são Controllers de API comum:** o hub do SignalR (`MapHub`) e o Scalar/OpenAPI (`MapScalarApiReference`/`MapOpenApi`) passam pela mesma pipeline de autorização — ambos quebraram (401) até eu marcar `.AllowAnonymous()` explicitamente. Ao introduzir auth global num projeto que já tem SignalR/docs, mapear TODOS os endpoints não-Controller antes de assumir que só as APIs precisam de ajuste
+- **SignalR não manda o header `Authorization`** em conexões WebSocket — o token precisa ir via query string na conexão (`accessTokenFactory` no cliente) e ser lido manualmente no servidor (`JwtBearerEvents.OnMessageReceived`, restrito ao path do hub). Além disso, se o provider de SignalR estiver montado ANTES do login (ex: envolvendo toda a `AppRoutes`), a primeira tentativa de conexão falha sem token e nunca mais tenta de novo (`withAutomaticReconnect` só cobre reconexão depois de uma conexão que já teve sucesso uma vez) — o provider precisa estar dentro da rota protegida, remontando a cada login
+- **Ao introduzir identidade real (JWT) num app que antes recebia `usuarioId`/`perfilRequisitante` do cliente**, mapear TODOS os lugares que confiavam nesses valores antes de assumir que a lista já conhecida (Reatribuir/AlterarPrioridade/Resolver/Fechar/Cancelar) está completa — `Atribuir` (assumir chamado) e `ListarComentarios` (`perfilUsuario` pra filtrar comentário interno) tinham exatamente o mesmo problema e não estavam na lista original do design
+- Ao escrever o teste de um handler que valida domínio de e-mail (`EndsWith("@dominio.com")`), simular um e-mail com espaço extra pegou um bug real: a checagem de domínio rodava antes do `Trim()`, então `"  fulano@camarj.com.br  "` falhava a validação de domínio por terminar em espaço, não pelo domínio em si. Normalizar (trim/lowercase) sempre ANTES de qualquer checagem que dependa do formato exato da string, não depois

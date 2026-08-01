@@ -4,6 +4,8 @@
 > **Status:** Em desenvolvimento (decisões tomadas)  
 > **Metodologia:** Spec-Driven Development (SDD)  
 > **Stack sugerida:** .NET 9 + React/TypeScript
+>
+> ⚠️ **Snapshot histórico.** Este documento é a spec original do projeto e não é atualizado a cada fase. Para o estado atual (fases concluídas, stack real, decisões vigentes), veja `.specs/project/STATE.md` e `.specs/project/ROADMAP.md`.
 
 ---
 
@@ -231,7 +233,7 @@ GET    /api/chamados/relatorios     → Dashboard/Métricas
 ## 9. FRONTEND (React + TypeScript)
 
 ### Páginas
-- **Login** — Autenticação (pode ser integrado com Google/Azure AD)
+- **Login** — Autenticação via Google Workspace (Sign in with Google); mockada até a Fase 6
 - **Dashboard** — Kanban + métricas + últimos chamados
 - **Meus Chamados** — Lista do solicitante
 - **Painel de Atendimento** — Fila geral (atendentes)
@@ -253,7 +255,7 @@ GET    /api/chamados/relatorios     → Dashboard/Métricas
 |--------|------------|--------|
 | Backend | .NET 9 + Clean Architecture | Você já usa, perfeito |
 | ORM | EF Core 9 | Já conhece |
-| BD | SQLite (dev) / PostgreSQL (prod) | Dev: zero setup • Prod: robusto |
+| BD | PostgreSQL via Supabase (dev e prod, mesma instância) | Migrado de SQLite em 2026-06-19 (C-01) |
 | CQRS | MediatR | Você tá aprendendo |
 | Validação | FluentValidation | Já tem no ContosoPizza |
 | Frontend | React + TypeScript + Vite | Moderno, rápido |
@@ -262,7 +264,7 @@ GET    /api/chamados/relatorios     → Dashboard/Métricas
 | Tempo real | SignalR | Notificações ao vivo + Push browser |
 | Cache | Redis | SLA, filas |
 | Storage | Supabase Storage (bucket S3) | Anexos |
-| Auth | Azure AD + Microsoft.Identity.Web | Login corporativo |
+| Auth | Google Workspace (Sign in with Google) | Camarj usa Gmail corporativo, não Microsoft |
 | Logs | Serilog + Seq / Arquivo | Rastreabilidade |
 
 ---
@@ -287,13 +289,13 @@ GET    /api/chamados/relatorios     → Dashboard/Métricas
 |---------|----------|
 | 🏢 **Empresa** | CAMARJ |
 | 📛 **Nome do sistema** | ChamadosCamarj |
-| 🔐 **Autenticação** | Azure AD (login corporativo Microsoft) |
+| 🔐 **Autenticação** | Google Workspace (Sign in with Google) — corrigido em 2026-06-25, não é Azure AD |
 | 📧 **Email suporte** | `suporte@camarj.com.br` e `ti@camarj.com.br` (Gmail) |
-| 👥 **Atendentes** | Victor + Fábio (2 pessoas) |
+| 👥 **Atendentes** | Victor (Admin) + Fábio (Atendente) |
 | 📂 **Categorias** | Autorização, Atendimento, Super e Tendência, Reembolso, Financeiro |
-| ⏱️ **SLA** | Urgente: 8h | Alta: 24h | Média: 12-16h | Baixa: 48h |
+| ⏱️ **SLA** | Urgente: 8h | Alta: 24h | Média: 16h | Baixa: 48h |
 | 🗄️ **Anexos** | Supabase Storage (bucket S3) — Solicitantes e Atendentes anexam |
-| 🛢️ **BD** | SQLite (dev) → PostgreSQL (produção via Supabase) |
+| 🛢️ **BD** | PostgreSQL via Supabase — mesma instância para dev e prod |
 | 🧠 **Metodologia** | Spec-Driven Development (SDD) |
 | 📝 **Docs** | Obsidian (mapeamento completo) |
 | 🎨 **Frontend** | React + TypeScript + Vite + TailwindCSS + Shadcn/ui |
@@ -311,17 +313,19 @@ GET    /api/chamados/relatorios     → Dashboard/Métricas
 
 ## 14. ROADMAP (Fases)
 
+> Para o roadmap detalhado e sempre atualizado (tarefas por fase, o que falta), veja `.specs/project/ROADMAP.md`. Resumo abaixo:
+
 | Fase | O que inclui | Status |
 |------|-------------|--------|
 | **Fase 0** | Spec finalizado + setup do projeto + Obsidian | ✅ Concluída |
 | **Fase 1** | Domain layer + Migration inicial | ✅ Concluída |
 | **Fase 2** | CQRS (Commands/Queries) + Validators + Controller | ✅ Concluída |
 | **Fase 3** | Frontend básico (login, lista, detalhe, abertura) | ✅ Concluída |
-| **Fase 4** | Integração com Email (IMAP receiver) | ⏳ |
-| **Fase 5** | Kanban + Dashboard + Notificações SignalR | ⏳ |
-| **Fase 6** | Azure AD + Perfis + Admin | ⏳ |
-| **Fase 7** | Relatórios + SLA + Anexos (Supabase) | ⏳ |
+| **Fase 4** | Integração com Email (IMAP receiver) + Storage | ⏳ Não iniciada |
+| **Fase 5** | Kanban + Dashboard + Notificações SignalR | ✅ Concluída (mergeada em `develop`/`main`, 2026-06-30) |
+| **Fase 6** | Google Workspace Auth + Perfis + Admin + Log de histórico | 🔐 T01-T08 e T10-T14 concluídos; pausada em T09/T15 (login Google real) |
+| **Fase 7** | Relatório Mensal | ✅ Concluída (antecipada em 2026-07-14, na frente de T09/T15) |
 
 ---
 
-> **Status:** ✅ Spec finalizado com decisões tomadas. Próximo passo: **Fase 0 — Setup do projeto no Obsidian e criação da solution .NET**.
+> **Status:** Fases 0-3 e 5 concluídas, Fase 6 quase completa (só falta login Google real) e Fase 7 já entregue. Próximo passo: retomar T09/T15 (login Google Workspace) — ver `.specs/project/STATE.md`.

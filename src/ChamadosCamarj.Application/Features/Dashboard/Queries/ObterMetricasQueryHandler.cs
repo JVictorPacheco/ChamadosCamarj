@@ -15,20 +15,25 @@ public class ObterMetricasQueryHandler : IRequestHandler<ObterMetricasQuery, Das
 
     public async Task<DashboardMetricsResponse> Handle(ObterMetricasQuery request, CancellationToken cancellationToken)
     {
-        var totalAbertos = await _chamadoRepository.ContarPorStatusAsync(Domain.Enums.StatusChamado.Aberto, cancellationToken);
-        var totalEmAndamento = await _chamadoRepository.ContarPorStatusAsync(Domain.Enums.StatusChamado.EmAndamento, cancellationToken);
         var totalResolvidosHoje = await _chamadoRepository.ContarResolvidosHojeAsync(cancellationToken);
         var tempoMedio = await _chamadoRepository.ObterTempoMedioResolucaoHorasAsync(cancellationToken);
         var porCategoria = await _chamadoRepository.ContarPorCategoriaAsync(cancellationToken);
         var porPrioridade = await _chamadoRepository.ContarPorPrioridadeAsync(cancellationToken);
 
+        var inicioMes = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var fimMes = inicioMes.AddMonths(1).AddTicks(-1);
+        var sla = await _chamadoRepository.ContarSlaComplianceAsync(inicioMes, fimMes, cancellationToken);
+
+        SlaComplianceItem? slaItem = sla.TotalResolvidos > 0
+            ? new SlaComplianceItem(sla.TotalResolvidos, sla.DentroPrazo, Math.Round((double)sla.DentroPrazo / sla.TotalResolvidos * 100, 1))
+            : null;
+
         return new DashboardMetricsResponse(
-            totalAbertos,
-            totalEmAndamento,
             totalResolvidosHoje,
             tempoMedio.HasValue ? Math.Round(tempoMedio.Value, 1) : null,
             porCategoria.Select(kvp => new PorCategoriaItem(kvp.Key, kvp.Value)).ToList(),
-            porPrioridade.Select(kvp => new PorPrioridadeItem(kvp.Key, kvp.Value)).ToList()
+            porPrioridade.Select(kvp => new PorPrioridadeItem(kvp.Key, kvp.Value)).ToList(),
+            slaItem
         );
     }
 }

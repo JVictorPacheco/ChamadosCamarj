@@ -38,8 +38,8 @@ Sistema interno de **gestão de chamados corporativos** da CAMARJ. Colaboradores
 ## Stack Decisões
 
 - **Banco (dev e produção):** PostgreSQL via Supabase — mesma instância, conexão via Session pooler
-- **Auth:** Azure AD (corporativo Microsoft)
-- **Anexos:** Supabase Storage (S3)
-- **Tempo real:** SignalR (planejado Fase 5)
-- **Email entrada:** MailKit IMAP (planejado Fase 4)
-- **Frontend:** React + TypeScript + Vite + TailwindCSS + Shadcn/ui (não iniciado)
+- **Auth:** ~~Google Workspace (Sign in with Google)~~ **SUBSTITUÍDO em 2026-07-24 por login e-mail/senha** — TI informou que o Client ID do Google está fora do plano da CAMARJ. Código do login Google (T09/F5b) mantido dormant no backend. Login e-mail/senha EM ANDAMENTO, ver `.specs/features/auth-email-senha/`
+- **Anexos:** Supabase Storage (S3) — **implementado e verificado de ponta a ponta** (2026-07-21), ver `.specs/features/anexos-storage/`
+- **Tempo real:** SignalR — implementado desde a Fase 5
+- **Email entrada:** MailKit IMAP — planejado, ainda não implementado (Fase 4, metade 2); depende de senha de app das caixas suporte@/ti@camarj.com.br
+- **Frontend:** React 19 + TypeScript + Vite + TailwindCSS v4 + Shadcn/ui — implementado

@@ -6,18 +6,21 @@ using ChamadosCamarj.Domain.Interfaces;
 using FluentAssertions;
 using MediatR;
 using Moq;
+using ChamadosCamarj.Application.Common.Interfaces;
 
 namespace ChamadosCamarj.UnitTests.Application.Handlers;
 
 public class AtribuirChamadoHandlerTests
 {
     private readonly Mock<IChamadoRepository> _repositoryMock = new();
+    private readonly Mock<IHistoricoRepository> _historicoRepositoryMock = new();
     private readonly Mock<IPublisher> _publisherMock = new();
+    private readonly Mock<IUnitOfWork> _unitOfWorkMock = new();
     private readonly AtribuirChamadoCommandHandler _handler;
 
     public AtribuirChamadoHandlerTests()
     {
-        _handler = new AtribuirChamadoCommandHandler(_repositoryMock.Object, _publisherMock.Object);
+        _handler = new AtribuirChamadoCommandHandler(_repositoryMock.Object, _historicoRepositoryMock.Object, _publisherMock.Object, _unitOfWorkMock.Object);
     }
 
     [Fact]
@@ -27,7 +30,7 @@ public class AtribuirChamadoHandlerTests
         var responsavelId = Guid.NewGuid();
         var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
 
-        _repositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
+        _repositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
 
         var command = new AtribuirChamadoCommand(chamadoId, responsavelId, "Victor");
@@ -43,7 +46,7 @@ public class AtribuirChamadoHandlerTests
     public async Task Handle_QuandoChamadoNaoExiste_DeveLancarNotFoundException()
     {
         var chamadoId = Guid.NewGuid();
-        _repositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
+        _repositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync((Chamado?)null);
 
         var command = new AtribuirChamadoCommand(chamadoId, Guid.NewGuid(), "Victor");

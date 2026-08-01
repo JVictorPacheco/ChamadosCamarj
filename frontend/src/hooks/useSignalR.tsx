@@ -1,9 +1,10 @@
-import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState, useCallback, useRef, type ReactNode } from 'react'
 import {
   HubConnectionBuilder,
   type HubConnection,
 } from '@microsoft/signalr'
 import type { SignalREvent } from '@/lib/signalr-events'
+import { getToken } from '@/lib/api'
 
 const SIGNALR_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ?? 'http://localhost:5000'
 
@@ -20,30 +21,30 @@ export function SignalRProvider({ children }: { children: ReactNode }) {
   const [connection, setConnection] = useState<HubConnection | null>(null)
   const [isConnected, setIsConnected] = useState(false)
   const [lastEvent, setLastEvent] = useState<SignalREvent | null>(null)
-  const [subscribers, setSubscribers] = useState<Set<(event: SignalREvent) => void>>(new Set())
+  // useRef em vez de useState: dá identidade estável pro Set, sem forçar recriação
+  // de `notify` (e portanto do efeito de conexão abaixo) a cada subscribe/unsubscribe.
+  const subscribersRef = useRef<Set<(event: SignalREvent) => void>>(new Set())
 
   const subscribe = useCallback((handler: (event: SignalREvent) => void) => {
-    setSubscribers((prev) => new Set(prev).add(handler))
+    subscribersRef.current.add(handler)
     return () => {
-      setSubscribers((prev) => {
-        const next = new Set(prev)
-        next.delete(handler)
-        return next
-      })
+      subscribersRef.current.delete(handler)
     }
   }, [])
 
-  const notify = useCallback(
-    (event: SignalREvent) => {
-      setLastEvent(event)
-      subscribers.forEach((handler) => handler(event))
-    },
-    [subscribers],
-  )
+  const notify = useCallback((event: SignalREvent) => {
+    setLastEvent(event)
+    subscribersRef.current.forEach((handler) => handler(event))
+  }, [])
 
   useEffect(() => {
+    // O SignalR não manda o header Authorization em conexões WebSocket — accessTokenFactory
+    // é chamado a cada (re)conexão e o token vai via query string, lido pelo backend
+    // (Program.cs, OnMessageReceived) especificamente pro caminho /hubs.
     const conn = new HubConnectionBuilder()
-      .withUrl(`${SIGNALR_URL}/hubs/chamados`)
+      .withUrl(`${SIGNALR_URL}/hubs/chamados`, {
+        accessTokenFactory: () => getToken() ?? '',
+      })
       .withAutomaticReconnect()
       .build()
 
@@ -51,6 +52,8 @@ export function SignalRProvider({ children }: { children: ReactNode }) {
     conn.on('StatusAlterado', (payload) => notify({ type: 'StatusAlterado', payload }))
     conn.on('ComentarioAdicionado', (payload) => notify({ type: 'ComentarioAdicionado', payload }))
     conn.on('MetricasAtualizadas', () => notify({ type: 'MetricasAtualizadas' }))
+    conn.on('SlaAtencao', (payload) => notify({ type: 'SlaAtencao', payload }))
+    conn.on('SlaAtrasado', (payload) => notify({ type: 'SlaAtrasado', payload }))
 
     conn
       .start()
@@ -68,8 +71,10 @@ export function SignalRProvider({ children }: { children: ReactNode }) {
     }
   }, [notify])
 
+  const value = useMemo(() => ({ connection, isConnected, lastEvent, subscribe }), [connection, isConnected, lastEvent])
+
   return (
-    <SignalRContext.Provider value={{ connection, isConnected, lastEvent, subscribe }}>
+    <SignalRContext.Provider value={value}>
       {children}
     </SignalRContext.Provider>
   )

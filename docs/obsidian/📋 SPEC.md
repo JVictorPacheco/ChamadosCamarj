@@ -23,6 +23,9 @@ O spec completo está em [[../SPEC.md|SPEC.md]].
 11. [[🗺️ Roadmap]]
 12. [[💬 Decisões]]
 13. [[📝 Perguntas Pendentes]]
+14. [[📈 Relatório Mensal]] *(Fase 7 ✅)*
+
+> Para o estado atual do projeto (fonte da verdade, sempre atualizada), veja `.specs/project/STATE.md`.
 
 ---
 
@@ -37,7 +40,7 @@ O spec completo está em [[../SPEC.md|SPEC.md]].
 | BD | PostgreSQL (Supabase) |
 | Frontend | React + TS + Vite + TailwindCSS + Shadcn/ui |
 | Email | MailKit (IMAP) |
-| Auth | [[🔐 Azure AD]] |
+| Auth | [[🔐 Google Workspace]] |
 | Anexos | [[📦 Supabase Storage]] |
 | Tempo real | SignalR |
 | Cache | Redis |

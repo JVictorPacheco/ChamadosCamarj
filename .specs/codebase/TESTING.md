@@ -1,10 +1,17 @@
 # Estratégia de Testes
 
-## Status atual (pós-Fase 3)
+## Status atual
 
-**Backend:** 59 testes unitários passando (`tests/ChamadosCamarj.UnitTests/`) — Domain, Application Handlers, Validators.
+**Backend:** 215 testes de backend passando (`tests/ChamadosCamarj.UnitTests/`) — Domain, Application Handlers (auth, usuarios, chamados, anexos, relatorios), Validators.
 
-**Frontend:** 1 teste E2E (Playwright, `frontend/e2e/fluxo-completo.spec.ts`) cobrindo o fluxo feliz completo do Solicitante (login mock → abrir chamado → detalhe → comentar → listar → click no card → detalhe). Decisão do usuário: sem testes unitários/componente isolados nesta fase — só o E2E do happy path + verificação manual no navegador pra UI/visual.
+**Frontend:** 12 testes E2E com Playwright (`frontend/e2e/`):
+- `login.spec.ts` — sucesso e credenciais inválidas
+- `chamados.spec.ts` — abrir chamado, listar, arquivo
+- `admin.spec.ts` — usuários, categorias, grupos
+- `dashboard.spec.ts` — dashboard, fila, relatório mensal
+- `fluxo-completo.spec.ts` — login → abrir → comentar → listar
+
+`npm run build` (TS + Vite) é o gate check de tipo/import.
 
 ## Backend — cobertura atual
 
@@ -25,12 +32,14 @@
 ### 3. Validators (unitários)
 
 - `AbrirChamadoCommandValidator` — campos obrigatórios, email válido
+- Auth: `LoginCommandValidator`, `EsqueciSenhaCommandValidator`, `ResetarSenhaCommandValidator`
+- Usuarios: `CriarUsuarioCommandValidator`, `AtualizarUsuarioCommandValidator`
 
 ## Frontend — cobertura atual
 
-- **E2E (Playwright):** 1 teste, fluxo feliz completo, headless, `npm run test:e2e`
-- **Sem testes unitários/componente:** decisão do usuário — verificação manual no navegador + o E2E cobrem o necessário nesta fase
-- **Gate check de cada task:** `npm run build` (TS + Vite build) pega erros de tipo/import antes de qualquer coisa rodar
+- **E2E (Playwright):** Testes de fluxo completo em `frontend/e2e/`, headless, `npm run test:e2e`
+- **Sem testes unitários/componente:** decisão do usuário — verificação manual no navegador + E2E cobrem o necessário
+- **Gate check:** `npm run build` (TS + Vite build) pega erros de tipo/import antes de qualquer coisa rodar
 
 ## Gate checks
 

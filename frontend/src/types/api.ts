@@ -1,9 +1,31 @@
 export type StatusChamado = "Aberto" | "EmAndamento" | "Resolvido" | "Fechado" | "Cancelado";
+export type MotivoEncerramento =
+  | "Resolvido"
+  | "CanceladoSolicitante"
+  | "AbertoIndevidamente"
+  | "Duplicata"
+  | "SemResposta"
+  | "Outro";
 export type PrioridadeChamado = "Baixa" | "Media" | "Alta" | "Urgente";
 export type TipoComentario = "Publico" | "Interno";
+export type AcaoHistorico =
+  | "Criado"
+  | "Assumido"
+  | "Reatribuido"
+  | "Resolvido"
+  | "Fechado"
+  | "Cancelado"
+  | "ComentarioAdicionado"
+  | "PrioridadeAlterada"
+  | "StatusAlterado"
+  | "EncerramentoForcado"
+  | "Reaberto";
+
+export type SlaStatus = "DentroPrazo" | "Atencao" | "Atrasado";
 
 export interface ChamadoResponse {
   id: string;
+  numero: number;
   titulo: string;
   descricao: string;
   status: StatusChamado;
@@ -20,6 +42,11 @@ export interface ChamadoResponse {
   dataAtualizacao: string | null;
   quantidadeComentarios: number;
   quantidadeAnexos: number;
+  slaStatus: SlaStatus;
+  slaLabel: string;
+  slaHorasRestantes: number | null;
+  motivoEncerramento: MotivoEncerramento | null;
+  motivoOutro: string | null;
 }
 
 export interface ComentarioResponse {
@@ -27,6 +54,16 @@ export interface ComentarioResponse {
   autor: string;
   conteudo: string;
   tipo: TipoComentario;
+  dataCriacao: string;
+}
+
+export interface AnexoResponse {
+  id: string;
+  nomeArquivo: string;
+  tipoArquivo: string;
+  tamanhoBytes: number;
+  enviadoPorId: string | null;
+  enviadoPorNome: string;
   dataCriacao: string;
 }
 
@@ -60,4 +97,34 @@ export interface ComentarChamadoRequest {
   autor: string;
   conteudo: string;
   interno: boolean;
+}
+
+export interface HistoricoResponse {
+  id: string;
+  chamadoId: string;
+  usuarioNome: string;
+  usuarioId: string | null;
+  acao: AcaoHistorico;
+  detalheAnterior: string | null;
+  detalheNovo: string | null;
+  dataHora: string;
+}
+
+export type TipoPerfil = "Admin" | "Atendente" | "Solicitante";
+
+export interface UsuarioPerfilResponse {
+  id: string;
+  email: string;
+  nome: string;
+  perfil: TipoPerfil;
+  ativo: boolean;
+  grupoId?: string | null;
+  grupoNome?: string | null;
+}
+
+export interface GrupoResponse {
+  id: string;
+  nome: string;
+  descricao: string;
+  ativo: boolean;
 }

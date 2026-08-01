@@ -1,6 +1,7 @@
 using ChamadosCamarj.Domain.Entities;
 using ChamadosCamarj.Domain.Enums;
 using FluentAssertions;
+using static ChamadosCamarj.Domain.Enums.MotivoEncerramento;
 
 namespace ChamadosCamarj.UnitTests.Domain;
 
@@ -92,6 +93,71 @@ public class ChamadoTests
         chamado.Status.Should().Be(StatusChamado.Fechado);
     }
 
+    // ── ForcarEncerramento ──────────────────────────────────────────────────────
+
+    [Fact]
+    public void ForcarEncerramento_DeAberto_DeveFecharEPreencherDataConclusao()
+    {
+        var chamado = CriarChamado();
+
+        var antes = DateTime.UtcNow;
+        chamado.ForcarEncerramento(AbertoIndevidamente);
+
+        chamado.Status.Should().Be(StatusChamado.Fechado);
+        chamado.DataConclusao.Should().NotBeNull();
+        chamado.DataConclusao!.Value.Should().BeOnOrAfter(antes);
+    }
+
+    [Fact]
+    public void ForcarEncerramento_DeEmAndamento_DeveFecharEPreencherDataConclusao()
+    {
+        var chamado = CriarChamado();
+        chamado.Atribuir(Guid.NewGuid(), "Victor");
+
+        chamado.ForcarEncerramento(AbertoIndevidamente);
+
+        chamado.Status.Should().Be(StatusChamado.Fechado);
+        chamado.DataConclusao.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void ForcarEncerramento_DeResolvido_DevePreservarDataConclusaoOriginal()
+    {
+        var chamado = CriarChamado();
+        chamado.Atribuir(Guid.NewGuid(), "Victor");
+        chamado.Resolver();
+        var dataConclusaoOriginal = chamado.DataConclusao;
+
+        chamado.ForcarEncerramento(AbertoIndevidamente);
+
+        chamado.Status.Should().Be(StatusChamado.Fechado);
+        chamado.DataConclusao.Should().Be(dataConclusaoOriginal);
+    }
+
+    [Fact]
+    public void ForcarEncerramento_QuandoJaFechado_DeveLancarInvalidOperationException()
+    {
+        var chamado = CriarChamado();
+        chamado.Atribuir(Guid.NewGuid(), "Victor");
+        chamado.Resolver();
+        chamado.Fechar();
+
+        var act = () => chamado.ForcarEncerramento(AbertoIndevidamente);
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void ForcarEncerramento_QuandoJaCancelado_DeveLancarInvalidOperationException()
+    {
+        var chamado = CriarChamado();
+        chamado.Cancelar(AbertoIndevidamente);
+
+        var act = () => chamado.ForcarEncerramento(AbertoIndevidamente);
+
+        act.Should().Throw<InvalidOperationException>();
+    }
+
     // ── Cancelar ─────────────────────────────────────────────────────────────
 
     [Fact]
@@ -99,7 +165,7 @@ public class ChamadoTests
     {
         var chamado = CriarChamado();
 
-        chamado.Cancelar();
+        chamado.Cancelar(AbertoIndevidamente);
 
         chamado.Status.Should().Be(StatusChamado.Cancelado);
     }
@@ -110,7 +176,7 @@ public class ChamadoTests
         var chamado = CriarChamado();
         chamado.Atribuir(Guid.NewGuid(), "Victor");
 
-        chamado.Cancelar();
+        chamado.Cancelar(AbertoIndevidamente);
 
         chamado.Status.Should().Be(StatusChamado.Cancelado);
     }
@@ -152,7 +218,7 @@ public class ChamadoTests
     public void Resolver_QuandoJaCancelado_DeveLancarInvalidOperationException()
     {
         var chamado = CriarChamado();
-        chamado.Cancelar();
+        chamado.Cancelar(AbertoIndevidamente);
 
         var act = () => chamado.Resolver();
 
@@ -178,7 +244,7 @@ public class ChamadoTests
         chamado.Resolver();
         chamado.Fechar();
 
-        var act = () => chamado.Cancelar();
+        var act = () => chamado.Cancelar(AbertoIndevidamente);
 
         act.Should().Throw<InvalidOperationException>();
     }
@@ -187,7 +253,7 @@ public class ChamadoTests
     public void Atribuir_QuandoJaCancelado_DeveLancarInvalidOperationException()
     {
         var chamado = CriarChamado();
-        chamado.Cancelar();
+        chamado.Cancelar(AbertoIndevidamente);
 
         var act = () => chamado.Atribuir(Guid.NewGuid(), "Victor");
 

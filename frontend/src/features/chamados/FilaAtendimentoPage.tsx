@@ -12,43 +12,55 @@ import type { ChamadoResponse } from '@/types/api'
 
 function LinhaFila({ chamado }: { chamado: ChamadoResponse }) {
   const navigate = useNavigate()
-  const { perfil } = useAuth()
+  const queryClient = useQueryClient()
   const atribuir = useAtribuirChamado(chamado.id)
 
   return (
-    <div className="flex items-center gap-3">
-      <div
-        className="flex-1 cursor-pointer"
-        onClick={() => navigate(`/chamados/${chamado.id}`)}
-      >
-        <ChamadoCard chamado={chamado} />
-      </div>
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center gap-3">
+        <div
+          className="flex-1 cursor-pointer"
+          onClick={() => navigate(`/chamados/${chamado.id}`)}
+        >
+          <ChamadoCard chamado={chamado} />
+        </div>
 
-      <div className="flex shrink-0 gap-2">
-        {!chamado.responsavelId && (
-          <Button
-            size="sm"
-            disabled={atribuir.isPending}
-            onClick={() =>
-              atribuir.mutate({
-                responsavelId: perfil!.id,
-                responsavelNome: perfil!.nome,
-              })
-            }
-          >
-            {atribuir.isPending ? 'Assumindo...' : 'Assumir'}
+        <div className="flex shrink-0 gap-2">
+          {!chamado.responsavelId && (
+            <Button
+              size="sm"
+              disabled={atribuir.isPending}
+              onClick={() =>
+                atribuir.mutate(undefined, {
+                  // Se outro atendente já assumiu o chamado quase ao mesmo tempo, o backend
+                  // rejeita esta tentativa — invalidar a fila reflete o estado real na tela.
+                  onError: () => queryClient.invalidateQueries({ queryKey: ['chamados', 'fila'] }),
+                })
+              }
+            >
+              {atribuir.isPending ? 'Assumindo...' : 'Assumir'}
+            </Button>
+          )}
+
+          <Button asChild variant="outline" size="sm">
+            <Link to={`/chamados/${chamado.id}`}>Ver</Link>
           </Button>
-        )}
-
-        <Button asChild variant="outline" size="sm">
-          <Link to={`/chamados/${chamado.id}`}>Ver</Link>
-        </Button>
+        </div>
       </div>
+
+      {atribuir.isError && (
+        <Alert variant="destructive">
+          <AlertDescription>
+            {atribuir.error?.message ?? 'Não foi possível assumir este chamado — talvez outro atendente já tenha assumido.'}
+          </AlertDescription>
+        </Alert>
+      )}
     </div>
   )
 }
 
 export function FilaAtendimentoPage() {
+  const { perfil } = useAuth()
   const queryClient = useQueryClient()
   const { subscribe } = useSignalR()
 
@@ -71,6 +83,19 @@ export function FilaAtendimentoPage() {
       queryClient.invalidateQueries({ queryKey: ['chamados', 'fila'] })
     })
   }, [subscribe, queryClient])
+
+  if (perfil?.tipo === 'Solicitante') {
+    return (
+      <div className="flex flex-col items-center gap-3 p-8 text-center">
+        <Alert variant="destructive" className="max-w-md">
+          <AlertDescription>Esta área não está disponível para o seu perfil.</AlertDescription>
+        </Alert>
+        <Button asChild variant="outline">
+          <Link to="/chamados">Voltar para a lista</Link>
+        </Button>
+      </div>
+    )
+  }
 
   return (
     <div className="flex flex-col gap-4 p-4">

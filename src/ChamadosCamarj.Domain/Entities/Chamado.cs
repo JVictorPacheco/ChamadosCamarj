@@ -37,6 +37,7 @@ public class Chamado : BaseEntity
     }
 
     // Propriedades
+    public int Numero { get; private set; }
     public string Titulo { get; private set; } = string.Empty;
     public string Descricao { get; private set; } = string.Empty;
     public StatusChamado Status { get; private set; }
@@ -49,6 +50,10 @@ public class Chamado : BaseEntity
     public DateTime? DataLimite { get; private set; }
     public DateTime? DataConclusao { get; private set; }
     public OrigemChamado Origem { get; private set; }
+
+    // Motivo de encerramento
+    public Domain.Enums.MotivoEncerramento? MotivoEncerramento { get; private set; }
+    public string? MotivoOutro { get; private set; }
 
     // Navegação EF
     public Categoria? Categoria { get; private set; }
@@ -67,22 +72,60 @@ public class Chamado : BaseEntity
         DataAtualizacao = DateTime.UtcNow;
     }
 
+    public void Reatribuir(Guid novoResponsavelId, string novoResponsavelNome)
+    {
+        if (Status is StatusChamado.Fechado or StatusChamado.Cancelado)
+            throw new InvalidOperationException($"Não é possível reatribuir um chamado com status '{Status}'.");
+
+        if (string.IsNullOrWhiteSpace(novoResponsavelNome))
+            throw new ArgumentException("Nome do novo responsável é obrigatório.", nameof(novoResponsavelNome));
+
+        // Se estava Aberto, passa para EmAndamento
+        if (Status == StatusChamado.Aberto)
+            Status = StatusChamado.EmAndamento;
+
+        ResponsavelId = novoResponsavelId;
+        ResponsavelNome = novoResponsavelNome;
+        DataAtualizacao = DateTime.UtcNow;
+    }
+
     public void Resolver()
     {
         if (Status is not (StatusChamado.Aberto or StatusChamado.EmAndamento))
             throw new InvalidOperationException($"Não é possível resolver um chamado com status '{Status}'.");
 
         Status = StatusChamado.Resolvido;
+        MotivoEncerramento = Domain.Enums.MotivoEncerramento.Resolvido;
         DataConclusao = DateTime.UtcNow;
         DataAtualizacao = DateTime.UtcNow;
     }
 
-    public void Fechar()
+    public void Fechar(Domain.Enums.MotivoEncerramento? motivo = null, string? motivoOutro = null)
     {
         if (Status != StatusChamado.Resolvido)
             throw new InvalidOperationException("Só é possível fechar um chamado que já foi resolvido.");
 
         Status = StatusChamado.Fechado;
+        if (motivo.HasValue)
+        {
+            MotivoEncerramento = motivo.Value;
+            MotivoOutro = motivo.Value == Domain.Enums.MotivoEncerramento.Outro ? motivoOutro : null;
+        }
+        DataAtualizacao = DateTime.UtcNow;
+    }
+
+    public void ForcarEncerramento(MotivoEncerramento motivo, string? motivoOutro = null)
+    {
+        if (Status is StatusChamado.Fechado or StatusChamado.Cancelado)
+            throw new InvalidOperationException($"Não é possível forçar o encerramento de um chamado com status '{Status}'.");
+
+        if (motivo == Domain.Enums.MotivoEncerramento.Outro && string.IsNullOrWhiteSpace(motivoOutro))
+            throw new ArgumentException("Informe o motivo quando selecionar 'Outro'.", nameof(motivoOutro));
+
+        Status = StatusChamado.Fechado;
+        MotivoEncerramento = motivo;
+        MotivoOutro = motivo == Domain.Enums.MotivoEncerramento.Outro ? motivoOutro : null;
+        DataConclusao ??= DateTime.UtcNow;
         DataAtualizacao = DateTime.UtcNow;
     }
 
@@ -98,12 +141,17 @@ public class Chamado : BaseEntity
         DataAtualizacao = DateTime.UtcNow;
     }
 
-    public void Cancelar()
+    public void Cancelar(MotivoEncerramento motivo, string? motivoOutro = null)
     {
         if (Status is StatusChamado.Fechado or StatusChamado.Cancelado)
             throw new InvalidOperationException($"Não é possível cancelar um chamado com status '{Status}'.");
 
+        if (motivo == Domain.Enums.MotivoEncerramento.Outro && string.IsNullOrWhiteSpace(motivoOutro))
+            throw new ArgumentException("Informe o motivo quando selecionar 'Outro'.", nameof(motivoOutro));
+
         Status = StatusChamado.Cancelado;
+        MotivoEncerramento = motivo;
+        MotivoOutro = motivo == Domain.Enums.MotivoEncerramento.Outro ? motivoOutro : null;
         DataAtualizacao = DateTime.UtcNow;
     }
 

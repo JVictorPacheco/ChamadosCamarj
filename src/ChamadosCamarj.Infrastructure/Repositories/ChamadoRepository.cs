@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using ChamadosCamarj.Domain.Entities;
 using ChamadosCamarj.Domain.Interfaces;
 using ChamadosCamarj.Infrastructure.Data;
+using ChamadosCamarj.Application.Common.Exceptions;
 
 namespace ChamadosCamarj.Infrastructure.Repositories;
 
@@ -31,8 +32,15 @@ public class ChamadoRepository : IChamadoRepository
         if (chamado == null)
             throw new ArgumentNullException(nameof(chamado));
 
-        _dbSet.Update(chamado);
-        await _context.SaveChangesAsync(cancellationToken);
+        try
+        {
+            _dbSet.Update(chamado);
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            throw new ConflictException("Este chamado foi modificado por outro usuario. Recarregue a pagina e tente novamente.");
+        }
     }
 
     public async Task AdicionarComentarioAsync(Comentario comentario, CancellationToken cancellationToken = default)
@@ -44,6 +52,15 @@ public class ChamadoRepository : IChamadoRepository
         await _context.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task AdicionarAnexoAsync(Anexo anexo, CancellationToken cancellationToken = default)
+    {
+        if (anexo == null)
+            throw new ArgumentNullException(nameof(anexo));
+
+        await _context.Set<Anexo>().AddAsync(anexo, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<Chamado?> ObterPorIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _dbSet
@@ -51,6 +68,17 @@ public class ChamadoRepository : IChamadoRepository
             .Include(c => c.Comentarios)
             .Include(c => c.Anexos)
             .AsNoTracking()
+            .AsSplitQuery()
+            .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
+    }
+
+    public async Task<Chamado?> ObterPorIdComTrackingAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .Include(c => c.Categoria)
+            .Include(c => c.Comentarios)
+            .Include(c => c.Anexos)
+            .AsSplitQuery()
             .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
     }
 
@@ -61,6 +89,31 @@ public class ChamadoRepository : IChamadoRepository
             .OrderBy(c => c.DataCriacao)
             .AsNoTracking()
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task RemoverAnexoAsync(Guid anexoId, CancellationToken cancellationToken = default)
+    {
+        var anexo = await _context.Set<Anexo>().FirstOrDefaultAsync(a => a.Id == anexoId, cancellationToken);
+        if (anexo is null) return;
+
+        _context.Set<Anexo>().Remove(anexo);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<IEnumerable<Anexo>> ObterAnexosPorChamadoAsync(Guid chamadoId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Set<Anexo>()
+            .Where(a => a.ChamadoId == chamadoId)
+            .OrderBy(a => a.DataCriacao)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<Anexo?> ObterAnexoPorIdAsync(Guid anexoId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Set<Anexo>()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Id == anexoId, cancellationToken);
     }
 
     public async Task<IEnumerable<Chamado>> ObterTodosAsync(CancellationToken cancellationToken = default)
@@ -123,9 +176,22 @@ public class ChamadoRepository : IChamadoRepository
         Guid? categoriaId = null,
         string? busca = null,
         string? solicitanteEmail = null,
+        IEnumerable<Domain.Enums.StatusChamado>? statusEntre = null,
+        DateTime? dataInicio = null,
+        DateTime? dataFim = null,
+        Guid? usuarioLogadoId = null,
+        Guid? grupoId = null,
+        Domain.Enums.MotivoEncerramento? motivoEncerramento = null,
         CancellationToken cancellationToken = default)
     {
         var query = _dbSet.AsNoTracking().AsQueryable();
+
+        if (grupoId.HasValue && usuarioLogadoId.HasValue)
+        {
+            query = query.Where(c => c.ResponsavelId.HasValue &&
+                (c.ResponsavelId == usuarioLogadoId.Value ||
+                 _context.UsuariosPerfil.Any(u => u.Id == c.ResponsavelId && u.GrupoId == grupoId.Value)));
+        }
 
         if (status.HasValue)
             query = query.Where(c => c.Status == status.Value);
@@ -140,10 +206,27 @@ public class ChamadoRepository : IChamadoRepository
             query = query.Where(c => c.CategoriaId == categoriaId.Value);
 
         if (!string.IsNullOrWhiteSpace(busca))
-            query = query.Where(c => c.Titulo.Contains(busca) || c.Descricao.Contains(busca));
+        {
+            var numeroBuscado = ParseNumeroChamado(busca);
+            query = numeroBuscado.HasValue
+                ? query.Where(c => c.Titulo.Contains(busca) || c.Descricao.Contains(busca) || c.Numero == numeroBuscado.Value)
+                : query.Where(c => c.Titulo.Contains(busca) || c.Descricao.Contains(busca));
+        }
 
         if (!string.IsNullOrWhiteSpace(solicitanteEmail))
             query = query.Where(c => c.SolicitanteEmail == solicitanteEmail);
+
+        if (statusEntre is not null)
+            query = query.Where(c => statusEntre.Contains(c.Status));
+
+        if (dataInicio.HasValue)
+            query = query.Where(c => c.DataCriacao >= dataInicio.Value);
+
+        if (dataFim.HasValue)
+            query = query.Where(c => c.DataCriacao <= dataFim.Value);
+
+        if (motivoEncerramento.HasValue)
+            query = query.Where(c => c.MotivoEncerramento == motivoEncerramento.Value);
 
         var total = await query.CountAsync(cancellationToken);
 
@@ -151,6 +234,7 @@ public class ChamadoRepository : IChamadoRepository
             .Include(c => c.Categoria)
             .Include(c => c.Comentarios)
             .Include(c => c.Anexos)
+            .AsSplitQuery()
             .OrderByDescending(c => c.DataCriacao)
             .Skip((pagina - 1) * tamanhoPagina)
             .Take(tamanhoPagina)
@@ -167,6 +251,30 @@ public class ChamadoRepository : IChamadoRepository
     public async Task<int> ContarPorStatusAsync(Domain.Enums.StatusChamado status, CancellationToken cancellationToken = default)
     {
         return await _dbSet.CountAsync(c => c.Status == status, cancellationToken);
+    }
+
+    public async Task<Dictionary<Domain.Enums.StatusChamado, int>> ContarPorStatusAgrupadoAsync(CancellationToken cancellationToken = default)
+    {
+        return await _dbSet
+            .GroupBy(c => c.Status)
+            .Select(g => new { Status = g.Key, Quantidade = g.Count() })
+            .ToDictionaryAsync(x => x.Status, x => x.Quantidade, cancellationToken);
+    }
+
+    public async Task<(int TotalResolvidos, int DentroPrazo)> ContarSlaComplianceAsync(DateTime inicio, DateTime fim, CancellationToken cancellationToken = default)
+    {
+        var resolvidos = await _dbSet
+            .AsNoTracking()
+            .Where(c => c.DataConclusao.HasValue
+                && c.DataConclusao >= inicio
+                && c.DataConclusao <= fim
+                && (c.Status == Domain.Enums.StatusChamado.Resolvido || c.Status == Domain.Enums.StatusChamado.Fechado))
+            .Select(c => new { c.DataConclusao, c.DataLimite })
+            .ToListAsync(cancellationToken);
+
+        var total = resolvidos.Count;
+        var dentroPrazo = resolvidos.Count(r => r.DataLimite.HasValue && r.DataConclusao <= r.DataLimite);
+        return (total, dentroPrazo);
     }
 
     public async Task<int> ContarResolvidosHojeAsync(CancellationToken cancellationToken = default)
@@ -213,27 +321,14 @@ public class ChamadoRepository : IChamadoRepository
             .ToDictionaryAsync(x => x.Prioridade, x => x.Quantidade, cancellationToken);
     }
 
-    public async Task<List<(DateTime Data, int Abertos, int Resolvidos)>> ObterTendenciaAsync(int dias, CancellationToken cancellationToken = default)
+    // Aceita "42" ou "CAM-42" (case-insensitive) na mesma busca de texto livre —
+    // qualquer outra coisa (ex: "impressora") não é um número, cai só na busca por texto.
+    private static int? ParseNumeroChamado(string busca)
     {
-        var inicio = DateTime.UtcNow.Date.AddDays(-dias + 1);
-        var fim = DateTime.UtcNow.Date.AddDays(1);
+        var texto = busca.Trim();
+        if (texto.StartsWith("CAM-", StringComparison.OrdinalIgnoreCase))
+            texto = texto[4..];
 
-        var chamadosNoPeriodo = await _dbSet
-            .Where(c => c.DataCriacao >= inicio && c.DataCriacao < fim)
-            .Select(c => new
-            {
-                Data = c.DataCriacao.Date,
-                FoiResolvido = c.Status == Domain.Enums.StatusChamado.Resolvido && c.DataConclusao.HasValue
-            })
-            .ToListAsync(cancellationToken);
-
-        return Enumerable.Range(0, dias)
-            .Select(d => inicio.AddDays(d))
-            .Select(data => (
-                Data: data,
-                Abertos: chamadosNoPeriodo.Count(c => c.Data == data),
-                Resolvidos: chamadosNoPeriodo.Count(c => c.Data == data && c.FoiResolvido)
-            ))
-            .ToList();
+        return int.TryParse(texto, out var numero) ? numero : null;
     }
 }

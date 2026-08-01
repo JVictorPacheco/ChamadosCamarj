@@ -1,6 +1,8 @@
 # 🔐 Azure AD — Autenticação Corporativa
 
-## Por quê Azure AD?
+> ⚠️ **DECISÃO OBSOLETA — corrigida em 2026-06-25.** A Camarj usa **Google Workspace** (Gmail corporativo), não Microsoft/Azure AD. Esta nota é mantida como histórico da decisão original; veja [[🔐 Google Workspace]] para a decisão vigente. Ver também [[💬 Decisões]] (tabela "Decisões Corrigidas").
+
+## Por quê Azure AD? *(raciocínio original, hoje inválido)*
 
 - ✅ Os colaboradores já têm email corporativo Microsoft
 - ✅ Sem cadastro — usa a conta que já existe
