@@ -20,6 +20,7 @@ import { AlterarPrioridadeModal } from './components/AlterarPrioridadeModal'
 import { ForcarEncerramentoModal } from './components/ForcarEncerramentoModal'
 import { TimelineHistorico } from './components/TimelineHistorico'
 import { AnexosList } from './components/AnexosList'
+import { UploadAnexoForm } from './components/UploadAnexoForm'
 import { useChamado } from './hooks/useChamado'
 import {
   useAtribuirChamado,
@@ -383,7 +384,11 @@ export function ChamadoDetailPage() {
         )}
       </dl>
 
-      <AnexosList chamadoId={chamado.id} isUploading={enviandoAnexos} />
+      <section className="space-y-4">
+        <h2 className="text-xl font-heading">Anexos</h2>
+        <UploadAnexoForm chamadoId={chamado.id} />
+        <AnexosList chamadoId={chamado.id} isUploading={enviandoAnexos} />
+      </section>
 
       <section className="space-y-4">
         <h2 className="text-xl font-heading">Comentários</h2>

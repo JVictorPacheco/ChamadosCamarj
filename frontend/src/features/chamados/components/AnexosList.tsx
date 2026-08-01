@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useIsMutating } from '@tanstack/react-query'
 import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
@@ -99,6 +100,8 @@ function LinhaAnexo({ chamadoId, anexoId, nomeArquivo, tamanhoBytes, enviadoPorI
 
 export function AnexosList({ chamadoId, isUploading = false }: { chamadoId: string; isUploading?: boolean }) {
   const { data: anexos, isPending, isFetching } = useAnexos(chamadoId)
+  const uploadsEmAndamento = useIsMutating({ mutationKey: ['upload-anexo', chamadoId] })
+  const temUploadAtivo = isUploading || uploadsEmAndamento > 0
 
   if (isPending) {
     return (
@@ -112,7 +115,7 @@ export function AnexosList({ chamadoId, isUploading = false }: { chamadoId: stri
     )
   }
 
-  if ((!anexos || anexos.length === 0) && !isUploading) {
+  if ((!anexos || anexos.length === 0) && !temUploadAtivo) {
     return null
   }
 
@@ -120,7 +123,7 @@ export function AnexosList({ chamadoId, isUploading = false }: { chamadoId: stri
     <section className="space-y-4">
       <div className="flex items-center gap-2">
         <h2 className="text-xl font-heading">Anexos</h2>
-        {isFetching && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+        {(isFetching || temUploadAtivo) && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
       </div>
       <ul className="flex flex-col gap-2">
         {anexos?.map((anexo) => (
@@ -134,7 +137,7 @@ export function AnexosList({ chamadoId, isUploading = false }: { chamadoId: stri
             enviadoPorNome={anexo.enviadoPorNome}
           />
         ))}
-        {isUploading && (
+        {temUploadAtivo && (
           <li className="flex items-center gap-2 rounded-lg border border-border p-3 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" />
             Enviando arquivo...
