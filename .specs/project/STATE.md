@@ -1,6 +1,30 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-07-31
+> Atualizado em: 2026-08-01
+
+---
+
+## Sessão de 2026-08-01 — Resiliência de Anexos (Supabase Storage) + UX de Upload
+
+### Resumo da sessão
+- **Bug #1 (CRITICAL) — Arquivos órfãos no Supabase Storage:** se o upload pro Storage desse certo mas o insert no banco falhasse, o arquivo ficava permanentemente órfão. Corrigido com try-catch em `AdicionarAnexoCommandHandler`: se o banco falha, remove o arquivo do Storage (`RemoverAsync` com `CancellationToken.None`).
+- **Bug #2 (MEDIUM) — CancellationToken não propagado:** o `CancellationToken` não era passado pro método `Upload()` do SDK do Supabase. Corrigido em `SupabaseStorageService.UploadAsync`.
+- **Bug #3 (LOW-MEDIUM) — Sem logging no Storage:** `SupabaseStorageService` não tinha logging. Adicionado `ILogger<SupabaseStorageService>` com logs estruturados nos 3 métodos (`UploadAsync`, `ObterUrlAssinadaAsync`, `RemoverAsync`).
+- **UX — Upload direto na DetailPage:** `UploadAnexoForm` adicionado à `ChamadoDetailPage` — permite anexar arquivo sem precisar escrever comentário.
+- **UX — Indicador de carregamento na lista:** `AnexosList` agora mostra spinner durante refetch (`isFetching`) e um item "Enviando arquivo..." com ícone `Loader2` durante upload ativo (detectado via `useIsMutating` com `mutationKey` + prop `isUploading` do `ComentarioForm`).
+- **215 testes backend + build frontend limpos.**
+
+### Arquivos alterados (6 arquivos, somente domínio de anexos)
+- `AdicionarAnexoCommandHandler.cs` — rollback de órfãos
+- `SupabaseStorageService.cs` — logging + cancellation token
+- `AnexosList.tsx` — spinner de carregamento + skeleton de upload
+- `ComentarioForm.tsx` — callback `onUploadChange`
+- `ChamadoDetailPage.tsx` — `UploadAnexoForm` + estado `enviandoAnexos`
+- `useAnexos.ts` — `mutationKey` no `useUploadAnexo`
+
+### Git Flow
+- Branch `fix/upload-anexo-resiliencia` → develop → main
+- Commits atômicos: 3 commits (fix + feat spinner + feat UploadAnexoForm direto)
 
 ---
 

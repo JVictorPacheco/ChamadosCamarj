@@ -1,10 +1,32 @@
 # Handoff
 
-**Date:** 2026-07-31
-**Session:** Fundamentos de engenharia — concorrência, idempotência, triagem, tema, UX
-**Branch:** `main`, 38 arquivos modificados/criados
+**Date:** 2026-08-01
+**Session:** Resiliência de Anexos (Supabase Storage) + UX de Upload
+**Branch:** `main`, 6 arquivos alterados
 
 ## Completed ✓
+
+### Correções — Anexos/Storage
+- **Bug CRITICAL — Arquivos órfãos:** rollback no `AdicionarAnexoCommandHandler` — se insert no banco falha, remove o arquivo do Storage
+- **Bug MEDIUM — CancellationToken:** propagado para `Upload()` do SDK Supabase em `SupabaseStorageService`
+- **Bug LOW-MEDIUM — Logging:** `ILogger<SupabaseStorageService>` com logs estruturados em UploadAsync, ObterUrlAssinadaAsync, RemoverAsync
+
+### Melhorias UX — Anexos
+- **Upload direto:** `UploadAnexoForm` adicionado à `ChamadoDetailPage` — anexar sem precisar comentar
+- **Feedback visual:** `AnexosList` com spinner durante refetch + item "Enviando arquivo..." com Loader2 durante upload ativo (`useIsMutating` + prop `isUploading`)
+- **useUploadAnexo** ganhou `mutationKey: ['upload-anexo', chamadoId]` para uso com `useIsMutating`
+
+### Gate Checks
+- 215 testes backend, 0 falhas
+- Frontend build limpo
+
+### Git Flow
+- `fix/upload-anexo-resiliencia` → `develop` → `main`
+- 3 commits atômicos
+
+## Handoff anterior (2026-07-31)
+
+
 
 ### Fundamentos de Engenharia (Gaps 1-4)
 - **Gap #1 — Concorrência otimista:** `IsConcurrencyToken()` no `DataAtualizacao` do Chamado → 409 Conflict se dois atendentes modificarem o mesmo chamado

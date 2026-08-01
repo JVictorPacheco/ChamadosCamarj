@@ -1,7 +1,8 @@
 # Spec — Anexos (Supabase Storage)
 
-> Status: IMPLEMENTADA E VERIFICADA DE PONTA A PONTA (2026-07-21) — upload/listagem/download real confirmados contra o Supabase Storage
+> Status: IMPLEMENTADA E VERIFICADA DE PONTA A PONTA (2026-07-21) + corrigida e melhorada (2026-08-01)
 > Criado em: 2026-07-20
+> Última atualização: 2026-08-01
 > Fase 4 (metade 1 de 2 — Storage antes de Email, decidido pelo usuário: sem dependência externa nova, dá pra implementar e verificar de ponta a ponta agora)
 
 ## Problem Statement
@@ -92,6 +93,21 @@ Colaboradores frequentemente precisam anexar evidência a um chamado (print de e
 | ANX-05 | Remoção real de anexo, com RBAC (Admin ou autor) | Done (2026-07-24) |
 
 **Coverage:** 5 total, 5 verificados de ponta a ponta contra o Supabase Storage real (upload/listagem/download em 2026-07-21; remoção em 2026-07-24).
+
+### Correções e melhorias (2026-08-01)
+
+| Issue | Severidade | Descrição | Solução |
+|-------|-----------|-----------|---------|
+| Arquivos órfãos | CRITICAL | Upload no Storage ok mas insert no banco falha → arquivo permanente no bucket | try-catch com rollback: `RemoverAsync` no catch |
+| CancellationToken ignorado | MEDIUM | `Upload()` do SDK Supabase não recebia o token de cancelamento | `cancellationToken` passado como argumento nomeado |
+| Sem logging | LOW-MEDIUM | `SupabaseStorageService` sem logs — debug cego em produção | `ILogger<SupabaseStorageService>` com logs estruturados em todos os métodos |
+| UX — upload direto | — | Só dava pra anexar via comentário na DetailPage | `UploadAnexoForm` adicionado à `ChamadoDetailPage` |
+| UX — feedback visual | — | Nenhum indicador na lista durante upload (sensação de "travado") | Spinner + skeleton "Enviando arquivo..." via `useIsMutating` |
+
+### Verificação (2026-08-01)
+- 215 testes backend passando
+- Frontend build limpo
+- Teste manual: upload direto via DetailPage + upload via comentário, ambos com feedback visual confirmado
 
 ## Bloqueio resolvido — verificação de ponta a ponta (2026-07-21)
 
