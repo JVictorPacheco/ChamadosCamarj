@@ -11,6 +11,7 @@ export function useAnexos(chamadoId: string) {
 export function useUploadAnexo(chamadoId: string) {
   const queryClient = useQueryClient()
   return useMutation({
+    mutationKey: ['upload-anexo', chamadoId],
     mutationFn: (arquivo: File) => uploadAnexo(chamadoId, arquivo),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['anexos', chamadoId] }),
   })
