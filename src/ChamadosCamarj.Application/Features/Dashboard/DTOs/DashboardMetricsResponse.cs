@@ -10,5 +10,5 @@ public record DashboardMetricsResponse(
 
 public record SlaComplianceItem(int TotalResolvidos, int DentroPrazo, double Percentual);
 
-public record PorCategoriaItem(string CategoriaNome, int Quantidade);
+public record PorCategoriaItem(string CategoriaNome, Guid? CategoriaId, int Quantidade);
 public record PorPrioridadeItem(string Prioridade, int Quantidade);

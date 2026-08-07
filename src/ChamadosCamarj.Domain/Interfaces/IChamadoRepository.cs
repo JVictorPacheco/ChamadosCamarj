@@ -51,6 +51,6 @@ public interface IChamadoRepository
     Task<Dictionary<StatusChamado, int>> ContarPorStatusAgrupadoAsync(CancellationToken cancellationToken = default);
     Task<int> ContarResolvidosHojeAsync(CancellationToken cancellationToken = default);
     Task<double?> ObterTempoMedioResolucaoHorasAsync(CancellationToken cancellationToken = default);
-    Task<Dictionary<string, int>> ContarPorCategoriaAsync(CancellationToken cancellationToken = default);
+    Task<List<CategoriaContagem>> ContarPorCategoriaAsync(CancellationToken cancellationToken = default);
     Task<Dictionary<string, int>> ContarPorPrioridadeAsync(CancellationToken cancellationToken = default);
 }

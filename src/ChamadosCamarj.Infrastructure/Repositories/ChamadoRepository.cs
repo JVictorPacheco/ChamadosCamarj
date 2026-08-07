@@ -317,14 +317,14 @@ public class ChamadoRepository : IChamadoRepository
         return resolvidos.Average(r => (r.DataConclusao - r.DataCriacao).TotalHours);
     }
 
-    public async Task<Dictionary<string, int>> ContarPorCategoriaAsync(CancellationToken cancellationToken = default)
+    public async Task<List<Domain.Interfaces.CategoriaContagem>> ContarPorCategoriaAsync(CancellationToken cancellationToken = default)
     {
         return await _dbSet
             .Where(c => c.Status != Domain.Enums.StatusChamado.Fechado
                      && c.Status != Domain.Enums.StatusChamado.Cancelado)
-            .GroupBy(c => c.Categoria != null ? c.Categoria.Nome : "Sem categoria")
-            .Select(g => new { Categoria = g.Key, Quantidade = g.Count() })
-            .ToDictionaryAsync(x => x.Categoria, x => x.Quantidade, cancellationToken);
+            .GroupBy(c => new { CategoriaId = c.Categoria != null ? (Guid?)c.Categoria.Id : null, CategoriaNome = c.Categoria != null ? c.Categoria.Nome : "Sem categoria" })
+            .Select(g => new Domain.Interfaces.CategoriaContagem(g.Key.CategoriaNome, g.Key.CategoriaId, g.Count()))
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<Dictionary<string, int>> ContarPorPrioridadeAsync(CancellationToken cancellationToken = default)

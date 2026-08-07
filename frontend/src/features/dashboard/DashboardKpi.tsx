@@ -4,8 +4,8 @@ interface DashboardKpiProps {
   titulo: string
   valor: string | number
   subtexto?: string
-  /** Colore o subtexto quando a variação tem um sinal claro de bom/ruim (ex: mais Cancelados = ruim). Omitir quando a direção não é óbvia (ex: mais Abertos não é bom nem ruim por si só). */
   subtextoTom?: 'bom' | 'ruim'
+  onClick?: () => void
 }
 
 const TOM_CLASS: Record<'bom' | 'ruim', string> = {
@@ -13,13 +13,13 @@ const TOM_CLASS: Record<'bom' | 'ruim', string> = {
   ruim: 'text-[var(--status-critical)]',
 }
 
-export function DashboardKpi({ titulo, valor, subtexto, subtextoTom }: DashboardKpiProps) {
+export function DashboardKpi({ titulo, valor, subtexto, subtextoTom, onClick }: DashboardKpiProps) {
   const display = typeof valor === 'number' && !Number.isInteger(valor)
     ? (valor as number).toFixed(1)
     : String(valor)
 
   return (
-    <Card>
+    <Card className={onClick ? 'cursor-pointer hover:bg-accent/50 transition-colors' : undefined} onClick={onClick}>
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-normal text-muted-foreground">{titulo}</CardTitle>
       </CardHeader>

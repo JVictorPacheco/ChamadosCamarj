@@ -1,8 +1,10 @@
+import { useNavigate } from 'react-router'
 import { useDraggable } from '@dnd-kit/core'
 import type { ChamadoResponse } from '@/types/api'
 import { ChamadoCard } from '@/features/chamados/components/ChamadoCard'
 
 export function KanbanCard({ chamado }: { chamado: ChamadoResponse }) {
+  const navigate = useNavigate()
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: chamado.id,
     data: { chamado },
@@ -18,7 +20,9 @@ export function KanbanCard({ chamado }: { chamado: ChamadoResponse }) {
 
   return (
     <div ref={setNodeRef} style={style} {...listeners} {...attributes} className="cursor-grab active:cursor-grabbing">
-      <ChamadoCard chamado={chamado} />
+      <div onClick={() => navigate(`/chamados/${chamado.id}`)}>
+        <ChamadoCard chamado={chamado} />
+      </div>
     </div>
   )
 }
