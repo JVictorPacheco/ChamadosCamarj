@@ -11,6 +11,7 @@ import type { PrioridadeChamado, StatusChamado, SlaStatus } from '@/types/api'
 const STATUS_VALUES: StatusChamado[] = ['Aberto', 'EmAndamento', 'Resolvido', 'Fechado', 'Cancelado']
 const PRIORIDADE_VALUES: PrioridadeChamado[] = ['Baixa', 'Media', 'Alta', 'Urgente']
 const SLA_VALUES: SlaStatus[] = ['DentroPrazo', 'Atencao', 'Atrasado']
+const GUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 function parseFiltrosFromParams(searchParams: URLSearchParams): FiltroChamadosValue {
   const status = searchParams.get('status') as StatusChamado | null
@@ -22,7 +23,7 @@ function parseFiltrosFromParams(searchParams: URLSearchParams): FiltroChamadosVa
   return {
     ...(status && STATUS_VALUES.includes(status) ? { status } : {}),
     ...(prioridade && PRIORIDADE_VALUES.includes(prioridade) ? { prioridade } : {}),
-    ...(categoriaId ? { categoriaId } : {}),
+    ...(categoriaId && GUID_REGEX.test(categoriaId) ? { categoriaId } : {}),
     ...(busca ? { busca } : {}),
     ...(slaStatus && SLA_VALUES.includes(slaStatus) ? { slaStatus } : {}),
   }

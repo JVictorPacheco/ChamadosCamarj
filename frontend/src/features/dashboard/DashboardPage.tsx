@@ -16,6 +16,11 @@ const STATUS_MAP: Record<string, string> = {
   Cancelado: 'Cancelado',
 }
 
+interface PrioridadeClickData {
+  prioridadeNome: string
+  quantidade: number
+}
+
 export function DashboardPage() {
   const { perfil } = useAuth()
   const navigate = useNavigate()
@@ -33,8 +38,8 @@ export function DashboardPage() {
     }
   }, [navigate])
 
-  const handlePrioridadeClick = useCallback((item: { categoriaNome: string; categoriaId?: string | null; quantidade: number }) => {
-    navigate(`/chamados?prioridade=${item.categoriaNome}`)
+  const handlePrioridadeClick = useCallback((item: PrioridadeClickData) => {
+    navigate(`/chamados?prioridade=${item.prioridadeNome}`)
   }, [navigate])
 
   if (perfil?.tipo === 'Solicitante') {
@@ -136,7 +141,7 @@ export function DashboardPage() {
             {metrics.porPrioridade.length > 0 ? (
               <CategoriaChart
                 data={metrics.porPrioridade.map(p => ({ categoriaNome: p.prioridade, quantidade: p.quantidade }))}
-                onBarClick={handlePrioridadeClick}
+                onBarClick={(item) => handlePrioridadeClick({ prioridadeNome: item.categoriaNome, quantidade: item.quantidade })}
               />
             ) : (
               <p className="py-8 text-center text-sm text-muted-foreground">Nenhum chamado ativo.</p>
