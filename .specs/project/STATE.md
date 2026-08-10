@@ -1,6 +1,26 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-08-01
+> Atualizado em: 2026-08-10
+
+---
+
+---
+
+## Sessão de 2026-08-10 — Dashboard clicável + Kanban com navegação + Orquestração IA/SDD
+
+### Resumo
+- **Dashboard clicável:** cards KPI, rosca, gráficos de barra navegam para `/chamados?{filtro}`. `ChamadosListPage` migrada para `useSearchParams`.
+- **Kanban com navegação:** clique abre `/chamados/:id`, drag mantido via `activationConstraint: distance=8`.
+- **Backend:** `PorCategoriaItem` com `Guid? CategoriaId`. Record `CategoriaContagem`.
+- **Code review (Grok 4.5):** 5 pontos, todos corrigidos.
+- **Orquestração IA/SDD:** guia em `docs/GUIA-ORQUESTRACAO-SDD.md`. Fluxo: @spec → @build-frontend → @review → fixes → @review → merge.
+- **215 testes**, 0 erros TS, mergeado em develop e main.
+- Spec: `.specs/features/dashboard-kanban-navegacao/`
+
+### Decisões
+- Filtros de chamados agora são bidirecionais com a URL (`useSearchParams`), facilitando deep-linking do Dashboard
+- `categoriaId` adicionado ao DTO do Dashboard para filtro exato (antes só tinha nome, ambíguo)
+- Orquestração de IA adotada como regra #4 da Constitution
 
 ---
 
@@ -69,7 +89,9 @@
 
 3. **Mudança de contrato compartilhado entre camadas é sinalizada ANTES de aplicar, não só relatada depois.** Se uma mudança remove/altera um método de uma interface usada por múltiplos consumidores, muda uma assinatura pública, ou qualquer coisa que outra camada/feature dependa — avisar o usuário antes de aplicar, não só narrar no resumo final. (Gap 3, caso real: remoção de `RemoverAsync`/`DownloadAsync` de `IStorageService` foi feita e só reportada depois.)
 
-**Como aplicar na prática:** ao iniciar uma feature nova ou uma extensão de feature existente neste projeto, revisar esta seção antes de seguir pro Design/Execute do skill `tlc-spec-driven`. Se notar que uma dessas 3 regras está prestes a ser quebrada, parar e avisar o usuário explicitamente, em vez de seguir e só documentar depois.
+4. **Orquestração de IA com SDD.** Para cada feature nova, seguir: `@spec` → `@build-backend`/`@build-frontend` → `@review` → gate checks → commit/merge. Sempre pedir pra cada agente salvar seus artefatos. Guia completo: `docs/GUIA-ORQUESTRACAO-SDD.md`.
+
+**Como aplicar na prática:** ao iniciar uma feature nova ou uma extensão de feature existente neste projeto, revisar esta seção antes de seguir pro Design/Execute do skill `tlc-spec-driven`. Se notar que uma dessas 4 regras está prestes a ser quebrada, parar e avisar o usuário explicitamente, em vez de seguir e só documentar depois.
 
 ---
 
