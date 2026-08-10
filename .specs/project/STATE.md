@@ -4,9 +4,22 @@
 
 ---
 
+## Sessão de 2026-08-10 (tarde) — Hotfix: URL da API em produção corrigida
+
+### Problema
+- Login retornava "Serviço indisponível. Verifique sua conexão" (`api.ts:63` — `fetch()` não alcançava a API)
+- `.env.production` ainda apontava para URL de Cloudflare Tunnel efêmero expirado (`twist-prefer-electoral-elizabeth.trycloudflare.com`)
+- O túnel caiu e a URL correta é `https://chamados.okurumin.com.br/api` (Cloudflare Tunnel fixo via domínio próprio)
+- Build antigo (10h) foi feito com código desatualizado, 4 commits atrás
+
+### Correção
+- `.env.production`: `VITE_API_BASE_URL` corrigido para `https://chamados.okurumin.com.br/api`
+- `npm run build` limpo, commitado e mergeado em `develop` e `main`
+- Push feito, aguardando redeploy no Cloudflare Pages
+
 ---
 
-## Sessão de 2026-08-10 — Dashboard clicável + Kanban com navegação + Orquestração IA/SDD
+## Sessão de 2026-08-10 (manhã) — Dashboard clicável + Kanban com navegação + Orquestração IA/SDD
 
 ### Resumo
 - **Dashboard clicável:** cards KPI, rosca, gráficos de barra navegam para `/chamados?{filtro}`. `ChamadosListPage` migrada para `useSearchParams`.
