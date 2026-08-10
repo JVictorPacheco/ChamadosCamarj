@@ -1,6 +1,6 @@
 # Roadmap — ChamadosCamarj
 
-> Última atualização: 2026-07-31
+> Última atualização: 2026-08-10
 
 ## ✅ Fase 0 — Setup
 
@@ -262,3 +262,14 @@
 - [x] Tema padrão: claro (antes era escuro)
 - [x] Favicon logo CAMARJ + título "CAMARJ - Portal de Chamados"
 - [x] Reset de senha: FrontendBaseUrl corrigido, CORS com domínio okurumin.com.br, logs SMTP melhorados
+
+## 🖱️ Dashboard Clicável + Kanban com Navegação (CONCLUÍDO — 2026-08-10)
+
+> Spec em `.specs/features/dashboard-kanban-navegacao/`. Implementado com orquestração IA: @spec → @build-frontend → @review → @review fixes.
+
+- [x] Roscas, gráficos e KPI do Dashboard navegam para lista de chamados pré-filtrada via URL
+- [x] `ChamadosListPage` migrada para `useSearchParams` (filtros bidirecionais com URL)
+- [x] Kanban: clique no card abre `/chamados/:id`, drag and drop mantido
+- [x] Backend: `PorCategoriaItem` com `Guid? CategoriaId` para filtro exato
+- [x] Code review (Grok 4.5): 5 pontos corrigidos (UUID validation, paginação Kanban, SignalR, nomenclatura, null handling)
+- [x] Guia de orquestração IA + SDD: `docs/GUIA-ORQUESTRACAO-SDD.md`
