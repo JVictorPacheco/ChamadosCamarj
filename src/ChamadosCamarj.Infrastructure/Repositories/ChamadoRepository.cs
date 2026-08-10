@@ -182,15 +182,31 @@ public class ChamadoRepository : IChamadoRepository
         Guid? usuarioLogadoId = null,
         Guid? grupoId = null,
         Domain.Enums.MotivoEncerramento? motivoEncerramento = null,
+        string? perfil = null,
         CancellationToken cancellationToken = default)
     {
         var query = _dbSet.AsNoTracking().AsQueryable();
 
         if (grupoId.HasValue && usuarioLogadoId.HasValue)
         {
-            query = query.Where(c => c.ResponsavelId.HasValue &&
-                (c.ResponsavelId == usuarioLogadoId.Value ||
-                 _context.UsuariosPerfil.Any(u => u.Id == c.ResponsavelId && u.GrupoId == grupoId.Value)));
+            if (perfil == "Atendente")
+            {
+                query = query.Where(c =>
+                    !c.ResponsavelId.HasValue ||
+                    c.ResponsavelId == usuarioLogadoId.Value ||
+                    _context.UsuariosPerfil.Any(u => u.Id == c.ResponsavelId && u.GrupoId == grupoId.Value)
+                );
+            }
+            else
+            {
+                query = query.Where(c =>
+                    (c.ResponsavelId.HasValue &&
+                     (c.ResponsavelId == usuarioLogadoId.Value ||
+                      _context.UsuariosPerfil.Any(u => u.Id == c.ResponsavelId && u.GrupoId == grupoId.Value)))
+                    ||
+                    _context.UsuariosPerfil.Any(u => u.Id == usuarioLogadoId.Value && u.Email == c.SolicitanteEmail)
+                );
+            }
         }
 
         if (status.HasValue)
@@ -213,7 +229,7 @@ public class ChamadoRepository : IChamadoRepository
                 : query.Where(c => c.Titulo.Contains(busca) || c.Descricao.Contains(busca));
         }
 
-        if (!string.IsNullOrWhiteSpace(solicitanteEmail))
+        if (!string.IsNullOrWhiteSpace(solicitanteEmail) && !(grupoId.HasValue && usuarioLogadoId.HasValue))
             query = query.Where(c => c.SolicitanteEmail == solicitanteEmail);
 
         if (statusEntre is not null)
@@ -301,14 +317,14 @@ public class ChamadoRepository : IChamadoRepository
         return resolvidos.Average(r => (r.DataConclusao - r.DataCriacao).TotalHours);
     }
 
-    public async Task<Dictionary<string, int>> ContarPorCategoriaAsync(CancellationToken cancellationToken = default)
+    public async Task<List<Domain.Interfaces.CategoriaContagem>> ContarPorCategoriaAsync(CancellationToken cancellationToken = default)
     {
         return await _dbSet
             .Where(c => c.Status != Domain.Enums.StatusChamado.Fechado
                      && c.Status != Domain.Enums.StatusChamado.Cancelado)
-            .GroupBy(c => c.Categoria != null ? c.Categoria.Nome : "Sem categoria")
-            .Select(g => new { Categoria = g.Key, Quantidade = g.Count() })
-            .ToDictionaryAsync(x => x.Categoria, x => x.Quantidade, cancellationToken);
+            .GroupBy(c => new { CategoriaId = c.Categoria != null ? (Guid?)c.Categoria.Id : null, CategoriaNome = c.Categoria != null ? c.Categoria.Nome : "Sem categoria" })
+            .Select(g => new Domain.Interfaces.CategoriaContagem(g.Key.CategoriaNome, g.Key.CategoriaId, g.Count()))
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<Dictionary<string, int>> ContarPorPrioridadeAsync(CancellationToken cancellationToken = default)

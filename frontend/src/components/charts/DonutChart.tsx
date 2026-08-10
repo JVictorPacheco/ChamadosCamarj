@@ -6,8 +6,6 @@ export interface DonutChartItem {
   color: string
 }
 
-// Labels diretos nas fatias: sem isso, o valor só aparece no hover do Tooltip,
-// e o Relatório Mensal exportado em PDF (via impressão) não tem hover.
 function renderValueLabel(props: unknown) {
   const { value, x, y, textAnchor } = props as {
     value: number
@@ -23,7 +21,12 @@ function renderValueLabel(props: unknown) {
   )
 }
 
-export function DonutChart({ data }: { data: DonutChartItem[] }) {
+interface DonutChartProps {
+  data: DonutChartItem[]
+  onSliceClick?: (label: string) => void
+}
+
+export function DonutChart({ data, onSliceClick }: DonutChartProps) {
   return (
     <ResponsiveContainer width="100%" height={260}>
       <PieChart>
@@ -37,6 +40,8 @@ export function DonutChart({ data }: { data: DonutChartItem[] }) {
           label={renderValueLabel}
           labelLine={false}
           isAnimationActive={false}
+          onClick={onSliceClick ? (_data, index) => onSliceClick(data[index].label) : undefined}
+          className={onSliceClick ? 'cursor-pointer' : undefined}
         >
           {data.map((item) => (
             <Cell key={item.label} fill={item.color} />

@@ -1,7 +1,7 @@
 export interface DashboardMetrics {
   totalResolvidosHoje: number
   tempoMedioResolucaoHoras: number | null
-  porCategoria: { categoriaNome: string; quantidade: number }[]
+  porCategoria: { categoriaNome: string; categoriaId: string | null; quantidade: number }[]
   porPrioridade: { prioridade: string; quantidade: number }[]
   slaCompliance: { totalResolvidos: number; dentroPrazo: number; percentual: number } | null
 }

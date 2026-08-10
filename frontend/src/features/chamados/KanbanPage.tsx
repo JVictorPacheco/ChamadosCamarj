@@ -7,7 +7,7 @@ import { useKanbanChamados } from './kanban/useKanbanChamados'
 
 export function KanbanPage() {
   const { perfil } = useAuth()
-  const { data: chamados, isPending, isError } = useKanbanChamados()
+  const { data: chamados, isPending, isError, temMais, carregarMais, carregandoMais } = useKanbanChamados()
 
   if (perfil?.tipo === 'Solicitante') {
     return (
@@ -39,7 +39,18 @@ export function KanbanPage() {
 
       {isPending && <p className="p-4 text-sm text-muted-foreground">Carregando kanban...</p>}
 
-      {!isPending && chamados && <KanbanBoard chamados={chamados} />}
+      {!isPending && chamados && (
+        <>
+          <KanbanBoard chamados={chamados} />
+          {temMais && (
+            <div className="flex justify-center px-4 pb-4">
+              <Button variant="outline" size="sm" onClick={carregarMais} disabled={carregandoMais}>
+                {carregandoMais ? 'Carregando...' : 'Carregar mais'}
+              </Button>
+            </div>
+          )}
+        </>
+      )}
     </div>
   )
 }

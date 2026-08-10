@@ -31,7 +31,7 @@ public class ObterMetricasQueryHandler : IRequestHandler<ObterMetricasQuery, Das
         return new DashboardMetricsResponse(
             totalResolvidosHoje,
             tempoMedio.HasValue ? Math.Round(tempoMedio.Value, 1) : null,
-            porCategoria.Select(kvp => new PorCategoriaItem(kvp.Key, kvp.Value)).ToList(),
+            porCategoria.Select(c => new PorCategoriaItem(c.Nome, c.CategoriaId, c.Quantidade)).ToList(),
             porPrioridade.Select(kvp => new PorPrioridadeItem(kvp.Key, kvp.Value)).ToList(),
             slaItem
         );

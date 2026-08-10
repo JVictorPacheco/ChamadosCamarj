@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
@@ -20,6 +20,7 @@ import { AlterarPrioridadeModal } from './components/AlterarPrioridadeModal'
 import { ForcarEncerramentoModal } from './components/ForcarEncerramentoModal'
 import { TimelineHistorico } from './components/TimelineHistorico'
 import { AnexosList } from './components/AnexosList'
+import { UploadAnexoForm } from './components/UploadAnexoForm'
 import { useChamado } from './hooks/useChamado'
 import {
   useAtribuirChamado,
@@ -261,6 +262,8 @@ export function ChamadoDetailPage() {
   const [avisoAnexos, setAvisoAnexos] = useState<string | null>(
     (location.state as { avisoAnexos?: string } | null)?.avisoAnexos ?? null,
   )
+  const [enviandoAnexos, setEnviandoAnexos] = useState(false)
+  const onUploadChange = useCallback((uploading: boolean) => setEnviandoAnexos(uploading), [])
 
   if (isPending) {
     return <p className="p-4 text-sm text-muted-foreground">Carregando...</p>
@@ -381,12 +384,16 @@ export function ChamadoDetailPage() {
         )}
       </dl>
 
-      <AnexosList chamadoId={chamado.id} />
+      <section className="space-y-4">
+        <h2 className="text-xl font-heading">Anexos</h2>
+        <UploadAnexoForm chamadoId={chamado.id} />
+        <AnexosList chamadoId={chamado.id} isUploading={enviandoAnexos} />
+      </section>
 
       <section className="space-y-4">
         <h2 className="text-xl font-heading">Comentários</h2>
         <ComentarioList chamadoId={chamado.id} />
-        <ComentarioForm chamadoId={chamado.id} autor={perfil?.nome ?? ''} />
+        <ComentarioForm chamadoId={chamado.id} autor={perfil?.nome ?? ''} onUploadChange={onUploadChange} />
       </section>
 
       <section className="space-y-4">

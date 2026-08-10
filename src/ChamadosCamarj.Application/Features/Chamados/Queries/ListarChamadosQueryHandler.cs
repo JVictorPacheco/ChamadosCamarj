@@ -59,7 +59,7 @@ public class ListarChamadosQueryHandler : IRequestHandler<ListarChamadosQuery, P
                 1, int.MaxValue, status, prioridade, request.ResponsavelId,
                 request.CategoriaId, request.Busca, request.SolicitanteEmail,
                 statusEntre, dataInicio, dataFim, request.UsuarioLogadoId,
-                request.GrupoId, null, cancellationToken);
+                request.GrupoId, null, request.Perfil, cancellationToken);
 
             var filtrados = todos.Where(c => SlaCalculo.CalcularStatus(c.DataLimite) == slaStatus.Value).ToList();
             var totalFiltrado = filtrados.Count;
@@ -75,7 +75,7 @@ public class ListarChamadosQueryHandler : IRequestHandler<ListarChamadosQuery, P
             request.ResponsavelId, request.CategoriaId, request.Busca,
             request.SolicitanteEmail, statusEntre, dataInicio, dataFim,
             request.UsuarioLogadoId, request.GrupoId, motivoEncerramento,
-            cancellationToken);
+            request.Perfil, cancellationToken);
 
         return new PagedResult<ChamadoResponse>(
             items.Select(c => c.ToResponse()).ToList(),

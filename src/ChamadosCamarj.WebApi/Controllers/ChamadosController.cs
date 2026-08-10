@@ -51,7 +51,7 @@ public class ChamadosController : ControllerBase
         var query = new ListarChamadosQuery(
             pagina, tamanhoPagina, status, prioridade, responsavelId, categoriaId, busca,
             solicitanteEmail, finalizados, dataInicio, dataFim, slaStatus, motivoEncerramento,
-            UsuarioLogadoId: _currentUser.UsuarioId, GrupoId: _currentUser.GrupoId);
+            UsuarioLogadoId: _currentUser.UsuarioId, GrupoId: _currentUser.GrupoId, Perfil: _currentUser.Perfil);
         var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
     }

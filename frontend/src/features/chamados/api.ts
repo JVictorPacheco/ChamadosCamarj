@@ -32,7 +32,7 @@ export interface ListarChamadosFiltros {
 function buildQueryString<T extends object>(filtros: T): string {
   const params = new URLSearchParams()
   for (const [chave, valor] of Object.entries(filtros)) {
-    if (valor !== undefined) {
+    if (valor != null) {
       params.set(chave, String(valor))
     }
   }
