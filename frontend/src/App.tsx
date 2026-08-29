@@ -19,6 +19,7 @@ import { RelatorioMensalPage } from './features/relatorio-mensal/RelatorioMensal
 import { UsuariosPage } from './features/admin/UsuariosPage'
 import { CategoriasPage } from './features/admin/CategoriasPage'
 import { GruposPage } from './features/admin/GruposPage'
+import { ChatPage } from './features/chat/ChatPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -91,6 +92,7 @@ function AppRoutes() {
         <Route path="/admin/usuarios" element={<UsuariosPage />} />
         <Route path="/admin/categorias" element={<CategoriasPage />} />
         <Route path="/admin/grupos" element={<GruposPage />} />
+        <Route path="/chat" element={<ChatPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/chamados" replace />} />
     </Routes>
