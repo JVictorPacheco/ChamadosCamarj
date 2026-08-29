@@ -955,23 +955,96 @@ export interface ChamadoResponse {
 │   └── TESTING.md      → Estratégia e comandos de teste
 └── features/
     └── {nome-feature}/
-        ├── spec.md     → Especificação da feature (problem, user stories, AC, traceability)
-        ├── design.md   → Decisões de design (opcional, features complexas)
-        └── tasks.md    → Lista de tarefas implementadas com status
+        ├── spec.md     → Especificação (problem, user stories, AC, rastreabilidade)
+        ├── design.md   → Decisões técnicas (obrigatório — ver regras abaixo)
+        └── tasks.md    → Checklist de implementação com status
 ```
 
-### 4.2 Fluxo SDD
-1. **Specify** → `spec.md` com problem statement, user stories, acceptance criteria.
-2. **Design** → `design.md` com decisões técnicas (quando necessário).
-3. **Tasks** → `tasks.md` com checklist de implementação.
-4. **Execute** → Implementar seguindo as tasks, atualizando spec antes de mudanças.
-5. **Gate checks** → `dotnet test` + `npm run build` devem passar.
+**Template:** Use `.specs/features/FEATURE-TEMPLATE/` como ponto de partida para toda nova feature.
 
-### 4.3 Regras de Processo (Constitution)
-> Ver `.specs/project/STATE.md`, seção "🧭 Regras de Processo (Constitution)" — 3 regras permanentes:
-1. Pergunta sem resposta NÃO vira suposição silenciosa.
-2. Spec atualizada ANTES do código.
-3. Mudança de contrato sinalizada ANTES de aplicar.
+### 4.2 Fluxo SDD
+
+Ciclo obrigatório para toda feature:
+
+```
+Specify → Design → Tasks → Execute → Gate Checks → Commit/Merge → Atualizar STATE.md
+```
+
+1. **Specify** → `spec.md` com problem statement, user stories (formato padrão), acceptance criteria numerados e testáveis.
+2. **Design** → `design.md` com decisões técnicas (ver regra de obrigatoriedade abaixo).
+3. **Tasks** → `tasks.md` com checklist granular. Última tarefa sempre: atualizar `spec.md` e `STATE.md`.
+4. **Execute** → Implementar seguindo as tasks. Atualizar spec **antes** de qualquer mudança de escopo.
+5. **Gate checks** → `dotnet test` + `npm run build` sem erros.
+6. **Commit / Merge** → PR com base `develop`.
+7. **Atualizar STATE.md** → Resumo da sessão, decisões, aprendizados.
+
+### 4.3 Quando `design.md` é Obrigatório
+
+`design.md` **deve** ser criado quando a feature:
+
+| Condição | Exemplo |
+|----------|---------|
+| Toca mais de uma camada | Backend + Frontend juntos |
+| Introduz nova entidade ou tabela | Nova entidade `Grupo`, nova migration |
+| Altera contrato de interface existente | Remove/renomeia método em `IRepository` |
+| Tem ambiguidade técnica não óbvia | Duas abordagens válidas que precisam ser decididas antes |
+
+Para features simples (só uma camada, sem novo schema, sem mudança de contrato), as decisões técnicas podem ficar na própria `spec.md`.
+
+### 4.4 Formato Padrão de User Story
+
+```
+Como [Perfil: Admin | Atendente | Solicitante],
+quero [ação específica e mensurável],
+para que [benefício concreto para o usuário ou o negócio].
+```
+
+Perfis válidos: `Admin`, `Atendente`, `Solicitante`.
+
+### 4.5 Formato Padrão de Acceptance Criteria
+
+Cada AC deve ser:
+- **Numerado** (AC-01, AC-02, ...)
+- **Testável** (verificável por teste automatizado ou passo manual reproduzível)
+- **Sem ambiguidade** (condição → ação → resultado esperado)
+
+```
+Dado [contexto inicial],
+quando [ação executada],
+então [resultado esperado e mensurável].
+```
+
+Exemplo:
+```
+AC-01: Dado que sou Atendente autenticado,
+       quando acesso GET /api/chamados sem filtros,
+       então recebo 200 com lista paginada (máx 10 por página) dos chamados do meu grupo.
+
+AC-02: Dado que sou Solicitante autenticado,
+       quando acesso GET /api/chamados,
+       então recebo 200 apenas com os chamados que eu mesmo abri.
+```
+
+### 4.6 Rastreabilidade Spec → Teste
+
+Toda `spec.md` deve ter uma tabela de rastreabilidade mapeando cada AC ao teste que o verifica:
+
+```markdown
+| Critério | Arquivo de Teste | Método | Status |
+|----------|-----------------|--------|--------|
+| AC-01 | `ListarChamadosHandlerTests.cs` | `Handle_Atendente_RetornaApenasChamadosDoGrupo` | ✅ Coberto |
+| AC-02 | `ListarChamadosHandlerTests.cs` | `Handle_Solicitante_RetornaApenasSeusChamados` | ✅ Coberto |
+| AC-03 | Manual (UI) | Login → acessar /chamados como Solicitante | ⬜ Pendente |
+```
+
+### 4.7 Regras de Processo (Constitution)
+
+Quatro regras permanentes. Se notar que uma está prestes a ser quebrada, **pare e avise o usuário antes de prosseguir**.
+
+1. **Perguntas sem resposta não viram suposições.** Se ficar sem resposta em decisão de produto difícil de reverter: parar e perguntar de novo, ou marcar como `⚠️ PENDENTE DE CONFIRMAÇÃO`.
+2. **Spec antes do código, sempre.** Atualizar `spec.md` antes de qualquer mudança de comportamento — mesmo extensões pequenas.
+3. **Mudança de contrato é sinalizada antes.** Se remover/alterar interface usada por múltiplos consumidores: avisar antes de aplicar.
+4. **Fluxo de orquestração SDD.** Seguir o ciclo completo (Specify → Design → Tasks → Execute → Gate Checks → Commit → STATE.md). Guia: `docs/GUIA-ORQUESTRACAO-SDD.md`.
 
 ---
 

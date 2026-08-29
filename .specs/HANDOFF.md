@@ -1,5 +1,9 @@
 # Handoff
 
+> ⚠️ **Este arquivo está sendo descontinuado.** O conteúdo de handoff foi unificado em `.specs/project/STATE.md`, que é a fonte única de verdade sobre o estado do projeto entre sessões. O arquivo abaixo é preservado como histórico da sessão de 2026-08-10, mas novas sessões não devem criar novos blocos aqui — use `STATE.md`.
+>
+> **Para retomar o trabalho:** leia `.specs/project/STATE.md` (seção "Sessão atual" no topo) e `CLAUDE.md` na raiz do projeto.
+
 **Date:** 2026-08-10
 **Session:** Hotfix URL API produção + sessão anterior (Dashboard/Kanban/Orquestração)
 **Branch:** `develop` (mergeado em `main`)
