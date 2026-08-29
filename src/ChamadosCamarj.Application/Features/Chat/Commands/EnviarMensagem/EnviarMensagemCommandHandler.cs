@@ -47,7 +47,11 @@ public class EnviarMensagemCommandHandler : IRequestHandler<EnviarMensagemComman
         if (request.RespostaParaMensagemId.HasValue)
         {
             var original = await _mensagemRepository.ObterPorIdAsync(request.RespostaParaMensagemId.Value, cancellationToken);
-            respostaConteudo = original?.Conteudo;
+            if (original is null)
+                throw new NotFoundException("Mensagem", request.RespostaParaMensagemId.Value);
+            if (original.ConversaId != request.ConversaId)
+                throw new BadRequestException("Mensagem citada não pertence a esta conversa.");
+            respostaConteudo = original.Conteudo;
         }
 
         var mensagem = ChatMensagem.CriarTexto(

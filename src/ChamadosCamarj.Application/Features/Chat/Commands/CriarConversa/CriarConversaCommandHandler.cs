@@ -1,6 +1,7 @@
 using MediatR;
 using ChamadosCamarj.Application.Common.Authorization;
 using ChamadosCamarj.Application.Common.Exceptions;
+using ChamadosCamarj.Application.Common.Notifications;
 using ChamadosCamarj.Application.Features.Chat.DTOs;
 using ChamadosCamarj.Domain.Entities;
 using ChamadosCamarj.Domain.Enums;
@@ -12,13 +13,16 @@ public class CriarConversaCommandHandler : IRequestHandler<CriarConversaCommand,
 {
     private readonly IChatConversaRepository _conversaRepository;
     private readonly IUsuarioPerfilRepository _usuarioPerfilRepository;
+    private readonly IMediator _mediator;
 
     public CriarConversaCommandHandler(
         IChatConversaRepository conversaRepository,
-        IUsuarioPerfilRepository usuarioPerfilRepository)
+        IUsuarioPerfilRepository usuarioPerfilRepository,
+        IMediator mediator)
     {
         _conversaRepository = conversaRepository;
         _usuarioPerfilRepository = usuarioPerfilRepository;
+        _mediator = mediator;
     }
 
     public async Task<ChatConversaResponse> Handle(CriarConversaCommand request, CancellationToken cancellationToken)
@@ -49,7 +53,14 @@ public class CriarConversaCommandHandler : IRequestHandler<CriarConversaCommand,
 
         await _conversaRepository.AdicionarAsync(conversa, cancellationToken);
 
-        return MapearResposta(conversa, request.UsuarioId, destinatario.Nome);
+        var response = MapearResposta(conversa, request.UsuarioId, destinatario.Nome);
+
+        var participanteIds = new[] { request.UsuarioId, request.DestinatarioId };
+        await _mediator.Publish(
+            new ChatNovaConversaNotification(conversa.Id, participanteIds, response),
+            cancellationToken);
+
+        return response;
     }
 
     private static ChatConversaResponse MapearResposta(ChatConversa conversa, Guid usuarioAtualId, string destinatarioNome)

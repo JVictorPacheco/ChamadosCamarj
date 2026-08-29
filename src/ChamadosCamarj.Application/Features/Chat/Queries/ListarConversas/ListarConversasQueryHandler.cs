@@ -20,15 +20,26 @@ public class ListarConversasQueryHandler : IRequestHandler<ListarConversasQuery,
 
     public async Task<IEnumerable<ChatConversaResponse>> Handle(ListarConversasQuery request, CancellationToken cancellationToken)
     {
-        var conversas = await _conversaRepository.ListarPorUsuarioAsync(request.UsuarioId, cancellationToken);
+        var conversas = (await _conversaRepository.ListarPorUsuarioAsync(request.UsuarioId, cancellationToken)).ToList();
+
+        var conversaIds = conversas.Select(c => c.Id).ToList();
+
+        var ultimasMensagens = await _mensagemRepository.ObterUltimasMensagensPorConversasAsync(conversaIds, cancellationToken);
+
+        var leiturasPorConversa = conversas
+            .Select(c => (
+                ConversaId: c.Id,
+                UltimaLeituraEm: c.Participantes.FirstOrDefault(p => p.UsuarioId == request.UsuarioId)?.UltimaLeituraEm))
+            .ToList();
+
+        var naoLidasPorConversa = await _mensagemRepository.ContarNaoLidasPorConversasAsync(
+            leiturasPorConversa, request.UsuarioId, cancellationToken);
 
         var resultado = new List<ChatConversaResponse>();
         foreach (var conversa in conversas)
         {
-            var participante = conversa.Participantes.FirstOrDefault(p => p.UsuarioId == request.UsuarioId);
-            var ultima = await _mensagemRepository.ObterUltimaPorConversaAsync(conversa.Id, cancellationToken);
-            var naoLidas = await _mensagemRepository.ContarNaoLidasAsync(
-                conversa.Id, request.UsuarioId, participante?.UltimaLeituraEm, cancellationToken);
+            var ultima = ultimasMensagens.GetValueOrDefault(conversa.Id);
+            var naoLidas = naoLidasPorConversa.GetValueOrDefault(conversa.Id);
 
             var nomeExibicao = conversa.Nome;
             if (conversa.Tipo == ChatConversaTipo.Privada)

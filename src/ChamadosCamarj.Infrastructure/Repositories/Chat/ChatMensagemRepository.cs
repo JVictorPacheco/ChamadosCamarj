@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using ChamadosCamarj.Domain.Entities;
 using ChamadosCamarj.Domain.Interfaces;
 using ChamadosCamarj.Infrastructure.Data;
@@ -69,6 +70,49 @@ public class ChatMensagemRepository : IChatMensagemRepository
         return await query.CountAsync(cancellationToken);
     }
 
+    public async Task<Dictionary<Guid, ChatMensagem>> ObterUltimasMensagensPorConversasAsync(IEnumerable<Guid> conversaIds, CancellationToken cancellationToken)
+    {
+        var ids = conversaIds.Distinct().ToList();
+        if (ids.Count == 0)
+            return new Dictionary<Guid, ChatMensagem>();
+
+        var ultimas = await _dbSet
+            .AsNoTracking()
+            .Where(m => ids.Contains(m.ConversaId))
+            .GroupBy(m => m.ConversaId)
+            .Select(g => g.OrderByDescending(m => m.DataCriacao).First())
+            .ToListAsync(cancellationToken);
+
+        return ultimas.ToDictionary(m => m.ConversaId);
+    }
+
+    public async Task<Dictionary<Guid, int>> ContarNaoLidasPorConversasAsync(
+        IEnumerable<(Guid ConversaId, DateTime? UltimaLeituraEm)> conversas, Guid usuarioId, CancellationToken cancellationToken)
+    {
+        var lista = conversas.ToList();
+        if (lista.Count == 0)
+            return new Dictionary<Guid, int>();
+
+        var ids = lista.Select(c => c.ConversaId).Distinct().ToList();
+
+        var naoLidasPorConversa = await _dbSet
+            .AsNoTracking()
+            .Where(m => ids.Contains(m.ConversaId) && m.AutorId != usuarioId)
+            .Select(m => new { m.ConversaId, m.DataCriacao })
+            .ToListAsync(cancellationToken);
+
+        var leituraPorConversa = lista
+            .GroupBy(c => c.ConversaId)
+            .ToDictionary(g => g.Key, g => g.First().UltimaLeituraEm);
+
+        return naoLidasPorConversa
+            .Where(m => !leituraPorConversa.TryGetValue(m.ConversaId, out var leitura)
+                        || !leitura.HasValue
+                        || m.DataCriacao > leitura.Value)
+            .GroupBy(m => m.ConversaId)
+            .ToDictionary(g => g.Key, g => g.Count());
+    }
+
     public async Task AdicionarAsync(ChatMensagem mensagem, CancellationToken cancellationToken)
     {
         await _dbSet.AddAsync(mensagem, cancellationToken);
@@ -90,7 +134,16 @@ public class ChatMensagemRepository : IChatMensagemRepository
     public async Task AdicionarReacaoAsync(ChatMensagemReacao reacao, CancellationToken cancellationToken)
     {
         await _context.Set<ChatMensagemReacao>().AddAsync(reacao, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        {
+            // Toggle concorrente: a reação já foi inserida por outra requisição simultânea.
+            // Tratamos como no-op para não retornar 500 — o estado final desejado já está persistido.
+            _context.Entry(reacao).State = EntityState.Detached;
+        }
     }
 
     public async Task RemoverReacaoAsync(ChatMensagemReacao reacao, CancellationToken cancellationToken)

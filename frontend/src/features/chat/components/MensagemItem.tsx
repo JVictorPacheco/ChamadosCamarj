@@ -5,6 +5,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useAuth } from '@/auth/AuthContext'
 import { useEditarMensagem, useDeletarMensagem, useAdicionarReacao } from '../hooks/useChat'
+import { obterUrlArquivo } from '../api'
 import type { ChatMensagemResponse } from '@/types/api'
 import { Reply, Pencil, Trash2, Download, FileText, Smile } from 'lucide-react'
 
@@ -43,6 +44,7 @@ export function MensagemItem({ mensagem, conversaId, onResponder, onScrollParaMe
   const [novoConteudo, setNovoConteudo] = useState(mensagem.conteudo ?? '')
   const [mostrarEmojis, setMostrarEmojis] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
+  const [baixando, setBaixando] = useState(false)
 
   const editarMutation = useEditarMensagem(conversaId)
   const deletarMutation = useDeletarMensagem(conversaId)
@@ -86,6 +88,19 @@ export function MensagemItem({ mensagem, conversaId, onResponder, onScrollParaMe
   const reagir = (emoji: string) => {
     setMostrarEmojis(false)
     reagirMutation.mutate({ mensagemId: mensagem.id, emoji })
+  }
+
+  const baixarArquivo = async () => {
+    setErro(null)
+    setBaixando(true)
+    try {
+      const { urlAssinada } = await obterUrlArquivo(mensagem.id)
+      window.open(urlAssinada, '_blank', 'noopener,noreferrer')
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : 'Erro ao baixar arquivo.')
+    } finally {
+      setBaixando(false)
+    }
   }
 
   return (
@@ -180,16 +195,15 @@ export function MensagemItem({ mensagem, conversaId, onResponder, onScrollParaMe
                   <span className="text-xs opacity-70">{formatarTamanho(mensagem.tamanhoBytes)}</span>
                 )}
               </div>
-              {mensagem.conteudo && (
-                <a
-                  href={mensagem.conteudo}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-shrink-0"
-                >
-                  <Download className="h-4 w-4" />
-                </a>
-              )}
+              <button
+                type="button"
+                onClick={baixarArquivo}
+                disabled={baixando}
+                className="flex-shrink-0 disabled:opacity-50"
+                aria-label="Baixar arquivo"
+              >
+                <Download className="h-4 w-4" />
+              </button>
             </div>
           ) : (
             <p className="whitespace-pre-wrap break-words">{mensagem.conteudo}</p>

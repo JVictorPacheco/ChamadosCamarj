@@ -14,6 +14,7 @@ using ChamadosCamarj.Application.Features.Chat.DTOs;
 using ChamadosCamarj.Application.Features.Chat.Queries.ListarConversas;
 using ChamadosCamarj.Application.Features.Chat.Queries.ListarHistoricoChat;
 using ChamadosCamarj.Application.Features.Chat.Queries.ListarMensagens;
+using ChamadosCamarj.Application.Features.Chat.Queries.ObterArquivoMensagem;
 
 namespace ChamadosCamarj.WebApi.Controllers;
 
@@ -127,6 +128,20 @@ public class ChatController : ControllerBase
             id, nomeSanitizado, arquivo.ContentType, conteudo, arquivo.Length, _currentUser.UsuarioId, _currentUser.Nome);
         var result = await _mediator.Send(command, cancellationToken);
         return StatusCode(StatusCodes.Status201Created, result);
+    }
+
+    /// <summary>
+    /// Gera uma URL assinada (válida por 1 hora) para download do arquivo de uma mensagem.
+    /// </summary>
+    [HttpGet("mensagens/{id:guid}/arquivo")]
+    [ProducesResponseType(typeof(ChatArquivoResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ChatArquivoResponse>> ObterArquivo(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new ObterArquivoMensagemQuery(id, _currentUser.UsuarioId), cancellationToken);
+        return Ok(result);
     }
 
     /// <summary>

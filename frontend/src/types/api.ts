@@ -175,6 +175,13 @@ export interface ChatPresencaResponse {
   status: StatusPresenca
 }
 
+export interface ChatArquivoResponse {
+  nomeArquivo: string
+  urlAssinada: string
+  tipoArquivo: string
+  tamanhoBytes: number
+}
+
 export interface ChatHistoricoResponse {
   id: string
   usuarioId: string

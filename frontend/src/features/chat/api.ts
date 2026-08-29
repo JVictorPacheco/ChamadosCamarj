@@ -4,6 +4,7 @@ import type {
   ChatMensagemResponse,
   ChatPresencaResponse,
   ChatHistoricoResponse,
+  ChatArquivoResponse,
   ChatPerfil,
   PagedResult,
 } from '@/types/api'
@@ -54,6 +55,10 @@ export function enviarArquivo(conversaId: string, arquivo: File): Promise<ChatMe
     method: 'POST',
     body: formData,
   })
+}
+
+export function obterUrlArquivo(mensagemId: string): Promise<ChatArquivoResponse> {
+  return apiFetch<ChatArquivoResponse>(`/chat/mensagens/${mensagemId}/arquivo`)
 }
 
 export function editarMensagem(mensagemId: string, conteudo: string): Promise<void> {

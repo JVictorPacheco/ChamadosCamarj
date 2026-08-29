@@ -13,17 +13,20 @@ namespace ChamadosCamarj.Application.Features.Chat.Commands.AdicionarReacao;
 public class AdicionarReacaoCommandHandler : IRequestHandler<AdicionarReacaoCommand>
 {
     private readonly IChatMensagemRepository _mensagemRepository;
+    private readonly IChatConversaRepository _conversaRepository;
     private readonly IChatHistoricoRepository _historicoRepository;
     private readonly IUsuarioPerfilRepository _usuarioPerfilRepository;
     private readonly IMediator _mediator;
 
     public AdicionarReacaoCommandHandler(
         IChatMensagemRepository mensagemRepository,
+        IChatConversaRepository conversaRepository,
         IChatHistoricoRepository historicoRepository,
         IUsuarioPerfilRepository usuarioPerfilRepository,
         IMediator mediator)
     {
         _mensagemRepository = mensagemRepository;
+        _conversaRepository = conversaRepository;
         _historicoRepository = historicoRepository;
         _usuarioPerfilRepository = usuarioPerfilRepository;
         _mediator = mediator;
@@ -41,6 +44,10 @@ public class AdicionarReacaoCommandHandler : IRequestHandler<AdicionarReacaoComm
         if (mensagem is null)
             throw new NotFoundException("Mensagem", request.MensagemId);
 
+        var participante = await _conversaRepository.ObterParticipanteAsync(mensagem.ConversaId, request.UsuarioId, cancellationToken);
+        if (participante is null || !participante.Ativo)
+            throw new ForbiddenException("Você não participa desta conversa.");
+
         var existente = await _mensagemRepository.ObterReacaoAsync(request.MensagemId, request.UsuarioId, request.Emoji, cancellationToken);
 
         ChatAcao acao;
@@ -52,6 +59,9 @@ public class AdicionarReacaoCommandHandler : IRequestHandler<AdicionarReacaoComm
         else
         {
             var reacao = new ChatMensagemReacao(request.MensagemId, request.UsuarioId, request.UsuarioNome, request.Emoji);
+            // Toggle não-atômico: em cliques simultâneos, ObterReacaoAsync pode retornar null nas duas
+            // requisições. AdicionarReacaoAsync trata a violação do índice único como no-op (a reação já
+            // existe), evitando 500. Nesse caso mantemos ReacaoAdicionada para o log.
             await _mensagemRepository.AdicionarReacaoAsync(reacao, cancellationToken);
             acao = ChatAcao.ReacaoAdicionada;
         }
