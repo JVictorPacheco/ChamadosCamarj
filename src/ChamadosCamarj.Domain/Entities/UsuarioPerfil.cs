@@ -27,6 +27,13 @@ public class UsuarioPerfil : BaseEntity
     public string? SenhaHash { get; private set; }
     public Guid? GrupoId { get; private set; }
     public Grupo? Grupo { get; private set; }
+    public ChatPerfil ChatPerfil { get; private set; } = ChatPerfil.SemAcesso;
+
+    public void DefinirChatPerfil(ChatPerfil perfil)
+    {
+        ChatPerfil = perfil;
+        DataAtualizacao = DateTime.UtcNow;
+    }
 
     public void DefinirSenhaHash(string senhaHash)
     {
