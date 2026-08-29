@@ -9,5 +9,6 @@ public record UsuarioPerfilResponse(
     Perfil Perfil,
     bool Ativo,
     Guid? GrupoId = null,
-    string? GrupoNome = null
+    string? GrupoNome = null,
+    ChatPerfil ChatPerfil = ChatPerfil.SemAcesso
 );

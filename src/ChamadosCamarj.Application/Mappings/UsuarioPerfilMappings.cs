@@ -13,6 +13,7 @@ public static class UsuarioPerfilMappings
             usuarioPerfil.Perfil,
             usuarioPerfil.Ativo,
             usuarioPerfil.GrupoId,
-            usuarioPerfil.Grupo?.Nome
+            usuarioPerfil.Grupo?.Nome,
+            usuarioPerfil.ChatPerfil
         );
 }
