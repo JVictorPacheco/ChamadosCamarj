@@ -5,6 +5,7 @@ import { useAuth } from '@/auth/AuthContext'
 import { useConversas } from '../hooks/useConversas'
 import { ConversaItem } from './ConversaItem'
 import { CriarGrupoDialog } from './CriarGrupoDialog'
+import { NovaConversaDialog } from './NovaConversaDialog'
 import { Plus, Users } from 'lucide-react'
 
 interface ConversaListProps {
@@ -16,6 +17,7 @@ export function ConversaList({ conversaAtivaId, onSelectConversa }: ConversaList
   const { perfil } = useAuth()
   const { data: conversas, isPending, isError } = useConversas()
   const [criarGrupoAberto, setCriarGrupoAberto] = useState(false)
+  const [novaConversaAberto, setNovaConversaAberto] = useState(false)
 
   const podeCriarGrupo = perfil?.chatPerfil === 'CriadorDeGrupo'
 
@@ -41,7 +43,7 @@ export function ConversaList({ conversaAtivaId, onSelectConversa }: ConversaList
             size="sm"
             className="h-7 w-7 p-0"
             title="Nova conversa"
-            disabled
+            onClick={() => setNovaConversaAberto(true)}
           >
             <Plus className="h-4 w-4" />
           </Button>
@@ -92,6 +94,15 @@ export function ConversaList({ conversaAtivaId, onSelectConversa }: ConversaList
           }}
         />
       )}
+
+      <NovaConversaDialog
+        open={novaConversaAberto}
+        onOpenChange={setNovaConversaAberto}
+        onSuccess={(id) => {
+          setNovaConversaAberto(false)
+          onSelectConversa(id)
+        }}
+      />
     </div>
   )
 }

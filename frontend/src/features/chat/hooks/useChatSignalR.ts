@@ -7,7 +7,6 @@ import {
 } from '@microsoft/signalr'
 import { getToken } from '@/lib/api'
 import { useAuth } from '@/auth/AuthContext'
-import { heartbeat } from '../api'
 
 const SIGNALR_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ?? 'http://localhost:5000'
 
@@ -27,7 +26,6 @@ export function useChatSignalR({
   const queryClient = useQueryClient()
   const { perfil } = useAuth()
   const connectionRef = useRef<HubConnection | null>(null)
-  const heartbeatTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // Guarda os callbacks/estado em refs para que o effect de conexão possa ter deps estáveis
   // (evita recriar o WebSocket a cada troca de conversa — issue de reconexão desnecessária).
@@ -53,29 +51,6 @@ export function useChatSignalR({
   const invalidarPresencas = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ['chat', 'presencas'] })
   }, [queryClient])
-
-  // Heartbeat com pausa quando aba está em background
-  useEffect(() => {
-    const enviarHeartbeat = async () => {
-      if (document.visibilityState === 'hidden') return
-      try {
-        await heartbeat()
-      } catch {
-        // heartbeat falhou silenciosamente — presença cairá naturalmente
-      }
-    }
-
-    // Envia imediatamente ao montar
-    enviarHeartbeat()
-
-    heartbeatTimerRef.current = setInterval(enviarHeartbeat, 30_000)
-
-    return () => {
-      if (heartbeatTimerRef.current) {
-        clearInterval(heartbeatTimerRef.current)
-      }
-    }
-  }, [])
 
   // Conexão SignalR com ChatHub — criada uma única vez (deps estáveis).
   useEffect(() => {

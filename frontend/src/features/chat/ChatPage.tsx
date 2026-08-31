@@ -3,14 +3,14 @@ import { useNavigate } from 'react-router'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
 import { useAuth } from '@/auth/AuthContext'
-import { useMarcarComoLido } from './hooks/useChat'
+import { useCriarConversa, useMarcarComoLido } from './hooks/useChat'
 import { useChatSignalR } from './hooks/useChatSignalR'
 import { ConversaList } from './components/ConversaList'
 import { MensagemList } from './components/MensagemList'
 import { MensagemInput } from './components/MensagemInput'
 import { PresencaPanel } from './components/PresencaPanel'
 import type { ChatMensagemResponse } from '@/types/api'
-import { MessageSquare } from 'lucide-react'
+import { MessageSquare, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 
 export function ChatPage() {
   const { perfil } = useAuth()
@@ -20,8 +20,10 @@ export function ChatPage() {
   const [digitandoNome, setDigitandoNome] = useState<string | null>(null)
   const [acessoRevogadoAlerta, setAcessoRevogadoAlerta] = useState(false)
   const [mostrarPresenca, setMostrarPresenca] = useState(false)
+  const [painelColapsado, setPainelColapsado] = useState(false)
 
   const marcarLido = useMarcarComoLido()
+  const criarConversa = useCriarConversa()
 
   const handleAcessoRevogado = useCallback(() => {
     setAcessoRevogadoAlerta(true)
@@ -71,6 +73,15 @@ export function ChatPage() {
     marcarLido.mutate(id)
   }
 
+  const iniciarConversa = (usuarioId: string) => {
+    criarConversa.mutate(usuarioId, {
+      onSuccess: (conversa) => {
+        selecionarConversa(conversa.id)
+        setMostrarPresenca(false)
+      },
+    })
+  }
+
   return (
     <div className="flex h-screen flex-col">
       {acessoRevogadoAlerta && (
@@ -83,46 +94,69 @@ export function ChatPage() {
 
       <div className="flex flex-1 overflow-hidden">
         {/* Coluna esquerda: Lista de conversas + Presença */}
-        <div className="flex w-full flex-col border-r border-border md:w-80 lg:w-96">
-          {/* Tabs: Conversas / Presença */}
-          <div className="flex border-b border-border">
-            <button
-              type="button"
-              onClick={() => setMostrarPresenca(false)}
-              className={`flex-1 py-2 text-xs font-medium transition-colors ${
-                !mostrarPresenca
-                  ? 'border-b-2 border-primary text-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Conversas
-            </button>
-            <button
-              type="button"
-              onClick={() => setMostrarPresenca(true)}
-              className={`flex-1 py-2 text-xs font-medium transition-colors ${
-                mostrarPresenca
-                  ? 'border-b-2 border-primary text-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Presença
-            </button>
-          </div>
-
-          <div className="flex-1 overflow-hidden">
-            {!mostrarPresenca ? (
-              <ConversaList
-                conversaAtivaId={conversaAtivaId}
-                onSelectConversa={selecionarConversa}
-              />
-            ) : (
-              <div className="h-full overflow-y-auto py-2">
-                <PresencaPanel />
+        {!painelColapsado ? (
+          <div className="flex w-full flex-col border-r border-border md:w-80 lg:w-96">
+            {/* Tabs: Conversas / Presença */}
+            <div className="flex items-center border-b border-border">
+              <div className="flex flex-1">
+                <button
+                  type="button"
+                  onClick={() => setMostrarPresenca(false)}
+                  className={`flex-1 py-2 text-xs font-medium transition-colors ${
+                    !mostrarPresenca
+                      ? 'border-b-2 border-primary text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  Conversas
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMostrarPresenca(true)}
+                  className={`flex-1 py-2 text-xs font-medium transition-colors ${
+                    mostrarPresenca
+                      ? 'border-b-2 border-primary text-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  Presença
+                </button>
               </div>
-            )}
+              <button
+                type="button"
+                onClick={() => setPainelColapsado(true)}
+                title="Recolher painel de conversas"
+                className="border-l border-border px-2 py-2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <PanelLeftClose className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-hidden">
+              {!mostrarPresenca ? (
+                <ConversaList
+                  conversaAtivaId={conversaAtivaId}
+                  onSelectConversa={selecionarConversa}
+                />
+              ) : (
+                <div className="h-full overflow-y-auto py-2">
+                  <PresencaPanel onIniciarConversa={iniciarConversa} />
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="hidden w-10 flex-col items-center border-r border-border py-2 md:flex">
+            <button
+              type="button"
+              onClick={() => setPainelColapsado(false)}
+              title="Mostrar painel de conversas"
+              className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            >
+              <PanelLeftOpen className="h-4 w-4" />
+            </button>
+          </div>
+        )}
 
         {/* Coluna direita: conversa ativa */}
         <div className="hidden flex-1 flex-col md:flex">

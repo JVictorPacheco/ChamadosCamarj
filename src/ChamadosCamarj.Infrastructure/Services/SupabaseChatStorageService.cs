@@ -7,6 +7,10 @@ namespace ChamadosCamarj.Infrastructure.Services;
 /// Armazenamento de arquivos do chat no bucket dedicado "chat-arquivos".
 /// Reusa o mesmo Supabase.Client singleton já configurado para os anexos.
 /// </summary>
+// TODO: PENDENTE — o bucket "chat-arquivos" ainda NÃO foi criado no Supabase Storage
+// (item em aberto no .specs/features/chat-corporativo/tasks.md). Sem ele, o envio de
+// arquivos no chat falha com erro de bucket inexistente. Criar o bucket antes de
+// habilitar o anexo de arquivos no chat em produção.
 public class SupabaseChatStorageService : IChatStorageService
 {
     private const string Bucket = "chat-arquivos";

@@ -20,6 +20,7 @@ import { useAuth } from '@/auth/AuthContext'
 import { useTheme } from '@/hooks/useTheme'
 import { useSignalR } from '@/hooks/useSignalR'
 import { useConversas } from '@/features/chat/hooks/useConversas'
+import { useChatHeartbeat } from '@/features/chat/hooks/useChatHeartbeat'
 import { Kanban, LayoutDashboard, Inbox, FileBarChart, Users, Archive, Sun, Moon, Tags, FolderKanban, MessageSquare } from 'lucide-react'
 import logoCamarj from '../assets/logo-camarj.png'
 
@@ -33,6 +34,7 @@ export function AppLayout() {
   const { subscribe } = useSignalR()
 
   const temAcessoChat = perfil?.chatPerfil && perfil.chatPerfil !== 'SemAcesso'
+  useChatHeartbeat(Boolean(temAcessoChat))
   const { data: conversas } = useConversas()
   const totalNaoLidas = temAcessoChat
     ? (conversas ?? []).reduce((acc, c) => acc + (c.naoLidas ?? 0), 0)

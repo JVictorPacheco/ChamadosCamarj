@@ -25,7 +25,7 @@ public class ListarPresencasQueryHandler : IRequestHandler<ListarPresencasQuery,
             .ToDictionary(p => p.UsuarioId);
 
         return usuarios
-            .Where(u => u.Ativo)
+            .Where(u => u.Ativo && u.ChatPerfil != ChatPerfil.SemAcesso)
             .Select(u => presencas.TryGetValue(u.Id, out var presenca)
                 ? new ChatPresencaResponse(u.Id, u.Nome, presenca.Status)
                 : new ChatPresencaResponse(u.Id, u.Nome, StatusPresenca.Offline))
