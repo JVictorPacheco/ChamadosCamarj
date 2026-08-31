@@ -7,5 +7,6 @@ public record AutenticacaoResponse(
     Guid Id,
     string Nome,
     string Email,
-    Perfil Perfil
+    Perfil Perfil,
+    ChatPerfil ChatPerfil
 );
