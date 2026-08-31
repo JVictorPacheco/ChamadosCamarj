@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
 import {
   Sidebar,
   SidebarContent,
@@ -18,7 +19,9 @@ import { Separator } from '@/components/ui/separator'
 import { useAuth } from '@/auth/AuthContext'
 import { useTheme } from '@/hooks/useTheme'
 import { useSignalR } from '@/hooks/useSignalR'
-import { Kanban, LayoutDashboard, Inbox, FileBarChart, Users, Archive, Sun, Moon, Tags, FolderKanban } from 'lucide-react'
+import { useConversas } from '@/features/chat/hooks/useConversas'
+import { useChatHeartbeat } from '@/features/chat/hooks/useChatHeartbeat'
+import { Kanban, LayoutDashboard, Inbox, FileBarChart, Users, Archive, Sun, Moon, Tags, FolderKanban, MessageSquare } from 'lucide-react'
 import logoCamarj from '../assets/logo-camarj.png'
 
 export function AppLayout() {
@@ -29,6 +32,13 @@ export function AppLayout() {
   const [confirmarLogout, setConfirmarLogout] = useState(false)
   const [slaAlerta, setSlaAlerta] = useState<string | null>(null)
   const { subscribe } = useSignalR()
+
+  const temAcessoChat = perfil?.chatPerfil && perfil.chatPerfil !== 'SemAcesso'
+  useChatHeartbeat(Boolean(temAcessoChat))
+  const { data: conversas } = useConversas()
+  const totalNaoLidas = temAcessoChat
+    ? (conversas ?? []).reduce((acc, c) => acc + (c.naoLidas ?? 0), 0)
+    : 0
 
   useEffect(() => {
     const unsub = subscribe((event) => {
@@ -80,6 +90,30 @@ export function AppLayout() {
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
+
+          {temAcessoChat && (
+            <>
+              <Separator className="my-2" />
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={location.pathname === '/chat'}>
+                    <Link to="/chat" className="flex items-center gap-2">
+                      <MessageSquare className="h-4 w-4" />
+                      Chat
+                      {totalNaoLidas > 0 && (
+                        <Badge
+                          variant="destructive"
+                          className="ml-auto min-w-[1.25rem] justify-center px-1"
+                        >
+                          {totalNaoLidas > 99 ? '99+' : totalNaoLidas}
+                        </Badge>
+                      )}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </>
+          )}
 
           {perfil && perfil.tipo !== 'Solicitante' && (
             <>

@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { autenticarGoogle, login, type AutenticacaoResponse } from './api'
 import { clearToken, registrarLogoutAutomatico, setToken } from '@/lib/api'
-import type { TipoPerfil } from '@/types/api'
+import type { ChatPerfil, TipoPerfil } from '@/types/api'
 
 export type { TipoPerfil }
 
@@ -10,6 +10,7 @@ export interface Perfil {
   id: string
   nome: string
   email: string
+  chatPerfil?: ChatPerfil
 }
 
 const STORAGE_KEY = 'chamados-camarj:perfil'
@@ -24,7 +25,7 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
 function paraPerfil(resposta: AutenticacaoResponse): Perfil {
-  return { tipo: resposta.perfil, id: resposta.id, nome: resposta.nome, email: resposta.email }
+  return { tipo: resposta.perfil, id: resposta.id, nome: resposta.nome, email: resposta.email, chatPerfil: resposta.chatPerfil }
 }
 
 function lerPerfilSalvo(): Perfil | null {

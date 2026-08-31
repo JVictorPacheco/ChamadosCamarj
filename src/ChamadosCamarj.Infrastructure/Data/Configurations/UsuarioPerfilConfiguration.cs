@@ -34,6 +34,12 @@ public class UsuarioPerfilConfiguration : IEntityTypeConfiguration<UsuarioPerfil
         builder.Property(u => u.GrupoId)
             .IsRequired(false);
 
+        builder.Property(u => u.ChatPerfil)
+            .IsRequired()
+            .HasConversion<string>()
+            .HasMaxLength(20)
+            .HasDefaultValue(Domain.Enums.ChatPerfil.SemAcesso);
+
         builder.HasOne(u => u.Grupo)
             .WithMany(g => g.Usuarios)
             .HasForeignKey(u => u.GrupoId)

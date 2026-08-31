@@ -14,6 +14,12 @@ public class ApplicationDbContext : DbContext
     public DbSet<HistoricoEntrada> Historico => Set<HistoricoEntrada>();
     public DbSet<UsuarioPerfil> UsuariosPerfil => Set<UsuarioPerfil>();
     public DbSet<Grupo> Grupos => Set<Grupo>();
+    public DbSet<ChatConversa> ChatConversas => Set<ChatConversa>();
+    public DbSet<ChatParticipante> ChatParticipantes => Set<ChatParticipante>();
+    public DbSet<ChatMensagem> ChatMensagens => Set<ChatMensagem>();
+    public DbSet<ChatMensagemReacao> ChatMensagemReacoes => Set<ChatMensagemReacao>();
+    public DbSet<ChatPresenca> ChatPresencas => Set<ChatPresenca>();
+    public DbSet<ChatHistorico> ChatHistoricos => Set<ChatHistorico>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

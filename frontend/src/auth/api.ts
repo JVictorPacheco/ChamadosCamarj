@@ -1,5 +1,5 @@
 import { apiFetch } from '@/lib/api'
-import type { TipoPerfil, UsuarioPerfilResponse } from '@/types/api'
+import type { ChatPerfil, TipoPerfil, UsuarioPerfilResponse } from '@/types/api'
 
 export interface AutenticacaoResponse {
   token: string
@@ -7,6 +7,7 @@ export interface AutenticacaoResponse {
   nome: string
   email: string
   perfil: TipoPerfil
+  chatPerfil?: ChatPerfil
 }
 
 export function autenticarGoogle(idToken: string): Promise<AutenticacaoResponse> {
