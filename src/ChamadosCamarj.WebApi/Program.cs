@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Scalar.AspNetCore;
+// using Scalar.AspNetCore; // bloqueado por política WDAC em dev local
 using ChamadosCamarj.Application.Common;
 using ChamadosCamarj.Application.Common.Interfaces;
 using ChamadosCamarj.Domain.Entities;
@@ -226,7 +226,7 @@ if (app.Environment.IsDevelopment())
     // Doc da API (só em dev) — não deve exigir token, senão ninguém consegue nem
     // ver os endpoints disponíveis antes de já ter um JWT.
     app.MapOpenApi().AllowAnonymous();
-    app.MapScalarApiReference().AllowAnonymous();
+    // app.MapScalarApiReference().AllowAnonymous(); // bloqueado por política WDAC em dev local
 }
 
 app.UseCors("AllowFrontend");
