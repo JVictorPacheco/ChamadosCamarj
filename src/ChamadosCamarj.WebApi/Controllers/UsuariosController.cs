@@ -5,6 +5,8 @@ using ChamadosCamarj.Application.Common;
 using ChamadosCamarj.Application.Features.Usuarios.Commands;
 using ChamadosCamarj.Application.Features.Usuarios.DTOs;
 using ChamadosCamarj.Application.Features.Usuarios.Queries;
+using ChamadosCamarj.Application.Features.Chat.Commands.DefinirChatPerfil;
+using ChamadosCamarj.Domain.Enums;
 
 namespace ChamadosCamarj.WebApi.Controllers;
 
@@ -61,7 +63,15 @@ public class UsuariosController : ControllerBase
         [FromBody] AtualizarUsuarioPerfilCommand command,
         CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(command with { Id = id, PerfilRequisitante = _currentUser.Perfil }, cancellationToken);
+        var result = await _mediator.Send(
+            command with
+            {
+                Id = id,
+                PerfilRequisitante = _currentUser.Perfil,
+                RequisitanteId = _currentUser.UsuarioId,
+                RequisitanteNome = _currentUser.Nome
+            },
+            cancellationToken);
 
         if (result is null)
             return NotFound(new { message = "Usuário não encontrado." });
@@ -85,4 +95,24 @@ public class UsuariosController : ControllerBase
         await _mediator.Send(command with { Id = id, PerfilRequisitante = _currentUser.Perfil }, cancellationToken);
         return NoContent();
     }
+
+    /// <summary>
+    /// Define o perfil de chat de um usuário (somente Admin)
+    /// </summary>
+    [HttpPatch("{id:guid}/chat-perfil")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DefinirChatPerfil(
+        Guid id,
+        [FromBody] DefinirChatPerfilRequest request,
+        CancellationToken cancellationToken)
+    {
+        var command = new DefinirChatPerfilCommand(
+            id, request.ChatPerfil, _currentUser.Perfil, _currentUser.UsuarioId, _currentUser.Nome);
+        await _mediator.Send(command, cancellationToken);
+        return NoContent();
+    }
 }
+
+public record DefinirChatPerfilRequest(ChatPerfil ChatPerfil);

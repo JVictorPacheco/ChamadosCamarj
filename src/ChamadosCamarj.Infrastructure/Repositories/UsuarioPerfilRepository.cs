@@ -31,15 +31,30 @@ public class UsuarioPerfilRepository : IUsuarioPerfilRepository
         return await _dbSet.AsNoTracking().Include(u => u.Grupo).OrderBy(u => u.Nome).ToListAsync(ct);
     }
 
+    public async Task<IEnumerable<UsuarioPerfil>> ListarPorIdsAsync(IEnumerable<Guid> ids, CancellationToken ct)
+    {
+        return await _dbSet.AsNoTracking().Where(u => ids.Contains(u.Id)).ToListAsync(ct);
+    }
+
     public async Task AdicionarAsync(UsuarioPerfil usuario, CancellationToken ct)
     {
         await _dbSet.AddAsync(usuario, ct);
         await _context.SaveChangesAsync(ct);
+        _context.Entry(usuario).State = EntityState.Detached;
     }
 
     public async Task AtualizarAsync(UsuarioPerfil usuario, CancellationToken ct)
     {
         _dbSet.Update(usuario);
         await _context.SaveChangesAsync(ct);
+        // Achado ao vivo pós-revisão (não estava no relatório): AtualizarUsuarioPerfilCommandHandler
+        // salva o mesmo usuário duas vezes por requisição — uma vez pros campos gerais, outra
+        // (indiretamente, via DefinirChatPerfilCommand) pro ChatPerfil — cada Handle carrega sua
+        // própria cópia via ObterPorIdAsync. Sem detach aqui, o segundo Update(), com uma instância
+        // C# diferente mas a mesma PK, colide no change tracker do EF Core (mesmo DbContext,
+        // compartilhado dentro da requisição via escopo do MediatR) e derruba a requisição com 500 —
+        // reproduzido ao vivo revogando acesso pelo dialog "Editar usuário", não pego por nenhum
+        // teste (todos usam Moq, que não modela o change tracker real).
+        _context.Entry(usuario).State = EntityState.Detached;
     }
 }

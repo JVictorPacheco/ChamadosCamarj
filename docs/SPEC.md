@@ -5,7 +5,10 @@
 > **Metodologia:** Spec-Driven Development (SDD)  
 > **Stack sugerida:** .NET 9 + React/TypeScript
 >
-> ⚠️ **Snapshot histórico.** Este documento é a spec original do projeto e não é atualizado a cada fase. Para o estado atual (fases concluídas, stack real, decisões vigentes), veja `.specs/project/STATE.md` e `.specs/project/ROADMAP.md`.
+> ⚠️ **Snapshot histórico.** Este documento é a spec original do projeto e **não é atualizado a cada fase**. Contém decisões que já foram revisadas (ex: auth Google → email/senha). Para o estado atual (fases concluídas, stack real, decisões vigentes), consulte:
+> - `.specs/project/STATE.md` — memória viva do projeto
+> - `.specs/project/ROADMAP.md` — status das fases
+> - `.specs/codebase/CONVENTIONS.md` — stack e padrões reais vigentes
 
 ---
 
@@ -233,7 +236,7 @@ GET    /api/chamados/relatorios     → Dashboard/Métricas
 ## 9. FRONTEND (React + TypeScript)
 
 ### Páginas
-- **Login** — Autenticação via Google Workspace (Sign in with Google); mockada até a Fase 6
+- **Login** — Autenticação via e-mail + senha (formulário tradicional; Google OAuth dormant)
 - **Dashboard** — Kanban + métricas + últimos chamados
 - **Meus Chamados** — Lista do solicitante
 - **Painel de Atendimento** — Fila geral (atendentes)
@@ -264,7 +267,7 @@ GET    /api/chamados/relatorios     → Dashboard/Métricas
 | Tempo real | SignalR | Notificações ao vivo + Push browser |
 | Cache | Redis | SLA, filas |
 | Storage | Supabase Storage (bucket S3) | Anexos |
-| Auth | Google Workspace (Sign in with Google) | Camarj usa Gmail corporativo, não Microsoft |
+| Auth | ~~Google Workspace~~ → **Email + senha** (PasswordHasher ASP.NET Core Identity) | Client ID Google fora do plano da CAMARJ (2026-07-24) |
 | Logs | Serilog + Seq / Arquivo | Rastreabilidade |
 
 ---
@@ -289,7 +292,7 @@ GET    /api/chamados/relatorios     → Dashboard/Métricas
 |---------|----------|
 | 🏢 **Empresa** | CAMARJ |
 | 📛 **Nome do sistema** | ChamadosCamarj |
-| 🔐 **Autenticação** | Google Workspace (Sign in with Google) — corrigido em 2026-06-25, não é Azure AD |
+| 🔐 **Autenticação** | ~~Google Workspace~~ → **Email + senha** com `PasswordHasher` (ASP.NET Core Identity). Migrado em 2026-07-24 — TI informou que Client ID Google está fora do plano da CAMARJ. Login Google está implementado mas dormant. |
 | 📧 **Email suporte** | `suporte@camarj.com.br` e `ti@camarj.com.br` (Gmail) |
 | 👥 **Atendentes** | Victor (Admin) + Fábio (Atendente) |
 | 📂 **Categorias** | Autorização, Atendimento, Super e Tendência, Reembolso, Financeiro |

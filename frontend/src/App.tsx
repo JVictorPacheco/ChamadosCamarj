@@ -19,6 +19,7 @@ import { RelatorioMensalPage } from './features/relatorio-mensal/RelatorioMensal
 import { UsuariosPage } from './features/admin/UsuariosPage'
 import { CategoriasPage } from './features/admin/CategoriasPage'
 import { GruposPage } from './features/admin/GruposPage'
+import { ChatPage } from './features/chat/ChatPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -64,9 +65,10 @@ function ProtectedRoute() {
   if (!perfil) {
     return <Navigate to="/login" replace />
   }
-  // SignalRProvider só monta com um usuário autenticado — antes disso não há token
-  // pra conexão em tempo real, e a conexão só é criada uma vez (não tenta de novo
-  // sozinha depois do login se falhar na primeira tentativa sem token).
+  // SignalRProvider só monta com um usuário autenticado — antes disso não há token pra conexão em
+  // tempo real. A conexão em si tem retry com backoff pra falha na tentativa inicial (ver
+  // useSignalR.tsx), então login sem rede/API instável no momento não deixa a pessoa sem eventos
+  // pelo resto da sessão.
   return (
     <SignalRProvider>
       <AppLayout />
@@ -91,6 +93,7 @@ function AppRoutes() {
         <Route path="/admin/usuarios" element={<UsuariosPage />} />
         <Route path="/admin/categorias" element={<CategoriasPage />} />
         <Route path="/admin/grupos" element={<GruposPage />} />
+        <Route path="/chat" element={<ChatPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/chamados" replace />} />
     </Routes>

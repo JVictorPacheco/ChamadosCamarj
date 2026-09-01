@@ -56,6 +56,6 @@ public class AutenticarGoogleCommandHandler : IRequestHandler<AutenticarGoogleCo
 
         var token = _jwtTokenService.GerarToken(usuario);
 
-        return new AutenticacaoResponse(token, usuario.Id, usuario.Nome, usuario.Email, usuario.Perfil);
+        return new AutenticacaoResponse(token, usuario.Id, usuario.Nome, usuario.Email, usuario.Perfil, usuario.ChatPerfil);
     }
 }

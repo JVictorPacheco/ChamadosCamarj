@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
 import {
   Sidebar,
   SidebarContent,
@@ -18,17 +20,40 @@ import { Separator } from '@/components/ui/separator'
 import { useAuth } from '@/auth/AuthContext'
 import { useTheme } from '@/hooks/useTheme'
 import { useSignalR } from '@/hooks/useSignalR'
-import { Kanban, LayoutDashboard, Inbox, FileBarChart, Users, Archive, Sun, Moon, Tags, FolderKanban } from 'lucide-react'
+import { useConversas } from '@/features/chat/hooks/useConversas'
+import { useChatHeartbeat } from '@/features/chat/hooks/useChatHeartbeat'
+import { Kanban, LayoutDashboard, Inbox, FileBarChart, Users, Archive, Sun, Moon, Tags, FolderKanban, MessageSquare } from 'lucide-react'
 import logoCamarj from '../assets/logo-camarj.png'
 
 export function AppLayout() {
-  const { perfil, logout } = useAuth()
+  const { perfil, logout, atualizarChatPerfil } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const location = useLocation()
   const navigate = useNavigate()
   const [confirmarLogout, setConfirmarLogout] = useState(false)
   const [slaAlerta, setSlaAlerta] = useState<string | null>(null)
+  const [avisoChatPerfil, setAvisoChatPerfil] = useState<string | null>(null)
   const { subscribe } = useSignalR()
+  const queryClient = useQueryClient()
+
+  const temAcessoChat = perfil?.chatPerfil && perfil.chatPerfil !== 'SemAcesso'
+  useChatHeartbeat(Boolean(temAcessoChat))
+  // review-fase9-independente.md #2: sem isso, todo usuário logado disparava GET /chat/conversas
+  // mesmo sem nunca ter tido acesso ao chat — defesa em profundidade, complementando o filtro por
+  // ChatPerfil no fan-out de ChatConversaAtualizada (ChatNovaMensagemNotificationHandler).
+  const { data: conversas } = useConversas(Boolean(temAcessoChat))
+  const totalNaoLidas = temAcessoChat
+    ? (conversas ?? []).reduce((acc, c) => acc + (c.naoLidas ?? 0), 0)
+    : 0
+
+  // review-fase9-independente.md #9: ChatPage já mostra o próprio alerta de acesso revogado (e
+  // navega pra fora do chat) — sem isso, quem está em /chat via dois avisos empilhados (um por
+  // hub) quando o acesso é revogado. Ref porque o efeito de subscribe abaixo tem deps estáveis
+  // (não reconecta a cada navegação), então precisa de um valor sempre atualizado por fora dele.
+  const pathnameRef = useRef(location.pathname)
+  useEffect(() => {
+    pathnameRef.current = location.pathname
+  }, [location.pathname])
 
   useEffect(() => {
     const unsub = subscribe((event) => {
@@ -36,9 +61,27 @@ export function AppLayout() {
         setSlaAlerta(event.payload.mensagem)
         setTimeout(() => setSlaAlerta(null), 8000)
       }
+
+      if (event.type === 'ChatConversaAtualizada') {
+        queryClient.invalidateQueries({ queryKey: ['chat', 'conversas'] })
+      }
+
+      if (event.type === 'ChatPerfilAtualizado') {
+        const novo = event.payload.chatPerfil
+        atualizarChatPerfil(novo)
+        const jaMostraNaTelaDeChat = novo === 'SemAcesso' && pathnameRef.current === '/chat'
+        if (!jaMostraNaTelaDeChat) {
+          setAvisoChatPerfil(
+            novo === 'SemAcesso'
+              ? 'Seu acesso ao chat foi revogado.'
+              : 'Seu acesso ao chat foi restaurado.'
+          )
+          setTimeout(() => setAvisoChatPerfil(null), 6000)
+        }
+      }
     })
     return unsub
-  }, [subscribe])
+  }, [subscribe, atualizarChatPerfil, queryClient])
 
   const sair = () => {
     logout()
@@ -80,6 +123,30 @@ export function AppLayout() {
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
+
+          {temAcessoChat && (
+            <>
+              <Separator className="my-2" />
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={location.pathname === '/chat'}>
+                    <Link to="/chat" className="flex items-center gap-2">
+                      <MessageSquare className="h-4 w-4" />
+                      Chat
+                      {totalNaoLidas > 0 && (
+                        <Badge
+                          variant="destructive"
+                          className="ml-auto min-w-[1.25rem] justify-center px-1"
+                        >
+                          {totalNaoLidas > 99 ? '99+' : totalNaoLidas}
+                        </Badge>
+                      )}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </>
+          )}
 
           {perfil && perfil.tipo !== 'Solicitante' && (
             <>
@@ -183,6 +250,14 @@ export function AppLayout() {
             <AlertDescription className="flex items-center justify-between">
               {slaAlerta}
               <button onClick={() => setSlaAlerta(null)} className="text-lg leading-none">&times;</button>
+            </AlertDescription>
+          </Alert>
+        )}
+        {avisoChatPerfil && (
+          <Alert variant={avisoChatPerfil.includes('revogado') ? 'destructive' : 'default'} className="m-2">
+            <AlertDescription className="flex items-center justify-between">
+              {avisoChatPerfil}
+              <button onClick={() => setAvisoChatPerfil(null)} className="text-lg leading-none">&times;</button>
             </AlertDescription>
           </Alert>
         )}

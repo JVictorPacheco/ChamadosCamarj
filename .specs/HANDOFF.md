@@ -1,10 +1,19 @@
 # Handoff
 
+> ⚠️ **Este arquivo está sendo descontinuado.** O conteúdo de handoff foi unificado em `.specs/project/STATE.md`, que é a fonte única de verdade sobre o estado do projeto entre sessões. O arquivo abaixo é preservado como histórico da sessão de 2026-08-10, mas novas sessões não devem criar novos blocos aqui — use `STATE.md`.
+>
+> **Para retomar o trabalho:** leia `.specs/project/STATE.md` (seção "Sessão atual" no topo) e `CLAUDE.md` na raiz do projeto.
+
 **Date:** 2026-08-10
-**Session:** Dashboard clicável + Kanban com navegação + Orquestração IA com SDD
-**Branch:** `develop` (mergeado em `main`), 14 arquivos alterados
+**Session:** Hotfix URL API produção + sessão anterior (Dashboard/Kanban/Orquestração)
+**Branch:** `develop` (mergeado em `main`)
 
 ## Completed ✓
+
+### Hotfix — URL da API em produção (2026-08-10 tarde)
+- `.env.production`: `VITE_API_BASE_URL` corrigido de `trycloudflare.com` (efêmero, expirado) para `https://chamados.okurumin.com.br/api`
+- Build refeito, commitado e mergeado em `develop` e `main`
+- Causa raiz: túnel efêmero caiu; API migrou para domínio fixo `okurumin.com.br` mas o `.env.production` nunca foi atualizado
 
 ### Mudança 1 — Dashboard clicável (click-through para lista filtrada)
 - **Roscas "Distribuição por situação":** cada fatia navega para `/chamados?status={StatusChamado}`

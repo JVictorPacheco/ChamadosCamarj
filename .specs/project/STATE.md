@@ -1,12 +1,432 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-08-10
+> Atualizado em: 2026-09-01
 
 ---
 
+## Sessão de 2026-09-01 (parte 9) — Commit, push e PR aberto
+
+Todo o trabalho das partes 5 a 8 (Fase 9, Bugs #10/#11, 2 reviews independentes, verificação ao vivo)
+foi commitado em 3 commits (`test(chat)`, `feat(chat)`, `docs(chat)`) na branch
+`feature/chat-corporativo-hardening` (criada a partir de `develop`, seguindo o git flow do
+`AGENTS.md`), com push feito e **PR #29 aberto contra `develop`**:
+https://github.com/JVictorPacheco/ChamadosCamarj/pull/29
+
+Working tree limpo. Pendente: review/merge do PR #29 (não mergeado ainda — decisão do usuário).
+
 ---
 
-## Sessão de 2026-08-10 — Dashboard clicável + Kanban com navegação + Orquestração IA/SDD
+## Sessão de 2026-09-01 (parte 8) — Verificação ao vivo pós-parte 7: 1 bug real encontrado e corrigido
+
+### Contexto
+Usuário pediu: "consegue testar algo e me retornar ou esta tudo certo? Que ai já subimos isso, mas
+quero tudo certinho". Fiz verificação ao vivo (Playwright + chamadas de API diretas, contas
+`teste.admin2`/`teste.alvo2`) de tudo que só tinha cobertura de teste automatizado: Bug #10, emoji
+picker, preview de imagem, guarda de leitura (achado #2), e — mais importante — o achado #1 do
+Addendum 4 (dispatch de `DefinirChatPerfilCommand` via mediator).
+
+### Confirmado ao vivo, sem problemas
+Bug #10 (badge atualiza fora do `/chat` sem reload), emoji picker (84 emojis, fecha com Esc/clique
+fora), preview de imagem (upload real renderizou inline com botão de download), achado #2 (após
+revogar, `GET /chat/conversas` e `.../mensagens` retornaram 403 de verdade), e — bônus — a conexão
+`ChamadosHub` sobreviveu a um restart real do backend no meio do teste e reconectou sozinha (achado #5).
+
+### 🔴 Bug real encontrado e corrigido: `PUT /api/usuarios/{id}` retornava 500 ao mudar ChatPerfil
+Causa: `AtualizarUsuarioPerfilCommandHandler` (Addendum 4) despacha `DefinirChatPerfilCommand` via
+`IMediator.Send` — os dois handlers compartilham o mesmo `DbContext` por requisição, mas cada um
+carrega sua própria cópia de `UsuarioPerfil` (`AsNoTracking`). O primeiro `_dbSet.Update()` anexa
+sua cópia ao change tracker do EF Core; o segundo `_dbSet.Update()` (instância C# diferente, mesma
+PK) colide — `InvalidOperationException`. **Invisível a todos os testes com Moq** (não modelam o
+change tracker real) — só apareceu batendo na API de verdade. Corrigido: `UsuarioPerfilRepository.
+AtualizarAsync`/`AdicionarAsync` desanexam a entidade (`EntityState.Detached`) depois de salvar.
+Reproduzi o 500 antes de corrigir, corrigi, e confirmei `204` + o efeito completo ao vivo (revogar e
+restaurar pelo dialog "Editar usuário", link "Chat" sumindo/reaparecendo sem reload, banner de
+restauração aparecendo) — ver `review-fase8.md` Addendum 5 pro detalhe completo.
+
+### Gate checks
+`dotnet build` (0 erros), `dotnet test` (**316 testes, 0 falhas** — mesma contagem; esse bug é
+estruturalmente não-testável com Moq). `npm run build` não re-executado (sem mudança de frontend).
+
+### Pendências
+- Considerar a extração pra serviço de aplicação (sugestão original da `review-fase9-independente.md`
+  pro achado #1) numa sessão futura, se mais handlers passarem a compor uns aos outros assim — mais
+  robusto de raiz do que desanexar depois de cada save
+- Limpeza das contas sintéticas no Supabase e das mensagens de teste criadas nesta sessão
+- Decidir promoção `develop` → `main`
+
+---
+
+## Sessão de 2026-09-01 (parte 7) — Fechamento completo dos achados da review-fase9-independente.md
+
+### Contexto
+Continuação direta da parte 6. Depois de corrigir os 2 bloqueantes + 2 achados 🟡 prioritários, o
+usuário perguntou "acha que temos que corrigir mais alguma coisa?" — respondi recomendando fechar a
+lacuna de autorização (achado #2, mitigado mas não fechado por completo) e listando os outros 6
+achados 🟡/🟢 como débito de baixa prioridade. Resposta do usuário, verbatim: **"quero que vc resolva
+tudo, acha que demora muito, seria muito trabalhoso?"** — fechei todos os 8 achados restantes em 3
+blocos (segurança/testes, N+1, frontend) com gate check entre cada.
+
+### O que foi fechado
+- **Achado #2 (fechamento completo):** `ChatPerfilGuard.ExigirAcesso` adicionado nas 4 queries de
+  leitura do chat (`ListarConversas`, `ListarMensagens`, `ObterConversa`, `ObterArquivoMensagem`) —
+  revogar acesso agora bloqueia leitura via API, não só o link na sidebar.
+- **Achado #4:** `ChamadosCamarj.UnitTests` ganhou `ProjectReference` pra `WebApi`; 7 testes novos
+  cobrindo os handlers de SignalR (a lógica de "quem recebe o quê" que motivou o achado #2).
+- **Achado #3 (N+1):** `ChatNovaMensagemNotification` ganhou `DestinatarioIds` opcional, eliminando a
+  query redundante no loop de `DefinirChatPerfilCommandHandler`.
+- **Achado #6:** timer de "digitando" agora é cancelado no cleanup do efeito (cobre unmount, não só
+  troca de conversa).
+- **Achado #7:** erro de envio virou `{ mensagem, origem }` — texto de retry e destaque do botão só
+  aparecem pra erro de texto, onde o retry de fato funciona; erro de arquivo limpa o input pra
+  permitir reescolher o mesmo arquivo.
+- **Achado #8 (parcial):** `gcTime` do preview de imagem alinhado ao `staleTime`; `loading="lazy"` +
+  `onError` no `<img>`; botão de download; bug do `tamanhoBytes` renderizando "0" corrigido. Batch
+  endpoint pra N imagens deixado de fora, deliberadamente (desproporcional pro uso atual).
+- **Achado #9:** `AppLayout` não mostra mais o próprio aviso de revogação quando a pessoa já está em
+  `/chat` (que já mostra o dele) — solução mais cirúrgica que aposentar `ChatAcessoRevogadoNotification`
+  por completo, que o revisor tinha sugerido como alternativa.
+- **Achado #10 / AC-48 completo:** endpoint novo `GET /auth/me` — `AuthContext` revalida o perfil
+  direto do banco uma vez no boot, fechando o caso de quem foi revogado enquanto estava deslogado.
+
+### O que ficou de fora, deliberadamente
+- Batch endpoint pra preview de imagem (achado #8)
+- Aposentar `ChatAcessoRevogadoNotification`/evento `AcessoRevogado` do `ChatHub` (ficou redundante,
+  mas continua funcionando — remover é uma sessão futura, se fizer sentido)
+- Nitpicks 🟢 sem impacto funcional
+
+### Gate checks finais
+`dotnet build` (0 erros; 3 avisos novos `MSB3277` — conflito de versão do EF Core entre
+`Infrastructure`/`WebApi`, pré-existente, só ficou visível com a nova referência de teste; inofensivo,
+não é escopo desta correção), `dotnet test` (**316 testes, 0 falhas**), `npm run build` (0 erros).
+
+### Pendências (levar pra próxima sessão)
+- Reteste ao vivo do usuário de tudo que foi corrigido nesta sessão (Bugs #10/#11, Addendums 3 e 4)
+- Limpeza das contas sintéticas no Supabase (`teste.admin2@camarj.com.br`, `teste.alvo2@camarj.com.br`)
+- Decidir promoção `develop` → `main`
+- Batch endpoint de preview de imagem e aposentadoria do `ChatAcessoRevogadoNotification`, se algum dia fizer sentido
+
+---
+
+## Sessão de 2026-09-01 (parte 6) — 2 bugs do reteste do usuário + review independente da Fase 9 (2 bloqueantes corrigidos)
+
+### Contexto
+Continuação direta da parte 5, mesmo dia seguinte. Usuário testou a Fase 9 ao vivo e reportou 2
+problemas: (1) notificação de mensagem nova só aparecia com a aba `/chat` aberta; (2) poucos emojis
+no composer. Corrigidos como Bug #10 e Bug #11 (detalhe em `review-fase8.md`, addendum 2). Depois,
+usuário pediu explicitamente uma revisão de código por "algum modelo avançado" antes de considerar o
+lote pronto — sub-agente independente (Opus, sem contexto da sessão) revisou tudo que ainda não
+tinha sido revisado (Fase 9 inteira + Bugs #10/#11) e voltou **BLOQUEANTE**, 2 achados.
+
+### Achados da review independente (`review-fase9-independente.md`, não editado — registro histórico)
+1. **🔴 Reincidência parcial** do bloqueante da review anterior: AC-47 só valia no
+   `DefinirChatPerfilCommandHandler`; o dialog "Editar usuário" (`AtualizarUsuarioPerfilCommandHandler`)
+   ficou pra trás de novo porque a correção anterior copiou código em vez de extrair.
+2. **🔴 Mais sério:** o fan-out novo do Bug #10 alcançava usuários com acesso revogado (continuam
+   participantes ativos por design). Revelou que nenhuma query de leitura do chat aplica
+   `ChatPerfilGuard.ExigirAcesso` — lacuna pré-existente, amplificada por este lote em um push ativo.
+3. 🟡 8 achados não-bloqueantes — 2 escolhidos pelo usuário pra corrigir agora (ver abaixo), 6 ficaram
+   como débito registrado.
+
+### Corrigido (usuário escolheu: bloqueantes + os 2 🟡 que o revisor recomendou tratar primeiro)
+- **Achado #1:** eliminada a duplicação de vez — `AtualizarUsuarioPerfilCommandHandler` não mexe mais
+  em `ChatPerfil` direto, despacha `DefinirChatPerfilCommand` via `IMediator.Send` quando muda. Um
+  único lugar decide os efeitos colaterais, não importa a tela.
+- **Achado #2 (mitigação dentro do escopo):** fan-out filtra por `ChatPerfil != SemAcesso`
+  (`IUsuarioPerfilRepository.ListarPorIdsAsync`, novo, uma query em lote). Frontend:
+  `useConversas(enabled)` — `AppLayout` só dispara a query pra quem tem acesso ao chat.
+- **Achado 🟡 #3 (parte de robustez):** bloco de fan-out em `try/catch` — falha ali não derruba mais
+  um comando de envio de mensagem já commitado.
+- **Achado 🟡 #5:** `useSignalR.tsx` (ChamadosHub) ganhou retry com backoff na conexão inicial, mesmo
+  padrão do `useChatSignalR.ts` (Bug #3).
+
+### Deliberadamente fora do escopo desta rodada (ver lista completa em `review-fase8.md` addendum 3)
+N+1 nas notificações de ChatPerfil, zero teste pros handlers de SignalR, timer de digitação sobrevive
+ao unmount, texto de retry enganoso em erro de upload, preview de imagem sem lazy-load, alerta
+duplicado ao revogar com `/chat` aberto, AC-48 não cobre quem estava offline, e a lacuna maior de
+`ChatPerfilGuard.ExigirAcesso` faltando nas queries de leitura (pré-existente, não introduzida aqui).
+
+### Gate checks finais
+`dotnet build` (0 erros, 3 avisos pré-existentes não relacionados), `dotnet test` (**294 testes, 0
+falhas** — 291 + 3 novos em `AtualizarUsuarioPerfilHandlerTests.cs`), `npm run build` (0 erros).
+
+### Pendências (levar pra próxima sessão)
+- Todo o débito 🟡/🟢 listado acima, não tratado por escolha do usuário
+- Reteste ao vivo do usuário pros Bugs #10/#11 e pras correções desta rodada — ainda não confirmado
+- Mesmas pendências residuais das sessões anteriores (AC-49/52 sem verificação ao vivo, limpeza das
+  contas sintéticas no Supabase, decidir promoção `develop` → `main`)
+
+---
+
+## Sessão de 2026-08-31 (parte 5) — Fase 9 do Chat: restauração simétrica de acesso + polimento de UX (AC-46 a AC-52)
+
+### Contexto
+Continuação da parte 4. Depois de testar a Fase 8 ao vivo, o usuário deu dois retornos: (1) sugeriu
+que restaurar o acesso ao chat devesse gerar uma mensagem simétrica à de revogação; (2) perguntou o
+que faltava pra deixar o chat "mais profissional". Resposta: AC-46 a AC-52, todos implementados
+nesta sessão, com instrução explícita do usuário — "leva a risca o sdd" — seguida à risca (spec
+atualizada antes do código, ver `spec.md`).
+
+### Implementado
+- **AC-46/47/48** — restauração de acesso simétrica à revogação: mensagem de sistema em cada
+  conversa ativa + evento `ChatPerfilAtualizado` publicado em **toda** mudança de `ChatPerfil` (não
+  só revogação) + `AuthContext.atualizarChatPerfil` no frontend, refletindo o novo perfil sem
+  logout/login. **Decisão de arquitetura importante:** o evento tem que viajar pelo `ChamadosHub`
+  (conexão global, ativa pra qualquer usuário logado), não pelo `ChatHub` (só existe na tela
+  `/chat`) — do contrário nunca chegaria em quem está sem acesso ao chat. Detalhe completo na nota
+  de arquitetura em `spec.md`, antes do AC-46.
+- **AC-49 a AC-52** — 3 polimentos de UX no `MensagemInput`/`MensagemItem`: emoji picker fecha ao
+  clicar fora/Esc, preview inline de imagem em mensagens de arquivo do tipo imagem, spinner no botão
+  de enviar enquanto pendente, aviso específico + retry visual (anel vermelho) em falha de envio.
+
+### Verificação
+AC-46/47/48 verificados **ao vivo** via Playwright, nas duas direções (revogar e restaurar), usando
+2 contas sintéticas descartáveis (`teste.admin2@camarj.com.br`, `teste.alvo2@camarj.com.br`, senha
+`TesteChat123`). Confirmado com a aba do usuário afetado **sem reload** e **fora** da tela `/chat` —
+prova que o mecanismo funciona pelo canal global, não pelo `ChatHub`. AC-49 a AC-52 só foram
+verificados por leitura de código e pelos gate checks (`dotnet build`/`test`, `npm run build`) —
+**sem verificação manual ao vivo nesta sessão**, fica como pendência pra próxima rodada de teste do
+usuário. Detalhe passo a passo no addendum de `review-fase8.md`.
+
+### Gate checks finais
+- `dotnet build` (solução inteira): 0 erros, 0 avisos
+- `dotnet test`: **291 testes, 0 falhas** (286 da Fase 6/8 + 5 novos cobrindo AC-46/47 em `DefinirChatPerfilHandlerTests.cs`)
+- `npm run build`: 0 erros (warnings pré-existentes só de `node_modules/@microsoft/signalr`)
+
+### Pendências (não bloqueantes, levar pra próxima sessão)
+- Verificação manual ao vivo de AC-49 a AC-52 (emoji picker, preview de imagem, spinner de envio,
+  retry em falha) — implementados e com gate checks limpos, mas não exercitados na UI nesta sessão
+- **Limpeza pendente no Supabase:** as 2 contas sintéticas desta sessão (`teste.admin2@camarj.com.br`,
+  `teste.alvo2@camarj.com.br`) e qualquer conversa/mensagem/histórico criado por elas ainda não
+  foram removidas — o classificador de modo automático bloqueou o acesso às credenciais de serviço
+  do Supabase via Bash nesta sessão (`env | grep supabase`, `dotnet user-secrets list`), então a
+  limpeza precisa ser manual ou rodada numa sessão com essa permissão liberada
+- Mesmas pendências residuais da parte 4 (read receipts, badge de não lidas isolado, histórico do
+  Admin, upload inválido, ciclo de presença, upsert real de presença, citação de mensagem deletada)
+  continuam sem tocar
+- Decidir com o usuário quando promover `develop` → `main`
+
+---
+
+## Sessão de 2026-08-31 (parte 2) — Fase 8 do Chat: 6 defeitos reais encontrados e documentados
+
+### Contexto
+Continuação da sessão anterior (bucket + migrations do chat). O usuário testou manualmente o chat
+com 2 contas reais e reportou 6 problemas. Cada um foi investigado por leitura de código antes de
+qualquer correção — 4 tiveram causa raiz confirmada só por leitura; 2 (tempo real e digitando)
+precisaram de reprodução ao vivo com Playwright (usando uma conta sintética `teste.realtime@
+camarj.com.br`, criada só pra isso — nenhuma credencial real foi tocada).
+
+### Achados — detalhe completo em `.specs/features/chat-corporativo/review-fase8.md`
+1. **Bug #5** — sem opção de remover participante de grupo: endpoint não existe (`AC-13`)
+2. **Bug #7** — resposta não aparece como citação: `ListarMensagensQueryHandler` nunca popula
+   `respostaConteudo` (`AC-33/34`)
+3. **Bug #8b** — revogar acesso só avisa quem perdeu, não os outros participantes da conversa (`AC-03`)
+4. **Bug #4** — emoji do composer tenta abrir seletor nativo do SO, não funciona em desktop (`AC-18`)
+5. **Bug #8a** — indicador "digitando" não funciona, confirmado com conexão SignalR comprovadamente
+   ativa (mensagem em tempo real funcionou nas mesmas abas segundos antes) — causa raiz ainda não
+   isolada, precisa de instrumentação
+6. **Bug #3, reclassificado** — mensagem em tempo real **funciona** em condição normal (testado ao
+   vivo, 2 abas, sem reload). O problema real é resiliência: a conexão SignalR não tem retry nem
+   aviso visual se a negociação inicial falhar, e todo erro é engolido em silêncio
+7. **Bug #9, extra, fora do checklist original** — heartbeat de presença falha 500 intermitente por
+   race condition (`23505 duplicate key` em `ChatPresencas`, falta upsert real)
+8. **Achado solto, não investigado ainda** — `GET /api/usuarios` retornou 403 pra uma conta Admin
+   durante o teste; anotado, não é do chat
+
+### Decisões
+- `develop` **não deve ser promovida pra `main`** até os bugs #5, #7, #8b, #4 e #9 (e idealmente #8a)
+  estarem corrigidos — a feature está com defeitos reais em produção do jeito que está.
+- Ordem de correção definida em `review-fase8.md`: #9 → #7 → #8b → #4 → #8a → #3 (robustez) → #5
+  (maior escopo) → investigar o 403.
+- Cada correção segue fix → gate checks → sub-agente de review independente → próximo item, não
+  tudo de uma vez.
+- Confirmado nesta sessão: quando o usuário pede pra mexer em credencial real (ex: senha de conta
+  Admin real) pra fins de teste, a ação é bloqueada pelo classificador — a alternativa correta é
+  criar dado sintético novo (conta de teste), não contornar o bloqueio.
+
+### Pendências (levar pra próxima sessão/correção)
+- Implementar as 7 correções na ordem definida acima
+- Fase 6 (testes automatizados) do chat continua sem nenhum arquivo criado
+- Limpar dado de teste no Supabase ao final: usuário `teste.realtime@camarj.com.br` e a conversa
+  criada com `matheus@camarj.com.br` durante o teste ao vivo
+- Documentar orquestração de agentes especificamente pro Claude Code (hoje só existe pro opencode
+  em `AGENTS.md`) — pedido explícito do usuário nesta sessão
+
+---
+
+## Sessão de 2026-08-31 (parte 4) — Fase 6 do chat concluída: 70 testes automatizados novos
+
+### Resumo
+Última pendência do chat corporativo fechada: a Fase 6 (testes automatizados de backend) nunca
+tinha sido implementada desde a criação da feature em 29/08. Criados os 8 arquivos planejados em
+`tasks.md` + 2 extras pros handlers de gerenciamento de grupo (`AdicionarParticipante`/
+`RemoverParticipante`, do Bug #5, que não tinham nenhuma cobertura):
+
+- `DefinirChatPerfilHandlerTests.cs` (9 testes) — inclui teste específico do fix do Bug #8b
+  (revogação avisa os outros participantes em tempo real)
+- `ChatPresencaHandlerTests.cs` (5 testes)
+- `EnviarMensagemHandlerTests.cs` (8 testes) — inclui teste do fix do Bug #7 (citação populada)
+- `CriarGrupoHandlerTests.cs` (7 testes)
+- `EnviarArquivoHandlerTests.cs` (5 testes) — inclui teste de rollback de arquivo órfão no Storage
+- `EditarMensagemHandlerTests.cs` (7 testes) — inclui limite de 24h
+- `DeletarMensagemHandlerTests.cs` (8 testes) — autor, Admin, idempotência, preservação de auditoria
+- `ChatHistoricoHandlerTests.cs` (4 testes)
+- `AdicionarParticipanteHandlerTests.cs` (10 testes, extra)
+- `RemoverParticipanteHandlerTests.cs` (8 testes, extra)
+
+**Resultado: 70 testes novos, 216 → 286 no total do projeto, 0 falhas.**
+
+### Achado no caminho
+`JsonSerializer.Serialize` (usado nos `detalhe` do `ChatHistorico`) escapa caracteres acentuados
+por padrão (`ú` → `ú`) — dois testes que verificavam `Detalhe.Contains("conteúdo...")` falharam
+por isso na primeira tentativa. Corrigido usando texto sem acento nesses testes específicos
+(comportamento do handler estava correto, o teste que precisava de ajuste).
+
+### Gate checks finais
+- `dotnet build` (solução inteira): 0 erros, 0 avisos
+- `dotnet test`: **286 testes, 0 falhas**
+- `npm run build`: não tocado nesta sessão (só backend), segue limpo desde a sessão anterior
+
+### Estado da feature — fechamento
+Chat Corporativo não tem mais nenhuma pendência bloqueante conhecida: Fase 8 (defeitos reais) e
+Fase 6 (testes automatizados) concluídas, review independente aplicado. `develop` permanece não
+promovida pra `main` — decisão a ser tomada com o usuário, não por bloqueio técnico.
+
+### Pendências (não bloqueantes, levar pra próxima sessão)
+- Follow-ups do review independente: upsert real de presença; citação de mensagem deletada
+  mostrando "[arquivo]" em vez de "[mensagem removida]"
+- ACs sem automação nem verificação manual ainda: AC-26/27 (read receipts), AC-30/32 (badge de não
+  lidas isolado), tela de histórico do Admin (AC-35/36), upload de arquivo inválido, ciclo completo
+  de presença por inatividade
+- Reações (`AdicionarReacaoCommandHandler`), marcar como lido e criar conversa privada
+  (`CriarConversaCommandHandler`) não têm teste automatizado — não estavam na lista original da
+  Fase 6, mas são lacunas reais
+- Decidir com o usuário quando promover `develop` → `main`
+
+---
+
+## Sessão de 2026-08-31 (parte 3) — Todas as 7 correções da Fase 8 implementadas + review independente
+
+### Resumo
+Todas as pendências da parte 2 foram fechadas na mesma sessão:
+
+- **Os 7 bugs da Fase 8 + 1 extra (heartbeat) corrigidos**, um por vez, com gate check
+  (`dotnet build`/`test`/`npm run build`) a cada um. Detalhe completo de cada correção em
+  `.specs/features/chat-corporativo/review-fase8.md`.
+- **Bug #5 expandido** a pedido do usuário: além de corrigir a ausência de remover participante,
+  virou gerenciamento completo de membros de grupo (ver lista, adicionar, remover, clicar pra
+  iniciar conversa direta) — novos ACs 41-45 em `spec.md`. Decisão de permissão confirmada com o
+  usuário: só criador do grupo específico + Admin gerenciam membros.
+- **Bug extra encontrado durante o teste ao vivo de #5:** `CriarGrupoDialog.tsx` usava
+  `GET /api/usuarios` (Admin-only) pra listar candidatos — quebrava criação de grupo pra qualquer
+  `CriadorDeGrupo` não-Admin. Corrigido pra usar `/chat/presencas`, mesmo padrão já usado em
+  `NovaConversaDialog`.
+- **Review independente via sub-agente** (`.specs/features/chat-corporativo/review-fase8-independente.md`):
+  encontrou 1 achado bloqueante real — a mudança de `ChatPerfil` em `UsuarioFormDialog.tsx` (feita
+  numa sessão anterior, dentro desta mesma data) criou um segundo caminho de escrita
+  (`AtualizarUsuarioPerfilCommand`) que não replicava a auditoria/notificação que o fix do Bug #8b
+  tinha acabado de garantir no caminho original (`DefinirChatPerfilCommand`). **Corrigido**:
+  `AtualizarUsuarioPerfilCommandHandler` agora aplica os mesmos efeitos colaterais quando
+  `ChatPerfil` muda. Mais 1 achado não-bloqueante corrigido (timer de digitação não cancelado ao
+  trocar de conversa); 2 achados não-bloqueantes deixados como follow-up documentado (janela de
+  corrida residual no heartbeat; citação de mensagem deletada mostra "[arquivo]" — ambos pré-existentes,
+  baixo risco).
+- **Erro próprio corrigido:** um arquivo de teste temporário (`_TempGerarHash.cs`, criado só pra
+  gerar um hash de senha de teste) ficou esquecido no projeto e inflou a contagem de testes relatada
+  (216→217) em alguns pontos da documentação — removido de verdade e números corrigidos.
+- **Dados de teste limpos do Supabase**: usuário sintético `teste.realtime@camarj.com.br` e as 2
+  conversas criadas durante os testes ao vivo (Playwright).
+
+### Gate checks finais
+- `dotnet build`: 0 erros, 0 avisos
+- `dotnet test`: **216 testes, 0 falhas** (confirmado de forma independente pelo sub-agente também)
+- `npm run build`: 0 erros (avisos só de `node_modules/@microsoft/signalr`, pré-existentes)
+
+### Estado da feature
+Todos os defeitos conhecidos da Fase 8 (incluindo o achado do review independente) estão
+corrigidos. `develop` segue **não promovida pra `main`** — não porque haja bug bloqueante conhecido,
+mas porque a Fase 6 (testes automatizados) continua sem nenhuma cobertura e a decisão de promover
+ainda não foi tomada com o usuário.
+
+### Pendências (levar pra próxima sessão)
+- Fase 6 do chat: nenhum teste automatizado ainda existe pra nenhuma parte da feature
+- Follow-ups não-bloqueantes documentados em `review-fase8.md` (upsert real de presença; citação de
+  mensagem deletada)
+- Decidir com o usuário quando promover `develop` → `main`
+- Investigar upload de arquivo inválido no chat e o ciclo completo de presença
+  (Online→Ausente→Offline) — não testados manualmente ainda
+
+---
+
+## Sessão de 2026-08-31 (parte 1) — Chat Corporativo: bucket, migrations e verificação do que foi entregue
+
+### Contexto
+Feature "Chat Corporativo" (fases 1-7 do plano) foi implementada em 2026-08-29/31 numa sessão
+anterior e mergeada em `develop` via PR #28 (2026-08-31T02:59 UTC), **sem que `STATE.md`/`ROADMAP.md`
+fossem atualizados** — violação da Regra 4 da Constitution/CLAUDE.md ("nunca encerrar sessão sem
+atualizar STATE.md"). Esta sessão fecha essa lacuna e resolve a pendência técnica que ficou aberta.
+
+### O que foi feito nesta sessão
+- **Bucket `chat-arquivos` criado no Supabase Storage** (privado, sem limite de tamanho/mime no
+  bucket — igual ao padrão do bucket `chamados-anexos`; validação de tipo/tamanho fica em
+  `EnviarArquivoCommandValidator`). Removido o TODO correspondente em `SupabaseChatStorageService.cs`.
+- **Migrations `AddChatPerfilUsuario` e `AddChatFeature` aplicadas no Supabase real** — estavam
+  criadas no código desde 29/08 mas nunca rodadas contra o banco; a API teria quebrado ao tentar
+  usar as tabelas do chat. Aplicadas com sucesso, sem dados existentes afetados (só CREATE TABLE
+  + 1 ALTER TABLE ADD COLUMN com default).
+- **Repo local sincronizado** — estava 16 commits atrás de `origin/develop` (não tinha nem o
+  `CLAUDE.md` novo nem o código do chat).
+- **Gate checks reconfirmados:** `dotnet build` 0 erros/0 avisos; `dotnet test` 216 testes, 0
+  falhas; `npm run build` do frontend 0 erros (avisos existentes são só de `node_modules/@microsoft/signalr`,
+  pré-existentes à feature, não bloqueantes).
+- **Backend (`:5000`) e frontend (`:5173`) subidos localmente** para o usuário testar manualmente
+  (Fase 8 do `tasks.md`, ainda pendente de execução).
+
+### Achado importante — débito não documentado antes
+**A Fase 6 (testes automatizados do chat) nunca foi implementada.** Os "216 testes" mencionados no
+PR #28 são exatamente os mesmos que já existiam antes da feature — zero testes novos cobrindo
+conversas, mensagens, presença, grupos, reações, edição/exclusão ou histórico de auditoria.
+`tasks.md` já listava isso como pendente desde a criação, mas o PR foi mergeado sem que isso fosse
+sinalizado com destaque. `spec.md` e `tasks.md` foram corrigidos para não afirmar "Concluída"
+indevidamente — status real: código implementado, sem cobertura automatizada, sem verificação
+manual ainda.
+
+### Decisões
+- Documentação (`spec.md`/`tasks.md`/`STATE.md`/`ROADMAP.md`) deve refletir o estado real mesmo
+  quando isso significa não marcar algo como "Concluído" — preferir um status parcial honesto a
+  fechar a spec prematuramente (é literalmente a Regra 1 da Constitution, aplicada retroativamente
+  aqui).
+- Bucket criado com a mesma config do `chamados-anexos` (privado) em vez de público, para manter
+  o padrão já validado em produção.
+
+### Pendências (levar para a próxima sessão)
+- **Fase 6 do chat** — escrever os 8 arquivos de teste listados em `tasks.md` (handlers de
+  DefinirChatPerfil, Presença, EnviarMensagem, CriarGrupo, EnviarArquivo, EditarMensagem,
+  DeletarMensagem, HistoricoChat).
+- **Fase 8 do chat** — verificação manual completa na UI (o app está no ar localmente para isso).
+- `develop` ainda não foi promovida para `main`/produção — chat só existe em ambiente local até
+  esse merge acontecer, e só deveria acontecer depois das duas pendências acima.
+- Deploy Azure, Fase 4 Email (IMAP), alertas de SLA via SignalR, filtro por motivo, gráfico de
+  evolução mensal do SLA, triagem por LLM — seguem pendentes de sessões anteriores (ver Roadmap).
+
+---
+
+## Sessão de 2026-08-10 (tarde) — Hotfix: URL da API em produção corrigida
+
+### Problema
+- Login retornava "Serviço indisponível. Verifique sua conexão" (`api.ts:63` — `fetch()` não alcançava a API)
+- `.env.production` ainda apontava para URL de Cloudflare Tunnel efêmero expirado (`twist-prefer-electoral-elizabeth.trycloudflare.com`)
+- O túnel caiu e a URL correta é `https://chamados.okurumin.com.br/api` (Cloudflare Tunnel fixo via domínio próprio)
+- Build antigo (10h) foi feito com código desatualizado, 4 commits atrás
+
+### Correção
+- `.env.production`: `VITE_API_BASE_URL` corrigido para `https://chamados.okurumin.com.br/api`
+- `npm run build` limpo, commitado e mergeado em `develop` e `main`
+- Push feito, aguardando redeploy no Cloudflare Pages
+
+---
+
+## Sessão de 2026-08-10 (manhã) — Dashboard clicável + Kanban com navegação + Orquestração IA/SDD
 
 ### Resumo
 - **Dashboard clicável:** cards KPI, rosca, gráficos de barra navegam para `/chamados?{filtro}`. `ChamadosListPage` migrada para `useSearchParams`.

@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ApiError } from '@/lib/api'
 import { useAtualizarUsuario, useCriarUsuario } from '../hooks/useUsuarios'
 import { useGrupos } from '../hooks/useGrupos'
-import type { TipoPerfil, UsuarioPerfilResponse } from '@/types/api'
+import type { ChatPerfil, TipoPerfil, UsuarioPerfilResponse } from '@/types/api'
 
 interface UsuarioFormDialogProps {
   open: boolean
@@ -26,11 +26,26 @@ interface FormValues {
   ativo: boolean
   senha: string
   grupoId: string
+  chatPerfil: ChatPerfil
 }
 
 const PERFIS: TipoPerfil[] = ['Admin', 'Atendente', 'Solicitante']
 
-const VALORES_PADRAO: FormValues = { nome: '', email: '', perfil: 'Solicitante', ativo: true, senha: '', grupoId: '' }
+const OPCOES_CHAT: { value: ChatPerfil; label: string }[] = [
+  { value: 'SemAcesso', label: 'Sem Acesso' },
+  { value: 'Participante', label: 'Participante' },
+  { value: 'CriadorDeGrupo', label: 'Criador de Grupo' },
+]
+
+const VALORES_PADRAO: FormValues = {
+  nome: '',
+  email: '',
+  perfil: 'Solicitante',
+  ativo: true,
+  senha: '',
+  grupoId: '',
+  chatPerfil: 'SemAcesso',
+}
 
 export function UsuarioFormDialog({ open, onOpenChange, usuario }: UsuarioFormDialogProps) {
   const emEdicao = !!usuario
@@ -56,7 +71,15 @@ export function UsuarioFormDialog({ open, onOpenChange, usuario }: UsuarioFormDi
 
     reset(
       usuario
-        ? { nome: usuario.nome, email: usuario.email, perfil: usuario.perfil, ativo: usuario.ativo, senha: '', grupoId: usuario.grupoId ?? '' }
+        ? {
+            nome: usuario.nome,
+            email: usuario.email,
+            perfil: usuario.perfil,
+            ativo: usuario.ativo,
+            senha: '',
+            grupoId: usuario.grupoId ?? '',
+            chatPerfil: usuario.chatPerfil ?? 'SemAcesso',
+          }
         : VALORES_PADRAO,
     )
     resetCriar()
@@ -85,14 +108,17 @@ export function UsuarioFormDialog({ open, onOpenChange, usuario }: UsuarioFormDi
 
     if (emEdicao && usuario) {
       atualizar(
-        { id: usuario.id, dados: { nome: values.nome, perfil: values.perfil, ativo: values.ativo, grupoId } },
+        {
+          id: usuario.id,
+          dados: { nome: values.nome, perfil: values.perfil, ativo: values.ativo, grupoId, chatPerfil: values.chatPerfil },
+        },
         { onSuccess: () => fechar(false), onError: tratarErro },
       )
       return
     }
 
     criar(
-      { email: values.email, nome: values.nome, perfil: values.perfil, senha: values.senha, grupoId },
+      { email: values.email, nome: values.nome, perfil: values.perfil, senha: values.senha, grupoId, chatPerfil: values.chatPerfil },
       { onSuccess: () => fechar(false), onError: tratarErro },
     )
   }
@@ -175,6 +201,28 @@ export function UsuarioFormDialog({ open, onOpenChange, usuario }: UsuarioFormDi
                     {(grupos ?? []).map((g) => (
                       <SelectItem key={g.id} value={g.id}>
                         {g.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label>Chat</Label>
+            <Controller
+              control={control}
+              name="chatPerfil"
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {OPCOES_CHAT.map((opcao) => (
+                      <SelectItem key={opcao.value} value={opcao.value}>
+                        {opcao.label}
                       </SelectItem>
                     ))}
                   </SelectContent>

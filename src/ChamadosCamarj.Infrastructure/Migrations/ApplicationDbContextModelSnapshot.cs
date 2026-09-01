@@ -17,7 +17,7 @@ namespace ChamadosCamarj.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.18")
+                .HasAnnotation("ProductVersion", "9.0.19")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -201,6 +201,253 @@ namespace ChamadosCamarj.Infrastructure.Migrations
                     b.ToTable("Chamados", (string)null);
                 });
 
+            modelBuilder.Entity("ChamadosCamarj.Domain.Entities.ChatConversa", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Ativa")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("CriadoPorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DataAtualizacao")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DataCriacao")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Nome")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CriadoPorId");
+
+                    b.ToTable("ChatConversas", (string)null);
+                });
+
+            modelBuilder.Entity("ChamadosCamarj.Domain.Entities.ChatHistorico", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Acao")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<Guid?>("ConversaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DataAtualizacao")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DataCriacao")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Detalhe")
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("MensagemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UsuarioNome")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConversaId");
+
+                    b.HasIndex("DataCriacao");
+
+                    b.ToTable("ChatHistoricos", (string)null);
+                });
+
+            modelBuilder.Entity("ChamadosCamarj.Domain.Entities.ChatMensagem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AutorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AutorNome")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<string>("CaminhoStorage")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Conteudo")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ConteudoOriginal")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("ConversaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DataAtualizacao")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DataCriacao")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("Deletada")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("EditadaEm")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("NomeArquivo")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<Guid?>("RespostaParaMensagemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long?>("TamanhoBytes")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("TipoArquivo")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConversaId", "DataCriacao");
+
+                    b.ToTable("ChatMensagens", (string)null);
+                });
+
+            modelBuilder.Entity("ChamadosCamarj.Domain.Entities.ChatMensagemReacao", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DataAtualizacao")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DataCriacao")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Emoji")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid>("MensagemId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UsuarioNome")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MensagemId", "UsuarioId", "Emoji")
+                        .IsUnique();
+
+                    b.ToTable("ChatMensagemReacoes", (string)null);
+                });
+
+            modelBuilder.Entity("ChamadosCamarj.Domain.Entities.ChatParticipante", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("ConversaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DataAtualizacao")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DataCriacao")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("UltimaLeituraEm")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UsuarioNome")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.HasIndex("ConversaId", "UsuarioId")
+                        .IsUnique();
+
+                    b.ToTable("ChatParticipantes", (string)null);
+                });
+
+            modelBuilder.Entity("ChamadosCamarj.Domain.Entities.ChatPresenca", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DataAtualizacao")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DataCriacao")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime>("UltimoHeartbeat")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UsuarioNome")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UsuarioId")
+                        .IsUnique();
+
+                    b.ToTable("ChatPresencas", (string)null);
+                });
+
             modelBuilder.Entity("ChamadosCamarj.Domain.Entities.Comentario", b =>
                 {
                     b.Property<Guid>("Id")
@@ -330,6 +577,13 @@ namespace ChamadosCamarj.Infrastructure.Migrations
                     b.Property<bool>("Ativo")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("ChatPerfil")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasDefaultValue("SemAcesso");
+
                     b.Property<DateTime?>("DataAtualizacao")
                         .HasColumnType("timestamp with time zone");
 
@@ -397,6 +651,39 @@ namespace ChamadosCamarj.Infrastructure.Migrations
                     b.Navigation("Categoria");
                 });
 
+            modelBuilder.Entity("ChamadosCamarj.Domain.Entities.ChatMensagem", b =>
+                {
+                    b.HasOne("ChamadosCamarj.Domain.Entities.ChatConversa", "Conversa")
+                        .WithMany("Mensagens")
+                        .HasForeignKey("ConversaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Conversa");
+                });
+
+            modelBuilder.Entity("ChamadosCamarj.Domain.Entities.ChatMensagemReacao", b =>
+                {
+                    b.HasOne("ChamadosCamarj.Domain.Entities.ChatMensagem", "Mensagem")
+                        .WithMany("Reacoes")
+                        .HasForeignKey("MensagemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Mensagem");
+                });
+
+            modelBuilder.Entity("ChamadosCamarj.Domain.Entities.ChatParticipante", b =>
+                {
+                    b.HasOne("ChamadosCamarj.Domain.Entities.ChatConversa", "Conversa")
+                        .WithMany("Participantes")
+                        .HasForeignKey("ConversaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Conversa");
+                });
+
             modelBuilder.Entity("ChamadosCamarj.Domain.Entities.Comentario", b =>
                 {
                     b.HasOne("ChamadosCamarj.Domain.Entities.Chamado", "Chamado")
@@ -428,6 +715,18 @@ namespace ChamadosCamarj.Infrastructure.Migrations
                     b.Navigation("Anexos");
 
                     b.Navigation("Comentarios");
+                });
+
+            modelBuilder.Entity("ChamadosCamarj.Domain.Entities.ChatConversa", b =>
+                {
+                    b.Navigation("Mensagens");
+
+                    b.Navigation("Participantes");
+                });
+
+            modelBuilder.Entity("ChamadosCamarj.Domain.Entities.ChatMensagem", b =>
+                {
+                    b.Navigation("Reacoes");
                 });
 
             modelBuilder.Entity("ChamadosCamarj.Domain.Entities.Grupo", b =>

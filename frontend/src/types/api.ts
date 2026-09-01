@@ -120,6 +120,7 @@ export interface UsuarioPerfilResponse {
   ativo: boolean;
   grupoId?: string | null;
   grupoNome?: string | null;
+  chatPerfil?: ChatPerfil;
 }
 
 export interface GrupoResponse {
@@ -127,4 +128,80 @@ export interface GrupoResponse {
   nome: string;
   descricao: string;
   ativo: boolean;
+}
+
+// --- Chat Corporativo ---
+
+export type ChatPerfil = 'SemAcesso' | 'Participante' | 'CriadorDeGrupo'
+export type ChatConversaTipo = 'Privada' | 'Grupo'
+export type ChatMensagemTipo = 'Texto' | 'Arquivo' | 'Sistema'
+export type StatusPresenca = 'Online' | 'Ausente' | 'Offline'
+
+export interface ChatConversaResponse {
+  id: string
+  tipo: ChatConversaTipo
+  nome?: string
+  ultimaMensagem?: string
+  ultimaMensagemEm?: string
+  naoLidas: number
+}
+
+export interface ChatReacaoResponse {
+  emoji: string
+  quantidade: number
+  reagiuEu: boolean
+}
+
+export interface ChatMensagemResponse {
+  id: string
+  autorId: string
+  autorNome: string
+  conteudo?: string
+  tipo: ChatMensagemTipo
+  deletada: boolean
+  editadaEm?: string
+  respostaParaMensagemId?: string
+  respostaConteudo?: string
+  nomeArquivo?: string
+  tipoArquivo?: string
+  tamanhoBytes?: number
+  reacoes: ChatReacaoResponse[]
+  dataCriacao: string
+}
+
+export interface ChatPresencaResponse {
+  usuarioId: string
+  usuarioNome: string
+  status: StatusPresenca
+}
+
+export interface ChatArquivoResponse {
+  nomeArquivo: string
+  urlAssinada: string
+  tipoArquivo: string
+  tamanhoBytes: number
+}
+
+export interface ChatParticipanteInfo {
+  usuarioId: string
+  usuarioNome: string
+}
+
+export interface ChatConversaDetalheResponse {
+  id: string
+  tipo: ChatConversaTipo
+  nome?: string
+  criadoPorId: string
+  participantes: ChatParticipanteInfo[]
+}
+
+export interface ChatHistoricoResponse {
+  id: string
+  usuarioId: string
+  usuarioNome: string
+  acao: string
+  detalhe?: string
+  conversaId?: string
+  mensagemId?: string
+  dataCriacao: string
 }

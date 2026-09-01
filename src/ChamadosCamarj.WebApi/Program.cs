@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Scalar.AspNetCore;
+// using Scalar.AspNetCore; // bloqueado por política WDAC em dev local
 using ChamadosCamarj.Application.Common;
 using ChamadosCamarj.Application.Common.Interfaces;
 using ChamadosCamarj.Domain.Entities;
@@ -16,6 +16,7 @@ using ChamadosCamarj.Application.Common.Behaviours;
 using ChamadosCamarj.Domain.Interfaces;
 using ChamadosCamarj.Infrastructure.Data;
 using ChamadosCamarj.Infrastructure.Repositories;
+using ChamadosCamarj.Infrastructure.Repositories.Chat;
 using ChamadosCamarj.Infrastructure.Services;
 using ChamadosCamarj.WebApi.Middleware;
 using ChamadosCamarj.WebApi.Hubs;
@@ -69,6 +70,12 @@ builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IPasswordHasher<UsuarioPerfil>, PasswordHasher<UsuarioPerfil>>();
 builder.Services.AddScoped<ITriagemService, KeywordTriagemService>();
 
+// Chat corporativo — repositórios
+builder.Services.AddScoped<IChatConversaRepository, ChatConversaRepository>();
+builder.Services.AddScoped<IChatMensagemRepository, ChatMensagemRepository>();
+builder.Services.AddScoped<IChatPresencaRepository, ChatPresencaRepository>();
+builder.Services.AddScoped<IChatHistoricoRepository, ChatHistoricoRepository>();
+
 builder.Services.AddScoped<IEmailSender?>(_ =>
 {
     var smtpEmail = builder.Configuration["Email:SmtpEmail"] ?? "suporte@camarj.com.br";
@@ -95,6 +102,8 @@ if (!string.IsNullOrWhiteSpace(supabaseSettings.Url) && !string.IsNullOrWhiteSpa
     await supabaseClient.InitializeAsync();
     builder.Services.AddSingleton(supabaseClient);
     builder.Services.AddScoped<IStorageService, SupabaseStorageService>();
+    // Chat usa bucket separado (chat-arquivos) reusando o mesmo Supabase.Client singleton.
+    builder.Services.AddScoped<IChatStorageService, SupabaseChatStorageService>();
 }
 else
 {
@@ -102,6 +111,7 @@ else
     // (ValidateOnBuild, ativo em Development) derruba a aplicação inteira no Build() se um
     // Handler exige uma dependência não registrada, mesmo que ninguém chame o endpoint.
     builder.Services.AddScoped<IStorageService, NullStorageService>();
+    builder.Services.AddScoped<IChatStorageService, NullChatStorageService>();
 }
 
 // ─────────────────────────────
@@ -172,7 +182,9 @@ builder.Services.AddControllers()
 // ─────────────────────────────
 // SignalR — notificações em tempo real
 builder.Services.AddSignalR();
+builder.Services.AddSingleton<Microsoft.AspNetCore.SignalR.IUserIdProvider, SubClaimUserIdProvider>();
 builder.Services.AddHostedService<SlaMonitorService>();
+builder.Services.AddHostedService<ChatPresencaWorker>();
 
 builder.Services.AddRateLimiter(options =>
 {
@@ -214,7 +226,7 @@ if (app.Environment.IsDevelopment())
     // Doc da API (só em dev) — não deve exigir token, senão ninguém consegue nem
     // ver os endpoints disponíveis antes de já ter um JWT.
     app.MapOpenApi().AllowAnonymous();
-    app.MapScalarApiReference().AllowAnonymous();
+    // app.MapScalarApiReference().AllowAnonymous(); // bloqueado por política WDAC em dev local
 }
 
 app.UseCors("AllowFrontend");
@@ -225,6 +237,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.MapHub<ChamadosHub>("/hubs/chamados");
+app.MapHub<ChatHub>("/hubs/chat");
 
 // ─────────────────────────────
 // Migrations automáticas + Seed

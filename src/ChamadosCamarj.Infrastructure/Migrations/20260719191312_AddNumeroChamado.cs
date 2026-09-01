@@ -35,7 +35,9 @@ namespace ChamadosCamarj.Infrastructure.Migrations
             ");
 
             // A sequence continua do maior número já atribuído no backfill acima.
-            migrationBuilder.Sql(@"SELECT setval('""ChamadosNumeroSeq""', COALESCE((SELECT MAX(""Numero"") FROM ""Chamados""), 0));");
+            // Em banco vazio (MAX = NULL), setval(0) estouraria o MINVALUE da sequence;
+            // usa is_called=false nesse caso para o primeiro chamado receber o número 1.
+            migrationBuilder.Sql(@"SELECT setval('""ChamadosNumeroSeq""', COALESCE((SELECT MAX(""Numero"") FROM ""Chamados""), 1), EXISTS (SELECT 1 FROM ""Chamados""));");
 
             migrationBuilder.Sql(@"ALTER TABLE ""Chamados"" ALTER COLUMN ""Numero"" SET DEFAULT nextval('""ChamadosNumeroSeq""');");
             migrationBuilder.Sql(@"ALTER TABLE ""Chamados"" ALTER COLUMN ""Numero"" SET NOT NULL;");
