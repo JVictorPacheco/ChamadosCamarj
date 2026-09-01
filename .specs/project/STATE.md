@@ -4,6 +4,18 @@
 
 ---
 
+## Sessão de 2026-09-01 (parte 9) — Commit, push e PR aberto
+
+Todo o trabalho das partes 5 a 8 (Fase 9, Bugs #10/#11, 2 reviews independentes, verificação ao vivo)
+foi commitado em 3 commits (`test(chat)`, `feat(chat)`, `docs(chat)`) na branch
+`feature/chat-corporativo-hardening` (criada a partir de `develop`, seguindo o git flow do
+`AGENTS.md`), com push feito e **PR #29 aberto contra `develop`**:
+https://github.com/JVictorPacheco/ChamadosCamarj/pull/29
+
+Working tree limpo. Pendente: review/merge do PR #29 (não mergeado ainda — decisão do usuário).
+
+---
+
 ## Sessão de 2026-09-01 (parte 8) — Verificação ao vivo pós-parte 7: 1 bug real encontrado e corrigido
 
 ### Contexto
