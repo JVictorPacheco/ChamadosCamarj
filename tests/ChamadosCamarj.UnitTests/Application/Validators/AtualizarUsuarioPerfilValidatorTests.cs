@@ -13,7 +13,8 @@ public class AtualizarUsuarioPerfilValidatorTests
         Guid.NewGuid(),
         "Vitor",
         Perfil.Admin,
-        true);
+        true,
+        ChatPerfil.SemAcesso);
 
     [Fact]
     public void Validar_ComDadosValidos_DevePassar()
