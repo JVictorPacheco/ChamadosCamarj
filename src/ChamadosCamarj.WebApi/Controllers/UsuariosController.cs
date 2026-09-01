@@ -63,7 +63,15 @@ public class UsuariosController : ControllerBase
         [FromBody] AtualizarUsuarioPerfilCommand command,
         CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(command with { Id = id, PerfilRequisitante = _currentUser.Perfil }, cancellationToken);
+        var result = await _mediator.Send(
+            command with
+            {
+                Id = id,
+                PerfilRequisitante = _currentUser.Perfil,
+                RequisitanteId = _currentUser.UsuarioId,
+                RequisitanteNome = _currentUser.Nome
+            },
+            cancellationToken);
 
         if (result is null)
             return NotFound(new { message = "Usuário não encontrado." });

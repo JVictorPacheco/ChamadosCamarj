@@ -14,7 +14,8 @@ import {
 import { Checkbox } from '@/components/ui/checkbox'
 import { useAuth } from '@/auth/AuthContext'
 import { useCriarGrupo } from '../hooks/useChat'
-import { useUsuarios } from '@/features/admin/hooks/useUsuarios'
+import { usePresencas } from '../hooks/usePresencas'
+import { PresencaBadge } from './PresencaBadge'
 
 interface CriarGrupoDialogProps {
   open: boolean
@@ -28,17 +29,12 @@ export function CriarGrupoDialog({ open, onOpenChange, onSuccess }: CriarGrupoDi
   const [participantesSelecionados, setParticipantesSelecionados] = useState<Set<string>>(new Set())
   const [erro, setErro] = useState<string | null>(null)
 
-  const { data: usuarios } = useUsuarios()
+  // /chat/presencas já retorna só quem tem acesso ao chat — ao contrário de /api/usuarios
+  // (era o que este diálogo usava antes), não exige perfil Admin pra ser consultado.
+  const { data: presencas } = usePresencas()
   const criarGrupo = useCriarGrupo()
 
-  // Usuários com acesso ao chat, excluindo o próprio usuário
-  const participantesDisponiveis = (usuarios ?? []).filter(
-    (u) =>
-      u.ativo &&
-      u.chatPerfil &&
-      u.chatPerfil !== 'SemAcesso' &&
-      u.id !== perfil?.id
-  )
+  const participantesDisponiveis = (presencas ?? []).filter((u) => u.usuarioId !== perfil?.id)
 
   const toggleParticipante = (id: string) => {
     setParticipantesSelecionados((prev) => {
@@ -117,15 +113,15 @@ export function CriarGrupoDialog({ open, onOpenChange, onSuccess }: CriarGrupoDi
               )}
               {participantesDisponiveis.map((u) => (
                 <label
-                  key={u.id}
+                  key={u.usuarioId}
                   className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-muted cursor-pointer"
                 >
                   <Checkbox
-                    checked={participantesSelecionados.has(u.id)}
-                    onCheckedChange={() => toggleParticipante(u.id)}
+                    checked={participantesSelecionados.has(u.usuarioId)}
+                    onCheckedChange={() => toggleParticipante(u.usuarioId)}
                   />
-                  <span className="flex-1 text-sm">{u.nome}</span>
-                  <span className="text-xs text-muted-foreground">{u.email}</span>
+                  <PresencaBadge status={u.status} size="sm" />
+                  <span className="flex-1 text-sm">{u.usuarioNome}</span>
                 </label>
               ))}
             </div>

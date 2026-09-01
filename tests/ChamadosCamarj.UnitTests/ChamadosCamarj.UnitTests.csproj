@@ -23,6 +23,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\ChamadosCamarj.Domain\ChamadosCamarj.Domain.csproj" />
     <ProjectReference Include="..\..\src\ChamadosCamarj.Application\ChamadosCamarj.Application.csproj" />
+    <!-- review-fase9-independente.md #4: os handlers de notificação SignalR vivem em WebApi, fora
+         do alcance dos testes até esta referência — é onde mora a lógica de "quem recebe o quê". -->
+    <ProjectReference Include="..\..\src\ChamadosCamarj.WebApi\ChamadosCamarj.WebApi.csproj" />
   </ItemGroup>
 
 </Project>

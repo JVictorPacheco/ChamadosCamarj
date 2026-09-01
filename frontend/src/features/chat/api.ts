@@ -1,6 +1,7 @@
 import { apiFetch } from '@/lib/api'
 import type {
   ChatConversaResponse,
+  ChatConversaDetalheResponse,
   ChatMensagemResponse,
   ChatPresencaResponse,
   ChatHistoricoResponse,
@@ -26,6 +27,23 @@ export function criarGrupo(nome: string, participanteIds: string[]): Promise<Cha
   return apiFetch<ChatConversaResponse>('/chat/grupos', {
     method: 'POST',
     body: JSON.stringify({ nome, participanteIds }),
+  })
+}
+
+export function obterConversa(conversaId: string): Promise<ChatConversaDetalheResponse> {
+  return apiFetch<ChatConversaDetalheResponse>(`/chat/conversas/${conversaId}`)
+}
+
+export function adicionarParticipante(conversaId: string, usuarioId: string): Promise<void> {
+  return apiFetch<void>(`/chat/grupos/${conversaId}/participantes`, {
+    method: 'POST',
+    body: JSON.stringify({ usuarioId }),
+  })
+}
+
+export function removerParticipante(conversaId: string, usuarioId: string): Promise<void> {
+  return apiFetch<void>(`/chat/grupos/${conversaId}/participantes/${usuarioId}`, {
+    method: 'DELETE',
   })
 }
 

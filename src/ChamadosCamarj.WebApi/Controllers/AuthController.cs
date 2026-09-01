@@ -1,8 +1,11 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ChamadosCamarj.Application.Common;
 using ChamadosCamarj.Application.Features.Auth.Commands;
 using ChamadosCamarj.Application.Features.Auth.DTOs;
+using ChamadosCamarj.Application.Features.Auth.Queries;
+using ChamadosCamarj.Application.Features.Usuarios.DTOs;
 
 namespace ChamadosCamarj.WebApi.Controllers;
 
@@ -12,10 +15,12 @@ namespace ChamadosCamarj.WebApi.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IMediator _mediator;
+    private readonly ICurrentUserService _currentUser;
 
-    public AuthController(IMediator mediator)
+    public AuthController(IMediator mediator, ICurrentUserService currentUser)
     {
         _mediator = mediator;
+        _currentUser = currentUser;
     }
 
     /// <summary>
@@ -81,5 +86,19 @@ public class AuthController : ControllerBase
             return BadRequest(new { mensagem = "Link inválido ou expirado. Solicite uma nova redefinição." });
 
         return Ok(new { mensagem = "Senha redefinida com sucesso." });
+    }
+
+    /// <summary>
+    /// Retorna o perfil atual do usuário autenticado, revalidado no banco (não confia só no que
+    /// está no JWT/localStorage) — usado no boot do frontend pra refletir mudanças (ex: ChatPerfil
+    /// revogado) que aconteceram enquanto a pessoa estava deslogada ou com a aba fechada (AC-48).
+    /// </summary>
+    [HttpGet("me")]
+    [ProducesResponseType(typeof(UsuarioPerfilResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<UsuarioPerfilResponse>> Me(CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new ObterPerfilAtualQuery(_currentUser.UsuarioId), cancellationToken);
+        return Ok(result);
     }
 }

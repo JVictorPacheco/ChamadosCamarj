@@ -37,6 +37,7 @@ public class CriarUsuarioPerfilCommandHandler : IRequestHandler<CriarUsuarioPerf
             // inserir um novo, já que o índice único de Email não distingue ativo/inativo.
             existente.Atualizar(request.Nome, request.Perfil, request.GrupoId);
             existente.DefinirSenhaHash(_passwordHasher.HashPassword(existente, request.Senha));
+            existente.DefinirChatPerfil(request.ChatPerfil);
             existente.Ativar();
             await _usuarioPerfilRepository.AtualizarAsync(existente, cancellationToken);
             return existente.ToResponse();
@@ -44,6 +45,7 @@ public class CriarUsuarioPerfilCommandHandler : IRequestHandler<CriarUsuarioPerf
 
         var usuario = new UsuarioPerfil(request.Email, request.Nome, request.Perfil);
         usuario.DefinirSenhaHash(_passwordHasher.HashPassword(usuario, request.Senha));
+        usuario.DefinirChatPerfil(request.ChatPerfil);
 
         if (request.GrupoId.HasValue)
             usuario.DefinirGrupo(request.GrupoId.Value);

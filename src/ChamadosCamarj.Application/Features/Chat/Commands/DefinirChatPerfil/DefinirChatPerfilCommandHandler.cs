@@ -3,6 +3,7 @@ using MediatR;
 using ChamadosCamarj.Application.Common.Authorization;
 using ChamadosCamarj.Application.Common.Exceptions;
 using ChamadosCamarj.Application.Common.Notifications;
+using ChamadosCamarj.Application.Mappings;
 using ChamadosCamarj.Domain.Entities;
 using ChamadosCamarj.Domain.Enums;
 using ChamadosCamarj.Domain.Interfaces;
@@ -47,6 +48,10 @@ public class DefinirChatPerfilCommandHandler : IRequestHandler<DefinirChatPerfil
         await _usuarioPerfilRepository.AtualizarAsync(usuario, cancellationToken);
 
         var revogou = perfilAnterior != ChatPerfil.SemAcesso && request.ChatPerfil == ChatPerfil.SemAcesso;
+        // AC-46/47: simétrico à revogação — concedeu só conta como "restauração" quando a pessoa
+        // vinha de SemAcesso. Uma troca lateral (Participante -> CriadorDeGrupo, por exemplo) não
+        // é restauração — ela nunca perdeu acesso às conversas, não faz sentido anunciar "voltou".
+        var restaurou = perfilAnterior == ChatPerfil.SemAcesso && request.ChatPerfil != ChatPerfil.SemAcesso;
         var acao = revogou ? ChatAcao.AcessoRevogado : ChatAcao.AcessoConcedido;
 
         var detalhe = JsonSerializer.Serialize(new
@@ -60,18 +65,36 @@ public class DefinirChatPerfilCommandHandler : IRequestHandler<DefinirChatPerfil
             ChatHistorico.Criar(request.AdminId, request.AdminNome, acao, detalhe),
             cancellationToken);
 
-        if (revogou)
+        if (revogou || restaurou)
         {
-            // Mensagem de sistema em cada conversa ativa do usuário + notifica o próprio usuário.
+            var textoSistema = revogou
+                ? $"{usuario.Nome} teve o acesso ao chat revogado"
+                : $"{usuario.Nome} teve o acesso ao chat restaurado";
+
+            // Mensagem de sistema em cada conversa onde a pessoa já era participante — revogar não
+            // remove ninguém de grupo nenhum, só bloqueia a tela; os vínculos continuam intactos.
             var conversas = await _conversaRepository.ListarConversasComUsuarioAsync(usuario.Id, cancellationToken);
             foreach (var conversa in conversas)
             {
-                var mensagemSistema = ChatMensagem.CriarSistema(
-                    conversa.Id, $"{usuario.Nome} teve o acesso ao chat revogado");
+                var mensagemSistema = ChatMensagem.CriarSistema(conversa.Id, textoSistema);
                 await _mensagemRepository.AdicionarAsync(mensagemSistema, cancellationToken);
-            }
 
-            await _mediator.Publish(new ChatAcessoRevogadoNotification(usuario.Id), cancellationToken);
+                // Sem isso, os outros participantes só veriam essa mensagem de sistema ao
+                // recarregar a conversa em vez de em tempo real.
+                var response = mensagemSistema.ToResponse(usuario.Id);
+                // review-fase9-independente.md #3: já temos os participantes desta conversa em mãos
+                // (ListarConversasComUsuarioAsync inclui Participantes) — passa direto pra evitar o
+                // handler de notificação refazer a mesma busca a cada conversa deste loop.
+                var destinatarioIds = conversa.Participantes.Where(p => p.Ativo).Select(p => p.UsuarioId);
+                await _mediator.Publish(new ChatNovaMensagemNotification(conversa.Id, response, destinatarioIds), cancellationToken);
+            }
         }
+
+        if (revogou)
+            await _mediator.Publish(new ChatAcessoRevogadoNotification(usuario.Id), cancellationToken);
+
+        // AC-47: canal global (ChamadosHub), não o ChatHub — o usuário afetado pode não estar (e no
+        // caso de revogação, nunca está) com uma conexão ativa ao ChatHub, que só existe na tela /chat.
+        await _mediator.Publish(new ChatPerfilAtualizadoNotification(usuario.Id, request.ChatPerfil), cancellationToken);
     }
 }

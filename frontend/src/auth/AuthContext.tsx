@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { autenticarGoogle, login, type AutenticacaoResponse } from './api'
-import { clearToken, registrarLogoutAutomatico, setToken } from '@/lib/api'
-import type { ChatPerfil, TipoPerfil } from '@/types/api'
+import { autenticarGoogle, login, obterPerfilAtual, type AutenticacaoResponse } from './api'
+import { clearToken, getToken, registrarLogoutAutomatico, setToken } from '@/lib/api'
+import type { ChatPerfil, TipoPerfil, UsuarioPerfilResponse } from '@/types/api'
 
 export type { TipoPerfil }
 
@@ -20,11 +20,16 @@ interface AuthContextValue {
   loginComGoogle: (idToken: string) => Promise<void>
   loginComSenha: (email: string, senha: string) => Promise<void>
   logout: () => void
+  atualizarChatPerfil: (novo: ChatPerfil) => void
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
 function paraPerfil(resposta: AutenticacaoResponse): Perfil {
+  return { tipo: resposta.perfil, id: resposta.id, nome: resposta.nome, email: resposta.email, chatPerfil: resposta.chatPerfil }
+}
+
+function paraPerfilAtual(resposta: UsuarioPerfilResponse): Perfil {
   return { tipo: resposta.perfil, id: resposta.id, nome: resposta.nome, email: resposta.email, chatPerfil: resposta.chatPerfil }
 }
 
@@ -54,6 +59,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     registrarLogoutAutomatico(logout)
   }, [])
 
+  // AC-48 / review-fase9-independente.md #10: perfil vem só de localStorage no boot, então uma
+  // mudança de ChatPerfil enquanto a pessoa estava deslogada (ou com a aba fechada, sem conexão
+  // SignalR pra receber o evento em tempo real) nunca era refletida até um novo login. Revalida uma
+  // vez no boot direto do banco. Falha de rede aqui não desloga ninguém — mantém o snapshot salvo;
+  // um 401 de verdade (conta excluída/desativada) já é tratado por registrarLogoutAutomatico acima.
+  useEffect(() => {
+    if (!getToken()) return
+    obterPerfilAtual()
+      .then((resposta) => {
+        const atualizado = paraPerfilAtual(resposta)
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(atualizado))
+        setPerfil(atualizado)
+      })
+      .catch(() => {
+        // best-effort — ver comentário acima
+      })
+  }, [])
+
   const loginComGoogle = async (idToken: string) => {
     const resposta = await autenticarGoogle(idToken)
     setToken(resposta.token)
@@ -70,7 +93,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setPerfil(perfilLogado)
   }
 
-  const value = useMemo(() => ({ perfil, loginComGoogle, loginComSenha, logout }), [perfil])
+  // AC-48: reflete uma mudança de ChatPerfil vinda em tempo real (ChatPerfilAtualizado, via
+  // ChamadosHub) sem precisar de logout/login — sem isso, o link "Chat" só apareceria/sumiria
+  // da barra lateral depois de gerar um token novo.
+  const atualizarChatPerfil = (novo: ChatPerfil) => {
+    setPerfil((atual) => {
+      if (!atual) return atual
+      const atualizado = { ...atual, chatPerfil: novo }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(atualizado))
+      return atualizado
+    })
+  }
+
+  const value = useMemo(() => ({ perfil, loginComGoogle, loginComSenha, logout, atualizarChatPerfil }), [perfil])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

@@ -39,4 +39,10 @@ public class ChatParticipante : BaseEntity
         Ativo = false;
         DataAtualizacao = DateTime.UtcNow;
     }
+
+    public void Reativar()
+    {
+        Ativo = true;
+        DataAtualizacao = DateTime.UtcNow;
+    }
 }

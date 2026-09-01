@@ -8,6 +8,12 @@ import { getToken } from '@/lib/api'
 
 const SIGNALR_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ?? 'http://localhost:5000'
 
+// review-fase9-independente.md #5: withAutomaticReconnect só cobre queda de uma conexão que chegou
+// a se estabelecer — um start() que falha (API reiniciando, blip de rede no login) nunca era
+// retentado, deixando a pessoa a sessão inteira sem ChatPerfilAtualizado/ChatConversaAtualizada em
+// silêncio. Mesmo backoff manual já usado em useChatSignalR.ts (Bug #3), por consistência.
+const ATRASOS_RETRY_MS = [1000, 2000, 5000, 10000, 15000, 30000]
+
 interface SignalRContextValue {
   connection: HubConnection | null
   isConnected: boolean
@@ -54,19 +60,50 @@ export function SignalRProvider({ children }: { children: ReactNode }) {
     conn.on('MetricasAtualizadas', () => notify({ type: 'MetricasAtualizadas' }))
     conn.on('SlaAtencao', (payload) => notify({ type: 'SlaAtencao', payload }))
     conn.on('SlaAtrasado', (payload) => notify({ type: 'SlaAtrasado', payload }))
+    // AC-47/48: chega mesmo pra quem não tem acesso ao chat — essa conexão (/hubs/chamados) é
+    // global, ao contrário do ChatHub, que só existe na tela /chat.
+    conn.on('ChatPerfilAtualizado', (payload) => notify({ type: 'ChatPerfilAtualizado', payload }))
+    // Bug #10: mesmo motivo — quem não está na tela /chat precisa saber que chegou mensagem nova
+    // pra atualizar o badge de não lidas da sidebar, e só esta conexão global alcança essa pessoa.
+    conn.on('ChatConversaAtualizada', () => notify({ type: 'ChatConversaAtualizada' }))
 
-    conn
-      .start()
-      .then(() => setIsConnected(true))
-      .catch(() => setIsConnected(false))
+    let cancelado = false
+    let tentativa = 0
+    let retryTimer: ReturnType<typeof setTimeout> | null = null
+
+    const tentarConectar = async () => {
+      if (cancelado) return
+      try {
+        await conn.start()
+        if (cancelado) return
+        setIsConnected(true)
+        tentativa = 0
+      } catch {
+        if (cancelado) return
+        setIsConnected(false)
+        const atraso = ATRASOS_RETRY_MS[Math.min(tentativa, ATRASOS_RETRY_MS.length - 1)]
+        tentativa += 1
+        retryTimer = setTimeout(tentarConectar, atraso)
+      }
+    }
 
     conn.onreconnecting(() => setIsConnected(false))
     conn.onreconnected(() => setIsConnected(true))
-    conn.onclose(() => setIsConnected(false))
+    // onclose só dispara depois que withAutomaticReconnect esgota as tentativas dele (ou .stop()
+    // foi chamado) — nesse ponto volta a tentar do zero com o mesmo backoff manual.
+    conn.onclose(() => {
+      if (cancelado) return
+      setIsConnected(false)
+      tentarConectar()
+    })
+
+    tentarConectar()
 
     setConnection(conn)
 
     return () => {
+      cancelado = true
+      if (retryTimer) clearTimeout(retryTimer)
       conn.stop()
     }
   }, [notify])

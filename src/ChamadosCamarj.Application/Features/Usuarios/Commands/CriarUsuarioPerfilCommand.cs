@@ -10,5 +10,6 @@ public record CriarUsuarioPerfilCommand(
     Perfil Perfil,
     string Senha,
     Guid? GrupoId = null,
+    ChatPerfil ChatPerfil = ChatPerfil.SemAcesso,
     string? PerfilRequisitante = null
 ) : IRequest<UsuarioPerfilResponse>;

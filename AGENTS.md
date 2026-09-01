@@ -33,7 +33,13 @@ cd frontend && npm run dev                     # :5173
 npm run build                                  # gate check TS + Vite
 ```
 
-## Agentes orquestrados (todos Go)
+## Agentes orquestrados — depende de qual ferramenta está rodando
+
+Este projeto é trabalhado tanto pelo **opencode** quanto pelo **Claude Code**. Cada um lê seu
+próprio arquivo de instrução (`AGENTS.md` aqui, `CLAUDE.md` na raiz) mas o papel de cada agente é o
+mesmo — só muda o mecanismo de invocação.
+
+### No opencode (todos Go, modelos diferentes por aba)
 - `spec` → specs SDD (Kimi K3)
 - `build-backend` → C#, .NET, EF Core (GLM-5.2)
 - `build-frontend` → React, TS, Tailwind (Kimi K2.7 Code)
@@ -41,6 +47,23 @@ npm run build                                  # gate check TS + Vite
 - `explorar` → explorar código (DeepSeek V4 Flash)
 
 Alternar com Tab entre agents. Usar @review e @explorar.
+
+### No Claude Code
+Não existem abas com modelos diferentes — é uma sessão única (Claude Sonnet/Opus) fazendo `spec` +
+`build-backend` + `build-frontend` diretamente, sem trocar de agente. Os papéis equivalentes:
+
+- **`spec`/`build-*`** → o próprio agente principal da sessão, sem sub-agente — é a forma padrão
+  de trabalhar.
+- **`review`** → ao terminar uma implementação não-trivial (mais de uma correção, mudança de
+  contrato, ou qualquer coisa que vá pra `main`), abrir um **sub-agente novo, sem o contexto da
+  sessão principal**, pra revisar o diff de forma independente — mesmo espírito do Grok revisando o
+  Sonnet no opencode. Só o sub-agente não carrega o viés/contexto de quem implementou.
+- **`explorar`** → busca de código dentro da própria sessão principal (não precisa de sub-agente
+  separado; a sessão principal já tem as ferramentas de busca).
+
+Registrar no `tasks.md`/`review.md` da feature qual ferramenta e qual papel foi usado em cada etapa,
+igual já é feito pro opencode (ex: cabeçalho do `tasks.md` de `chat-corporativo` registra "Claude
+Code (Sonnet 4.6 — spec; Opus 4.8 — backend e review; Sonnet 4.6 — frontend)").
 
 ## MCPs disponíveis
 - `shadcn` → consultar componentes shadcn/ui (props, variantes, exemplos)

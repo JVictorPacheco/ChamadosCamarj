@@ -42,7 +42,16 @@ export function UsuariosPage() {
     setAlternandoId(usuario.id)
     setErroAlternar(null)
     atualizarUsuario.mutate(
-      { id: usuario.id, dados: { nome: usuario.nome, perfil: usuario.perfil, ativo: !usuario.ativo, grupoId: usuario.grupoId } },
+      {
+        id: usuario.id,
+        dados: {
+          nome: usuario.nome,
+          perfil: usuario.perfil,
+          ativo: !usuario.ativo,
+          grupoId: usuario.grupoId,
+          chatPerfil: usuario.chatPerfil ?? 'SemAcesso',
+        },
+      },
       {
         onError: () =>
           setErroAlternar(`Não foi possível ${usuario.ativo ? 'desativar' : 'reativar'} ${usuario.nome}. Tente novamente.`),

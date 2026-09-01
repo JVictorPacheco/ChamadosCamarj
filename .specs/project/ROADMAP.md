@@ -1,6 +1,6 @@
 # Roadmap — ChamadosCamarj
 
-> Última atualização: 2026-08-10
+> Última atualização: 2026-08-31
 
 ## ✅ Fase 0 — Setup
 
@@ -273,3 +273,33 @@
 - [x] Backend: `PorCategoriaItem` com `Guid? CategoriaId` para filtro exato
 - [x] Code review (Grok 4.5): 5 pontos corrigidos (UUID validation, paginação Kanban, SignalR, nomenclatura, null handling)
 - [x] Guia de orquestração IA + SDD: `docs/GUIA-ORQUESTRACAO-SDD.md`
+
+## 💬 Chat Corporativo (🟢 CÓDIGO MERGEADO EM `develop`, FASES 6, 8 E 9 CONCLUÍDAS — falta só decisão de promoção pra `main`)
+
+> Spec completa em `.specs/features/chat-corporativo/`. Mergeado em `develop` via PR #28
+> (2026-08-31). Todos os defeitos encontrados na Fase 8 (verificação manual) foram corrigidos e
+> passaram por review independente (sub-agente) em 2026-08-31. Fase 9 (polimento pós-teste do
+> usuário, AC-46 a AC-52) implementada em 2026-08-31; passou por uma segunda review independente em
+> 2026-09-01 que encontrou 2 achados bloqueantes (2º caminho de escrita de ChatPerfil divergindo de
+> novo; fan-out de mensagem nova alcançando usuários revogados) — **todos os 10 achados da review
+> foram fechados** na mesma data, incluindo a lacuna de autorização nas queries de leitura do chat
+> (`ChatPerfilGuard.ExigirAcesso`), endpoint `GET /auth/me` (AC-48 completo) e cobertura de teste
+> nova pros handlers de SignalR. Detalhe completo em `.specs/features/chat-corporativo/review-fase8.md`
+> (addendums 1 a 4), `review-fase8-independente.md` e `review-fase9-independente.md`.
+
+- [x] Conversas 1:1 e em grupo, SignalR em tempo real — funciona; resiliência de conexão (retry + aviso visual) corrigida (Bug #3)
+- [x] Presença (Online/Ausente/Offline) via heartbeat global — heartbeat 500 corrigido (Bug #9); janela de corrida residual muito estreita documentada como follow-up não-bloqueante
+- [x] Mensagens: edição, exclusão, reações em mensagem existente, resposta com citação (Bug #7 corrigido), indicador "digitando" (Bug #8a corrigido), emoji no composer (Bug #4 corrigido, picker próprio)
+- [x] Envio de arquivos no chat — bucket `chat-arquivos` criado no Supabase Storage em 2026-08-31, upload válido testado ok
+- [x] Controle de acesso por `ChatPerfil` (SemAcesso/Participante/CriadorDeGrupo), gerenciado pelo Admin — conceder e revogar avisam todos os participantes em tempo real (Bug #8b corrigido); achado do review independente também corrigido (2º caminho de escrita de ChatPerfil, via edição geral de usuário, agora replica a mesma auditoria/notificação)
+- [x] Histórico de auditoria (`ChatHistorico`) para todas as ações do chat
+- [x] Migrations `AddChatPerfilUsuario` e `AddChatFeature` aplicadas no Supabase real em 2026-08-31
+- [x] **Gerenciar participantes de grupo depois de criado (Bug #5, escopo expandido)** — ver membros, adicionar, remover (só criador do grupo ou Admin), clicar num membro inicia/continua conversa direta. Testado ao vivo.
+- [x] Bug extra: `CriarGrupoDialog` usava endpoint Admin-only e quebrava criação de grupo pra `CriadorDeGrupo` não-Admin — corrigido
+- [x] **Testes automatizados (Fase 6) — CONCLUÍDA em 2026-08-31.** 10 arquivos de teste (8 planejados + 2 extras pros handlers de gerenciamento de grupo), 70 testes novos, 286 no total do projeto, 0 falhas.
+- [x] **Verificação manual na UI (Fase 8) — EXECUTADA e todos os 8 defeitos corrigidos** em 2026-08-31.
+- [x] **Restauração de acesso simétrica + refresh de perfil sem relogar (Fase 9, AC-46/47/48)** — mensagem de sistema na restauração, evento `ChatPerfilAtualizado` via `ChamadosHub` (canal global), `AuthContext` atualiza sem logout/login. Verificado ao vivo nas duas direções (revogar/restaurar), inclusive fora da tela `/chat`.
+- [x] **3 polimentos de UX (Fase 9, AC-49 a AC-52)** — emoji picker fecha ao clicar fora/Esc, preview inline de imagem, spinner no botão de enviar, aviso específico + retry em falha de envio. **Sem verificação manual ao vivo ainda** — pendência pra próxima rodada de teste do usuário.
+- [x] **2 bugs do reteste do usuário (2026-09-01)** — badge de não lidas não atualizava fora da tela `/chat` (Bug #10, fan-out via `ChamadosHub`); poucos emojis no composer, ampliado de 24 pra 84 (Bug #11).
+- [x] **2ª review independente + fechamento de todos os 10 achados (2026-09-01)** — 2 bloqueantes (2º caminho de escrita de `ChatPerfil` divergindo de novo; fan-out alcançando usuários revogados) e 8 achados 🟡/🟢, todos corrigidos: guarda `ChatPerfilGuard.ExigirAcesso` nas 4 queries de leitura do chat (revogar acesso agora bloqueia leitura via API, não só a sidebar), endpoint `GET /auth/me` fechando o AC-48 pra quem foi revogado offline, cobertura de teste nova pros handlers de SignalR (antes zero), N+1 eliminado no fan-out de `DefinirChatPerfil`, e mais 4 correções de frontend (timer de digitação, retry de erro de arquivo, preview de imagem, alerta duplicado). **316 testes no total do projeto, 0 falhas.**
+- [ ] Merge `develop` → `main` (produção) — decisão pendente com o usuário; não há bug bloqueante nem lacuna de teste conhecida
