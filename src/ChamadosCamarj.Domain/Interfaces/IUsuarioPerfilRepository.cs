@@ -7,6 +7,7 @@ public interface IUsuarioPerfilRepository
     Task<UsuarioPerfil?> ObterPorEmailAsync(string email, CancellationToken ct);
     Task<UsuarioPerfil?> ObterPorIdAsync(Guid id, CancellationToken ct);
     Task<IEnumerable<UsuarioPerfil>> ListarAsync(CancellationToken ct);
+    Task<IEnumerable<UsuarioPerfil>> ListarPorIdsAsync(IEnumerable<Guid> ids, CancellationToken ct);
     Task AdicionarAsync(UsuarioPerfil usuario, CancellationToken ct);
     Task AtualizarAsync(UsuarioPerfil usuario, CancellationToken ct);
 }

@@ -1,4 +1,6 @@
 using MediatR;
+using ChamadosCamarj.Application.Common.Authorization;
+using ChamadosCamarj.Application.Common.Exceptions;
 using ChamadosCamarj.Application.Features.Chat.DTOs;
 using ChamadosCamarj.Domain.Enums;
 using ChamadosCamarj.Domain.Interfaces;
@@ -9,17 +11,28 @@ public class ListarConversasQueryHandler : IRequestHandler<ListarConversasQuery,
 {
     private readonly IChatConversaRepository _conversaRepository;
     private readonly IChatMensagemRepository _mensagemRepository;
+    private readonly IUsuarioPerfilRepository _usuarioPerfilRepository;
 
     public ListarConversasQueryHandler(
         IChatConversaRepository conversaRepository,
-        IChatMensagemRepository mensagemRepository)
+        IChatMensagemRepository mensagemRepository,
+        IUsuarioPerfilRepository usuarioPerfilRepository)
     {
         _conversaRepository = conversaRepository;
         _mensagemRepository = mensagemRepository;
+        _usuarioPerfilRepository = usuarioPerfilRepository;
     }
 
     public async Task<IEnumerable<ChatConversaResponse>> Handle(ListarConversasQuery request, CancellationToken cancellationToken)
     {
+        // review-fase9-independente.md #2: revogar acesso ao chat não removia ninguém de conversa
+        // nenhuma — sem esta guarda, um usuário com ChatPerfil=SemAcesso continuava conseguindo
+        // listar conversas, ler mensagens e baixar anexos via API, só não via link na sidebar.
+        var usuario = await _usuarioPerfilRepository.ObterPorIdAsync(request.UsuarioId, cancellationToken);
+        if (usuario is null)
+            throw new NotFoundException("Usuário", request.UsuarioId);
+        ChatPerfilGuard.ExigirAcesso(usuario.ChatPerfil);
+
         var conversas = (await _conversaRepository.ListarPorUsuarioAsync(request.UsuarioId, cancellationToken)).ToList();
 
         var conversaIds = conversas.Select(c => c.Id).ToList();

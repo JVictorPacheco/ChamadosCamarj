@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using ChamadosCamarj.Domain.Entities;
 using ChamadosCamarj.Domain.Enums;
 using ChamadosCamarj.Domain.Interfaces;
@@ -31,10 +32,24 @@ public class ChatPresencaRepository : IChatPresencaRepository
     {
         var existente = await _dbSet.FirstOrDefaultAsync(p => p.UsuarioId == presenca.UsuarioId, cancellationToken);
         if (existente is null)
+        {
             await _dbSet.AddAsync(presenca, cancellationToken);
-        else
-            _dbSet.Update(presenca);
+            try
+            {
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+            {
+                // Heartbeat concorrente: outra requisição simultânea já inseriu a presença deste
+                // usuário (corrida entre 2 chamadas quase ao mesmo tempo, ex: StrictMode ou múltiplas
+                // abas). Tratamos como no-op — o estado desejado (usuário Online, heartbeat recente)
+                // já está persistido pela outra requisição.
+                _context.Entry(presenca).State = EntityState.Detached;
+            }
+            return;
+        }
 
+        _dbSet.Update(presenca);
         await _context.SaveChangesAsync(cancellationToken);
     }
 

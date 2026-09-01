@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using ChamadosCamarj.Application.Common;
 using ChamadosCamarj.Application.Features.Chamados.DTOs;
+using ChamadosCamarj.Application.Features.Chat.Commands.AdicionarParticipante;
 using ChamadosCamarj.Application.Features.Chat.Commands.AdicionarReacao;
 using ChamadosCamarj.Application.Features.Chat.Commands.CriarConversa;
 using ChamadosCamarj.Application.Features.Chat.Commands.CriarGrupo;
@@ -10,11 +11,13 @@ using ChamadosCamarj.Application.Features.Chat.Commands.EditarMensagem;
 using ChamadosCamarj.Application.Features.Chat.Commands.EnviarArquivo;
 using ChamadosCamarj.Application.Features.Chat.Commands.EnviarMensagem;
 using ChamadosCamarj.Application.Features.Chat.Commands.MarcarComoLido;
+using ChamadosCamarj.Application.Features.Chat.Commands.RemoverParticipante;
 using ChamadosCamarj.Application.Features.Chat.DTOs;
 using ChamadosCamarj.Application.Features.Chat.Queries.ListarConversas;
 using ChamadosCamarj.Application.Features.Chat.Queries.ListarHistoricoChat;
 using ChamadosCamarj.Application.Features.Chat.Queries.ListarMensagens;
 using ChamadosCamarj.Application.Features.Chat.Queries.ObterArquivoMensagem;
+using ChamadosCamarj.Application.Features.Chat.Queries.ObterConversa;
 
 namespace ChamadosCamarj.WebApi.Controllers;
 
@@ -74,6 +77,58 @@ public class ChatController : ControllerBase
         var command = new CriarGrupoCommand(request.Nome, request.ParticipanteIds, _currentUser.UsuarioId, _currentUser.Nome);
         var result = await _mediator.Send(command, cancellationToken);
         return StatusCode(StatusCodes.Status201Created, result);
+    }
+
+    /// <summary>
+    /// Detalhe de uma conversa: nome, quem criou, lista de participantes ativos.
+    /// </summary>
+    [HttpGet("conversas/{id:guid}")]
+    [ProducesResponseType(typeof(ChatConversaDetalheResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ChatConversaDetalheResponse>> ObterConversa(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _mediator.Send(new ObterConversaQuery(id, _currentUser.UsuarioId), cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Adiciona um participante a um grupo já existente (só quem criou o grupo ou Admin).
+    /// </summary>
+    [HttpPost("grupos/{id:guid}/participantes")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> AdicionarParticipante(
+        Guid id,
+        [FromBody] GerenciarParticipanteRequest request,
+        CancellationToken cancellationToken)
+    {
+        var command = new AdicionarParticipanteCommand(
+            id, request.UsuarioId, _currentUser.UsuarioId, _currentUser.Nome, _currentUser.Perfil);
+        await _mediator.Send(command, cancellationToken);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Remove um participante de um grupo (só quem criou o grupo ou Admin).
+    /// </summary>
+    [HttpDelete("grupos/{id:guid}/participantes/{usuarioId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RemoverParticipante(
+        Guid id,
+        Guid usuarioId,
+        CancellationToken cancellationToken)
+    {
+        var command = new RemoverParticipanteCommand(
+            id, usuarioId, _currentUser.UsuarioId, _currentUser.Nome, _currentUser.Perfil);
+        await _mediator.Send(command, cancellationToken);
+        return NoContent();
     }
 
     /// <summary>
@@ -224,6 +279,7 @@ public class ChatController : ControllerBase
 
 public record CriarConversaRequest(Guid DestinatarioId);
 public record CriarGrupoRequest(string Nome, IReadOnlyList<Guid> ParticipanteIds);
+public record GerenciarParticipanteRequest(Guid UsuarioId);
 public record EnviarMensagemRequest(string Conteudo, Guid? RespostaParaMensagemId);
 public record EditarMensagemRequest(string Conteudo);
 public record AdicionarReacaoRequest(string Emoji);

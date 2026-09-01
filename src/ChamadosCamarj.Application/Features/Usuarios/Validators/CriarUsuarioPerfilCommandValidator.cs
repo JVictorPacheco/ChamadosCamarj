@@ -22,5 +22,8 @@ public class CriarUsuarioPerfilCommandValidator : AbstractValidator<CriarUsuario
         RuleFor(c => c.Senha)
             .NotEmpty().WithMessage("Senha é obrigatória.")
             .MinimumLength(8).WithMessage("Senha deve ter no mínimo 8 caracteres.");
+
+        RuleFor(c => c.ChatPerfil)
+            .IsInEnum().WithMessage("Perfil de chat inválido.");
     }
 }

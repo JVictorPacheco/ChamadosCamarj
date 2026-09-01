@@ -182,6 +182,19 @@ export interface ChatArquivoResponse {
   tamanhoBytes: number
 }
 
+export interface ChatParticipanteInfo {
+  usuarioId: string
+  usuarioNome: string
+}
+
+export interface ChatConversaDetalheResponse {
+  id: string
+  tipo: ChatConversaTipo
+  nome?: string
+  criadoPorId: string
+  participantes: ChatParticipanteInfo[]
+}
+
 export interface ChatHistoricoResponse {
   id: string
   usuarioId: string

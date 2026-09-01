@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -7,7 +8,7 @@ import { useAuth } from '@/auth/AuthContext'
 import { useEditarMensagem, useDeletarMensagem, useAdicionarReacao } from '../hooks/useChat'
 import { obterUrlArquivo } from '../api'
 import type { ChatMensagemResponse } from '@/types/api'
-import { Reply, Pencil, Trash2, Download, FileText, Smile } from 'lucide-react'
+import { Reply, Pencil, Trash2, Download, FileText, Smile, ImageOff } from 'lucide-react'
 
 interface MensagemItemProps {
   mensagem: ChatMensagemResponse
@@ -17,6 +18,22 @@ interface MensagemItemProps {
 }
 
 const EMOJIS_RAPIDOS = ['👍', '❤️', '😂', '😮', '😢', '🙏']
+const TIPOS_IMAGEM = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+
+// AC-50: preview inline pra mensagens de imagem. A URL assinada expira em 1h no servidor
+// (ver EnviarArquivoCommandHandler/design.md); cache client-side por 50min pra não reusar uma
+// já vencida, mas evitar rebuscar a cada re-render da lista. gcTime igual ao staleTime — sem
+// isso, o cache era descartado depois dos 5min padrão do TanStack Query, e a promessa "por
+// 50min" só valia enquanto o componente ficasse montado sem desmontar (review-fase9-independente.md #8).
+function useUrlPreviewImagem(mensagemId: string, habilitado: boolean) {
+  return useQuery({
+    queryKey: ['chat', 'arquivo-preview', mensagemId],
+    queryFn: () => obterUrlArquivo(mensagemId),
+    enabled: habilitado,
+    staleTime: 50 * 60 * 1000,
+    gcTime: 50 * 60 * 1000,
+  })
+}
 
 function formatarTamanho(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
@@ -45,6 +62,10 @@ export function MensagemItem({ mensagem, conversaId, onResponder, onScrollParaMe
   const [mostrarEmojis, setMostrarEmojis] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
   const [baixando, setBaixando] = useState(false)
+  // review-fase9-independente.md #8: previewImagem.isError só cobre falha da QUERY (buscar a URL
+  // assinada) — se a URL expirar entre o fetch e a renderização (ou o storage falhar), o <img> quebra
+  // sem cair no estado "Falha ao carregar" que o componente já sabe desenhar. onError cobre esse caso.
+  const [erroCarregarImg, setErroCarregarImg] = useState(false)
 
   const editarMutation = useEditarMensagem(conversaId)
   const deletarMutation = useDeletarMensagem(conversaId)
@@ -54,6 +75,10 @@ export function MensagemItem({ mensagem, conversaId, onResponder, onScrollParaMe
   const eAdmin = perfil?.tipo === 'Admin'
   const podeDeletar = eAutor || eAdmin
   const podeEditar = eAutor && !mensagem.deletada
+
+  // Hooks sempre no topo, incondicionais — o early-return do tipo Sistema vem depois.
+  const ehImagem = mensagem.tipo === 'Arquivo' && !!mensagem.tipoArquivo && TIPOS_IMAGEM.includes(mensagem.tipoArquivo)
+  const previewImagem = useUrlPreviewImagem(mensagem.id, ehImagem && !mensagem.deletada)
 
   // Tipo Sistema — centralizado, itálico, sem fundo
   if (mensagem.tipo === 'Sistema') {
@@ -186,13 +211,52 @@ export function MensagemItem({ mensagem, conversaId, onResponder, onScrollParaMe
                 </Button>
               </div>
             </div>
+          ) : mensagem.tipo === 'Arquivo' && ehImagem ? (
+            <div className="flex flex-col gap-1">
+              {previewImagem.isPending ? (
+                <div className="flex h-32 w-40 items-center justify-center rounded-md bg-black/10">
+                  <span className="text-xs opacity-70">Carregando…</span>
+                </div>
+              ) : previewImagem.isError || !previewImagem.data || erroCarregarImg ? (
+                <div className="flex h-32 w-40 flex-col items-center justify-center gap-1 rounded-md bg-black/10">
+                  <ImageOff className="h-5 w-5 opacity-70" />
+                  <span className="text-xs opacity-70">Falha ao carregar</span>
+                </div>
+              ) : (
+                <img
+                  src={previewImagem.data.urlAssinada}
+                  alt={mensagem.nomeArquivo ?? 'Imagem'}
+                  loading="lazy"
+                  className="max-h-64 max-w-64 cursor-pointer rounded-md object-cover"
+                  onClick={() => window.open(previewImagem.data!.urlAssinada, '_blank', 'noopener,noreferrer')}
+                  onError={() => setErroCarregarImg(true)}
+                />
+              )}
+              <div className="flex items-center justify-between gap-2">
+                <span className="truncate text-xs opacity-70">{mensagem.nomeArquivo}</span>
+                <div className="flex flex-shrink-0 items-center gap-2">
+                  {Boolean(mensagem.tamanhoBytes) && (
+                    <span className="text-xs opacity-70">{formatarTamanho(mensagem.tamanhoBytes!)}</span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={baixarArquivo}
+                    disabled={baixando}
+                    className="disabled:opacity-50"
+                    aria-label="Baixar imagem"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
           ) : mensagem.tipo === 'Arquivo' ? (
             <div className="flex items-center gap-2">
               <FileText className="h-5 w-5 flex-shrink-0" />
               <div className="flex flex-col min-w-0">
                 <span className="truncate text-sm font-medium">{mensagem.nomeArquivo}</span>
-                {mensagem.tamanhoBytes && (
-                  <span className="text-xs opacity-70">{formatarTamanho(mensagem.tamanhoBytes)}</span>
+                {Boolean(mensagem.tamanhoBytes) && (
+                  <span className="text-xs opacity-70">{formatarTamanho(mensagem.tamanhoBytes!)}</span>
                 )}
               </div>
               <button

@@ -9,6 +9,9 @@ public record AtualizarUsuarioPerfilCommand(
     string Nome,
     Perfil Perfil,
     bool Ativo,
+    ChatPerfil ChatPerfil,
     Guid? GrupoId = null,
-    string? PerfilRequisitante = null
+    string? PerfilRequisitante = null,
+    Guid RequisitanteId = default,
+    string RequisitanteNome = ""
 ) : IRequest<UsuarioPerfilResponse?>;

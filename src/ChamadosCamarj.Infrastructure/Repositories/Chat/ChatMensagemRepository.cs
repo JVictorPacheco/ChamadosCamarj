@@ -86,6 +86,19 @@ public class ChatMensagemRepository : IChatMensagemRepository
         return ultimas.ToDictionary(m => m.ConversaId);
     }
 
+    public async Task<Dictionary<Guid, string?>> ObterConteudosPorIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken)
+    {
+        var lista = ids.Distinct().ToList();
+        if (lista.Count == 0)
+            return new Dictionary<Guid, string?>();
+
+        return await _dbSet
+            .AsNoTracking()
+            .Where(m => lista.Contains(m.Id))
+            .Select(m => new { m.Id, m.Conteudo })
+            .ToDictionaryAsync(m => m.Id, m => m.Conteudo, cancellationToken);
+    }
+
     public async Task<Dictionary<Guid, int>> ContarNaoLidasPorConversasAsync(
         IEnumerable<(Guid ConversaId, DateTime? UltimaLeituraEm)> conversas, Guid usuarioId, CancellationToken cancellationToken)
     {

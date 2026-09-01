@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useCallback, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import {
   HubConnectionBuilder,
@@ -9,6 +9,12 @@ import { getToken } from '@/lib/api'
 import { useAuth } from '@/auth/AuthContext'
 
 const SIGNALR_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ?? 'http://localhost:5000'
+
+// Backoff pra tentativa inicial de conexão (withAutomaticReconnect só cobre reconexão de uma
+// conexão que já foi estabelecida — se o primeiro .start() falhar, ninguém tenta de novo sozinho).
+const ATRASOS_RETRY_MS = [1000, 2000, 5000, 10000, 15000, 30000]
+
+export type StatusConexaoChat = 'conectando' | 'conectado' | 'reconectando' | 'offline'
 
 interface UseChatSignalROptions {
   conversaAtiva?: string | null
@@ -26,6 +32,7 @@ export function useChatSignalR({
   const queryClient = useQueryClient()
   const { perfil } = useAuth()
   const connectionRef = useRef<HubConnection | null>(null)
+  const [status, setStatus] = useState<StatusConexaoChat>('conectando')
 
   // Guarda os callbacks/estado em refs para que o effect de conexão possa ter deps estáveis
   // (evita recriar o WebSocket a cada troca de conversa — issue de reconexão desnecessária).
@@ -114,16 +121,23 @@ export function useChatSignalR({
     })
 
     // Participante adicionado/removido
-    conn.on('ParticipanteAdicionado', () => {
+    conn.on('ParticipanteAdicionado', (conversaId: string) => {
       invalidarConversas()
+      queryClient.invalidateQueries({ queryKey: ['chat', 'conversa-detalhe', conversaId] })
     })
 
-    conn.on('ParticipanteRemovido', () => {
+    conn.on('ParticipanteRemovido', (conversaId: string) => {
       invalidarConversas()
+      queryClient.invalidateQueries({ queryKey: ['chat', 'conversa-detalhe', conversaId] })
     })
 
-    // Ao reconectar, reentra no grupo da conversa ativa (o servidor perde os grupos na reconexão).
+    // withAutomaticReconnect cobre quedas de uma conexão já estabelecida. onreconnecting/
+    // onreconnected/onclose cobrem esse ciclo — o retry manual abaixo cobre só a tentativa
+    // INICIAL, que withAutomaticReconnect não reenvia sozinho se falhar.
+    conn.onreconnecting(() => setStatus('reconectando'))
+
     conn.onreconnected(() => {
+      setStatus('conectado')
       const atual = conversaAtivaRef.current
       if (atual) {
         conn.invoke('EntrarConversa', atual).catch(() => {
@@ -132,21 +146,48 @@ export function useChatSignalR({
       }
     })
 
-    conn.start()
-      .then(() => {
-        // Se já havia uma conversa ativa quando a conexão subiu, entra no grupo dela.
+    let cancelado = false
+    let tentativa = 0
+    let retryTimer: ReturnType<typeof setTimeout> | null = null
+
+    const tentarConectar = async () => {
+      if (cancelado) return
+      setStatus(tentativa === 0 ? 'conectando' : 'reconectando')
+      try {
+        await conn.start()
+        if (cancelado) return
+        setStatus('conectado')
+        tentativa = 0
         const atual = conversaAtivaRef.current
         if (atual) {
-          return conn.invoke('EntrarConversa', atual)
+          await conn.invoke('EntrarConversa', atual).catch(() => {
+            // falha silenciosa
+          })
         }
-      })
-      .catch(() => {
-        // Falha silenciosa — reconecta automaticamente
-      })
+      } catch {
+        if (cancelado) return
+        setStatus('offline')
+        const atraso = ATRASOS_RETRY_MS[Math.min(tentativa, ATRASOS_RETRY_MS.length - 1)]
+        tentativa += 1
+        retryTimer = setTimeout(tentarConectar, atraso)
+      }
+    }
+
+    // onclose só dispara depois que withAutomaticReconnect já esgotou as tentativas dele (ou
+    // .stop() foi chamado) — nesse ponto voltamos a tentar do zero com o mesmo backoff manual.
+    conn.onclose(() => {
+      if (cancelado) return
+      setStatus('offline')
+      tentarConectar()
+    })
+
+    tentarConectar()
 
     connectionRef.current = conn
 
     return () => {
+      cancelado = true
+      if (retryTimer) clearTimeout(retryTimer)
       conn.stop()
       connectionRef.current = null
     }
@@ -204,5 +245,5 @@ export function useChatSignalR({
     []
   )
 
-  return { emitirDigitando, emitirPararDigitar }
+  return { emitirDigitando, emitirPararDigitar, status }
 }

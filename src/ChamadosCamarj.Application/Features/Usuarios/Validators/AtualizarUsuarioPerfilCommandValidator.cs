@@ -16,5 +16,8 @@ public class AtualizarUsuarioPerfilCommandValidator : AbstractValidator<Atualiza
 
         RuleFor(c => c.Perfil)
             .IsInEnum().WithMessage("Perfil inválido.");
+
+        RuleFor(c => c.ChatPerfil)
+            .IsInEnum().WithMessage("Perfil de chat inválido.");
     }
 }

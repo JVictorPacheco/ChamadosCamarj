@@ -8,6 +8,8 @@ import {
   marcarComoLido,
   criarConversa,
   criarGrupo,
+  adicionarParticipante,
+  removerParticipante,
 } from '../api'
 
 function invalidarConversa(queryClient: ReturnType<typeof useQueryClient>, conversaId: string) {
@@ -84,6 +86,28 @@ export function useCriarGrupo() {
     mutationFn: ({ nome, participanteIds }: { nome: string; participanteIds: string[] }) =>
       criarGrupo(nome, participanteIds),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['chat', 'conversas'] })
+    },
+  })
+}
+
+export function useAdicionarParticipante(conversaId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (usuarioId: string) => adicionarParticipante(conversaId, usuarioId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['chat', 'conversa-detalhe', conversaId] })
+      queryClient.invalidateQueries({ queryKey: ['chat', 'conversas'] })
+    },
+  })
+}
+
+export function useRemoverParticipante(conversaId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (usuarioId: string) => removerParticipante(conversaId, usuarioId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['chat', 'conversa-detalhe', conversaId] })
       queryClient.invalidateQueries({ queryKey: ['chat', 'conversas'] })
     },
   })

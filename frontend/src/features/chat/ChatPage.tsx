@@ -1,16 +1,19 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { useAuth } from '@/auth/AuthContext'
 import { useCriarConversa, useMarcarComoLido } from './hooks/useChat'
+import { useConversaDetalhe } from './hooks/useConversas'
 import { useChatSignalR } from './hooks/useChatSignalR'
 import { ConversaList } from './components/ConversaList'
 import { MensagemList } from './components/MensagemList'
 import { MensagemInput } from './components/MensagemInput'
 import { PresencaPanel } from './components/PresencaPanel'
+import { MembrosGrupoDialog } from './components/MembrosGrupoDialog'
 import type { ChatMensagemResponse } from '@/types/api'
-import { MessageSquare, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { MessageSquare, PanelLeftClose, PanelLeftOpen, Users } from 'lucide-react'
 
 export function ChatPage() {
   const { perfil } = useAuth()
@@ -21,9 +24,11 @@ export function ChatPage() {
   const [acessoRevogadoAlerta, setAcessoRevogadoAlerta] = useState(false)
   const [mostrarPresenca, setMostrarPresenca] = useState(false)
   const [painelColapsado, setPainelColapsado] = useState(false)
+  const [mostrarMembros, setMostrarMembros] = useState(false)
 
   const marcarLido = useMarcarComoLido()
   const criarConversa = useCriarConversa()
+  const { data: conversaDetalhe } = useConversaDetalhe(conversaAtivaId)
 
   const handleAcessoRevogado = useCallback(() => {
     setAcessoRevogadoAlerta(true)
@@ -48,12 +53,24 @@ export function ChatPage() {
     [conversaAtivaId]
   )
 
-  const { emitirDigitando, emitirPararDigitar } = useChatSignalR({
+  const { emitirDigitando, emitirPararDigitar, status: statusConexao } = useChatSignalR({
     conversaAtiva: conversaAtivaId,
     onAcessoRevogado: handleAcessoRevogado,
     onDigitando: handleDigitando,
     onPararDigitar: handlePararDigitar,
   })
+
+  // Só mostra o aviso de reconexão se ficar sem conexão por mais de 1.5s — evita
+  // piscar a cada blip rápido de rede (reconexão automática costuma resolver na hora).
+  const [mostrarAvisoConexao, setMostrarAvisoConexao] = useState(false)
+  useEffect(() => {
+    if (statusConexao === 'conectado') {
+      setMostrarAvisoConexao(false)
+      return
+    }
+    const timer = setTimeout(() => setMostrarAvisoConexao(true), 1500)
+    return () => clearTimeout(timer)
+  }, [statusConexao])
 
   // Verifica acesso ao chat
   if (perfil?.chatPerfil === 'SemAcesso' || !perfil?.chatPerfil) {
@@ -88,6 +105,16 @@ export function ChatPage() {
         <Alert variant="destructive" className="m-2">
           <AlertDescription>
             Seu acesso ao chat foi revogado. Redirecionando...
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {mostrarAvisoConexao && !acessoRevogadoAlerta && (
+        <Alert className="m-2">
+          <AlertDescription>
+            {statusConexao === 'offline'
+              ? 'Sem conexão em tempo real — tentando reconectar...'
+              : 'Reconectando ao chat em tempo real...'}
           </AlertDescription>
         </Alert>
       )}
@@ -162,6 +189,21 @@ export function ChatPage() {
         <div className="hidden flex-1 flex-col md:flex">
           {conversaAtivaId ? (
             <>
+              {conversaDetalhe?.tipo === 'Grupo' && (
+                <div className="flex items-center justify-between border-b border-border px-4 py-2">
+                  <span className="truncate text-sm font-medium">{conversaDetalhe.nome}</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setMostrarMembros(true)}
+                    className="h-8 gap-1.5 px-2 text-xs text-muted-foreground"
+                  >
+                    <Users className="h-3.5 w-3.5" />
+                    {conversaDetalhe.participantes.length} membros
+                  </Button>
+                </div>
+              )}
               <MensagemList
                 conversaId={conversaAtivaId}
                 digitandoNome={digitandoNome}
@@ -184,6 +226,15 @@ export function ChatPage() {
           )}
         </div>
       </div>
+
+      {conversaAtivaId && conversaDetalhe?.tipo === 'Grupo' && (
+        <MembrosGrupoDialog
+          conversaId={conversaAtivaId}
+          open={mostrarMembros}
+          onOpenChange={setMostrarMembros}
+          onIniciarConversa={iniciarConversa}
+        />
+      )}
     </div>
   )
 }

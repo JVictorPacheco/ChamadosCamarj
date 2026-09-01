@@ -23,6 +23,10 @@ export interface SlaAlertaPayload {
   mensagem: string
 }
 
+export interface ChatPerfilAtualizadoPayload {
+  chatPerfil: 'SemAcesso' | 'Participante' | 'CriadorDeGrupo'
+}
+
 export type SignalREvent =
   | { type: 'ChamadoCriado'; payload: ChamadoCriadoPayload }
   | { type: 'StatusAlterado'; payload: StatusAlteradoPayload }
@@ -30,3 +34,5 @@ export type SignalREvent =
   | { type: 'MetricasAtualizadas' }
   | { type: 'SlaAtencao'; payload: SlaAlertaPayload }
   | { type: 'SlaAtrasado'; payload: SlaAlertaPayload }
+  | { type: 'ChatPerfilAtualizado'; payload: ChatPerfilAtualizadoPayload }
+  | { type: 'ChatConversaAtualizada' }

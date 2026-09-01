@@ -11,6 +11,7 @@ public interface IChatMensagemRepository
     Task<ChatMensagem?> ObterUltimaPorConversaAsync(Guid conversaId, CancellationToken cancellationToken);
     Task<int> ContarNaoLidasAsync(Guid conversaId, Guid usuarioId, DateTime? ultimaLeituraEm, CancellationToken cancellationToken);
     Task<Dictionary<Guid, ChatMensagem>> ObterUltimasMensagensPorConversasAsync(IEnumerable<Guid> conversaIds, CancellationToken cancellationToken);
+    Task<Dictionary<Guid, string?>> ObterConteudosPorIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken);
     Task<Dictionary<Guid, int>> ContarNaoLidasPorConversasAsync(IEnumerable<(Guid ConversaId, DateTime? UltimaLeituraEm)> conversas, Guid usuarioId, CancellationToken cancellationToken);
     Task AdicionarAsync(ChatMensagem mensagem, CancellationToken cancellationToken);
     Task AtualizarAsync(ChatMensagem mensagem, CancellationToken cancellationToken);
