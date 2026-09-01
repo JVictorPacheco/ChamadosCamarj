@@ -274,7 +274,7 @@
 - [x] Code review (Grok 4.5): 5 pontos corrigidos (UUID validation, paginação Kanban, SignalR, nomenclatura, null handling)
 - [x] Guia de orquestração IA + SDD: `docs/GUIA-ORQUESTRACAO-SDD.md`
 
-## 💬 Chat Corporativo (🟢 CÓDIGO MERGEADO EM `develop`, FASES 6, 8 E 9 CONCLUÍDAS — falta só decisão de promoção pra `main`)
+## 💬 Chat Corporativo (🟢 PROMOVIDO PARA `main`/PRODUÇÃO EM 2026-09-01 — falta só o passo manual de deploy)
 
 > Spec completa em `.specs/features/chat-corporativo/`. Mergeado em `develop` via PR #28
 > (2026-08-31). Todos os defeitos encontrados na Fase 8 (verificação manual) foram corrigidos e
@@ -302,4 +302,4 @@
 - [x] **3 polimentos de UX (Fase 9, AC-49 a AC-52)** — emoji picker fecha ao clicar fora/Esc, preview inline de imagem, spinner no botão de enviar, aviso específico + retry em falha de envio. **Sem verificação manual ao vivo ainda** — pendência pra próxima rodada de teste do usuário.
 - [x] **2 bugs do reteste do usuário (2026-09-01)** — badge de não lidas não atualizava fora da tela `/chat` (Bug #10, fan-out via `ChamadosHub`); poucos emojis no composer, ampliado de 24 pra 84 (Bug #11).
 - [x] **2ª review independente + fechamento de todos os 10 achados (2026-09-01)** — 2 bloqueantes (2º caminho de escrita de `ChatPerfil` divergindo de novo; fan-out alcançando usuários revogados) e 8 achados 🟡/🟢, todos corrigidos: guarda `ChatPerfilGuard.ExigirAcesso` nas 4 queries de leitura do chat (revogar acesso agora bloqueia leitura via API, não só a sidebar), endpoint `GET /auth/me` fechando o AC-48 pra quem foi revogado offline, cobertura de teste nova pros handlers de SignalR (antes zero), N+1 eliminado no fan-out de `DefinirChatPerfil`, e mais 4 correções de frontend (timer de digitação, retry de erro de arquivo, preview de imagem, alerta duplicado). **316 testes no total do projeto, 0 falhas.**
-- [ ] Merge `develop` → `main` (produção) — decisão pendente com o usuário; não há bug bloqueante nem lacuna de teste conhecida
+- [x] Merge `develop` → `main` (produção) — PR #30 mergeado em 2026-09-01, commit `7a779c2`. Falta o passo manual de deploy (fora do repositório) pra chegar nos usuários reais.

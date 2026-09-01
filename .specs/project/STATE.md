@@ -4,15 +4,30 @@
 
 ---
 
-## Sessão de 2026-09-01 (parte 9) — Commit, push e PR aberto
+## Sessão de 2026-09-01 (parte 10) — Chat Corporativo promovido para `main`/produção
 
-Todo o trabalho das partes 5 a 8 (Fase 9, Bugs #10/#11, 2 reviews independentes, verificação ao vivo)
-foi commitado em 3 commits (`test(chat)`, `feat(chat)`, `docs(chat)`) na branch
-`feature/chat-corporativo-hardening` (criada a partir de `develop`, seguindo o git flow do
-`AGENTS.md`), com push feito e **PR #29 aberto contra `develop`**:
-https://github.com/JVictorPacheco/ChamadosCamarj/pull/29
+**PR #29 mergeado em `develop` pelo usuário.** Antes de promover pra `main`, confirmei com o
+usuário 2 pontos de risco: (1) o Supabase usado nas migrations desta sessão é o mesmo banco de
+produção (confirmado — nenhuma migration adicional necessária); (2) push em `main` **não** dispara
+deploy automático (confirmado — há um passo manual separado depois). Também verifiquei que `main`
+tinha 2 commits não presentes em `develop` (`a9de5f1`, `1838532`, de 2026-08-10) — `git diff`
+confirmou que o **conteúdo** já é idêntico em `develop` (divergência só de histórico, de um merge
+direto anterior), e `git merge-tree` não apontou conflito nenhum.
 
-Working tree limpo. Pendente: review/merge do PR #29 (não mergeado ainda — decisão do usuário).
+**PR #30 (`develop` → `main`) aberto e mergeado** (commit `7a779c2`):
+https://github.com/JVictorPacheco/ChamadosCamarj/pull/30
+
+`main` agora contém o Chat Corporativo completo (fases 1-9, 2 reviews independentes, verificação ao
+vivo — ver `.specs/features/chat-corporativo/review-fase8.md`). **Falta o passo manual de deploy**
+(fora do controle deste repositório/sessão) para os usuários reais verem a mudança.
+
+### Pendências
+- Passo manual de deploy (Cloudflare Pages + backend) — usuário vai executar
+- Limpeza das contas sintéticas de teste no Supabase (`teste.admin2@camarj.com.br`,
+  `teste.alvo2@camarj.com.br`) e das mensagens de teste criadas durante a verificação ao vivo
+- AC-49 a AC-52 (polimentos de UX) sem verificação manual ao vivo do usuário ainda
+- Endpoint em lote pra preview de imagem, aposentar `ChatAcessoRevogadoNotification` — otimizações
+  não-bloqueantes, ver `review-fase8.md`
 
 ---
 
