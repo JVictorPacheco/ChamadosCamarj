@@ -526,7 +526,9 @@ manual ainda.
 
 4. **Orquestração de IA com SDD.** Para cada feature nova, seguir: `@spec` → `@build-backend`/`@build-frontend` → `@review` → gate checks → commit/merge. Sempre pedir pra cada agente salvar seus artefatos. Guia completo: `docs/GUIA-ORQUESTRACAO-SDD.md`.
 
-**Como aplicar na prática:** ao iniciar uma feature nova ou uma extensão de feature existente neste projeto, revisar esta seção antes de seguir pro Design/Execute do skill `tlc-spec-driven`. Se notar que uma dessas 4 regras está prestes a ser quebrada, parar e avisar o usuário explicitamente, em vez de seguir e só documentar depois.
+5. **Não quebrar nada fora do escopo da feature atual — e se for preciso tocar em código compartilhado com outra feature, avisar ANTES de fazer, não só relatar depois.** Antes de editar um arquivo que não pertence exclusivamente à feature em andamento (hook/contexto global, controller/handler de outra feature, repositório usado por múltiplos domínios, layout compartilhado), identificar quem mais depende dele e checar explicitamente se a mudança preserva o comportamento existente pra quem não usa a feature atual (idealmente com um teste ou verificação cobrindo esse caso, não só "parece que não quebra"). Ao encerrar a sessão, fazer uma análise de regressão explícita nesses pontos de toque cross-feature antes de dizer "nada quebrou" — não é o mesmo que rodar a suíte de testes e assumir que cobre tudo. (Gap 5, caso real: sessão de chat-corporativo mexeu em `AuthContext`/`useSignalR`/`AppLayout` — globais — e em `UsuariosPage`/`UsuarioFormDialog`/`AtualizarUsuarioPerfilCommandHandler` — feature de Usuários, não de Chat — sem uma checagem de regressão dedicada até o usuário pedir explicitamente no fim da sessão.)
+
+**Como aplicar na prática:** ao iniciar uma feature nova ou uma extensão de feature existente neste projeto, revisar esta seção antes de seguir pro Design/Execute do skill `tlc-spec-driven`. Se notar que uma dessas 5 regras está prestes a ser quebrada, parar e avisar o usuário explicitamente, em vez de seguir e só documentar depois.
 
 ---
 

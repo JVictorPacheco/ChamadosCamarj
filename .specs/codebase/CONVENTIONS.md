@@ -1039,12 +1039,13 @@ Toda `spec.md` deve ter uma tabela de rastreabilidade mapeando cada AC ao teste 
 
 ### 4.7 Regras de Processo (Constitution)
 
-Quatro regras permanentes. Se notar que uma está prestes a ser quebrada, **pare e avise o usuário antes de prosseguir**.
+Cinco regras permanentes. Se notar que uma está prestes a ser quebrada, **pare e avise o usuário antes de prosseguir**.
 
 1. **Perguntas sem resposta não viram suposições.** Se ficar sem resposta em decisão de produto difícil de reverter: parar e perguntar de novo, ou marcar como `⚠️ PENDENTE DE CONFIRMAÇÃO`.
 2. **Spec antes do código, sempre.** Atualizar `spec.md` antes de qualquer mudança de comportamento — mesmo extensões pequenas.
 3. **Mudança de contrato é sinalizada antes.** Se remover/alterar interface usada por múltiplos consumidores: avisar antes de aplicar.
 4. **Fluxo de orquestração SDD.** Seguir o ciclo completo (Specify → Design → Tasks → Execute → Gate Checks → Commit → STATE.md). Guia: `docs/GUIA-ORQUESTRACAO-SDD.md`.
+5. **Não quebrar nada fora do escopo da feature atual.** Antes de editar código compartilhado com outra feature (hook/contexto global, handler de outro domínio, repositório usado por múltiplos módulos): identificar quem mais depende dele e avisar antes de mexer, não só relatar depois. Ao encerrar a sessão, fazer uma análise de regressão explícita nesses pontos de toque cross-feature — não é o mesmo que rodar a suíte de testes e assumir que cobre tudo. Detalhe em `STATE.md`, seção Constitution, regra 5.
 
 ---
 
