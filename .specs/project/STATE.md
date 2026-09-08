@@ -1,6 +1,64 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-09-01
+> Atualizado em: 2026-09-08
+
+---
+
+## Sessão de 2026-09-08 — Chat: confirmação de leitura + preferência de privacidade
+
+### Contexto
+Usuário pediu pra implementar o que faltava de US-09 (read receipts, `AC-26/27` — especificado
+desde a Fase 3, nunca implementado, marcado "fora do escopo" em toda sessão anterior) mais uma
+ideia nova: um toggle de privacidade "Mostrar confirmação de leitura", ligado por padrão, com
+reciprocidade estilo WhatsApp (quem desliga deixa de mostrar E de ver leitura alheia). Decisões de
+escopo confirmadas com o usuário antes de especificar (Constitution regra 1): reciprocidade
+recíproca, toggle global (não por conversa), UI num menu "Preferências" novo na sidebar. Detalhe
+completo em `.specs/features/chat-corporativo/spec.md` (extensão AC-53 a AC-58) e `design.md`
+(seção 10). Orquestração seguida: Claude Code Sonnet 5 fez spec + build-backend + build-frontend
+na sessão principal; `@review` rodou como sub-agente independente (skill `code-review`, nível high).
+
+### O que foi feito
+- **Backend:** `UsuarioPerfil.MostrarConfirmacaoLeitura` (bool, default `true`) + migration
+  `AddMostrarConfirmacaoLeituraUsuarioPerfil` (gerada, **não aplicada no Supabase ainda**).
+  `ObterConversaQueryHandler` agora expõe `ChatParticipanteInfo.UltimaLeituraEm`, filtrado pela
+  regra de reciprocidade (só exposto se AMBOS os lados — eu e o participante — tiverem o toggle
+  ligado). Novo endpoint self-service `PATCH /api/auth/preferencia-leitura`
+  (`DefinirPreferenciaLeituraCommand`, sem guard de Admin — cada um mexe só na própria preferência).
+  8 testes novos (`DefinirPreferenciaLeituraHandlerTests.cs`, `ObterConversaHandlerTests.cs` —
+  cobre as combinações de reciprocidade). 320 testes no total, 0 falhas.
+- **Frontend:** `AuthContext.atualizarPreferenciaLeitura` (mesmo padrão de `atualizarChatPerfil`).
+  Componente novo `PreferenciasDialog.tsx` com `Switch` (shadcn, instalado nesta sessão), acionado
+  por um ícone de engrenagem no rodapé da sidebar (`AppLayout`). `MensagemItem.tsx` renderiza
+  `Visto`/`Visto por todos` só na última mensagem própria não deletada da conversa — cálculo feito
+  em `MensagemList.tsx`. `useChatSignalR.ts`: evento `MensagemLida` agora também invalida
+  `conversa-detalhe` (antes só `mensagens`) — é lá que `UltimaLeituraEm` por participante vive.
+  `npm run build` 0 erros TS.
+- **Gate checks automatizados:** `dotnet build` 0 erros/avisos novos, `dotnet test` 320/320,
+  `npm run build` 0 erros. Branch `feature/chat-confirmacao-leitura`, a partir de `develop`.
+
+### Pendências (não bloqueantes pro código, bloqueantes pra produção)
+- ~~Migration não aplicada no Supabase~~ — **aplicada em 2026-09-08** (`dotnet ef database update`,
+  `ALTER TABLE "UsuariosPerfil" ADD "MostrarConfirmacaoLeitura" boolean NOT NULL DEFAULT TRUE`,
+  mesmo banco usado em produção — sem dados existentes afetados).
+- **Nenhuma verificação manual ao vivo** — indicador `Visto`/`Visto por todos` nunca foi visto
+  rodando de verdade, nem o toggle ligando/desligando com 2 contas reais, nem a reciprocidade nos
+  dois sentidos.
+- Branch não commitada/mergeada ainda — aguardando decisão do usuário.
+
+### Review independente (skill `code-review`, nível high) — 3 achados, todos corrigidos
+1. **Sério, achado pelo próprio processo de review:** `tests/.../ObterConversaHandlerTests.cs` já
+   existia (4 testes cobrindo `ForbiddenException`/`NotFoundException`, incluindo um teste de
+   segurança do achado #2 da `review-fase9-independente.md`) e foi **sobrescrito sem leitura
+   prévia** por um `Write` desta sessão — a contagem de testes ficou igual (4→4), o que escondeu a
+   perda até o review pegar. Restaurado: arquivo agora tem os 4 originais + 4 novos de
+   reciprocidade (324 testes no total do projeto). **Aprendizado:** antes de criar um arquivo de
+   teste "novo" para um handler já existente no projeto, checar primeiro se já existe um arquivo
+   com esse nome exato — `Write` não bloqueia sobrescrita silenciosa se o arquivo nunca foi lido
+   nesta sessão, e uma contagem de testes estável não é garantia de que nada foi perdido.
+2. `switch.tsx` (gerado por `npx shadcn add`) importava `cn` do pacote npm `"cn"` em vez de
+   `@/lib/utils`, divergindo dos outros 17 componentes de `components/ui/` — corrigido, e a
+   dependência `cn` removida de `package.json`/lockfile.
+3. `PreferenciasDialog.tsx` não resetava o erro ao fechar (CONVENTIONS.md 3.6) — corrigido.
 
 ---
 

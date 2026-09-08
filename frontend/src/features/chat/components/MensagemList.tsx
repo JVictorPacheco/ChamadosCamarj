@@ -1,13 +1,16 @@
 import { useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { useAuth } from '@/auth/AuthContext'
 import { useMensagens } from '../hooks/useMensagens'
 import { MensagemItem } from './MensagemItem'
 import { TypingIndicator } from './TypingIndicator'
-import type { ChatMensagemResponse } from '@/types/api'
+import type { ChatConversaTipo, ChatMensagemResponse, ChatParticipanteInfo } from '@/types/api'
 
 interface MensagemListProps {
   conversaId: string
+  tipoConversa?: ChatConversaTipo
+  participantes: ChatParticipanteInfo[]
   digitandoNome: string | null
   onResponder: (mensagem: ChatMensagemResponse) => void
 }
@@ -32,7 +35,8 @@ function formatarDataSeparador(dataIso: string): string {
   return data.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })
 }
 
-export function MensagemList({ conversaId, digitandoNome, onResponder }: MensagemListProps) {
+export function MensagemList({ conversaId, tipoConversa, participantes, digitandoNome, onResponder }: MensagemListProps) {
+  const { perfil } = useAuth()
   const { data, isPending, isError, fetchNextPage, hasNextPage, isFetchingNextPage } = useMensagens(conversaId)
   const endRef = useRef<HTMLDivElement | null>(null)
   const prevLengthRef = useRef(0)
@@ -48,6 +52,12 @@ export function MensagemList({ conversaId, digitandoNome, onResponder }: Mensage
       todasMensagens.push(...itens)
     }
   }
+
+  // AC-53/54: só a última mensagem própria (não deletada) carrega o indicador de leitura —
+  // mesmo padrão do WhatsApp/Telegram, evita poluir a lista inteira.
+  const idUltimaMensagemPropria = [...todasMensagens]
+    .reverse()
+    .find((m) => m.autorId === perfil?.id && !m.deletada)?.id
 
   // Auto-scroll para o fim quando chegam novas mensagens
   useEffect(() => {
@@ -117,6 +127,9 @@ export function MensagemList({ conversaId, digitandoNome, onResponder }: Mensage
                 conversaId={conversaId}
                 onResponder={onResponder}
                 onScrollParaMensagem={scrollParaMensagem}
+                ehUltimaMensagemPropria={mensagem.id === idUltimaMensagemPropria}
+                tipoConversa={tipoConversa}
+                participantes={participantes}
               />
             </div>
           )

@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { autenticarGoogle, login, obterPerfilAtual, type AutenticacaoResponse } from './api'
+import { atualizarPreferenciaLeitura as atualizarPreferenciaLeituraApi, autenticarGoogle, login, obterPerfilAtual, type AutenticacaoResponse } from './api'
 import { clearToken, getToken, registrarLogoutAutomatico, setToken } from '@/lib/api'
 import type { ChatPerfil, TipoPerfil, UsuarioPerfilResponse } from '@/types/api'
 
@@ -11,6 +11,7 @@ export interface Perfil {
   nome: string
   email: string
   chatPerfil?: ChatPerfil
+  mostrarConfirmacaoLeitura: boolean
 }
 
 const STORAGE_KEY = 'chamados-camarj:perfil'
@@ -21,16 +22,31 @@ interface AuthContextValue {
   loginComSenha: (email: string, senha: string) => Promise<void>
   logout: () => void
   atualizarChatPerfil: (novo: ChatPerfil) => void
+  atualizarPreferenciaLeitura: (mostrar: boolean) => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
 function paraPerfil(resposta: AutenticacaoResponse): Perfil {
-  return { tipo: resposta.perfil, id: resposta.id, nome: resposta.nome, email: resposta.email, chatPerfil: resposta.chatPerfil }
+  return {
+    tipo: resposta.perfil,
+    id: resposta.id,
+    nome: resposta.nome,
+    email: resposta.email,
+    chatPerfil: resposta.chatPerfil,
+    mostrarConfirmacaoLeitura: resposta.mostrarConfirmacaoLeitura ?? true,
+  }
 }
 
 function paraPerfilAtual(resposta: UsuarioPerfilResponse): Perfil {
-  return { tipo: resposta.perfil, id: resposta.id, nome: resposta.nome, email: resposta.email, chatPerfil: resposta.chatPerfil }
+  return {
+    tipo: resposta.perfil,
+    id: resposta.id,
+    nome: resposta.nome,
+    email: resposta.email,
+    chatPerfil: resposta.chatPerfil,
+    mostrarConfirmacaoLeitura: resposta.mostrarConfirmacaoLeitura ?? true,
+  }
 }
 
 function lerPerfilSalvo(): Perfil | null {
@@ -38,7 +54,10 @@ function lerPerfilSalvo(): Perfil | null {
   if (!salvo) return null
 
   try {
-    return JSON.parse(salvo) as Perfil
+    const perfil = JSON.parse(salvo) as Perfil
+    // Perfil salvo antes desta extensão (2026-09-04) não tem o campo — sem isso, ficaria
+    // `undefined` em memória mesmo com o tipo dizendo `boolean`.
+    return { ...perfil, mostrarConfirmacaoLeitura: perfil.mostrarConfirmacaoLeitura ?? true }
   } catch {
     return null
   }
@@ -105,7 +124,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
   }
 
-  const value = useMemo(() => ({ perfil, loginComGoogle, loginComSenha, logout, atualizarChatPerfil }), [perfil])
+  // AC-56/AC-58: aplica no backend (persiste no perfil) e só então reflete localmente — evita a UI
+  // otimista ficar dessincronizada se a requisição falhar (mesmo padrão de erro inline do projeto,
+  // sem toast — quem chama trata o reject).
+  const atualizarPreferenciaLeitura = async (mostrar: boolean) => {
+    await atualizarPreferenciaLeituraApi(mostrar)
+    setPerfil((atual) => {
+      if (!atual) return atual
+      const atualizado = { ...atual, mostrarConfirmacaoLeitura: mostrar }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(atualizado))
+      return atualizado
+    })
+  }
+
+  const value = useMemo(
+    () => ({ perfil, loginComGoogle, loginComSenha, logout, atualizarChatPerfil, atualizarPreferenciaLeitura }),
+    [perfil],
+  )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

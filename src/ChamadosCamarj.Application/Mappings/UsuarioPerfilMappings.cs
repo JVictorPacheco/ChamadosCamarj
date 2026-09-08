@@ -14,6 +14,7 @@ public static class UsuarioPerfilMappings
             usuarioPerfil.Ativo,
             usuarioPerfil.GrupoId,
             usuarioPerfil.Grupo?.Nome,
-            usuarioPerfil.ChatPerfil
+            usuarioPerfil.ChatPerfil,
+            usuarioPerfil.MostrarConfirmacaoLeitura
         );
 }

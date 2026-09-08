@@ -1,9 +1,9 @@
 # Chat Corporativo — Especificação
 
-> **Status:** `Código mergeado em develop (PR #28) — Fase 8 e Fase 6 concluídas. Extensão de escopo (AC-46 a AC-52) implementada, verificada ao vivo (Playwright, restauração de acesso nas duas direções) e com gate checks completos em 2026-08-31.`
-> **Branch:** `feature/chat-corporativo` (mergeada)
+> **Status:** `Chat completo (fases 1-9) em produção (main) desde 2026-09-01. Extensão AC-26/27 + AC-53 a AC-58 (read receipts + preferência de privacidade) implementada e com gate checks de build/teste automatizados passando — falta aplicar a migration no Supabase, verificar ao vivo e revisar (branch feature/chat-confirmacao-leitura).`
+> **Branch:** `feature/chat-corporativo` (mergeada) + `feature/chat-confirmacao-leitura` (em andamento)
 > **Criada em:** 2026-08-29
-> **Atualizada em:** 2026-08-31 (extensão de escopo verificada e fechada)
+> **Atualizada em:** 2026-09-08 (extensão: read receipts + toggle de privacidade implementados)
 
 ---
 
@@ -32,6 +32,7 @@ Uma aba de chat corporativo integrada ao sistema, com presença em tempo real, m
 - Preview automático de links — V2
 - Export de histórico de conversa — V2
 - Videochamada — fora do escopo permanentemente
+- Confirmação de leitura configurável por conversa (é sempre uma preferência global do usuário) — V2, se pedido
 
 ---
 
@@ -210,6 +211,43 @@ Uma aba de chat corporativo integrada ao sistema, com presença em tempo real, m
   (já era o comportamento) e um aviso claro e específico aparece perto do botão de enviar — não um
   alerta genérico — permitindo tentar de novo com um clique.
 
+### Extensão de escopo — Confirmação de leitura + preferência de privacidade (adicionada em 2026-09-04)
+
+> Pedido do usuário: US-09 (AC-26/27) tinha sido especificada desde a Fase 3, mas ficou marcada
+> como "fora do escopo do que foi tocado" em toda sessão até aqui — o indicador de leitura nunca
+> foi implementado na UI, só o dado bruto (`ChatParticipante.UltimaLeituraEm`, atualizado pelo
+> `MarcarComoLidoCommand` já existente). Nesta extensão: (1) implementa AC-26/27 de fato; (2)
+> adiciona uma preferência nova, pedida pelo usuário, para desligar a confirmação — não estava
+> em nenhum spec anterior.
+>
+> **Decisões confirmadas com o usuário antes de especificar (regra 1 da Constitution):**
+> - Reciprocidade estilo WhatsApp: quem desliga o toggle deixa de **mostrar** sua leitura para os
+>   outros E deixa de **ver** a leitura dos outros — efeito nos dois sentidos, não unilateral.
+> - Escopo do toggle é **global** (uma preferência por usuário, vale para todas as conversas),
+>   não por conversa — mais simples de implementar e de entender, sem tela extra por conversa.
+> - Vive em um menu novo "Preferências", acessível pelo rodapé da sidebar (perto do avatar/tema) —
+>   hoje não existe nenhuma tela de preferências do usuário; esta extensão cria a primeira entrada
+>   dela, pensando em já deixar espaço para preferências futuras.
+
+- **AC-53:** Dado que sou o autor de uma mensagem em uma conversa 1:1, quando o destinatário abre a
+  conversa e lê a mensagem, então ela passa a exibir o indicador `Visto` com o horário da leitura —
+  desde que a reciprocidade do AC-55/AC-56 permita (ambos os lados com a preferência ligada).
+- **AC-54:** Dado que estou em um grupo, quando todos os participantes ativos (exceto eu, o autor)
+  já leram uma mensagem minha, então ela exibe `Visto por todos` — respeitando a mesma reciprocidade
+  por participante: quem tem a preferência desligada não conta nem aparece nessa checagem.
+- **AC-55:** Dado que sou um usuário autenticado, quando acesso o menu "Preferências" (sidebar),
+  então vejo um toggle `Mostrar confirmação de leitura`, ligado por padrão (`true`).
+- **AC-56:** Dado que desligo esse toggle, então (a) nenhuma mensagem minha, em nenhuma conversa,
+  mostra `Visto`/`Visto por todos` para os outros participantes daqui para frente; e (b) eu também
+  deixo de ver o indicador de leitura nas mensagens que eu envio — a reciprocidade se aplica a mim
+  mesmo, exatamente como no WhatsApp.
+- **AC-57:** Dado que outro participante de uma conversa minha tem a preferência dele desligada,
+  então eu nunca vejo o indicador de leitura relativo à leitura **dele** — independente do estado
+  do meu próprio toggle (a preferência de quem leu prevalece para esconder o dado de quem leu).
+- **AC-58:** Dado que altero o toggle em Preferências, então a escolha é persistida no meu perfil no
+  banco (campo `MostrarConfirmacaoLeitura` em `UsuarioPerfil`) — não é `localStorage` — e continua
+  valendo após logout/login ou em outro dispositivo.
+
 ### Critérios Transversais
 
 - **AC-37:** Todos os endpoints do chat exigem autenticação JWT válida.
@@ -241,7 +279,7 @@ Uma aba de chat corporativo integrada ao sistema, com presença em tempo real, m
 | AC-19 a AC-20 (reação em mensagem) | — (UI pura, lógica no `AdicionarReacaoCommandHandler` sem teste ainda) | ✅ Verificado manualmente; teste automatizado é débito residual (não fazia parte da Fase 6 original) |
 | AC-21 a AC-22 | `EditarMensagemHandlerTests.cs` (7 testes, incluindo limite de 24h) | ✅ Implementado e verificado manualmente |
 | AC-23 a AC-25 | `DeletarMensagemHandlerTests.cs` (8 testes, autor/Admin/idempotência) | ✅ Implementado e verificado manualmente |
-| AC-26 a AC-27 (read receipts) | — | ⬜ Não implementado nem verificado — fora do escopo do que foi tocado nesta sessão |
+| AC-26 a AC-27 (read receipts) | `ObterConversaHandlerTests.cs` (reciprocidade) | ✅ Implementado (dotnet build/test + npm run build); **sem verificação manual ao vivo ainda** |
 | AC-28 a AC-29 (digitando) | — (UI pura) | ✅ Corrigido (Bug #8a) e verificado ao vivo (Playwright, 2 sessões) |
 | AC-30 a AC-32 (badge de não lidas) | — | ⬜ Não verificado manualmente de forma isolada (visto funcionando de passagem durante os testes de #5) |
 | AC-33 a AC-34 (citação/reply) | `EnviarMensagemHandlerTests.cs` — `Handle_ComResposta_DevePopularRespostaConteudoComOTextoDaMensagemOriginal` | ✅ Corrigido (Bug #7) e verificado |
@@ -254,6 +292,8 @@ Uma aba de chat corporativo integrada ao sistema, com presença em tempo real, m
 | AC-50 (preview inline de imagem) | — (UI pura) | ✅ Implementado; **não verificado ao vivo nesta sessão** — só revisão de código (`MensagemItem.tsx`) |
 | AC-51 (spinner no botão de enviar) | — (UI pura) | ✅ Implementado; **não verificado ao vivo nesta sessão** — só revisão de código |
 | AC-52 (aviso específico + retry em falha de envio) | — (UI pura) | ✅ Implementado; **não verificado ao vivo nesta sessão** — requer simular falha de rede, não tentado |
+| AC-53 a AC-54 (indicador `Visto`/`Visto por todos`) | `ObterConversaHandlerTests.cs` | ✅ Implementado; sem verificação manual ao vivo (migration ainda não aplicada no Supabase) |
+| AC-55 a AC-58 (toggle de preferência + reciprocidade) | `DefinirPreferenciaLeituraHandlerTests.cs` + `ObterConversaHandlerTests.cs` | ✅ Implementado; sem verificação manual ao vivo |
 
 ---
 
@@ -262,6 +302,7 @@ Uma aba de chat corporativo integrada ao sistema, com presença em tempo real, m
 - Depende de: Supabase Storage (bucket `chat-arquivos` — **criado em 2026-08-31**, depois da implementação, não antes como o plano original previa)
 - Depende de: SignalR Hub já existente (reusar ou criar `ChatHub` separado)
 - Depende de: `UsuarioPerfil` (adicionar campo `ChatPerfil`)
+- Depende de: `UsuarioPerfil` (adicionar campo `MostrarConfirmacaoLeitura`, migration nova — extensão 2026-09-04)
 - Bloqueia: nenhuma feature futura identificada
 
 ---

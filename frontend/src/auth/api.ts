@@ -8,6 +8,15 @@ export interface AutenticacaoResponse {
   email: string
   perfil: TipoPerfil
   chatPerfil?: ChatPerfil
+  mostrarConfirmacaoLeitura?: boolean
+}
+
+// AC-55 a AC-58: preferência global de privacidade, self-service (não passa por /usuarios).
+export function atualizarPreferenciaLeitura(mostrar: boolean): Promise<void> {
+  return apiFetch<void>('/auth/preferencia-leitura', {
+    method: 'PATCH',
+    body: JSON.stringify({ mostrar }),
+  })
 }
 
 export function autenticarGoogle(idToken: string): Promise<AutenticacaoResponse> {
