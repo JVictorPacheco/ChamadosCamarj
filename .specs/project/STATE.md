@@ -40,9 +40,17 @@ na sessão principal; `@review` rodou como sub-agente independente (skill `code-
 - ~~Migration não aplicada no Supabase~~ — **aplicada em 2026-09-08** (`dotnet ef database update`,
   `ALTER TABLE "UsuariosPerfil" ADD "MostrarConfirmacaoLeitura" boolean NOT NULL DEFAULT TRUE`,
   mesmo banco usado em produção — sem dados existentes afetados).
-- **Nenhuma verificação manual ao vivo** — indicador `Visto`/`Visto por todos` nunca foi visto
-  rodando de verdade, nem o toggle ligando/desligando com 2 contas reais, nem a reciprocidade nos
-  dois sentidos.
+- ~~Nenhuma verificação manual ao vivo~~ — **feita em 2026-09-08** (Playwright + API direta contra o
+  Supabase real, contas `teste.admin2`/`teste.alvo2`). Indicador "Visto às HH:MM" confirmado ao vivo
+  na UI, atualizando via SignalR sem reload assim que o outro lado marca como lido. Reciprocidade
+  testada nos dois sentidos via API (`GET /api/chat/conversas/{id}`): com o toggle do participante
+  lido desligado, `ultimaLeituraEm` some pro remetente mesmo ele estando com o próprio toggle ligado;
+  com o próprio toggle do remetente desligado, ele também deixa de ver a leitura alheia mesmo o outro
+  permitindo — confirmado no código (`ObterConversaQueryHandler`) e reproduzido na UI (dialog
+  Preferências, switch shadcn). Nenhum bug encontrado — o único resultado inesperado foi erro de
+  digitação do próprio testador (payload da API com o campo errado, `mostrarConfirmacaoLeitura` em
+  vez de `mostrar` — o campo real do `DefinirPreferenciaLeituraRequest`/`atualizarPreferenciaLeitura`
+  no frontend). Estado das contas de teste restaurado ao normal (ambos `mostrar=true`) ao final.
 - Branch não commitada/mergeada ainda — aguardando decisão do usuário.
 
 ### Review independente (skill `code-review`, nível high) — 3 achados, todos corrigidos
