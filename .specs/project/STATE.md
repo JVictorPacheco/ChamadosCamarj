@@ -51,7 +51,13 @@ na sessão principal; `@review` rodou como sub-agente independente (skill `code-
   digitação do próprio testador (payload da API com o campo errado, `mostrarConfirmacaoLeitura` em
   vez de `mostrar` — o campo real do `DefinirPreferenciaLeituraRequest`/`atualizarPreferenciaLeitura`
   no frontend). Estado das contas de teste restaurado ao normal (ambos `mostrar=true`) ao final.
-- Branch não commitada/mergeada ainda — aguardando decisão do usuário.
+- ~~Branch não commitada/mergeada ainda~~ — **mergeada em 2026-09-08**: PR #31
+  (`feature/chat-confirmacao-leitura` → `develop`, commit `5edfa2f`,
+  https://github.com/JVictorPacheco/ChamadosCamarj/pull/31) e PR #32 (`develop` → `main`, commit
+  `158ac2f`, https://github.com/JVictorPacheco/ChamadosCamarj/pull/32), a pedido do usuário.
+  `main` está com tudo (Chat Corporativo completo + confirmação de leitura). Falta só o passo
+  manual de deploy (Cloudflare Pages + backend) — **agora a cargo do irmão do usuário**, não mais
+  do próprio usuário.
 
 ### Review independente (skill `code-review`, nível high) — 3 achados, todos corrigidos
 1. **Sério, achado pelo próprio processo de review:** `tests/.../ObterConversaHandlerTests.cs` já
