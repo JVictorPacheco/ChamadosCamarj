@@ -206,6 +206,8 @@ export function ChatPage() {
               )}
               <MensagemList
                 conversaId={conversaAtivaId}
+                tipoConversa={conversaDetalhe?.tipo}
+                participantes={conversaDetalhe?.participantes ?? []}
                 digitandoNome={digitandoNome}
                 onResponder={(m) => setRespostaParaMensagem(m)}
               />

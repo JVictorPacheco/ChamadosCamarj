@@ -10,5 +10,6 @@ public record UsuarioPerfilResponse(
     bool Ativo,
     Guid? GrupoId = null,
     string? GrupoNome = null,
-    ChatPerfil ChatPerfil = ChatPerfil.SemAcesso
+    ChatPerfil ChatPerfil = ChatPerfil.SemAcesso,
+    bool MostrarConfirmacaoLeitura = true
 );

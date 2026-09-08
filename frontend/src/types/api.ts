@@ -121,6 +121,7 @@ export interface UsuarioPerfilResponse {
   grupoId?: string | null;
   grupoNome?: string | null;
   chatPerfil?: ChatPerfil;
+  mostrarConfirmacaoLeitura?: boolean;
 }
 
 export interface GrupoResponse {
@@ -185,6 +186,7 @@ export interface ChatArquivoResponse {
 export interface ChatParticipanteInfo {
   usuarioId: string
   usuarioNome: string
+  ultimaLeituraEm?: string
 }
 
 export interface ChatConversaDetalheResponse {

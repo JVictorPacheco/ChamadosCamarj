@@ -5,6 +5,7 @@ using ChamadosCamarj.Application.Common;
 using ChamadosCamarj.Application.Features.Auth.Commands;
 using ChamadosCamarj.Application.Features.Auth.DTOs;
 using ChamadosCamarj.Application.Features.Auth.Queries;
+using ChamadosCamarj.Application.Features.Chat.Commands.DefinirPreferenciaLeitura;
 using ChamadosCamarj.Application.Features.Usuarios.DTOs;
 
 namespace ChamadosCamarj.WebApi.Controllers;
@@ -101,4 +102,23 @@ public class AuthController : ControllerBase
         var result = await _mediator.Send(new ObterPerfilAtualQuery(_currentUser.UsuarioId), cancellationToken);
         return Ok(result);
     }
+
+    /// <summary>
+    /// Liga/desliga a confirmação de leitura ("Visto"/"Visto por todos") do próprio usuário
+    /// autenticado — preferência global de privacidade, reciprocidade estilo WhatsApp (AC-53 a AC-58
+    /// em .specs/features/chat-corporativo/spec.md).
+    /// </summary>
+    [HttpPatch("preferencia-leitura")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> DefinirPreferenciaLeitura(
+        [FromBody] DefinirPreferenciaLeituraRequest request,
+        CancellationToken cancellationToken)
+    {
+        var command = new DefinirPreferenciaLeituraCommand(request.Mostrar, _currentUser.UsuarioId);
+        await _mediator.Send(command, cancellationToken);
+        return NoContent();
+    }
 }
+
+public record DefinirPreferenciaLeituraRequest(bool Mostrar);

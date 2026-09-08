@@ -1,18 +1,99 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-09-01
+> Atualizado em: 2026-09-08
 
 ---
 
-## Sessão de 2026-09-01 (parte 9) — Commit, push e PR aberto
+## Sessão de 2026-09-08 — Chat: confirmação de leitura + preferência de privacidade
 
-Todo o trabalho das partes 5 a 8 (Fase 9, Bugs #10/#11, 2 reviews independentes, verificação ao vivo)
-foi commitado em 3 commits (`test(chat)`, `feat(chat)`, `docs(chat)`) na branch
-`feature/chat-corporativo-hardening` (criada a partir de `develop`, seguindo o git flow do
-`AGENTS.md`), com push feito e **PR #29 aberto contra `develop`**:
-https://github.com/JVictorPacheco/ChamadosCamarj/pull/29
+### Contexto
+Usuário pediu pra implementar o que faltava de US-09 (read receipts, `AC-26/27` — especificado
+desde a Fase 3, nunca implementado, marcado "fora do escopo" em toda sessão anterior) mais uma
+ideia nova: um toggle de privacidade "Mostrar confirmação de leitura", ligado por padrão, com
+reciprocidade estilo WhatsApp (quem desliga deixa de mostrar E de ver leitura alheia). Decisões de
+escopo confirmadas com o usuário antes de especificar (Constitution regra 1): reciprocidade
+recíproca, toggle global (não por conversa), UI num menu "Preferências" novo na sidebar. Detalhe
+completo em `.specs/features/chat-corporativo/spec.md` (extensão AC-53 a AC-58) e `design.md`
+(seção 10). Orquestração seguida: Claude Code Sonnet 5 fez spec + build-backend + build-frontend
+na sessão principal; `@review` rodou como sub-agente independente (skill `code-review`, nível high).
 
-Working tree limpo. Pendente: review/merge do PR #29 (não mergeado ainda — decisão do usuário).
+### O que foi feito
+- **Backend:** `UsuarioPerfil.MostrarConfirmacaoLeitura` (bool, default `true`) + migration
+  `AddMostrarConfirmacaoLeituraUsuarioPerfil` (gerada, **não aplicada no Supabase ainda**).
+  `ObterConversaQueryHandler` agora expõe `ChatParticipanteInfo.UltimaLeituraEm`, filtrado pela
+  regra de reciprocidade (só exposto se AMBOS os lados — eu e o participante — tiverem o toggle
+  ligado). Novo endpoint self-service `PATCH /api/auth/preferencia-leitura`
+  (`DefinirPreferenciaLeituraCommand`, sem guard de Admin — cada um mexe só na própria preferência).
+  8 testes novos (`DefinirPreferenciaLeituraHandlerTests.cs`, `ObterConversaHandlerTests.cs` —
+  cobre as combinações de reciprocidade). 320 testes no total, 0 falhas.
+- **Frontend:** `AuthContext.atualizarPreferenciaLeitura` (mesmo padrão de `atualizarChatPerfil`).
+  Componente novo `PreferenciasDialog.tsx` com `Switch` (shadcn, instalado nesta sessão), acionado
+  por um ícone de engrenagem no rodapé da sidebar (`AppLayout`). `MensagemItem.tsx` renderiza
+  `Visto`/`Visto por todos` só na última mensagem própria não deletada da conversa — cálculo feito
+  em `MensagemList.tsx`. `useChatSignalR.ts`: evento `MensagemLida` agora também invalida
+  `conversa-detalhe` (antes só `mensagens`) — é lá que `UltimaLeituraEm` por participante vive.
+  `npm run build` 0 erros TS.
+- **Gate checks automatizados:** `dotnet build` 0 erros/avisos novos, `dotnet test` 320/320,
+  `npm run build` 0 erros. Branch `feature/chat-confirmacao-leitura`, a partir de `develop`.
+
+### Pendências (não bloqueantes pro código, bloqueantes pra produção)
+- ~~Migration não aplicada no Supabase~~ — **aplicada em 2026-09-08** (`dotnet ef database update`,
+  `ALTER TABLE "UsuariosPerfil" ADD "MostrarConfirmacaoLeitura" boolean NOT NULL DEFAULT TRUE`,
+  mesmo banco usado em produção — sem dados existentes afetados).
+- ~~Nenhuma verificação manual ao vivo~~ — **feita em 2026-09-08** (Playwright + API direta contra o
+  Supabase real, contas `teste.admin2`/`teste.alvo2`). Indicador "Visto às HH:MM" confirmado ao vivo
+  na UI, atualizando via SignalR sem reload assim que o outro lado marca como lido. Reciprocidade
+  testada nos dois sentidos via API (`GET /api/chat/conversas/{id}`): com o toggle do participante
+  lido desligado, `ultimaLeituraEm` some pro remetente mesmo ele estando com o próprio toggle ligado;
+  com o próprio toggle do remetente desligado, ele também deixa de ver a leitura alheia mesmo o outro
+  permitindo — confirmado no código (`ObterConversaQueryHandler`) e reproduzido na UI (dialog
+  Preferências, switch shadcn). Nenhum bug encontrado — o único resultado inesperado foi erro de
+  digitação do próprio testador (payload da API com o campo errado, `mostrarConfirmacaoLeitura` em
+  vez de `mostrar` — o campo real do `DefinirPreferenciaLeituraRequest`/`atualizarPreferenciaLeitura`
+  no frontend). Estado das contas de teste restaurado ao normal (ambos `mostrar=true`) ao final.
+- Branch não commitada/mergeada ainda — aguardando decisão do usuário.
+
+### Review independente (skill `code-review`, nível high) — 3 achados, todos corrigidos
+1. **Sério, achado pelo próprio processo de review:** `tests/.../ObterConversaHandlerTests.cs` já
+   existia (4 testes cobrindo `ForbiddenException`/`NotFoundException`, incluindo um teste de
+   segurança do achado #2 da `review-fase9-independente.md`) e foi **sobrescrito sem leitura
+   prévia** por um `Write` desta sessão — a contagem de testes ficou igual (4→4), o que escondeu a
+   perda até o review pegar. Restaurado: arquivo agora tem os 4 originais + 4 novos de
+   reciprocidade (324 testes no total do projeto). **Aprendizado:** antes de criar um arquivo de
+   teste "novo" para um handler já existente no projeto, checar primeiro se já existe um arquivo
+   com esse nome exato — `Write` não bloqueia sobrescrita silenciosa se o arquivo nunca foi lido
+   nesta sessão, e uma contagem de testes estável não é garantia de que nada foi perdido.
+2. `switch.tsx` (gerado por `npx shadcn add`) importava `cn` do pacote npm `"cn"` em vez de
+   `@/lib/utils`, divergindo dos outros 17 componentes de `components/ui/` — corrigido, e a
+   dependência `cn` removida de `package.json`/lockfile.
+3. `PreferenciasDialog.tsx` não resetava o erro ao fechar (CONVENTIONS.md 3.6) — corrigido.
+
+---
+
+## Sessão de 2026-09-01 (parte 10) — Chat Corporativo promovido para `main`/produção
+
+**PR #29 mergeado em `develop` pelo usuário.** Antes de promover pra `main`, confirmei com o
+usuário 2 pontos de risco: (1) o Supabase usado nas migrations desta sessão é o mesmo banco de
+produção (confirmado — nenhuma migration adicional necessária); (2) push em `main` **não** dispara
+deploy automático (confirmado — há um passo manual separado depois). Também verifiquei que `main`
+tinha 2 commits não presentes em `develop` (`a9de5f1`, `1838532`, de 2026-08-10) — `git diff`
+confirmou que o **conteúdo** já é idêntico em `develop` (divergência só de histórico, de um merge
+direto anterior), e `git merge-tree` não apontou conflito nenhum.
+
+**PR #30 (`develop` → `main`) aberto e mergeado** (commit `7a779c2`):
+https://github.com/JVictorPacheco/ChamadosCamarj/pull/30
+
+`main` agora contém o Chat Corporativo completo (fases 1-9, 2 reviews independentes, verificação ao
+vivo — ver `.specs/features/chat-corporativo/review-fase8.md`). **Falta o passo manual de deploy**
+(fora do controle deste repositório/sessão) para os usuários reais verem a mudança.
+
+### Pendências
+- Passo manual de deploy (Cloudflare Pages + backend) — usuário vai executar
+- Limpeza das contas sintéticas de teste no Supabase (`teste.admin2@camarj.com.br`,
+  `teste.alvo2@camarj.com.br`) e das mensagens de teste criadas durante a verificação ao vivo
+- AC-49 a AC-52 (polimentos de UX) sem verificação manual ao vivo do usuário ainda
+- Endpoint em lote pra preview de imagem, aposentar `ChatAcessoRevogadoNotification` — otimizações
+  não-bloqueantes, ver `review-fase8.md`
 
 ---
 
@@ -511,7 +592,9 @@ manual ainda.
 
 4. **Orquestração de IA com SDD.** Para cada feature nova, seguir: `@spec` → `@build-backend`/`@build-frontend` → `@review` → gate checks → commit/merge. Sempre pedir pra cada agente salvar seus artefatos. Guia completo: `docs/GUIA-ORQUESTRACAO-SDD.md`.
 
-**Como aplicar na prática:** ao iniciar uma feature nova ou uma extensão de feature existente neste projeto, revisar esta seção antes de seguir pro Design/Execute do skill `tlc-spec-driven`. Se notar que uma dessas 4 regras está prestes a ser quebrada, parar e avisar o usuário explicitamente, em vez de seguir e só documentar depois.
+5. **Não quebrar nada fora do escopo da feature atual — e se for preciso tocar em código compartilhado com outra feature, avisar ANTES de fazer, não só relatar depois.** Antes de editar um arquivo que não pertence exclusivamente à feature em andamento (hook/contexto global, controller/handler de outra feature, repositório usado por múltiplos domínios, layout compartilhado), identificar quem mais depende dele e checar explicitamente se a mudança preserva o comportamento existente pra quem não usa a feature atual (idealmente com um teste ou verificação cobrindo esse caso, não só "parece que não quebra"). Ao encerrar a sessão, fazer uma análise de regressão explícita nesses pontos de toque cross-feature antes de dizer "nada quebrou" — não é o mesmo que rodar a suíte de testes e assumir que cobre tudo. (Gap 5, caso real: sessão de chat-corporativo mexeu em `AuthContext`/`useSignalR`/`AppLayout` — globais — e em `UsuariosPage`/`UsuarioFormDialog`/`AtualizarUsuarioPerfilCommandHandler` — feature de Usuários, não de Chat — sem uma checagem de regressão dedicada até o usuário pedir explicitamente no fim da sessão.)
+
+**Como aplicar na prática:** ao iniciar uma feature nova ou uma extensão de feature existente neste projeto, revisar esta seção antes de seguir pro Design/Execute do skill `tlc-spec-driven`. Se notar que uma dessas 5 regras está prestes a ser quebrada, parar e avisar o usuário explicitamente, em vez de seguir e só documentar depois.
 
 ---
 

@@ -7,14 +7,41 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { useAuth } from '@/auth/AuthContext'
 import { useEditarMensagem, useDeletarMensagem, useAdicionarReacao } from '../hooks/useChat'
 import { obterUrlArquivo } from '../api'
-import type { ChatMensagemResponse } from '@/types/api'
-import { Reply, Pencil, Trash2, Download, FileText, Smile, ImageOff } from 'lucide-react'
+import type { ChatConversaTipo, ChatMensagemResponse, ChatParticipanteInfo } from '@/types/api'
+import { Reply, Pencil, Trash2, Download, FileText, Smile, ImageOff, CheckCheck } from 'lucide-react'
 
 interface MensagemItemProps {
   mensagem: ChatMensagemResponse
   conversaId: string
   onResponder: (mensagem: ChatMensagemResponse) => void
   onScrollParaMensagem: (mensagemId: string) => void
+  ehUltimaMensagemPropria?: boolean
+  tipoConversa?: ChatConversaTipo
+  participantes?: ChatParticipanteInfo[]
+}
+
+// AC-53/54: "Visto" (1:1) exige que o outro participante tenha lido a mensagem — comparando o
+// timestamp de leitura dele (já filtrado pela reciprocidade no backend, design.md #10.2) com a
+// data de criação da mensagem. "Visto por todos" (grupo) exige isso de TODOS os demais ativos;
+// um único `ultimaLeituraEm` ausente (nulo por privacidade ou por nunca ter lido) já reprova.
+function calcularStatusLeitura(
+  mensagem: ChatMensagemResponse,
+  autorId: string,
+  tipoConversa: ChatConversaTipo | undefined,
+  participantes: ChatParticipanteInfo[]
+): { rotulo: string; dataLeitura?: string } | null {
+  const leu = (p: ChatParticipanteInfo) =>
+    !!p.ultimaLeituraEm && new Date(p.ultimaLeituraEm) >= new Date(mensagem.dataCriacao)
+
+  const destinatarios = participantes.filter((p) => p.usuarioId !== autorId)
+  if (destinatarios.length === 0) return null
+
+  if (tipoConversa === 'Grupo') {
+    return destinatarios.every(leu) ? { rotulo: 'Visto por todos' } : null
+  }
+
+  const outro = destinatarios[0]
+  return leu(outro) ? { rotulo: 'Visto', dataLeitura: outro.ultimaLeituraEm } : null
 }
 
 const EMOJIS_RAPIDOS = ['👍', '❤️', '😂', '😮', '😢', '🙏']
@@ -55,7 +82,15 @@ function formatarDataHora(dataIso: string): string {
   })
 }
 
-export function MensagemItem({ mensagem, conversaId, onResponder, onScrollParaMensagem }: MensagemItemProps) {
+export function MensagemItem({
+  mensagem,
+  conversaId,
+  onResponder,
+  onScrollParaMensagem,
+  ehUltimaMensagemPropria,
+  tipoConversa,
+  participantes = [],
+}: MensagemItemProps) {
   const { perfil } = useAuth()
   const [editando, setEditando] = useState(false)
   const [novoConteudo, setNovoConteudo] = useState(mensagem.conteudo ?? '')
@@ -90,6 +125,12 @@ export function MensagemItem({ mensagem, conversaId, onResponder, onScrollParaMe
   }
 
   const linhaDireita = eAutor
+
+  // AC-53/54: só calcula/renderiza pra última mensagem própria — ver comentário em MensagemList.tsx.
+  const statusLeitura =
+    eAutor && ehUltimaMensagemPropria && !mensagem.deletada
+      ? calcularStatusLeitura(mensagem, mensagem.autorId, tipoConversa, participantes)
+      : null
 
   const salvarEdicao = () => {
     if (!novoConteudo.trim()) return
@@ -305,6 +346,17 @@ export function MensagemItem({ mensagem, conversaId, onResponder, onScrollParaMe
           </div>
         )}
       </div>
+
+      {/* AC-53/54: indicador de leitura, só na última mensagem própria */}
+      {statusLeitura && (
+        <div className="mr-2 flex items-center gap-1 text-xs text-muted-foreground">
+          <CheckCheck className="h-3 w-3" />
+          <span>
+            {statusLeitura.rotulo}
+            {statusLeitura.dataLeitura && ` às ${formatarHora(statusLeitura.dataLeitura)}`}
+          </span>
+        </div>
+      )}
 
       {/* Picker de emojis rápidos */}
       {mostrarEmojis && (

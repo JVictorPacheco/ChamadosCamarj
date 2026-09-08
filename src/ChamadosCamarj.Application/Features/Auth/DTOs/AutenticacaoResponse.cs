@@ -8,5 +8,6 @@ public record AutenticacaoResponse(
     string Nome,
     string Email,
     Perfil Perfil,
-    ChatPerfil ChatPerfil
+    ChatPerfil ChatPerfil,
+    bool MostrarConfirmacaoLeitura
 );

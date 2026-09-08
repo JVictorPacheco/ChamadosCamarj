@@ -22,7 +22,8 @@ import { useTheme } from '@/hooks/useTheme'
 import { useSignalR } from '@/hooks/useSignalR'
 import { useConversas } from '@/features/chat/hooks/useConversas'
 import { useChatHeartbeat } from '@/features/chat/hooks/useChatHeartbeat'
-import { Kanban, LayoutDashboard, Inbox, FileBarChart, Users, Archive, Sun, Moon, Tags, FolderKanban, MessageSquare } from 'lucide-react'
+import { PreferenciasDialog } from '@/features/chat/components/PreferenciasDialog'
+import { Kanban, LayoutDashboard, Inbox, FileBarChart, Users, Archive, Sun, Moon, Settings, Tags, FolderKanban, MessageSquare } from 'lucide-react'
 import logoCamarj from '../assets/logo-camarj.png'
 
 export function AppLayout() {
@@ -31,6 +32,7 @@ export function AppLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   const [confirmarLogout, setConfirmarLogout] = useState(false)
+  const [preferenciasAbertas, setPreferenciasAbertas] = useState(false)
   const [slaAlerta, setSlaAlerta] = useState<string | null>(null)
   const [avisoChatPerfil, setAvisoChatPerfil] = useState<string | null>(null)
   const { subscribe } = useSignalR()
@@ -229,14 +231,24 @@ export function AppLayout() {
           <div className="flex flex-col gap-2 px-2 py-1 text-sm">
             <div className="flex items-center justify-between gap-2">
               <span className="font-medium text-sidebar-foreground">{perfil?.nome}</span>
-              <button
-                type="button"
-                onClick={toggleTheme}
-                className="rounded-md p-1 text-muted-foreground hover:text-foreground hover:bg-sidebar-accent transition-colors"
-                aria-label={theme === 'dark' ? 'Alternar para tema claro' : 'Alternar para tema escuro'}
-              >
-                {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setPreferenciasAbertas(true)}
+                  className="rounded-md p-1 text-muted-foreground hover:text-foreground hover:bg-sidebar-accent transition-colors"
+                  aria-label="Preferências"
+                >
+                  <Settings className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={toggleTheme}
+                  className="rounded-md p-1 text-muted-foreground hover:text-foreground hover:bg-sidebar-accent transition-colors"
+                  aria-label={theme === 'dark' ? 'Alternar para tema claro' : 'Alternar para tema escuro'}
+                >
+                  {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                </button>
+              </div>
             </div>
             <Button variant="outline" size="sm" onClick={() => setConfirmarLogout(true)}>
               Sair
@@ -279,6 +291,8 @@ export function AppLayout() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <PreferenciasDialog open={preferenciasAbertas} onOpenChange={setPreferenciasAbertas} />
     </SidebarProvider>
   )
 }

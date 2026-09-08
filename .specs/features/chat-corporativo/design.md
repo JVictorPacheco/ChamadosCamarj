@@ -487,3 +487,98 @@ export interface ChatPresencaResponse { usuarioId: string; usuarioNome: string; 
 ## 9. Perguntas em Aberto
 
 Nenhuma — todas as decisões foram alinhadas com o usuário em 2026-08-29.
+
+---
+
+## 10. Extensão — Confirmação de leitura + preferência de privacidade (2026-09-04)
+
+### 10.1 Dado novo
+
+`UsuarioPerfil` ganha `bool MostrarConfirmacaoLeitura` (default `true`), mesmo padrão de
+`ChatPerfil`: propriedade `private set` + método de negócio `DefinirPreferenciaLeitura(bool)`.
+Migration `AddMostrarConfirmacaoLeituraUsuarioPerfil` (coluna `NOT NULL DEFAULT true`, sem quebrar
+usuários existentes).
+
+O dado bruto de leitura já existe (`ChatParticipante.UltimaLeituraEm`, mantido pelo
+`MarcarComoLidoCommand`) — esta extensão só passa a **expor** e **filtrar** esse dado, não cria
+tabela nova.
+
+### 10.2 Reciprocidade — onde é aplicada
+
+Decisão: reciprocidade resolvida **no backend**, não só escondida na UI (defesa em profundidade —
+um usuário curioso não deve conseguir ver o dado via chamada direta à API mesmo com o toggle
+desligado).
+
+Regra única, aplicada em `ObterConversaQueryHandler` (que já retorna `ChatParticipanteInfo` por
+participante — ver `ChatConversaDetalheResponse`):
+
+```
+Para cada participante P (exceto o próprio requisitante):
+  P.UltimaLeituraEmExposta =
+      (requisitante.MostrarConfirmacaoLeitura == true)   // eu quero ver leitura alheia?
+      && (P.MostrarConfirmacaoLeitura == true)             // ele deixa a leitura dele ser vista?
+      ? P.UltimaLeituraEm
+      : null
+```
+
+Isso cobre os dois sentidos pedidos: se eu desligo, `requisitante.MostrarConfirmacaoLeitura` é
+`false` pra mim mesmo quando eu olho a conversa → nunca vejo leitura de ninguém (AC-56b). Se o
+outro desliga, `P.MostrarConfirmacaoLeitura` é `false` → ninguém vê a leitura dele, mas ele
+continua vendo a dos outros normalmente, contanto que o dele próprio esteja ligado (AC-57). E como
+a mesma regra roda pra cada par (eu como P na consulta de quem eu enviei mensagem, o destinatário
+como requisitante), minha própria mensagem também para de mostrar "Visto" pros outros quando eu
+desligo (AC-56a) — sem precisar de nenhuma lógica extra em `EnviarMensagem`/`ListarMensagens`.
+
+`ChatParticipanteInfo` ganha um 3º campo `UltimaLeituraEm` (nullable) com esse valor já filtrado —
+o frontend nunca decide reciprocidade, só renderiza o que veio (nulo = não mostra nada).
+
+### 10.3 Cálculo de "Visto" vs "Visto por todos" (frontend)
+
+Só a **última mensagem enviada pelo usuário atual** em cada conversa carrega o indicador (mesmo
+padrão do WhatsApp/Telegram — evitar poluir toda a lista de mensagens):
+
+- 1:1: `Visto` + horário, se `UltimaLeituraEm` do outro participante (exposta, já filtrada pela
+  regra 10.2) for `>= mensagem.dataCriacao`.
+- Grupo: `Visto por todos`, se **todos** os participantes ativos, exceto o autor, tiverem
+  `UltimaLeituraEm` exposta `>= mensagem.dataCriacao`. Um único participante com o dado oculto
+  (`null`, seja por privacidade dele ou por nunca ter lido) já impede o "por todos".
+
+### 10.4 Novo endpoint (self-service, não passa pelo `PerfilRequisitanteGuard` de Admin)
+
+`PATCH /api/auth/preferencia-leitura` — corpo `{ "mostrar": bool }`, sempre aplica ao próprio
+usuário autenticado (`_currentUser.UsuarioId`), sem parâmetro de id na URL — mesmo padrão de
+`GET /api/auth/me`. Novo `DefinirPreferenciaLeituraCommand`/Handler/Validator em
+`Features/Chat/Commands/DefinirPreferenciaLeitura/`. Sem auditoria em `ChatHistorico` — é uma
+preferência de conta, não uma ação de chat (mesmo tratamento dado hoje ao tema claro/escuro, que
+também não é auditado).
+
+Campo replicado em `AutenticacaoResponse` e `UsuarioPerfilResponse` (mesmo padrão do `ChatPerfil`)
+para o frontend já ter o valor no boot, sem round-trip extra.
+
+### 10.5 Frontend — onde mora a preferência
+
+Menu "Preferências" novo, no rodapé da sidebar (`AppLayout`/`SidebarFooter`, ao lado do toggle de
+tema claro/escuro já existente) — primeira entrada de uma tela que pode crescer com outras
+preferências futuras. Um `DropdownMenu`/`Popover` simples com um `Switch` (shadcn) — não precisa de
+página de rota própria pra uma única opção.
+
+`AuthContext` ganha `perfil.mostrarConfirmacaoLeitura` (vem de `AutenticacaoResponse`/`GET /auth/me`
+no boot) + `atualizarPreferenciaLeitura(mostrar)`, mesmo padrão já usado por
+`atualizarChatPerfil` — atualiza estado em memória + `localStorage` depois da resposta 204 da API.
+
+### 10.6 Tempo real
+
+Não precisa de evento SignalR novo: quando `MarcarComoLidoCommand` roda, `ChatMensagemLidaNotification`
+já é publicada e o frontend já reage a ela invalidando a query de mensagens
+(`useChatSignalR.ts:114`, evento `MensagemLida`) — o refetch de `ObterConversaQuery`/mensagens já
+traz o `UltimaLeituraEm` atualizado (e já filtrado pela regra 10.2). Mudar o próprio toggle de
+preferência não precisa de tempo real — só afeta o que a própria pessoa vê a partir da próxima
+consulta.
+
+### 10.7 Decisões confirmadas com o usuário (não presumidas)
+
+| Pergunta | Resposta do usuário |
+|---|---|
+| Reciprocidade ao desligar? | Sim, estilo WhatsApp — afeta os dois sentidos |
+| Escopo do toggle | Global (todas as conversas), não por conversa |
+| Onde fica na UI | Menu "Preferências" novo na sidebar, não dentro da tela `/chat` |

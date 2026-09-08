@@ -40,6 +40,10 @@ public class UsuarioPerfilConfiguration : IEntityTypeConfiguration<UsuarioPerfil
             .HasMaxLength(20)
             .HasDefaultValue(Domain.Enums.ChatPerfil.SemAcesso);
 
+        builder.Property(u => u.MostrarConfirmacaoLeitura)
+            .IsRequired()
+            .HasDefaultValue(true);
+
         builder.HasOne(u => u.Grupo)
             .WithMany(g => g.Usuarios)
             .HasForeignKey(u => u.GrupoId)

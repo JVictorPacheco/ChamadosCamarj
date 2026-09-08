@@ -28,10 +28,17 @@ public class UsuarioPerfil : BaseEntity
     public Guid? GrupoId { get; private set; }
     public Grupo? Grupo { get; private set; }
     public ChatPerfil ChatPerfil { get; private set; } = ChatPerfil.SemAcesso;
+    public bool MostrarConfirmacaoLeitura { get; private set; } = true;
 
     public void DefinirChatPerfil(ChatPerfil perfil)
     {
         ChatPerfil = perfil;
+        DataAtualizacao = DateTime.UtcNow;
+    }
+
+    public void DefinirPreferenciaLeitura(bool mostrar)
+    {
+        MostrarConfirmacaoLeitura = mostrar;
         DataAtualizacao = DateTime.UtcNow;
     }
 
