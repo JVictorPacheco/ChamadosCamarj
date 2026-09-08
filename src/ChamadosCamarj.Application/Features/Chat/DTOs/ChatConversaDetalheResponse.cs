@@ -2,7 +2,7 @@ using ChamadosCamarj.Domain.Enums;
 
 namespace ChamadosCamarj.Application.Features.Chat.DTOs;
 
-public record ChatParticipanteInfo(Guid UsuarioId, string UsuarioNome);
+public record ChatParticipanteInfo(Guid UsuarioId, string UsuarioNome, DateTime? UltimaLeituraEm);
 
 public record ChatConversaDetalheResponse(
     Guid Id,

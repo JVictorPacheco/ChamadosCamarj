@@ -4,6 +4,11 @@
 > **Spec:** `spec.md` | **Design:** `design.md`
 > **Orquestração:** Claude Code (Sonnet 4.6 — spec; Opus 4.8 — backend e review; Sonnet 4.6 — frontend)
 > **Gate checks:** `dotnet test` + `npm run build` antes de qualquer commit
+>
+> **Extensão 2026-09-04 (branch `feature/chat-confirmacao-leitura`):** ver Fase 10 no fim deste
+> arquivo — read receipts (AC-26/27) + preferência de privacidade (AC-53 a AC-58). Orquestração:
+> Claude Code Sonnet 5 (spec + build-backend + build-frontend na sessão principal, `@review` como
+> sub-agente independente).
 
 ---
 
@@ -208,3 +213,78 @@
 - [x] PR revisado e mergeado em `develop` (2026-08-31, PR #28) — **não mergeado em `main`/produção ainda**
 - [x] Review independente (sub-agente `@review`) executado — 1 achado bloqueante encontrado e corrigido
 - [x] Fase 9 (AC-46 a AC-52) implementada, com gate checks completos e AC-46/47/48 verificados ao vivo
+
+---
+
+## Fase 10 — Confirmação de leitura + preferência de privacidade (2026-09-04)
+
+> Ver `spec.md` "Extensão de escopo — Confirmação de leitura..." e `design.md` seção 10.
+
+### Backend
+
+- [x] `UsuarioPerfil`: propriedade `MostrarConfirmacaoLeitura` (bool, default `true`) + método
+      `DefinirPreferenciaLeitura(bool mostrar)`
+- [x] `UsuarioPerfilConfiguration`: mapear coluna com `HasDefaultValue(true)`
+- [x] Migration `AddMostrarConfirmacaoLeituraUsuarioPerfil` (`dotnet ef migrations add`) —
+      **aplicada no Supabase real em 2026-09-08** (`dotnet ef database update`, `ALTER TABLE
+      "UsuariosPerfil" ADD "MostrarConfirmacaoLeitura" boolean NOT NULL DEFAULT TRUE`)
+- [x] `ChatParticipanteInfo`: novo campo `UltimaLeituraEm` (nullable)
+- [x] `ObterConversaQueryHandler`: aplicar regra de reciprocidade (design.md 10.2) ao popular
+      `UltimaLeituraEm` de cada participante — usa `IUsuarioPerfilRepository.ListarPorIdsAsync`
+      (já existia, sem N+1 novo)
+- [x] Novo `DefinirPreferenciaLeituraCommand` + Handler + Validator em
+      `Features/Chat/Commands/DefinirPreferenciaLeitura/` (self-service, sem guard de Admin)
+- [x] `AutenticacaoResponse` e `UsuarioPerfilResponse`: novo campo `MostrarConfirmacaoLeitura`
+- [x] `UsuarioPerfilMappings`/handlers de login (`LoginCommandHandler`, `AutenticarGoogleCommandHandler`):
+      popular o novo campo
+- [x] `AuthController`: endpoint `PATCH /api/auth/preferencia-leitura`
+- [x] Testes: `DefinirPreferenciaLeituraHandlerTests.cs` (4 testes) +
+      `ObterConversaHandlerTests.cs` (4 testes novos de reciprocidade + 4 testes pré-existentes
+      restaurados após o achado do review — ver seção Review abaixo)
+- [x] Gate check: `dotnet build` (0 erros/avisos novos) + `dotnet test` (324 testes, 0 falhas)
+
+### Frontend
+
+- [x] `types/api.ts`: `mostrarConfirmacaoLeitura` em `UsuarioPerfilResponse`/`AutenticacaoResponse`;
+      `ultimaLeituraEm` em `ChatParticipanteInfo`
+- [x] `auth/api.ts`: `atualizarPreferenciaLeitura(mostrar: boolean)` → `PATCH /auth/preferencia-leitura`
+- [x] `AuthContext`: `atualizarPreferenciaLeitura` (mesmo padrão de `atualizarChatPerfil`) +
+      backfill de `mostrarConfirmacaoLeitura` em perfis salvos antes desta extensão
+- [x] Novo componente `PreferenciasDialog.tsx` (`features/chat/components/`), acionado por um botão
+      de engrenagem no `SidebarFooter` do `AppLayout` (ao lado do toggle de tema) — usa `Switch`
+      (shadcn, instalado nesta sessão) para "Mostrar confirmação de leitura"
+- [x] `MensagemItem.tsx`: renderiza `Visto`/`Visto por todos` só na última mensagem própria não
+      deletada da conversa (`MensagemList.tsx` calcula qual é); `useChatSignalR.ts` invalida
+      `conversa-detalhe` no evento `MensagemLida` (antes só invalidava `mensagens`)
+- [x] Gate check: `npm run build` — 0 erros TS (warnings pré-existentes de `node_modules/@microsoft/signalr`)
+
+### Documentação (última etapa)
+
+- [x] Atualizar `spec.md`: marcar AC-26/27 e AC-53 a AC-58 como implementados/verificados na
+      rastreabilidade, com status real (não fabricar "concluído" se algo ficou só por teste automatizado)
+- [x] Atualizar `tasks.md`: checkboxes desta Fase 10
+- [ ] Atualizar `.specs/project/STATE.md` e `.specs/project/ROADMAP.md`
+
+### Gate Checks Finais
+
+- [x] `dotnet build` — 0 erros, 0 avisos novos
+- [x] `dotnet test` — 320 testes, 0 falhas
+- [x] `npm run build` — 0 erros
+- [x] Migration aplicada no Supabase real em 2026-09-08
+- [ ] Verificação manual ao vivo (indicador `Visto`/`Visto por todos`, toggle ligando/desligando
+      com 2 contas reais, reciprocidade nos dois sentidos) — **não feita nesta sessão**
+- [x] Review independente (skill `code-review`, nível high) executado em 2026-09-08 — 3 achados,
+      todos corrigidos:
+      1. **(sério)** `ObterConversaHandlerTests.cs` já existia (4 testes cobrindo `ForbiddenException`/
+         `NotFoundException`, incluindo um teste de segurança do achado #2 da
+         `review-fase9-independente.md`) e foi **sobrescrito sem leitura prévia** pelo `Write` desta
+         sessão — a contagem de testes não mudou (4→4), o que escondeu a perda. Restaurados os 4
+         originais + os 4 novos de reciprocidade no mesmo arquivo (324 testes no total agora).
+      2. `frontend/src/components/ui/switch.tsx` (gerado pelo `npx shadcn add`) importava `cn` do
+         pacote npm `"cn"` em vez de `@/lib/utils`, divergindo da convenção de todos os outros 17
+         componentes em `components/ui/` — corrigido o import e removida a dependência `cn` de
+         `package.json`/lockfile.
+      3. `PreferenciasDialog.tsx` não resetava o estado de erro ao fechar o dialog (CONVENTIONS.md
+         3.6) — um erro de tentativa anterior ficava visível ao reabrir. Corrigido.
+- [ ] Commit(s) — pendente decisão do usuário sobre PR/merge (branch `feature/chat-confirmacao-leitura`
+      criada, mudanças ainda não commitadas)

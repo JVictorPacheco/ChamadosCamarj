@@ -110,9 +110,12 @@ export function useChatSignalR({
       onPararDigitarRef.current?.(conversaId)
     })
 
-    // Leitura confirmada
-    conn.on('MensagemLida', () => {
+    // Leitura confirmada — AC-53/54: precisamos reconsultar a conversa (não só as mensagens),
+    // porque é lá que `UltimaLeituraEm` de cada participante vive (ChatConversaDetalheResponse),
+    // já filtrada pela reciprocidade no backend (design.md #10.2).
+    conn.on('MensagemLida', (conversaId: string) => {
       invalidarTodasMensagens()
+      queryClient.invalidateQueries({ queryKey: ['chat', 'conversa-detalhe', conversaId] })
     })
 
     // Nova conversa criada
