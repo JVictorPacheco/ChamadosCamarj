@@ -13,8 +13,8 @@ Thumbs.db
 *.db
 *.db-shm
 *.db-wal
-.obsidian/workspace.json
-.obsidian/workspace-mobile.json
+**/.obsidian/workspace.json
+**/.obsidian/workspace-mobile.json
 scripts/LeitorEmail/
 emails/
 ler-emails.ps1

@@ -43,10 +43,10 @@ Email e senha via ASP.NET Core Identity PasswordHasher (login, cadastro, redefin
 
 - **Dev e Prod:** PostgreSQL via Supabase (mesma instância) — conexão via Session pooler, senha em `dotnet user-secrets` (dev)
 - **Storage:** Supabase Storage (S3-compatible)
-- **CI/CD:** GitHub Actions para deploy no Azure App Service (`.github/workflows/deploy-azure.yml`)
-- **Frontend hosting:** Cloudflare Pages (grátis, deploy automático no push da main)
-- **Backend hosting:** Azure App Service Free F1 (grátis, .NET 9 nativo)
-- **Containers:** `docker-compose.yml` existe mas não é mais usado para o banco (era PostgreSQL local antes da migração para Supabase)
+- **CI/CD:** nenhum pipeline no repo (workflow do Azure removido em 2026-09-28 — falhava em todo push)
+- **Frontend hosting:** Cloudflare Pages (grátis, build a partir da `main`) — `https://chamados.okurumin.com.br`
+- **Backend hosting:** Cloudflare Tunnel (API exposta em `https://chamados.okurumin.com.br/api`, deploy manual) — ver `docs/DEPLOY-CLOUDFLARE.md`
+- **Containers:** nenhum (Dockerfile/docker-compose removidos em 2026-09-28 — não eram usados desde a migração para Supabase)
 
 ## Ferramentas de dev
 

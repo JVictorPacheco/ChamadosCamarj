@@ -24,8 +24,9 @@ frontend/                           # React 19 + TS + Vite + TailwindCSS v4 + Sh
 │   ├── features/                   # Telas e componentes por domínio (chamados, dashboard, kanban...)
 │   └── ...
 docs/
-├── SPEC.md                         # Spec original (snapshot histórico — ver .specs/ para o estado atual)
-└── obsidian/                       # Notas para Obsidian
+├── DEPLOY-CLOUDFLARE.md            # Guia de deploy (Cloudflare Pages + Tunnel)
+├── GUIA-ORQUESTRACAO-SDD.md        # Passo a passo de orquestração multi-IA
+└── arquivo/                        # Material histórico (spec original, notas Obsidian, handoff antigo) — não é mantido
 .specs/                             # Documentação viva (Spec-Driven Development) — fonte da verdade do estado atual
 ├── project/                        # PROJECT.md, ROADMAP.md, STATE.md
 ├── codebase/                       # ARCHITECTURE.md, STACK.md, STRUCTURE.md, CONVENTIONS.md...
@@ -65,25 +66,11 @@ tests/
 
 | Peça | Onde | URL |
 |------|------|-----|
-| Frontend | Cloudflare Pages (grátis) | `https://chamadoscamarj.pages.dev` |
-| Backend | Azure App Service F1 (grátis) | `https://chamadoscamarj-api.azurewebsites.net` |
+| Frontend | Cloudflare Pages (grátis) | `https://chamados.okurumin.com.br` |
+| Backend | Cloudflare Tunnel (grátis) | `https://chamados.okurumin.com.br/api` |
 | Banco | Supabase (grátis) | `aws-1-us-east-2.pooler.supabase.com` |
 
-### Como colocar em produção (3 passos)
+- **Frontend:** build do Cloudflare Pages a partir da `main`; a URL da API vem de `frontend/.env.production` (`VITE_API_BASE_URL`).
+- **Backend:** API .NET rodando localmente e exposta via Cloudflare Tunnel — deploy manual.
 
-**1. Frontend — já está no ar**
-- Já deployado no Cloudflare Pages (`https://chamadoscamarj.pages.dev`)
-- Deploy automático a cada push na branch `main`
-- Env var no dashboard: `VITE_API_BASE_URL = https://chamadoscamarj-api.azurewebsites.net/api`
-
-**2. Backend — criar Azure App Service (fazer UMA vez)**
-- Acesse https://portal.azure.com com a conta Microsoft CAMARJ
-- Crie um App Service: nome `chamadoscamarj-api`, .NET 9, Linux, plano **Free F1**
-- Adicione as env vars (todas listadas em `docs/DEPLOY-AZURE.md`)
-- Baixe o "Publish Profile" e cole como secret `AZURE_WEBAPP_PUBLISH_PROFILE` em https://github.com/JVictorPacheco/ChamadosCamarj/settings/secrets/actions
-
-**3. Disparar deploy**
-- Push na `main` → GitHub Actions faz build + testa + deploy automaticamente
-- A API fica em `https://chamadoscamarj-api.azurewebsites.net`
-
-> Custo total: **R$ 0,00** (tudo free tier). Guia completo em `docs/DEPLOY-AZURE.md`.
+> Custo total: **R$ 0,00** (tudo free tier). Guia completo em `docs/DEPLOY-CLOUDFLARE.md`.

@@ -17,8 +17,9 @@ ChamadosCamarj/
 │       └── CONCERNS.md              ← Débito técnico e riscos
 │
 ├── docs/
-│   ├── SPEC.md                      ← Spec raiz (referência original)
-│   └── obsidian/                    ← Vault Obsidian com notas do projeto
+│   ├── DEPLOY-CLOUDFLARE.md         ← Guia de deploy (Pages + Tunnel)
+│   ├── GUIA-ORQUESTRACAO-SDD.md     ← Orquestração multi-IA
+│   └── arquivo/                     ← Histórico não mantido (SPEC original, vault Obsidian, HANDOFF)
 │
 ├── src/
 │   ├── ChamadosCamarj.Domain/
@@ -174,13 +175,12 @@ ChamadosCamarj/
 │   │       └── relatorio-mensal/
 │   └── package.json
 │
-├── docker-compose.yml               ← PostgreSQL local (não usado desde a migração para Supabase)
 ├── ChamadosCamarj.sln
 └── README.md
 ```
 
 ## Notas sobre o estado atual
 
-- Fase 5-8 completas, auth email-senha implementada, deploy Azure + Cloudflare Pages configurado.
+- Fase 5-8 completas, auth email-senha implementada, deploy via Cloudflare Pages (frontend) + Cloudflare Tunnel (backend).
 - Fundamentos de engenharia implementados: concorrência otimista, idempotência, auto-triagem, observabilidade.
 - Grupos/Equipes implementados. Categorias expandidas (8). Tema verde menta + padrão claro.
