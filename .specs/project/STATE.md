@@ -1,10 +1,10 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-09-28
+> Atualizado em: 2026-09-29
 
 ---
 
-## Sessão de 2026-09-28 — Limpeza do repositório
+## Sessão de 2026-09-28/29 — Limpeza do repositório
 
 ### Contexto
 Usuário pediu um repositório limpo e sem riscos. Levantamento de arquivos obsoletos feito e
@@ -28,9 +28,31 @@ Branch `chore/limpeza-repositorio`, a partir de `develop`. Nenhum código de `sr
 - **Docs atualizados:** `README.md` (deploy real: Cloudflare Pages + Tunnel), `STACK.md`,
   `STRUCTURE.md`.
 
+### Merge e verificação (2026-09-29)
+- **Mergeado pelo usuário:** PR #35 (`chore/limpeza-repositorio` → `develop`) e PR #36
+  (`develop` → `main`). `main` == `develop` após o merge.
+- **Código não impactado:** `src/`, `frontend/`, `tests/` e `ChamadosCamarj.sln` com hash de tree
+  idêntico antes (`7691ba5`) e depois do merge; 500 arquivos `.cs/.ts/.tsx/.csproj` antes e depois.
+  Na `main` atual: `dotnet build` 0 erros (6 avisos pré-existentes), `dotnet test` 324/324,
+  `npm run build` ok, `npm run lint` só avisos pré-existentes. **API não foi subida ao vivo** —
+  decisão consciente: código idêntico e a API aplica migrations no banco real ao iniciar.
+- Nenhuma execução nova do GitHub Actions após o merge (workflow do Azure removido).
+
+### Branches (2026-09-29)
+- **Apagadas no GitHub (24):** todas exceto `main` e `develop`. 22 já contidas na `main`;
+  `feature/fase-2.5-bloco2-filtros-query` tinha só 1 commit de docs de junho (superado pelo STATE);
+  `feature/fase-5-kanban-dashboard` tinha um experimento de SQLite em dev — **contraria a decisão
+  vigente "dev e prod no mesmo Supabase"**, nunca virou PR, não reaproveitar.
+- **Apagadas localmente:** `chore/limpeza-repositorio`, `feature/chat-confirmacao-leitura`,
+  `feature/chat-corporativo-hardening`, `feature/fix-review-dashboard-kanban` (commits equivalentes
+  já na `main` via release de 2026-08-10).
+- Commits fora da `main` preservados em tags **só locais** (máquina do usuário, não enviadas ao
+  GitHub): `arquivo/fase-2.5-bloco2-filtros-query`, `arquivo/fase-5-kanban-dashboard-sqlite`,
+  `arquivo/fix-review-dashboard-kanban`.
+
 ### Pendências
-- Arquivos locais ignorados `backend-detached*.log` — apagar manualmente.
-- Apagar branches remotas já mergeadas (23) e as 2 abandonadas — aguardando decisão do usuário.
+- Arquivos locais ignorados `backend-detached*.log` — usuário apaga manualmente (não versionados,
+  exclusão irreversível bloqueada para a IA).
 - Favicon (`frontend/public/favicon.png`) é cópia de 218 KB do logo — gerar versão pequena (fora do
   escopo da limpeza, mexe no frontend).
 - Migrations divididas em `Infrastructure/Migrations/` e `Infrastructure/Data/Migrations/` — não
