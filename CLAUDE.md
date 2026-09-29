@@ -39,6 +39,7 @@
 | Specs de cada feature (spec/design/tasks/review) | `.specs/features/{nome-feature}/` |
 | Template de nova feature | `.specs/features/FEATURE-TEMPLATE/` |
 | Passo a passo de orquestração multi-IA | `docs/GUIA-ORQUESTRACAO-SDD.md` |
+| Documentação funcional (negócio, regras, ADRs) — atualizar ao concluir feature | `docs/obsidian/` (comece por `Home.md`) |
 | Git flow (branches, quem parte de onde) | `AGENTS.md` |
 
 ## 3. Regra de ouro

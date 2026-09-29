@@ -4,6 +4,36 @@
 
 ---
 
+## Sessão de 2026-09-29 — Documentação funcional (Obsidian) reescrita
+
+### Contexto
+O vault Obsidian estava parado em 2026-07-21 (sem Chat, Grupos, SLA, deploy real), duplicava o
+`.specs/` e tinha nomes de arquivo com emoji. Decisões do usuário: público misto com **ênfase em
+negócio**; nomes **sem emoji**; **nenhum status/andamento** no vault (fica só no `.specs/`).
+
+### O que foi feito
+- Vault volta de `docs/arquivo/obsidian/` para **`docs/obsidian/`**, reescrito a partir do código
+  e das specs atuais (não das notas antigas). Estrutura: `Home` + `00 Visão`, `10 Processos`,
+  `20 Funcionalidades`, `30 Arquitetura`, `40 Decisões` (ADR-001 a 006), `90 Modelos`,
+  `99 Arquivo`. 33 notas, todas com propriedades (`tipo`, `status`, `atualizado`, `spec`),
+  diagramas em Mermaid, 0 links quebrados.
+- Notas antigas substituídas foram removidas (continuam no histórico do git); Azure AD, Login
+  Google e Leitor de E-mails foram para `99 Arquivo` marcadas como obsoletas.
+- **Constitution regra 6** adicionada: feature só está pronta com a nota do Obsidian atualizada.
+- `README.md`, `STRUCTURE.md` e `CLAUDE.md` apontam para o vault.
+- Nenhum código alterado.
+
+### Pontos levantados durante a escrita (não corrigidos — decisão do usuário)
+- **SLA em horas corridas**, não úteis (`Chamado.CalcularDataLimite`) — documentado como ponto de
+  atenção para o negócio em `20 Funcionalidades/SLA.md`.
+- **Logout por inatividade não está ativo:** o hook `useInactivityLogout` existe em
+  `frontend/src/hooks/` mas não é usado em nenhum componente (a decisão de 2026-07-18 previa 20 min).
+- **Visibilidade de Solicitante com grupo:** em `ChamadoRepository` (filtro por `grupoId`), um
+  usuário que não é Atendente mas tem grupo parece enxergar também chamados atribuídos a colegas
+  do grupo — diverge da regra documentada ("Solicitante vê só os seus"). Precisa de verificação.
+
+---
+
 ## Sessão de 2026-09-28/29 — Limpeza do repositório
 
 ### Contexto
@@ -656,7 +686,9 @@ manual ainda.
 
 5. **Não quebrar nada fora do escopo da feature atual — e se for preciso tocar em código compartilhado com outra feature, avisar ANTES de fazer, não só relatar depois.** Antes de editar um arquivo que não pertence exclusivamente à feature em andamento (hook/contexto global, controller/handler de outra feature, repositório usado por múltiplos domínios, layout compartilhado), identificar quem mais depende dele e checar explicitamente se a mudança preserva o comportamento existente pra quem não usa a feature atual (idealmente com um teste ou verificação cobrindo esse caso, não só "parece que não quebra"). Ao encerrar a sessão, fazer uma análise de regressão explícita nesses pontos de toque cross-feature antes de dizer "nada quebrou" — não é o mesmo que rodar a suíte de testes e assumir que cobre tudo. (Gap 5, caso real: sessão de chat-corporativo mexeu em `AuthContext`/`useSignalR`/`AppLayout` — globais — e em `UsuariosPage`/`UsuarioFormDialog`/`AtualizarUsuarioPerfilCommandHandler` — feature de Usuários, não de Chat — sem uma checagem de regressão dedicada até o usuário pedir explicitamente no fim da sessão.)
 
-**Como aplicar na prática:** ao iniciar uma feature nova ou uma extensão de feature existente neste projeto, revisar esta seção antes de seguir pro Design/Execute do skill `tlc-spec-driven`. Se notar que uma dessas 5 regras está prestes a ser quebrada, parar e avisar o usuário explicitamente, em vez de seguir e só documentar depois.
+6. **Feature só está pronta quando a documentação funcional (Obsidian) reflete o novo comportamento.** Ao concluir uma feature ou mudar uma regra de negócio, atualizar a nota correspondente em `docs/obsidian/` (normalmente em `20 Funcionalidades/`, e `Perfis e Permissões`/`Ciclo de Vida do Chamado` se a mudança tocar permissões ou status), com a propriedade `atualizado` na data do dia. Decisão relevante vira um ADR novo em `40 Decisões/`. O vault descreve **o sistema como ele é** — andamento, sessões e pendências continuam só aqui no `.specs/`. (Gap 6, caso real: o vault parou em 2026-07-21 e ficou mais de 2 meses sem registrar Chat, Grupos, SLA nem o deploy real — reescrito em 2026-09-29.)
+
+**Como aplicar na prática:** ao iniciar uma feature nova ou uma extensão de feature existente neste projeto, revisar esta seção antes de seguir pro Design/Execute do skill `tlc-spec-driven`. Se notar que uma dessas 6 regras está prestes a ser quebrada, parar e avisar o usuário explicitamente, em vez de seguir e só documentar depois.
 
 ---
 

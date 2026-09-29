@@ -26,7 +26,8 @@ frontend/                           # React 19 + TS + Vite + TailwindCSS v4 + Sh
 docs/
 ├── DEPLOY-CLOUDFLARE.md            # Guia de deploy (Cloudflare Pages + Tunnel)
 ├── GUIA-ORQUESTRACAO-SDD.md        # Passo a passo de orquestração multi-IA
-└── arquivo/                        # Material histórico (spec original, notas Obsidian, handoff antigo) — não é mantido
+├── obsidian/                       # Documentação funcional (vault Obsidian) — o sistema como ele é, foco em negócio
+└── arquivo/                        # Material histórico (spec original, handoff antigo) — não é mantido
 .specs/                             # Documentação viva (Spec-Driven Development) — fonte da verdade do estado atual
 ├── project/                        # PROJECT.md, ROADMAP.md, STATE.md
 ├── codebase/                       # ARCHITECTURE.md, STACK.md, STRUCTURE.md, CONVENTIONS.md...

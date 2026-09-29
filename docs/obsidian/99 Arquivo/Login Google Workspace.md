@@ -1,3 +1,13 @@
+---
+tipo: arquivo
+status: obsoleta
+atualizado: 2026-09-29
+tags: [arquivo]
+---
+
+> [!warning] Nota histórica — não reflete o sistema atual
+> Login Google implementado mas desativado desde 2026-07-24. Veja [[ADR-002 Login por e-mail e senha]] e [[Acesso e Login]].
+
 # 🔐 Google Workspace — Autenticação Corporativa
 
 > ⚠️ **DORMENTE (2026-07-24):** O login Google OAuth está implementado mas DORMENTE — a TI informou que o Client ID está fora do plano da CAMARJ. O login ativo é por email+senha (ver spec em `.specs/features/auth-email-senha/spec.md`).
@@ -65,6 +75,6 @@ Contas são gerenciadas **pelo Admin** via tela `Admin > Usuários` (F5a) — n�
 
 Falta só o **Client ID real da TI** — configurar via `dotnet user-secrets set "Auth:GoogleClientId" "<valor>"` (backend) e `frontend/.env` com `VITE_GOOGLE_CLIENT_ID=<valor>`. Documento de requisitos não-técnico já entregue à TI em `.specs/features/fase-6-admin-log/oauth-requisitos-ti.md`.
 
-## Relação com [[👥 Perfis de Usuário]]
+## Relação com [[Perfis e Permissões]]
 
 Perfil Admin/Atendente/Solicitante continua sendo o mesmo — só a fonte de autenticação mudou (de `localStorage`/e-mail digitado para token Google real).
