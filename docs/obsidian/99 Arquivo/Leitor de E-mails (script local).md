@@ -1,3 +1,13 @@
+---
+tipo: arquivo
+status: obsoleta
+atualizado: 2026-09-29
+tags: [arquivo]
+---
+
+> [!warning] Nota histórica — não reflete o sistema atual
+> Script pessoal de leitura de e-mails, fora do sistema (roda só na máquina local, não versionado). Veja [[Abertura por E-mail]] para a funcionalidade planejada no sistema.
+
 # 📧 Leitor e Resumidor de Emails
 
 > Setup: 2026-07-27 | Ferramenta: PowerShell + .NET + MailKit
