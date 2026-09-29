@@ -1,6 +1,40 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-09-08
+> Atualizado em: 2026-09-28
+
+---
+
+## Sessão de 2026-09-28 — Limpeza do repositório
+
+### Contexto
+Usuário pediu um repositório limpo e sem riscos. Levantamento de arquivos obsoletos feito e
+decisões confirmadas com o usuário: Azure abandonado, Docker não usado, OpenCode **mantido**
+(usuário alterna entre Claude Code e OpenCode), docs históricos movidos (não apagados).
+Branch `chore/limpeza-repositorio`, a partir de `develop`. Nenhum código de `src/`, `frontend/` ou
+`tests/` foi alterado.
+
+### O que foi feito
+- **Removidos:** guias/scripts da Fase 6 (`SETUP-FASE6.md`, `STARTUP-FASE6.md`, `get-fase6.*`,
+  `start-fase6.*`, `run-tests-fase6.ps1`, `.specs/FASE-6-TESTES.md`,
+  `.specs/FRONTEND-FASE-6-TESTES.md`), `run.sh`, `docs/exemplos-teste-fixes.md`; deploy Azure
+  (`.github/workflows/deploy-azure.yml` — falhava em todo push na `main` desde 01/08 —,
+  `docs/DEPLOY-AZURE.md`); Docker (`Dockerfile`, `docker-compose.yml` com senha fixa,
+  `DOCKER-SETUP.md`); vault Obsidian vazio `docs/.obsidian/`.
+- **Movidos para `docs/arquivo/`:** `docs/SPEC.md`, `docs/obsidian/`, `.specs/HANDOFF.md`,
+  `docs/EXPLICACAO-PARA-ESPOSA.md`, `LEARNING-SDD.md`. Menções a `.specs/HANDOFF.md` nas sessões antigas
+  abaixo referem-se hoje a `docs/arquivo/HANDOFF.md` (texto histórico não reescrito).
+- **`.gitignore`:** regra do `workspace.json` do Obsidian não valia em subpastas (era ancorada na
+  raiz) — corrigida para `**/.obsidian/workspace.json`; arquivo removido do índice.
+- **Docs atualizados:** `README.md` (deploy real: Cloudflare Pages + Tunnel), `STACK.md`,
+  `STRUCTURE.md`.
+
+### Pendências
+- Arquivos locais ignorados `backend-detached*.log` — apagar manualmente.
+- Apagar branches remotas já mergeadas (23) e as 2 abandonadas — aguardando decisão do usuário.
+- Favicon (`frontend/public/favicon.png`) é cópia de 218 KB do logo — gerar versão pequena (fora do
+  escopo da limpeza, mexe no frontend).
+- Migrations divididas em `Infrastructure/Migrations/` e `Infrastructure/Data/Migrations/` — não
+  mexer; padronizar numa pasta só nas próximas.
 
 ---
 
