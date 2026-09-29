@@ -47,3 +47,28 @@
 Nunca comece a implementar sem ler `STATE.md` primeiro. Nunca encerre uma sessão sem atualizar
 `STATE.md` — isso inclui marcar com precisão o que **não** foi feito (testes pulados, verificação
 manual pendente etc.), não só o que foi. Um `STATE.md` desatualizado é pior do que nenhum.
+
+## 4. Automação SDD (skills globais do Claude Code)
+
+As skills `/sdd` (orquestrador) e `/sdd-specify`, `/sdd-plan`, `/sdd-tasks`, `/sdd-implement`,
+`/sdd-review`, `/sdd-close` (fases) ficam em `~/.claude/skills/` e são genéricas. Este bloco diz a
+elas onde estão as coisas neste projeto — as regras continuam na Constitution do `STATE.md`.
+
+```yaml
+# sdd-config
+features_dir: .specs/features
+feature_naming: slug
+files: { spec: spec.md, plan: design.md, tasks: tasks.md, review: review.md }
+templates_dir: .specs/features/FEATURE-TEMPLATE
+constitution: .specs/project/STATE.md#Regras de Processo (Constitution)
+state: .specs/project/STATE.md
+roadmap: .specs/project/ROADMAP.md
+context: [.specs/codebase/CONVENTIONS.md, .specs/codebase/ARCHITECTURE.md, AGENTS.md]
+functional_docs: docs/obsidian
+branch: { base: develop, prefix: feature/ }
+gates:
+  - dotnet build
+  - dotnet test tests/ChamadosCamarj.UnitTests/
+  - npm --prefix frontend run build
+pr: create
+```
