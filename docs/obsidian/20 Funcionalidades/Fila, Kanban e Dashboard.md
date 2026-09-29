@@ -1,0 +1,39 @@
+---
+tipo: funcionalidade
+status: vigente
+atualizado: 2026-09-29
+spec: .specs/features/dashboard-kanban-navegacao/spec.md
+tags: [funcionalidade, gestão]
+---
+
+# Fila, Kanban e Dashboard
+
+Três telas de gestão do dia a dia, exclusivas de **Atendentes e Admin**.
+
+## Fila de Atendimento
+**Para quê:** saber o que ainda não tem dono.
+- Lista os chamados **Abertos**, ordenados por **prioridade**.
+- É daqui que o atendente escolhe o que **assumir**.
+
+## Kanban
+**Para quê:** visão do fluxo inteiro num quadro.
+- Uma coluna por status; cada cartão é um chamado.
+- **Arrastar** o cartão entre colunas muda o status — respeitando as regras do
+  [[Ciclo de Vida do Chamado]].
+- **Clicar** no cartão abre o detalhe.
+
+## Dashboard
+**Para quê:** a "foto do momento" da operação.
+- Indicadores de hoje (ex.: resolvidos hoje, tempo médio de resolução).
+- **Distribuição por situação** — quantos chamados estão em cada status agora.
+- Chamados por **prioridade** e por **categoria**.
+- Cumprimento do **SLA** no mês. Ver [[SLA]].
+- **Tudo é clicável:** clicar numa fatia ou barra abre a lista de chamados já filtrada por aquele
+  recorte.
+
+> **Dashboard × Relatório Mensal:** o dashboard mostra o **agora** e muda a todo momento; o
+> [[Relatório Mensal]] mostra um **mês fechado** e serve para prestação de contas.
+
+## Regras
+- Solicitantes não acessam estas telas — o bloqueio é real, não só visual.
+- As três telas se atualizam em tempo real.

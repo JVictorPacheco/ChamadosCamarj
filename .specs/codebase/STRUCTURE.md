@@ -19,7 +19,8 @@ ChamadosCamarj/
 ├── docs/
 │   ├── DEPLOY-CLOUDFLARE.md         ← Guia de deploy (Pages + Tunnel)
 │   ├── GUIA-ORQUESTRACAO-SDD.md     ← Orquestração multi-IA
-│   └── arquivo/                     ← Histórico não mantido (SPEC original, vault Obsidian, HANDOFF)
+│   ├── obsidian/                    ← Documentação funcional (vault Obsidian, foco em negócio) — Constitution regra 6
+│   └── arquivo/                     ← Histórico não mantido (SPEC original, HANDOFF)
 │
 ├── src/
 │   ├── ChamadosCamarj.Domain/

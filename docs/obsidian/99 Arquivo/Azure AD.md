@@ -1,6 +1,16 @@
+---
+tipo: arquivo
+status: obsoleta
+atualizado: 2026-09-29
+tags: [arquivo]
+---
+
+> [!warning] Nota histórica — não reflete o sistema atual
+> Plano original de login, descartado em 2026-06-25. Veja [[ADR-001 Google Workspace, não Azure AD]].
+
 # 🔐 Azure AD — Autenticação Corporativa
 
-> ⚠️ **DECISÃO OBSOLETA — corrigida em 2026-06-25.** A Camarj usa **Google Workspace** (Gmail corporativo), não Microsoft/Azure AD. Esta nota é mantida como histórico da decisão original; veja [[🔐 Google Workspace]] para a decisão vigente. Ver também [[💬 Decisões]] (tabela "Decisões Corrigidas").
+> ⚠️ **DECISÃO OBSOLETA — corrigida em 2026-06-25.** A Camarj usa **Google Workspace** (Gmail corporativo), não Microsoft/Azure AD. Esta nota é mantida como histórico da decisão original; veja [[Login Google Workspace]] para a decisão vigente. Ver também [[ADR-001 Google Workspace, não Azure AD]].
 
 ## Por quê Azure AD? *(raciocínio original, hoje inválido)*
 
