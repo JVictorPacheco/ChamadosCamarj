@@ -47,9 +47,9 @@ Cada tarefa: `[ ]` pendente · `[x]` feita · *(ACs)* que atende · **Pronto qua
 
 ## Frontend
 
-- [ ] **T14.** `ChamadoDetailPage`: remove o bloqueio local (linha ~299); botão Cancelar para Solicitante só se ele abriu; 404 mostra "Chamado não encontrado" *(AC-04, AC-06)*
+- [x] **T14.** `ChamadoDetailPage`: remove o bloqueio local (linha ~299); botão Cancelar para Solicitante só se ele abriu; 404 mostra "Chamado não encontrado" *(AC-04, AC-06)*
       **Pronto quando:** `npm run build` sem erros.
-- [ ] **T15.** `ChamadosListPage` e `ArquivoChamadosPage` param de mandar `solicitanteEmail`; `AbrirChamadoPage` para de mandar nome e e-mail; `useSignalR`/`AppLayout`/`signalr-events.ts` ajustados aos payloads novos *(AC-02, AC-12, AC-19)*
+- [x] **T15.** `ChamadosListPage` e `ArquivoChamadosPage` param de mandar `solicitanteEmail`; `AbrirChamadoPage` para de mandar nome e e-mail; `useSignalR`/`AppLayout`/`signalr-events.ts` ajustados aos payloads novos *(AC-02, AC-12, AC-19)*
       **Pronto quando:** `npm run build` sem erros.
 
 ## Validação
