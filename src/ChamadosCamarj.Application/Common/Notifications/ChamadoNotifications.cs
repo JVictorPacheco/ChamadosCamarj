@@ -6,7 +6,7 @@ public record ChamadoCriadoNotification(Guid ChamadoId, string Titulo, StatusCha
 
 public record StatusAlteradoNotification(Guid ChamadoId, string NovoStatus, DateTime DataAtualizacao) : INotification;
 
-public record ComentarioAdicionadoNotification(Guid ChamadoId, string Autor, string Conteudo) : INotification;
+public record ComentarioAdicionadoNotification(Guid ChamadoId, string Autor, string Conteudo, bool Interno = false) : INotification;
 
 public record MetricasAtualizadasNotification : INotification;
 

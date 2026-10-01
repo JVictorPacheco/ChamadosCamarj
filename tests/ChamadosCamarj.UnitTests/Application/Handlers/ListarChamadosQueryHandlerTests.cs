@@ -95,6 +95,23 @@ public class ListarChamadosQueryHandlerTests
         result.Items.Should().ContainSingle(c => c.SolicitanteEmail == "ana.colaboradora@camarj.com.br");
     }
 
+    [Theory]
+    [InlineData("Solicitante", 1)]
+    [InlineData("Atendente", 2)]
+    public async Task Handle_QuantidadeDeComentarios_SoContaInternosParaQuemPodeVelos(string perfil, int esperado)
+    {
+        // spec correcoes-acesso-chamados AC-02 (review R-04: a listagem também precisa de teste)
+        _currentUserMock.SetupGet(c => c.Perfil).Returns(perfil);
+        var chamado = new Chamado("Título", "Descrição", "Ana", "ana.colaboradora@camarj.com.br", Guid.NewGuid());
+        chamado.Comentarios.Add(new Comentario(chamado.Id, "Ana", "público"));
+        chamado.Comentarios.Add(new Comentario(chamado.Id, "Atendente", "interno", TipoComentario.Interno));
+        SetupListar(itens: [chamado]);
+
+        var result = await _handler.Handle(new ListarChamadosQuery(), CancellationToken.None);
+
+        result.Items.Single().QuantidadeComentarios.Should().Be(esperado);
+    }
+
     [Fact]
     public async Task Handle_ComFinalizadosTrue_DevePassarOsTresStatusFinalizadosParaORepositorio()
     {

@@ -69,6 +69,6 @@ public class AbrirChamadoCommandHandler : IRequestHandler<AbrirChamadoCommand, C
             StatusChamadoNotification.Aberto
         ), cancellationToken);
 
-        return chamado.ToResponse();
+        return chamado.ToResponse(incluirInternos: false); // chamado recém-aberto: não há comentários
     }
 }

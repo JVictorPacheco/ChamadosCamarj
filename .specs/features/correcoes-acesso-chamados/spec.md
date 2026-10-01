@@ -1,6 +1,6 @@
 # Correções de Acesso a Chamados — Especificação
 
-> **SDD:** implementando
+> **SDD:** revisada
 > **Status:** `Em andamento`
 > **Branch:** `feature/correcoes-acesso-chamados`
 > **Criada em:** 2026-10-01
@@ -51,8 +51,10 @@ ver (ADR-007).
 ## 4. Critérios de Aceitação
 
 - **AC-01:** Dado um Atendente ou Admin que pode ver o chamado, quando ele edita título e
-  descrição sem ninguém ter alterado o chamado antes, então a edição é salva. O conflito (409)
-  continua acontecendo quando outra pessoa alterou o chamado no meio do caminho.
+  descrição, então a edição é salva. A edição usa o mesmo controle de concorrência das demais ações
+  sobre chamado. *(Texto corrigido após o review, R-03: a versão anterior prometia um 409 em edições
+  simultâneas que nenhuma ação do sistema garante hoje, porque o cliente não envia a versão que leu.
+  Fica registrado como pendência geral.)*
 - **AC-02:** Dado um Solicitante, quando ele lista chamados ou abre um chamado, então a quantidade
   de comentários informada conta **só os públicos**. Atendente e Admin continuam recebendo o total.
 - **AC-03:** Dado um alerta de SLA (atenção ou atrasado), quando ele dispara, então só **Atendentes
@@ -61,6 +63,9 @@ ver (ADR-007).
   própria num grupo de avisos, então não consegue: os grupos são definidos só pelo servidor, a
   partir do perfil do usuário logado.
 - **AC-05:** `dotnet test` e `npm run build` passam sem falhas.
+- **AC-06:** Dado um comentário **interno**, quando ele é criado, então o aviso em tempo real vai
+  só para Atendentes e Admins. Comentário público continua avisando todos. *(Incluído após o
+  review, R-01: o aviso de um comentário interno revelava ao Solicitante que ele existia.)*
 
 ---
 
@@ -68,7 +73,12 @@ ver (ADR-007).
 
 | Critério | Verificação | Resultado |
 |----------|-------------|-----------|
-| AC-01 a AC-05 | a definir no `tasks.md` | ⬜ Pendente |
+| AC-01 | `AtualizarChamadoHandlerTests` + ao vivo (PUT por Atendente → 204, título salvo; Solicitante → 403) | ✅ |
+| AC-02 | `ObterChamadoPorIdHandlerTests`, `ListarChamadosQueryHandlerTests` + ao vivo (detalhe e lista: Solicitante 1, Atendente 2) | ✅ |
+| AC-03 | `ChamadosHubTests` (grupo `Atendimento` só para Atendente/Admin) + código do `SlaMonitorService` | ✅ (o envio do alerta em si não tem teste automatizado) |
+| AC-04 | `ChamadosHubTests` (hub sem métodos para o cliente entrar em grupo) + ao vivo (`EntrarGrupo` recusado) | ✅ |
+| AC-05 | 387/387 · `npm run build` ok | ✅ |
+| AC-06 | `ChamadoSignalRNotificationHandlersTests` | ✅ |
 
 ---
 

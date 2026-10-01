@@ -8,8 +8,9 @@ namespace ChamadosCamarj.Application.Mappings;
 public static class ChamadoMappings
 {
     /// <param name="incluirInternos">false para Solicitante: a contagem de comentários não pode
-    /// revelar comentários internos (spec correcoes-acesso-chamados AC-02).</param>
-    public static ChamadoResponse ToResponse(this Chamado chamado, bool incluirInternos = true) =>
+    /// revelar comentários internos (spec correcoes-acesso-chamados AC-02). Sem valor-padrão de
+    /// propósito: quem mapeia um chamado precisa decidir conscientemente.</param>
+    public static ChamadoResponse ToResponse(this Chamado chamado, bool incluirInternos) =>
         new(
             chamado.Id,
             chamado.Numero,
