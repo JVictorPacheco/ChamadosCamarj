@@ -55,6 +55,7 @@ public class ListarChamadosQueryHandler : IRequestHandler<ListarChamadosQuery, P
             slaStatus = slaParsed;
 
         var acesso = _currentUser.ObterContextoAcesso();
+        var incluirInternos = acesso.Perfil != Domain.Enums.Perfil.Solicitante;
 
         // Se há filtro SLA (calculado em memória), carregamos todos sem paginação e filtramos
         if (slaStatus.HasValue)
@@ -69,7 +70,7 @@ public class ListarChamadosQueryHandler : IRequestHandler<ListarChamadosQuery, P
             var paginados = filtrados.Skip((request.Pagina - 1) * request.TamanhoPagina).Take(request.TamanhoPagina).ToList();
 
             return new PagedResult<ChamadoResponse>(
-                paginados.Select(c => c.ToResponse()).ToList(),
+                paginados.Select(c => c.ToResponse(incluirInternos)).ToList(),
                 totalFiltrado, request.Pagina, request.TamanhoPagina);
         }
 
@@ -80,7 +81,7 @@ public class ListarChamadosQueryHandler : IRequestHandler<ListarChamadosQuery, P
             motivoEncerramento, cancellationToken);
 
         return new PagedResult<ChamadoResponse>(
-            items.Select(c => c.ToResponse()).ToList(),
+            items.Select(c => c.ToResponse(incluirInternos)).ToList(),
             total, request.Pagina, request.TamanhoPagina);
     }
 }

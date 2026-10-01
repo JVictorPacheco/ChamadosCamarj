@@ -58,7 +58,7 @@ public class SlaMonitorService : BackgroundService
                 {
                     _notificados[c.Id] = SlaStatus.Atencao;
                     _logger.LogInformation("SLA atenção: CAM-{Numero}", c.Numero);
-                    await _hubContext.Clients.All.SendAsync("SlaAtencao", new
+                    await _hubContext.Clients.Group(ChamadosHub.GrupoAtendimento).SendAsync("SlaAtencao", new
                     {
                         chamadoId = c.Id.ToString(),
                         numero = c.Numero,
@@ -69,7 +69,7 @@ public class SlaMonitorService : BackgroundService
                 {
                     _notificados[c.Id] = SlaStatus.Atrasado;
                     _logger.LogInformation("SLA atrasado: CAM-{Numero}", c.Numero);
-                    await _hubContext.Clients.All.SendAsync("SlaAtrasado", new
+                    await _hubContext.Clients.Group(ChamadosHub.GrupoAtendimento).SendAsync("SlaAtrasado", new
                     {
                         chamadoId = c.Id.ToString(),
                         numero = c.Numero,
