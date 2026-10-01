@@ -73,7 +73,12 @@ tasks → implement → review independente (sub-agente) → fechamento. Artefat
   - Criados 6 contas `teste.autz.*`, 1 grupo e 5 chamados `[TESTE-AUTZ]`, **todos apagados no
     final** (contagem final 0).
   - Resultado: **30/31 OK.** A falha não é desta feature (ver Pendências).
-  - Efeito colateral irreversível: a sequência `ChamadosNumeroSeq` avançou 5 números.
+  - Efeito colateral irreversível: a sequência `ChamadosNumeroSeq` avançou 9 números no total.
+- **Teste na tela** (Playwright, API e frontend locais, mesmos dados de teste, apagados no final):
+  - Solicitante do grupo: "Meus Chamados" mostra só o dele e o do colega. O chamado do colega abre
+    sem "não pertence" e sem botão Cancelar; no próprio, o Cancelar aparece; chamado alheio mostra
+    "Chamado não encontrado".
+  - Atendente sem grupo: o Kanban mostra só os chamados do escopo dele (mais a fila real).
 
 ### Pendências
 - **Bug anterior à feature:** `PUT /api/chamados/{id}` (editar título e descrição) sempre devolve
@@ -85,7 +90,7 @@ tasks → implement → review independente (sub-agente) → fechamento. Artefat
 - **R-04** (anterior à feature): os alertas de SLA (`Clients.All`) vão para todos os usuários.
   Agora levam só o número do chamado, sem título.
 - O `ComentarioId` do anexo não é validado contra o chamado (questão de integridade, não de acesso).
-- Não verificado ao vivo: AC-19 (SignalR) e a tela do AC-04 (só a API foi testada).
+- Não verificado ao vivo: AC-19 (SignalR).
 - O projeto de testes tem conflito de versão do EF (9.0.1 × 9.0.19) quando referencia tipos do EF
   diretamente; por isso o filtro SQL não tem teste automatizado. Considerar alinhar as versões.
 - PR da feature: aguardando decisão do usuário (checkpoint 2 do `/sdd`).

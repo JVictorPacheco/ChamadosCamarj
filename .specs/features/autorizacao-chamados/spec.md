@@ -177,11 +177,11 @@ Ao vivo (T16, 2026-10-01): API local da branch contra o Supabase real, com 6 con
 | AC-01 | Lista do Solicitante sem grupo = só os seus; pedir o e-mail de outro devolve vazio | ✅ ao vivo + unitário |
 | AC-02 | Lista do Solicitante do grupo = os seus + o aberto pelo colega | ✅ ao vivo |
 | AC-03 | Detalhe, histórico, anexos e comentários de chamado alheio → 404 | ✅ ao vivo + unitário |
-| AC-04 | Solicitante do grupo abre o chamado do colega (200) | ✅ ao vivo (API); tela não verificada visualmente |
+| AC-04 | Solicitante do grupo abre o chamado do colega (200) | ✅ ao vivo (API) + **tela** (Playwright): abre o chamado do colega, sem "não pertence", com comentar/anexar e **sem** Cancelar; no próprio, Cancelar aparece |
 | AC-05 | Solicitante tenta resolver → 403 | ✅ ao vivo + unitário |
 | AC-06 | Não cancela o do colega (403); cancela o próprio (204) | ✅ ao vivo + unitário |
 | AC-07 | Comenta no chamado do grupo (201) | ✅ ao vivo + unitário |
-| AC-08 | Listas dos dois Atendentes e 404 fora do escopo | ✅ ao vivo |
+| AC-08 | Listas dos dois Atendentes e 404 fora do escopo | ✅ ao vivo + **tela**: Kanban do Atendente sem grupo mostra C1/C2/C3 e não C4 |
 | AC-09 | Atendente não reatribui nem muda prioridade (403) | ✅ ao vivo + unitário |
 | AC-10 | Solicitante não cria comentário interno (403) | ✅ ao vivo + unitário |
 | AC-11 | Admin com grupo vê tudo | ✅ ao vivo + unitário |
