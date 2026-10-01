@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,6 +11,7 @@ import { useAuth } from './AuthContext'
 import { useTheme } from '@/hooks/useTheme'
 import { ApiError } from '@/lib/api'
 import { esqueciSenha } from './api'
+import { limparLogoutPorInatividade, saiuPorInatividade as lerSaiuPorInatividade } from './logoutInatividade'
 import logoCamarj from '../assets/logo-camarj.png'
 
 export function LoginPage() {
@@ -19,6 +20,8 @@ export function LoginPage() {
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
   const [erro, setErro] = useState<string | null>(null)
+  const [saiuPorInatividade] = useState(lerSaiuPorInatividade)
+  useEffect(limparLogoutPorInatividade, [])
   const [pendente, setPendente] = useState(false)
   const [esqueciSenhaAberto, setEsqueciSenhaAberto] = useState(false)
   const [emailRecuperacao, setEmailRecuperacao] = useState('')
@@ -99,6 +102,12 @@ export function LoginPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit} className="flex flex-col gap-4">
+            {saiuPorInatividade && (
+              <Alert>
+                <AlertDescription>Sua sessão foi encerrada por inatividade. Entre novamente.</AlertDescription>
+              </Alert>
+            )}
+
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="email">E-mail</Label>
               <Input
