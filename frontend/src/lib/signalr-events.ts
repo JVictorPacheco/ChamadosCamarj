@@ -1,6 +1,5 @@
 export interface ChamadoCriadoPayload {
   chamadoId: string
-  titulo: string
   status: string
 }
 
@@ -12,14 +11,11 @@ export interface StatusAlteradoPayload {
 
 export interface ComentarioAdicionadoPayload {
   chamadoId: string
-  autor: string
-  conteudo: string
 }
 
 export interface SlaAlertaPayload {
   chamadoId: string
   numero: number
-  titulo: string
   mensagem: string
 }
 

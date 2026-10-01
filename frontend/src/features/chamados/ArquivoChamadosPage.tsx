@@ -22,9 +22,9 @@ export function ArquivoChamadosPage() {
     ...filtros,
     pagina,
     finalizados: true,
-    ...(isAdmin ? {} : isAtendente
-      ? { responsavelId: perfil?.id }
-      : { solicitanteEmail: perfil?.email }),
+    // Solicitante não manda filtro: o servidor já devolve só o que ele pode ver (os seus + os do
+    // grupo). Mandar solicitanteEmail esconderia os chamados do grupo (spec autorizacao-chamados AC-02).
+    ...(isAtendente && !isAdmin ? { responsavelId: perfil?.id } : {}),
   }
 
   const { data, isPending, isError } = useChamados(filtrosQuery)

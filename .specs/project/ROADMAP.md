@@ -1,6 +1,6 @@
 # Roadmap — ChamadosCamarj
 
-> Última atualização: 2026-09-08
+> Última atualização: 2026-10-01
 
 ## ✅ Fase 0 — Setup
 
@@ -304,4 +304,15 @@
 - [x] **2ª review independente + fechamento de todos os 10 achados (2026-09-01)** — 2 bloqueantes (2º caminho de escrita de `ChatPerfil` divergindo de novo; fan-out alcançando usuários revogados) e 8 achados 🟡/🟢, todos corrigidos: guarda `ChatPerfilGuard.ExigirAcesso` nas 4 queries de leitura do chat (revogar acesso agora bloqueia leitura via API, não só a sidebar), endpoint `GET /auth/me` fechando o AC-48 pra quem foi revogado offline, cobertura de teste nova pros handlers de SignalR (antes zero), N+1 eliminado no fan-out de `DefinirChatPerfil`, e mais 4 correções de frontend (timer de digitação, retry de erro de arquivo, preview de imagem, alerta duplicado). **316 testes no total do projeto, 0 falhas.**
 - [x] Merge `develop` → `main` (produção) — PR #30 mergeado em 2026-09-01, commit `7a779c2`. Falta o passo manual de deploy (fora do repositório) pra chegar nos usuários reais.
 - [x] **Confirmação de leitura (AC-26/27) + preferência de privacidade com reciprocidade (AC-53 a AC-58)** — indicador "Visto"/"Visto por todos" na última mensagem própria, toggle "Mostrar confirmação de leitura" (default ligado) no novo dialog Preferências (sidebar), reciprocidade estilo WhatsApp (quem desliga deixa de mostrar E de ver leitura alheia). Migration `AddMostrarConfirmacaoLeituraUsuarioPerfil` aplicada no Supabase real em 2026-09-08. 324 testes no total, 0 falhas. Review independente (nível high): 3 achados, todos corrigidos. Verificado ao vivo (Playwright + API contra Supabase real) sem bugs. PR #31 (`feature/chat-confirmacao-leitura` → `develop`) e PR #32 (`develop` → `main`) mergeados em 2026-09-08 — `main` está com tudo.
-- [ ] **Read receipts + preferência de privacidade (AC-26/27, AC-53 a AC-58) — implementado em 2026-09-08, não mergeado.** Indicador `Visto`/`Visto por todos`, toggle "Mostrar confirmação de leitura" (padrão ligado, reciprocidade estilo WhatsApp) num novo menu "Preferências" na sidebar. Migration aplicada no Supabase real. Review independente (skill `code-review`, nível high) encontrou 3 achados — todos corrigidos, incluindo uma sobrescrita acidental de um arquivo de teste pré-existente (`ObterConversaHandlerTests.cs`, restaurado). `dotnet build`/`test` (324 testes) e `npm run build` passando. **Pendência:** zero verificação manual ao vivo ainda; branch não commitada/mergeada. Branch `feature/chat-confirmacao-leitura`. Detalhe em `.specs/features/chat-corporativo/spec.md` (extensão) e `design.md` (seção 10).
+- ~~Read receipts — "não mergeado"~~ *(item duplicado e desatualizado, removido em 2026-10-01: a feature foi mergeada em 2026-09-08 — ver item acima)*
+
+## 🔐 Autorização de Chamados no Servidor (FECHADA — 2026-10-01, PR pendente de merge)
+
+- [x] Regra única de visibilidade no servidor: Solicitante (os seus + os da equipe), Atendente (fila + seus + os que abriu + equipe), Admin (todos, mesmo com equipe). "Chamado da equipe" = aberto por membro **ou** com responsável membro.
+- [x] Matriz de ações aplicada no servidor (404 se não vê, 403 se vê mas não pode); abertura sempre em nome do usuário logado; Dashboard e Relatório protegidos por perfil; SignalR sem conteúdo.
+- [x] 369 testes (45 novos); review independente sem bloqueantes; verificação ao vivo 30/31 (a falha é bug anterior na edição — ver STATE).
+- Spec: `.specs/features/autorizacao-chamados/` · ADR-007 no Obsidian.
+
+## 🏷️ Área e Tipo do Chamado (SPEC APROVADA — próxima feature)
+
+- [ ] "Categoria" vira **Área** (mesma lista dos grupos); novo campo **Tipo** (Incidente, Dúvida, Solicitação, Customização, Melhoria — configurável pelo Admin). Implementar depois da autorização. Spec: `.specs/features/area-e-tipo-do-chamado/spec.md`.

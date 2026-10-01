@@ -26,6 +26,11 @@ public class CurrentUserService : ICurrentUserService
 
     public string Nome => User?.FindFirstValue(ClaimTypes.Name) ?? string.Empty;
 
+    // O middleware JWT mapeia o claim "email" para ClaimTypes.Email por padrão; o fallback cobre
+    // o caso de o mapeamento estar desligado.
+    public string Email =>
+        User?.FindFirstValue(ClaimTypes.Email) ?? User?.FindFirstValue(JwtRegisteredClaimNames.Email) ?? string.Empty;
+
     public string Perfil => User?.FindFirstValue("perfil") ?? string.Empty;
 
     public Guid? GrupoId

@@ -14,7 +14,7 @@ Hoje um Atendente só vê os chamados que **ele mesmo** é responsável. Se o F�
 2. `UsuarioPerfil` ganha `GrupoId` (opcional — Admin não precisa de grupo)
 3. CRUD de Grupos (só Admin)
 4. RBAC: Atendente vê chamados do seu grupo (não só os próprios)
-5. Admin continua vendo tudo. Solicitante só vê os que abriu (sem mudança).
+5. Admin continua vendo tudo. ~~Solicitante só vê os que abriu (sem mudança).~~ **Revisado em 2026-09-29:** Solicitante com grupo vê os que abriu + os chamados do grupo (regra de 2026-08-01, confirmada pelo usuário). Detalhe em `../autorizacao-chamados/spec.md`.
 
 ## Regras de Negócio
 
@@ -51,7 +51,7 @@ Hoje um Atendente só vê os chamados que **ele mesmo** é responsável. Se o F�
 - ✅ **T3:** Editar nome do grupo → 200
 - ✅ **T4:** Atendente sem grupo → vê só os próprios chamados
 - ✅ **T5:** Atendente com grupo "Reembolso" → vê chamados do grupo + próprios
-- ✅ **T6:** Solicitante → sem mudança (vê só os que abriu)
+- ✅ **T6:** ~~Solicitante → sem mudança (vê só os que abriu)~~ **Revisado em 2026-09-29:** Solicitante sem grupo vê só os que abriu; com grupo, também os do grupo — ver `../autorizacao-chamados/spec.md` (AC-01, AC-02).
 - ✅ **T7:** Admin → continua vendo tudo
 - ✅ **T8:** Associar usuário a grupo → dropdown aparece na edição
 - ✅ **T9:** Reatribuir → só lista atendentes do mesmo grupo

@@ -74,8 +74,6 @@ export function AbrirChamadoPage() {
         descricao: values.descricao,
         categoriaId: values.categoriaId,
         prioridade: values.prioridade,
-        solicitanteNome: perfil.nome,
-        solicitanteEmail: perfil.email,
       },
       {
         onSuccess: async (chamado) => {

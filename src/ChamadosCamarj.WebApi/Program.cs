@@ -50,6 +50,8 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(Assembly.Load("ChamadosCamarj.Application"));
     cfg.RegisterServicesFromAssembly(Assembly.Load("ChamadosCamarj.WebApi"));
     cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
+    // Depois da validação: request inválido falha antes de consultar o banco.
+    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(AcessoChamadoBehaviour<,>));
 });
 // ─────────────────────────────
 // FluentValidation

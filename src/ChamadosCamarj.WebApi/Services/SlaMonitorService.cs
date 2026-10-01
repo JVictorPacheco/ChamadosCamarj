@@ -62,7 +62,6 @@ public class SlaMonitorService : BackgroundService
                     {
                         chamadoId = c.Id.ToString(),
                         numero = c.Numero,
-                        titulo = c.Titulo,
                         mensagem = $"CAM-{c.Numero} — próximo do prazo!",
                     }, stoppingToken);
                 }
@@ -74,7 +73,6 @@ public class SlaMonitorService : BackgroundService
                     {
                         chamadoId = c.Id.ToString(),
                         numero = c.Numero,
-                        titulo = c.Titulo,
                         mensagem = $"CAM-{c.Numero} — PRAZO ESTOURADO!",
                     }, stoppingToken);
                 }

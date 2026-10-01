@@ -87,8 +87,6 @@ export interface PagedResult<T> {
 export interface AbrirChamadoRequest {
   titulo: string;
   descricao: string;
-  solicitanteNome: string;
-  solicitanteEmail: string;
   categoriaId: string;
   prioridade?: PrioridadeChamado;
 }
