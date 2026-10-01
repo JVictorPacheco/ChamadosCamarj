@@ -1,7 +1,7 @@
 # Autorização de Chamados no Servidor — Especificação
 
-> **SDD:** implementando
-> **Status:** `Pendente`
+> **SDD:** fechada
+> **Status:** `Concluída`
 > **Branch:** `feature/autorizacao-chamados`
 > **Criada em:** 2026-09-29
 > **Atualizada em:** 2026-09-29
@@ -76,8 +76,9 @@ grupo, de forma igual em todas as telas, independente do que o navegador enviar.
 - **Fila:** chamados ainda sem responsável.
 - **Pode ver o chamado:** o chamado aparece nas listas, abre no detalhe e libera anexos,
   histórico e comentários (os internos seguem a regra do AC-10).
-- **Recusa:** o pedido é negado com a mensagem "Você não tem permissão para acessar este chamado."
-  (ou para realizar a ação), e **nenhum dado do chamado é enviado**.
+- **Recusa:** o pedido é negado e **nenhum dado do chamado é enviado**. Chamado que o usuário não
+  vê → "não encontrado"; chamado que vê, mas ação que não pode → "Você não tem permissão para
+  realizar esta ação neste chamado." (ver AC-16).
 
 ### US-01 / US-02 — Solicitante
 
@@ -151,8 +152,10 @@ grupo, de forma igual em todas as telas, independente do que o navegador enviar.
   chamado.
 - **AC-16:** Pedir um chamado que existe mas o usuário não pode ver não pode revelar que ele
   existe (a resposta não distingue "sem permissão" de "não encontrado").
-  **Aprovado pelo usuário em 2026-10-01:** tratar os dois como "não encontrado" no detalhe e nos sub-recursos; as ações
-  respondem "sem permissão".
+  **Aprovado pelo usuário em 2026-10-01:** em chamado que o usuário **não vê**, tudo (detalhe,
+  sub-recursos **e ações**) responde "não encontrado". "Sem permissão" fica só para quando o
+  usuário **vê** o chamado mas não pode fazer aquela ação. *(Texto corrigido após o review
+  independente, achado R-02; o código já se comportava assim.)*
 - **AC-17:** `dotnet test` passa sem falhas, com testes cobrindo cada perfil (Solicitante sem
   grupo, Solicitante com grupo, Atendente sem grupo, Atendente com grupo, Admin com grupo).
 - **AC-18:** `npm run build` passa sem erros.
@@ -163,9 +166,35 @@ grupo, de forma igual em todas as telas, independente do que o navegador enviar.
 
 > Preencher após a implementação.
 
-| Critério | Arquivo de Teste | Método de Teste | Status |
-|----------|-----------------|-----------------|--------|
-| AC-01 a AC-18 | a definir no `tasks.md` | — | ⬜ Pendente |
+Automatizados: `tests/.../Application/Autorizacao/ChamadoPermissoesTests.cs` (matriz ação × perfil),
+`AcessoChamadoBehaviourTests.cs` (404/403/handler), `ListarChamadosQueryHandlerTests.cs`,
+`ObterDistribuicaoQueryHandlerTests.cs`, `ObterUrlDownloadAnexoHandlerTests.cs`.
+Ao vivo (T16, 2026-10-01): API local da branch contra o Supabase real, com 6 contas, 1 grupo e
+5 chamados de teste, todos apagados ao final. Resultado: 30/31 OK.
+
+| Critério | Verificação | Resultado |
+|----------|-------------|-----------|
+| AC-01 | Lista do Solicitante sem grupo = só os seus; pedir o e-mail de outro devolve vazio | ✅ ao vivo + unitário |
+| AC-02 | Lista do Solicitante do grupo = os seus + o aberto pelo colega | ✅ ao vivo |
+| AC-03 | Detalhe, histórico, anexos e comentários de chamado alheio → 404 | ✅ ao vivo + unitário |
+| AC-04 | Solicitante do grupo abre o chamado do colega (200) | ✅ ao vivo (API); tela não verificada visualmente |
+| AC-05 | Solicitante tenta resolver → 403 | ✅ ao vivo + unitário |
+| AC-06 | Não cancela o do colega (403); cancela o próprio (204) | ✅ ao vivo + unitário |
+| AC-07 | Comenta no chamado do grupo (201) | ✅ ao vivo + unitário |
+| AC-08 | Listas dos dois Atendentes e 404 fora do escopo | ✅ ao vivo |
+| AC-09 | Atendente não reatribui nem muda prioridade (403) | ✅ ao vivo + unitário |
+| AC-10 | Solicitante não cria comentário interno (403) | ✅ ao vivo + unitário |
+| AC-11 | Admin com grupo vê tudo | ✅ ao vivo + unitário |
+| AC-12 | Abertura grava o usuário logado, ignorando o e-mail do body | ✅ ao vivo |
+| AC-13 | Dashboard: Solicitante 403; números do Atendente ≤ do Admin | ✅ ao vivo + unitário |
+| AC-14 | Usuários continuam fazendo o que podiam | ✅ coberto pelos casos permitidos acima + 324 testes anteriores verdes |
+| AC-15 | Recusas no formato `{ message }` | ✅ ao vivo |
+| AC-16 | Invisível → 404 também em ações | ✅ ao vivo + unitário |
+| AC-17 | `dotnet test` | ✅ 369/369 |
+| AC-18 | `npm run build` | ✅ |
+| AC-19 | Payloads SignalR sem conteúdo | ✅ por código e build; **não verificado ao vivo** |
+| AC-20 | Solicitante não edita (403) | ✅ ao vivo. Atendente passa a checagem, mas a edição devolve 409 por um **bug anterior** à feature (ver Pendências no STATE) |
+| AC-21 | Relatório: Solicitante 403; Atendente recebe o próprio | ✅ ao vivo |
 
 ---
 

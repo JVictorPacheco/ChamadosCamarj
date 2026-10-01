@@ -54,9 +54,9 @@ Cada tarefa: `[ ]` pendente · `[x]` feita · *(ACs)* que atende · **Pronto qua
 
 ## Validação
 
-- [ ] **T16.** Verificação por perfil (API local apontando para o Supabase, só leitura e ações em chamados de teste): Solicitante sem grupo, Solicitante com grupo, Atendente sem grupo, Atendente com grupo, Admin com grupo. Lista, detalhe, ação proibida, Kanban, Dashboard, Relatório *(AC-01..AC-14, AC-19..AC-21)*
+- [x] **T16.** Verificação por perfil (API local apontando para o Supabase, só leitura e ações em chamados de teste): Solicitante sem grupo, Solicitante com grupo, Atendente sem grupo, Atendente com grupo, Admin com grupo. Lista, detalhe, ação proibida, Kanban, Dashboard, Relatório *(AC-01..AC-14, AC-19..AC-21)*
       **Pronto quando:** cada AC tem resultado anotado na seção Rastreabilidade da spec. **Exige contas de teste no banco real: pedir autorização ao usuário antes de criar ou alterar qualquer conta.**
-- [ ] **T17.** Gates: `dotnet build`, `dotnet test`, `npm --prefix frontend run build` *(AC-17, AC-18)*
+- [x] **T17.** Gates: `dotnet build`, `dotnet test`, `npm --prefix frontend run build` *(AC-17, AC-18)*
       **Pronto quando:** os três verdes, com o número de testes anotado.
 
 ---

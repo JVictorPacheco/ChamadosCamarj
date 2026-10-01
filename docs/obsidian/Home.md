@@ -48,6 +48,7 @@ implementação ficam na seção Arquitetura e nas specs do projeto.
 - [[ADR-004 Hospedagem na Cloudflare]]
 - [[ADR-005 Chamados nunca são apagados]]
 - [[ADR-006 Número de chamado CAM-N]]
+- [[ADR-007 Permissões aplicadas no servidor]]
 
 **90 Modelos** — para criar notas novas no mesmo padrão
 - [[Modelo - Funcionalidade]] · [[Modelo - Decisão (ADR)]]

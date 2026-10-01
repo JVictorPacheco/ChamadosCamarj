@@ -1,6 +1,95 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-09-29
+> Atualizado em: 2026-10-01
+
+---
+
+## Sessão de 2026-09-29 a 2026-10-01 — Autorização de chamados no servidor (primeira feature via `/sdd`)
+
+### Contexto
+A investigação da pendência "visibilidade de Solicitante com grupo" achou um problema maior: as
+regras de quem vê e quem faz o quê nos chamados existiam **só nas telas**. O servidor aceitava
+qualquer pedido de qualquer usuário logado:
+- listar todos os chamados (bastava não mandar `solicitanteEmail`);
+- ver detalhe, anexos e histórico de qualquer chamado;
+- resolver, fechar ou reatribuir sendo Solicitante;
+- abrir chamado em nome de outra pessoa.
+
+Além disso, o SignalR mandava para **todos** os conectados o texto de cada comentário, inclusive
+os internos.
+
+Primeira feature conduzida pelas skills globais `/sdd` (Claude Code, Opus 5.5): spec → design →
+tasks → implement → review independente (sub-agente) → fechamento. Artefatos em
+`.specs/features/autorizacao-chamados/`.
+
+### Decisões do usuário
+- **Grupo = cobrir férias.** Solicitante com grupo vê os chamados do grupo, confirmando a regra
+  de 2026-08-01. "Chamado do grupo" = **aberto por** membro **ou** com **responsável** membro. A
+  primeira versão aprovada só olhava o responsável e não atendia o caso; foi revisada antes do código.
+- Nos chamados do colega, o Solicitante vê, comenta e anexa, mas **não cancela**.
+- Atendente acessa só o que vê na lista (fila + seus + os que abriu + grupo). **Muda o Kanban do
+  Atendente sem grupo**, que antes via tudo.
+- O escopo inclui as ações, não só a leitura.
+- Editar título e descrição: só Atendente e Admin.
+- Relatório: Solicitante recebe 403; Atendente recebe sempre os próprios números.
+- SignalR sem conteúdo.
+- Chamado invisível → 404 também nas ações (não revela que existe). 403 só quando o usuário vê o
+  chamado mas não pode fazer a ação.
+- A abertura é sempre em nome do usuário logado.
+
+### O que foi feito (branch `feature/autorizacao-chamados`)
+- **Backend:**
+  - `ContextoAcesso` e `AcaoChamado` no Domain.
+  - `ChamadoPermissoes`: matriz pura de ações × perfis.
+  - `AcessoChamadoBehaviour` (MediatR, depois do `ValidationBehaviour`), aplicado a 18
+    commands/queries via `IRequerAcessoChamado`.
+  - Filtro único `AplicarVisibilidade` no `ChamadoRepository`, usado pela lista, pelo
+    `PodeVerAsync` e pelas métricas do Dashboard.
+  - `ICurrentUserService.Email` novo.
+  - O download de anexo confere se o anexo é do chamado da URL (achado durante a implementação).
+- **Frontend:**
+  - Detalhe sem bloqueio local.
+  - Botão Cancelar só para quem abriu.
+  - Lista e Arquivo não mandam mais `solicitanteEmail`.
+  - Abertura não manda nome nem e-mail.
+- **Docs:**
+  - Spec `grupos-equipes`: item 5 e T6 revisados.
+  - Obsidian: `Perfis e Permissões`, `Grupos e Equipes` e o novo **ADR-007**.
+  - ROADMAP: removida a linha duplicada e desatualizada da confirmação de leitura.
+- **Nenhuma migration.**
+
+### Gates e verificação
+- **Gates:**
+  - `dotnet build`: 0 erros (6 avisos pré-existentes).
+  - `dotnet test`: **369/369**. Eram 324; entraram 45 novos e nenhum foi perdido.
+  - `npm run build`: ok. Lint sem avisos novos.
+- **Filtro SQL:** conferido com `ToQueryString()` para os 5 perfis, num console temporário, sem
+  conexão com o banco.
+- **Review independente** (sub-agente): 0 bloqueantes e 4 🟡 (ver `review.md`).
+  - R-01: coberto pela verificação ao vivo.
+  - R-02: resolvido (texto da spec corrigido).
+  - R-03 e R-04: viraram pendência.
+- **Verificação ao vivo, autorizada pelo usuário:** API local da branch contra o Supabase real.
+  - Criados 6 contas `teste.autz.*`, 1 grupo e 5 chamados `[TESTE-AUTZ]`, **todos apagados no
+    final** (contagem final 0).
+  - Resultado: **30/31 OK.** A falha não é desta feature (ver Pendências).
+  - Efeito colateral irreversível: a sequência `ChamadosNumeroSeq` avançou 5 números.
+
+### Pendências
+- **Bug anterior à feature:** `PUT /api/chamados/{id}` (editar título e descrição) sempre devolve
+  **409**. Causa: `AtualizarChamadoCommandHandler` usa `ObterPorIdAsync` (sem tracking). A sessão
+  de concorrência de 2026-07-31 migrou os outros handlers para `ObterPorIdComTrackingAsync`, mas
+  esqueceu este. O frontend não usa esse endpoint hoje.
+- **R-03** (anterior à feature): `QuantidadeComentarios` conta os comentários internos. O
+  Solicitante vê a quantidade, não o conteúdo.
+- **R-04** (anterior à feature): os alertas de SLA (`Clients.All`) vão para todos os usuários.
+  Agora levam só o número do chamado, sem título.
+- O `ComentarioId` do anexo não é validado contra o chamado (questão de integridade, não de acesso).
+- Não verificado ao vivo: AC-19 (SignalR) e a tela do AC-04 (só a API foi testada).
+- O projeto de testes tem conflito de versão do EF (9.0.1 × 9.0.19) quando referencia tipos do EF
+  diretamente; por isso o filtro SQL não tem teste automatizado. Considerar alinhar as versões.
+- PR da feature: aguardando decisão do usuário (checkpoint 2 do `/sdd`).
+- Próxima feature: `area-e-tipo-do-chamado` (spec aprovada).
 
 ---
 
@@ -28,9 +117,11 @@ negócio**; nomes **sem emoji**; **nenhum status/andamento** no vault (fica só 
   atenção para o negócio em `20 Funcionalidades/SLA.md`.
 - **Logout por inatividade não está ativo:** o hook `useInactivityLogout` existe em
   `frontend/src/hooks/` mas não é usado em nenhum componente (a decisão de 2026-07-18 previa 20 min).
-- **Visibilidade de Solicitante com grupo:** em `ChamadoRepository` (filtro por `grupoId`), um
+- ~~**Visibilidade de Solicitante com grupo:** em `ChamadoRepository` (filtro por `grupoId`), um
   usuário que não é Atendente mas tem grupo parece enxergar também chamados atribuídos a colegas
-  do grupo — diverge da regra documentada ("Solicitante vê só os seus"). Precisa de verificação.
+  do grupo — diverge da regra documentada ("Solicitante vê só os seus"). Precisa de verificação.~~
+  **Resolvido em 2026-10-01** (feature `autorizacao-chamados`): a regra do grupo foi confirmada
+  pelo usuário e passou a valer no servidor.
 
 ---
 
