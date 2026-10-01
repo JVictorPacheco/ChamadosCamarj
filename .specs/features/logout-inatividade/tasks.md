@@ -19,7 +19,7 @@
 | 19 min parado | continua logado ✅ |
 | mexe o mouse + 19 min parado | continua logado (a contagem reinicia) ✅ |
 | 21 min sem interação | volta para o login, com a mensagem; token e perfil apagados ✅ |
-| recarregar a tela de login | a mensagem não reaparece ✅ |
+| recarregar a tela de login | ~~a mensagem não reaparece~~ comportamento mudou após o review: a mensagem fica até o próximo login ✅ |
 | 2 abas: A trabalhando, B parada há 30 min | as duas continuam logadas ✅ |
 | 2 abas: nenhuma ativa há 21 min | as duas saem ✅ |
 | **Após o review:** 21 min só com eventos `scroll` automáticos | sai ✅ (R-01) |
