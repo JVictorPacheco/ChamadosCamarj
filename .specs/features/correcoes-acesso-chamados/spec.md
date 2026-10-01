@@ -1,7 +1,7 @@
 # Correções de Acesso a Chamados — Especificação
 
-> **SDD:** revisada
-> **Status:** `Em andamento`
+> **SDD:** fechada
+> **Status:** `Concluída`
 > **Branch:** `feature/correcoes-acesso-chamados`
 > **Criada em:** 2026-10-01
 > **Atualizada em:** 2026-10-01

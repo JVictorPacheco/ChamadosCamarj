@@ -4,6 +4,45 @@
 
 ---
 
+## Sessão de 2026-10-01 — Correções de acesso a chamados (pendências da autorização)
+
+### Contexto
+O usuário pediu para tratar juntas, numa correção rápida, três pendências do fechamento de
+`autorizacao-chamados`, e delegou a execução até o fim. Fluxo `/sdd` (Claude Code, Opus 5.5),
+artefatos em `.specs/features/correcoes-acesso-chamados/`.
+
+### O que foi feito (branch `feature/correcoes-acesso-chamados`)
+- **Edição de título/descrição (409 sempre):** `AtualizarChamadoCommandHandler` passou a usar
+  `ObterPorIdComTrackingAsync`, como os demais handlers.
+- **Contagem de comentários:** o Solicitante recebe só a contagem de públicos (lista e detalhe).
+  `ToResponse` agora exige `incluirInternos` explícito.
+- **Alertas de SLA:** vão só para o grupo `Atendimento` (Atendente e Admin), que o servidor define
+  no `OnConnectedAsync` a partir do token.
+- **Removidos `EntrarGrupo`/`SairGrupo` do `ChamadosHub`.** Não tinham nenhum uso e deixavam
+  qualquer cliente entrar em qualquer grupo. *(Mudança de contrato sem consumidores, registrada na
+  spec; não foi citada nominalmente ao usuário antes de aplicar — informada no resumo.)*
+- **Do review:** o aviso de comentário **interno** vai só para o `Atendimento` (antes avisava o
+  Solicitante de que existia um interno).
+- Obsidian `SLA.md` corrigido: dizia que não existiam alertas automáticos, mas existem desde julho.
+- **Nenhuma migration.**
+
+### Gates e verificação
+- `dotnet test` **387/387** (369 → 387, 18 novos); `npm run build` ok.
+- Review independente: 0 bloqueantes, 4 🟡. R-01 e R-04 corrigidos, R-03 com a spec corrigida,
+  R-02 virou pendência.
+- Ao vivo (contas e chamados `teste.autz.*`, apagados no final): edição 204 com título salvo;
+  contagem 1 (Solicitante) × 2 (Atendente) no detalhe e na lista; os dois perfis conectam ao hub e
+  `EntrarGrupo` é recusado. A sequência de número de chamado avançou mais 4 (13 no total hoje).
+
+### Pendências
+- **R-02:** o alerta de SLA vai para todos os Atendentes, inclusive os que não enxergam aquele
+  chamado (só o número). Filtrar exigiria calcular a visibilidade por usuário a cada alerta.
+- **Concorrência (geral, anterior):** nenhuma ação sobre chamado manda a versão que o cliente leu.
+  Duas edições quase simultâneas: a segunda sobrescreve a primeira sem 409.
+- Sem teste automatizado: voltar o `SlaMonitorService` para `Clients.All`.
+
+---
+
 ## Sessão de 2026-09-29 a 2026-10-01 — Autorização de chamados no servidor (primeira feature via `/sdd`)
 
 ### Contexto
@@ -81,13 +120,13 @@ tasks → implement → review independente (sub-agente) → fechamento. Artefat
   - Atendente sem grupo: o Kanban mostra só os chamados do escopo dele (mais a fila real).
 
 ### Pendências
-- **Bug anterior à feature:** `PUT /api/chamados/{id}` (editar título e descrição) sempre devolve
+- ~~**Bug anterior à feature:**~~ **Resolvido em 2026-10-01** (`correcoes-acesso-chamados`). `PUT /api/chamados/{id}` (editar título e descrição) sempre devolve
   **409**. Causa: `AtualizarChamadoCommandHandler` usa `ObterPorIdAsync` (sem tracking). A sessão
   de concorrência de 2026-07-31 migrou os outros handlers para `ObterPorIdComTrackingAsync`, mas
   esqueceu este. O frontend não usa esse endpoint hoje.
-- **R-03** (anterior à feature): `QuantidadeComentarios` conta os comentários internos. O
+- ~~**R-03**~~ **Resolvido em 2026-10-01** (`correcoes-acesso-chamados`). (anterior à feature): `QuantidadeComentarios` conta os comentários internos. O
   Solicitante vê a quantidade, não o conteúdo.
-- **R-04** (anterior à feature): os alertas de SLA (`Clients.All`) vão para todos os usuários.
+- ~~**R-04**~~ **Resolvido em 2026-10-01** (`correcoes-acesso-chamados`), só Atendente/Admin recebem. (anterior à feature): os alertas de SLA (`Clients.All`) vão para todos os usuários.
   Agora levam só o número do chamado, sem título.
 - O `ComentarioId` do anexo não é validado contra o chamado (questão de integridade, não de acesso).
 - Não verificado ao vivo: AC-19 (SignalR).

@@ -313,6 +313,10 @@
 - [x] 369 testes (45 novos); review independente sem bloqueantes; verificação ao vivo 30/31 (a falha é bug anterior na edição — ver STATE).
 - Spec: `.specs/features/autorizacao-chamados/` · ADR-007 no Obsidian.
 
+## 🩹 Correções de Acesso a Chamados (FECHADA — 2026-10-01)
+
+- [x] Edição de título/descrição volta a funcionar (dava 409 sempre); contagem de comentários sem internos para Solicitante; alertas de SLA e aviso de comentário interno só para Atendente/Admin; hub sem métodos para o cliente escolher grupo. 387 testes. Spec: `.specs/features/correcoes-acesso-chamados/`.
+
 ## 🏷️ Área e Tipo do Chamado (SPEC APROVADA — próxima feature)
 
 - [ ] "Categoria" vira **Área** (mesma lista dos grupos); novo campo **Tipo** (Incidente, Dúvida, Solicitação, Customização, Melhoria — configurável pelo Admin). Implementar depois da autorização. Spec: `.specs/features/area-e-tipo-do-chamado/spec.md`.
