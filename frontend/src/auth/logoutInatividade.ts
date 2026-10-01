@@ -20,7 +20,8 @@ export function saiuPorInatividade(): boolean {
   }
 }
 
-/** Apaga o aviso depois de exibido — não reaparece num recarregamento da tela de login. */
+/** Apaga o aviso no próximo login. Não é apagado ao exibir: a tela de login pode ser montada mais
+ * de uma vez no redirecionamento, e a mensagem sumiria antes de aparecer. */
 export function limparLogoutPorInatividade(): void {
   try {
     sessionStorage.removeItem(CHAVE_MOTIVO)

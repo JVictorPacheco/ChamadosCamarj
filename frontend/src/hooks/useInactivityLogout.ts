@@ -1,6 +1,10 @@
 import { useEffect, useRef } from 'react'
 
-const EVENTOS_DE_ATIVIDADE = ['mousemove', 'keydown', 'click', 'scroll'] as const
+// Só gestos reais da pessoa. `scroll` ficou de fora de propósito: o navegador dispara scroll sozinho
+// quando o tempo real insere conteúdo acima da área visível (scroll anchoring), o que manteria a
+// sessão aberta para sempre; e scroll de áreas internas (chat) nem chega à window. Rolar com a roda,
+// o toque ou o teclado já é coberto por wheel/touchstart/keydown (review R-01, R-03).
+const EVENTOS_DE_ATIVIDADE = ['mousemove', 'pointerdown', 'keydown', 'wheel', 'touchstart'] as const
 
 // Compartilhada entre abas: atividade em qualquer aba mantém todas conectadas (o token é o mesmo
 // para todas — uma aba esquecida não pode deslogar quem está trabalhando em outra).
@@ -14,6 +18,11 @@ function lerUltimaAtividade(): number {
   } catch {
     return 0
   }
+}
+
+/** Chamado no login: uma marca antiga de outra sessão não pode derrubar o login novo. */
+export function registrarInicioDeSessao(): void {
+  gravarUltimaAtividade(Date.now())
 }
 
 function gravarUltimaAtividade(agora: number): void {
@@ -68,8 +77,19 @@ export function useInactivityLogout(minutos: number, aoExpirar: () => void): voi
       agendar(limiteMs)
     }
 
-    EVENTOS_DE_ATIVIDADE.forEach((evento) => window.addEventListener(evento, registrarAtividade))
-    registrarAtividade()
+    EVENTOS_DE_ATIVIDADE.forEach((evento) =>
+      window.addEventListener(evento, registrarAtividade, { passive: true }),
+    )
+
+    // Sessão reaberta (navegador fechado, aba descartada) depois do limite: desconecta na hora em
+    // vez de "ressuscitar" a sessão (review R-02). Login novo não cai aqui: a tela de login grava
+    // a marca antes de entrar.
+    const ultima = lerUltimaAtividade()
+    if (ultima > 0 && Date.now() - ultima >= limiteMs) {
+      aoExpirarRef.current()
+    } else {
+      registrarAtividade()
+    }
 
     return () => {
       clearTimeout(timer)

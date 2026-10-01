@@ -22,5 +22,9 @@
 | recarregar a tela de login | a mensagem não reaparece ✅ |
 | 2 abas: A trabalhando, B parada há 30 min | as duas continuam logadas ✅ |
 | 2 abas: nenhuma ativa há 21 min | as duas saem ✅ |
+| **Após o review:** 21 min só com eventos `scroll` automáticos | sai ✅ (R-01) |
+| **Após o review:** reabrir com última atividade de 25 min atrás | sai na hora, com a mensagem ✅ (R-02) |
+| **Após o review:** login novo com marca antiga (3 h) no navegador | continua logado ✅ |
+| **Após o review:** a mensagem aparece nos dois caminhos e some no próximo login | ✅ |
 
 Durante a verificação, o teste de duas abas falhou na primeira tentativa por **erro do próprio teste**: o relógio do Playwright é um só por contexto, e ele foi adiantado duas vezes por passo. Corrigido o teste, o cenário passou. O código não mudou.

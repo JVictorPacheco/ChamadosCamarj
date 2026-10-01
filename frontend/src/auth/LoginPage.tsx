@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,6 +12,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { ApiError } from '@/lib/api'
 import { esqueciSenha } from './api'
 import { limparLogoutPorInatividade, saiuPorInatividade as lerSaiuPorInatividade } from './logoutInatividade'
+import { registrarInicioDeSessao } from '@/hooks/useInactivityLogout'
 import logoCamarj from '../assets/logo-camarj.png'
 
 export function LoginPage() {
@@ -21,7 +22,6 @@ export function LoginPage() {
   const [senha, setSenha] = useState('')
   const [erro, setErro] = useState<string | null>(null)
   const [saiuPorInatividade] = useState(lerSaiuPorInatividade)
-  useEffect(limparLogoutPorInatividade, [])
   const [pendente, setPendente] = useState(false)
   const [esqueciSenhaAberto, setEsqueciSenhaAberto] = useState(false)
   const [emailRecuperacao, setEmailRecuperacao] = useState('')
@@ -34,6 +34,9 @@ export function LoginPage() {
     setErro(null)
     setPendente(true)
 
+    // Antes do login (não depois): a área logada monta assim que o perfil é gravado.
+    registrarInicioDeSessao()
+    limparLogoutPorInatividade()
     try {
       await loginComSenha(email, senha)
     } catch (err) {
