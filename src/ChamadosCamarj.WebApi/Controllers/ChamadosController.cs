@@ -50,8 +50,7 @@ public class ChamadosController : ControllerBase
     {
         var query = new ListarChamadosQuery(
             pagina, tamanhoPagina, status, prioridade, responsavelId, categoriaId, busca,
-            solicitanteEmail, finalizados, dataInicio, dataFim, slaStatus, motivoEncerramento,
-            UsuarioLogadoId: _currentUser.UsuarioId, GrupoId: _currentUser.GrupoId, Perfil: _currentUser.Perfil);
+            solicitanteEmail, finalizados, dataInicio, dataFim, slaStatus, motivoEncerramento);
         var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
     }
@@ -83,11 +82,13 @@ public class ChamadosController : ControllerBase
         [FromBody] AbrirChamadoRequest request,
         CancellationToken cancellationToken)
     {
+        // O solicitante é sempre quem está logado (AC-12) — SolicitanteNome/Email do body são
+        // ignorados; o campo continua no DTO só para não quebrar clientes antigos.
         var command = new AbrirChamadoCommand(
             request.Titulo,
             request.Descricao,
-            request.SolicitanteNome,
-            request.SolicitanteEmail,
+            _currentUser.Nome,
+            _currentUser.Email,
             request.CategoriaId,
             request.Prioridade);
 
@@ -348,7 +349,7 @@ public class ChamadosController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ObterUrlDownloadAnexo(Guid id, Guid anexoId, CancellationToken cancellationToken)
     {
-        var url = await _mediator.Send(new ObterUrlDownloadAnexoQuery(anexoId), cancellationToken);
+        var url = await _mediator.Send(new ObterUrlDownloadAnexoQuery(id, anexoId), cancellationToken);
         return Ok(new { url });
     }
 

@@ -16,8 +16,5 @@ public record ListarChamadosQuery(
     DateTime? DataInicio = null,
     DateTime? DataFim = null,
     string? SlaStatus = null,
-    string? MotivoEncerramento = null,
-    Guid? UsuarioLogadoId = null,
-    Guid? GrupoId = null,
-    string? Perfil = null
+    string? MotivoEncerramento = null
 ) : IRequest<PagedResult<ChamadoResponse>>;

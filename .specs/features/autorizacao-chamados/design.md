@@ -82,9 +82,20 @@ public interface IRequerAcessoChamado
 {
     Guid ChamadoId { get; }
     AcaoChamado Acao { get; }
-    ContextoAcesso Acesso { get; }
 }
 ```
+
+> **Ajuste na implementação (2026-10-01, antes do código):** o `ContextoAcesso` **não** viaja dentro
+> de cada command/query. O `AcessoChamadoBehaviour` o obtém de `ICurrentUserService`. Motivo: não
+> existe como um controller esquecer de passar ou passar o usuário errado, e os ~18 records e os
+> testes de handler existentes não mudam de assinatura. Pelo mesmo motivo, `ListarChamadosQueryHandler`
+> e os handlers do Dashboard também injetam `ICurrentUserService`, e `ListarChamadosQuery` **perde**
+> os campos `UsuarioLogadoId`, `GrupoId` e `Perfil`. Regra única: o acesso vem sempre do usuário
+> logado, nunca de parâmetro.
+>
+> **Achado:** `ObterUrlDownloadAnexoQuery` só tinha `AnexoId`. Ela ganha `ChamadoId`, e o handler
+> confirma que o anexo pertence a esse chamado. Sem isso, a checagem do chamado poderia ser
+> contornada usando o id de um chamado visível com o anexo de outro.
 
 Implementada por: `ObterChamadoPorIdQuery`, `ListarComentariosQuery`, `ListarHistoricoQuery`,
 `ListarAnexosQuery`, `ObterUrlDownloadAnexoQuery` (Ver); `ComentarChamadoCommand`
@@ -95,8 +106,8 @@ Implementada por: `ObterChamadoPorIdQuery`, `ListarComentariosQuery`, `ListarHis
 `ReatribuirChamadoCommand`; `AlterarPrioridadeChamadoCommand`; `ForcarEncerramentoChamadoCommand`;
 `AtualizarChamadoCommand` (PUT `/{id}`, ação Editar).
 
-Os records ganham o parâmetro `ContextoAcesso Acesso`, preenchido pelo controller (o padrão
-atual já passa `_currentUser.*` do controller para o command).
+Os records só precisam expor `ChamadoId` e `Acao` (propriedades calculadas, sem parâmetro novo,
+exceto `ObterChamadoPorIdQuery.Id`, que é exposto como `ChamadoId`).
 
 ### `AcessoChamadoBehaviour<TRequest, TResponse>`
 

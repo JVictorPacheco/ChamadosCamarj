@@ -12,37 +12,37 @@ Cada tarefa: `[ ]` pendente · `[x]` feita · *(ACs)* que atende · **Pronto qua
 ## Backend
 
 ### Fundação (Domain + contexto do usuário)
-- [ ] **T01.** `AcaoChamado` (enum) e `ContextoAcesso` (record) no Domain *(AC-01..AC-11)*
+- [x] **T01.** `AcaoChamado` (enum) e `ContextoAcesso` (record) no Domain *(AC-01..AC-11)*
       **Pronto quando:** compila.
-- [ ] **T02.** `ICurrentUserService.Email` + `CurrentUserService` lê o claim `email`; helper `ObterContextoAcesso()` *(AC-12)*
+- [x] **T02.** `ICurrentUserService.Email` + `CurrentUserService` lê o claim `email`; helper `ObterContextoAcesso()` *(AC-12)*
       **Pronto quando:** compila; mocks existentes de `ICurrentUserService` continuam compilando.
 
 ### Política e behavior (Application)
-- [ ] **T03.** `ChamadoPermissoes.Pode(acao, acesso, solicitanteEmailDoChamado)` conforme a tabela do design *(AC-05, AC-06, AC-07, AC-09, AC-10, AC-11, AC-20)*
+- [x] **T03.** `ChamadoPermissoes.Pode(acao, acesso, solicitanteEmailDoChamado)` conforme a tabela do design *(AC-05, AC-06, AC-07, AC-09, AC-10, AC-11, AC-20)*
       **Pronto quando:** `ChamadoPermissoesTests` cobre cada ação × Solicitante/Atendente/Admin, incluindo Cancelar (dono × não dono) e Admin com grupo. Verde.
-- [ ] **T04.** `IRequerAcessoChamado` + `AcessoChamadoBehaviour` (404 se não vê; 403 se não pode), registrado depois do `ValidationBehaviour` *(AC-03, AC-05, AC-16)*
+- [x] **T04.** `IRequerAcessoChamado` + `AcessoChamadoBehaviour` (404 se não vê; 403 se não pode), registrado depois do `ValidationBehaviour` *(AC-03, AC-05, AC-16)*
       **Pronto quando:** `AcessoChamadoBehaviourTests` cobre: request sem a interface passa direto; não vê → `NotFoundException` sem chamar o handler; vê mas não pode → `ForbiddenException` sem chamar o handler; pode → handler chamado. Verde.
 
 ### Repositório (Infrastructure) — ⚠️ mudança de contrato aprovada
-- [ ] **T05.** `AplicarVisibilidade` único no `ChamadoRepository`; `ListarAsync` passa a receber `ContextoAcesso` (remove o ramo antigo de grupo e o bypass do `solicitanteEmail`); `PodeVerAsync` novo *(AC-01, AC-02, AC-08, AC-11)*
+- [x] **T05.** `AplicarVisibilidade` único no `ChamadoRepository`; `ListarAsync` passa a receber `ContextoAcesso` (remove o ramo antigo de grupo e o bypass do `solicitanteEmail`); `PodeVerAsync` novo *(AC-01, AC-02, AC-08, AC-11)*
       **Pronto quando:** compila. A cobertura por perfil vem da T07 (handler) e da verificação manual T16: o projeto de testes não tem provedor EF, ver "Limitação de teste" abaixo.
-- [ ] **T06.** Contagens do Dashboard recebem `ContextoAcesso` e usam `AplicarVisibilidade` *(AC-13)*
+- [x] **T06.** Contagens do Dashboard recebem `ContextoAcesso` e usam `AplicarVisibilidade` *(AC-13)*
       **Pronto quando:** compila; Admin passa pelo filtro sem restrição (`if Admin return q`).
 
 ### Commands, queries e controllers
-- [ ] **T07.** `ListarChamadosQuery` carrega `ContextoAcesso`; o handler repassa ao repositório *(AC-01, AC-02, AC-08, AC-11)*
+- [x] **T07.** `ListarChamadosQuery` carrega `ContextoAcesso`; o handler repassa ao repositório *(AC-01, AC-02, AC-08, AC-11)*
       **Pronto quando:** `ListarChamadosQueryHandlerTests` atualizado (verifica que o contexto do usuário logado chega ao repositório) e verde.
-- [ ] **T08.** As 6 queries de leitura implementam `IRequerAcessoChamado` (Ver): `ObterChamadoPorId`, `ListarComentarios`, `ListarHistorico`, `ListarAnexos`, `ObterUrlDownloadAnexo` *(AC-03, AC-04, AC-16)*
+- [x] **T08.** As 6 queries de leitura implementam `IRequerAcessoChamado` (Ver): `ObterChamadoPorId`, `ListarComentarios`, `ListarHistorico`, `ListarAnexos`, `ObterUrlDownloadAnexo` *(AC-03, AC-04, AC-16)*
       **Pronto quando:** compila e os testes de handler existentes passam.
-- [ ] **T09.** Os 13 commands de ação implementam `IRequerAcessoChamado` com a ação certa (Comentar: Interno ou Público conforme o flag; Atualizar: Editar) *(AC-05, AC-06, AC-07, AC-09, AC-10, AC-20)*
+- [x] **T09.** Os 13 commands de ação implementam `IRequerAcessoChamado` com a ação certa (Comentar: Interno ou Público conforme o flag; Atualizar: Editar) *(AC-05, AC-06, AC-07, AC-09, AC-10, AC-20)*
       **Pronto quando:** compila e os testes de handler existentes passam.
-- [ ] **T10.** `ChamadosController`: passa `ObterContextoAcesso()` a todos os requests; `Abrir` usa nome e e-mail do usuário logado *(AC-12)*
+- [x] **T10.** `ChamadosController`: passa `ObterContextoAcesso()` a todos os requests; `Abrir` usa nome e e-mail do usuário logado *(AC-12)*
       **Pronto quando:** `AbrirChamadoHandlerTests` continua verde; o controller não lê mais `request.SolicitanteNome/Email`.
-- [ ] **T11.** Dashboard: queries recebem `ContextoAcesso`; Solicitante → 403 *(AC-13)*
+- [x] **T11.** Dashboard: queries recebem `ContextoAcesso`; Solicitante → 403 *(AC-13)*
       **Pronto quando:** testes de handler do Dashboard atualizados e verdes.
-- [ ] **T12.** `RelatoriosController`: Solicitante → 403; Atendente → `responsavelId` = próprio id *(AC-21)*
+- [x] **T12.** `RelatoriosController`: Solicitante → 403; Atendente → `responsavelId` = próprio id *(AC-21)*
       **Pronto quando:** compila; lógica coberta na verificação manual T16.
-- [ ] **T13.** SignalR: payloads de `ComentarioAdicionado`, `ChamadoCriado`, `SlaAtencao`, `SlaAtrasado` sem conteúdo nem título *(AC-19)*
+- [x] **T13.** SignalR: payloads de `ComentarioAdicionado`, `ChamadoCriado`, `SlaAtencao`, `SlaAtrasado` sem conteúdo nem título *(AC-19)*
       **Pronto quando:** compila; os testes de `WebApi/Notifications` passam (ajustados se verificavam o payload).
 
 ## Frontend

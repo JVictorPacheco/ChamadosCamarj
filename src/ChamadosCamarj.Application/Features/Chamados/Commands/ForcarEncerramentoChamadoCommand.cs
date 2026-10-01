@@ -1,4 +1,6 @@
 using MediatR;
+using ChamadosCamarj.Application.Common.Autorizacao;
+using ChamadosCamarj.Domain.Enums;
 
 namespace ChamadosCamarj.Application.Features.Chamados.Commands;
 
@@ -9,4 +11,8 @@ public record ForcarEncerramentoChamadoCommand(
     string? Observacao = null,
     Guid? UsuarioId = null,
     string UsuarioNome = "Sistema",
-    string? PerfilRequisitante = null) : IRequest;
+    string? PerfilRequisitante = null) : IRequest, IRequerAcessoChamado
+{
+    Guid IRequerAcessoChamado.ChamadoId => Id;
+    AcaoChamado IRequerAcessoChamado.Acao => AcaoChamado.ForcarEncerramento;
+}

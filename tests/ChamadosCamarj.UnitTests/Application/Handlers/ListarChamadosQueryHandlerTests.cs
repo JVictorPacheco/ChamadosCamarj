@@ -1,4 +1,6 @@
+using ChamadosCamarj.Application.Common;
 using ChamadosCamarj.Application.Features.Chamados.Queries;
+using ChamadosCamarj.Domain.Common;
 using ChamadosCamarj.Domain.Entities;
 using ChamadosCamarj.Domain.Enums;
 using ChamadosCamarj.Domain.Interfaces;
@@ -10,48 +12,84 @@ namespace ChamadosCamarj.UnitTests.Application.Handlers;
 public class ListarChamadosQueryHandlerTests
 {
     private readonly Mock<IChamadoRepository> _repositoryMock = new();
+    private readonly Mock<ICurrentUserService> _currentUserMock = new();
     private readonly ListarChamadosQueryHandler _handler;
+
+    private static readonly Guid UsuarioId = Guid.NewGuid();
+    private static readonly Guid GrupoId = Guid.NewGuid();
 
     public ListarChamadosQueryHandlerTests()
     {
-        _handler = new ListarChamadosQueryHandler(_repositoryMock.Object);
+        _currentUserMock.SetupGet(c => c.UsuarioId).Returns(UsuarioId);
+        _currentUserMock.SetupGet(c => c.Email).Returns("ana.colaboradora@camarj.com.br");
+        _currentUserMock.SetupGet(c => c.Perfil).Returns("Solicitante");
+        _currentUserMock.SetupGet(c => c.GrupoId).Returns(GrupoId);
+
+        _handler = new ListarChamadosQueryHandler(_repositoryMock.Object, _currentUserMock.Object);
+    }
+
+    private void SetupListar(
+        Action<ContextoAcesso, IEnumerable<StatusChamado>?, DateTime?, DateTime?>? capturar = null,
+        IEnumerable<Chamado>? itens = null)
+    {
+        var lista = itens?.ToList() ?? [];
+        _repositoryMock
+            .Setup(r => r.ListarAsync(
+                It.IsAny<ContextoAcesso>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<StatusChamado?>(),
+                It.IsAny<PrioridadeChamado?>(), It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<string?>(),
+                It.IsAny<string?>(), It.IsAny<IEnumerable<StatusChamado>?>(), It.IsAny<DateTime?>(),
+                It.IsAny<DateTime?>(), It.IsAny<MotivoEncerramento?>(), It.IsAny<CancellationToken>()))
+            .Callback<ContextoAcesso, int, int, StatusChamado?, PrioridadeChamado?, Guid?, Guid?, string?, string?, IEnumerable<StatusChamado>?, DateTime?, DateTime?, MotivoEncerramento?, CancellationToken>(
+                (acesso, _, _, _, _, _, _, _, _, statusEntre, dataInicio, dataFim, _, _) =>
+                    capturar?.Invoke(acesso, statusEntre, dataInicio, dataFim))
+            .ReturnsAsync((lista, lista.Count));
     }
 
     [Fact]
-    public async Task Handle_DevePassarSolicitanteEmailParaORepositorio()
+    public async Task Handle_DevePassarOContextoDoUsuarioLogadoParaORepositorio()
     {
-        _repositoryMock
-            .Setup(r => r.ListarAsync(
-                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<StatusChamado?>(), It.IsAny<PrioridadeChamado?>(),
-                It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<string?>(), It.IsAny<string?>(),
-                It.IsAny<IEnumerable<StatusChamado>?>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
-                It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<MotivoEncerramento?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Enumerable.Empty<Chamado>(), 0));
+        // AC-01/AC-02: a regra de visibilidade usa SEMPRE o usuário do token, nunca parâmetro da query.
+        ContextoAcesso? capturado = null;
+        SetupListar((acesso, _, _, _) => capturado = acesso);
+
+        await _handler.Handle(new ListarChamadosQuery(), CancellationToken.None);
+
+        capturado.Should().Be(new ContextoAcesso(UsuarioId, "ana.colaboradora@camarj.com.br", Perfil.Solicitante, GrupoId));
+    }
+
+    [Fact]
+    public async Task Handle_ComPerfilDesconhecidoNoToken_DeveTratarComoSolicitante()
+    {
+        _currentUserMock.SetupGet(c => c.Perfil).Returns("Qualquer");
+        ContextoAcesso? capturado = null;
+        SetupListar((acesso, _, _, _) => capturado = acesso);
+
+        await _handler.Handle(new ListarChamadosQuery(), CancellationToken.None);
+
+        capturado!.Perfil.Should().Be(Perfil.Solicitante);
+    }
+
+    [Fact]
+    public async Task Handle_DevePassarSolicitanteEmailComoFiltroParaORepositorio()
+    {
+        SetupListar();
 
         var query = new ListarChamadosQuery(SolicitanteEmail: "ana.colaboradora@camarj.com.br");
         await _handler.Handle(query, CancellationToken.None);
 
         _repositoryMock.Verify(r => r.ListarAsync(
-            1, 10, null, null, null, null, null, "ana.colaboradora@camarj.com.br",
-            null, null, null, null, null, null, null, It.IsAny<CancellationToken>()),
+            It.IsAny<ContextoAcesso>(), 1, 10, null, null, null, null, null, "ana.colaboradora@camarj.com.br",
+            null, null, null, null, It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
     [Fact]
-    public async Task Handle_DeveRetornarApenasChamadosDoSolicitante()
+    public async Task Handle_DeveMapearOsChamadosRetornadosPeloRepositorio()
     {
         var chamado = new Chamado("Título", "Descrição", "Ana", "ana.colaboradora@camarj.com.br", Guid.NewGuid());
+        SetupListar(itens: [chamado]);
 
-        _repositoryMock
-            .Setup(r => r.ListarAsync(
-                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<StatusChamado?>(), It.IsAny<PrioridadeChamado?>(),
-                It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<string?>(), "ana.colaboradora@camarj.com.br",
-                It.IsAny<IEnumerable<StatusChamado>?>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
-                It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<MotivoEncerramento?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((new[] { chamado }, 1));
-
-        var query = new ListarChamadosQuery(SolicitanteEmail: "ana.colaboradora@camarj.com.br");
-        var result = await _handler.Handle(query, CancellationToken.None);
+        var result = await _handler.Handle(new ListarChamadosQuery(), CancellationToken.None);
 
         result.Total.Should().Be(1);
         result.Items.Should().ContainSingle(c => c.SolicitanteEmail == "ana.colaboradora@camarj.com.br");
@@ -61,18 +99,9 @@ public class ListarChamadosQueryHandlerTests
     public async Task Handle_ComFinalizadosTrue_DevePassarOsTresStatusFinalizadosParaORepositorio()
     {
         IEnumerable<StatusChamado>? statusCapturado = null;
-        _repositoryMock
-            .Setup(r => r.ListarAsync(
-                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<StatusChamado?>(), It.IsAny<PrioridadeChamado?>(),
-                It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<string?>(), It.IsAny<string?>(),
-                It.IsAny<IEnumerable<StatusChamado>?>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
-                It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<MotivoEncerramento?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
-            .Callback<int, int, StatusChamado?, PrioridadeChamado?, Guid?, Guid?, string?, string?, IEnumerable<StatusChamado>?, DateTime?, DateTime?, Guid?, Guid?, MotivoEncerramento?, string?, CancellationToken>(
-                (_, _, _, _, _, _, _, _, statusEntre, _, _, _, _, _, _, _) => statusCapturado = statusEntre)
-            .ReturnsAsync((Enumerable.Empty<Chamado>(), 0));
+        SetupListar((_, statusEntre, _, _) => statusCapturado = statusEntre);
 
-        var query = new ListarChamadosQuery(Finalizados: true);
-        await _handler.Handle(query, CancellationToken.None);
+        await _handler.Handle(new ListarChamadosQuery(Finalizados: true), CancellationToken.None);
 
         statusCapturado.Should().BeEquivalentTo([StatusChamado.Resolvido, StatusChamado.Fechado, StatusChamado.Cancelado]);
     }
@@ -81,18 +110,9 @@ public class ListarChamadosQueryHandlerTests
     public async Task Handle_SemFinalizados_NaoDevePassarFiltroDeStatusEntre()
     {
         IEnumerable<StatusChamado>? statusCapturado = [StatusChamado.Aberto];
-        _repositoryMock
-            .Setup(r => r.ListarAsync(
-                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<StatusChamado?>(), It.IsAny<PrioridadeChamado?>(),
-                It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<string?>(), It.IsAny<string?>(),
-                It.IsAny<IEnumerable<StatusChamado>?>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
-                It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<MotivoEncerramento?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
-            .Callback<int, int, StatusChamado?, PrioridadeChamado?, Guid?, Guid?, string?, string?, IEnumerable<StatusChamado>?, DateTime?, DateTime?, Guid?, Guid?, MotivoEncerramento?, string?, CancellationToken>(
-                (_, _, _, _, _, _, _, _, statusEntre, _, _, _, _, _, _, _) => statusCapturado = statusEntre)
-            .ReturnsAsync((Enumerable.Empty<Chamado>(), 0));
+        SetupListar((_, statusEntre, _, _) => statusCapturado = statusEntre);
 
-        var query = new ListarChamadosQuery();
-        await _handler.Handle(query, CancellationToken.None);
+        await _handler.Handle(new ListarChamadosQuery(), CancellationToken.None);
 
         statusCapturado.Should().BeNull();
     }
@@ -105,23 +125,13 @@ public class ListarChamadosQueryHandlerTests
 
         DateTime? inicioCapturado = null;
         DateTime? fimCapturado = null;
+        SetupListar((_, _, dataInicio, dataFim) =>
+        {
+            inicioCapturado = dataInicio;
+            fimCapturado = dataFim;
+        });
 
-        _repositoryMock
-            .Setup(r => r.ListarAsync(
-                It.IsAny<int>(), It.IsAny<int>(), It.IsAny<StatusChamado?>(), It.IsAny<PrioridadeChamado?>(),
-                It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<string?>(), It.IsAny<string?>(),
-                It.IsAny<IEnumerable<StatusChamado>?>(), It.IsAny<DateTime?>(), It.IsAny<DateTime?>(),
-                It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<MotivoEncerramento?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>()))
-            .Callback<int, int, StatusChamado?, PrioridadeChamado?, Guid?, Guid?, string?, string?, IEnumerable<StatusChamado>?, DateTime?, DateTime?, Guid?, Guid?, MotivoEncerramento?, string?, CancellationToken>(
-                (_, _, _, _, _, _, _, _, _, dataInicio, dataFim, _, _, _, _, _) =>
-                {
-                    inicioCapturado = dataInicio;
-                    fimCapturado = dataFim;
-                })
-            .ReturnsAsync((Enumerable.Empty<Chamado>(), 0));
-
-        var query = new ListarChamadosQuery(DataInicio: inicio, DataFim: fim);
-        await _handler.Handle(query, CancellationToken.None);
+        await _handler.Handle(new ListarChamadosQuery(DataInicio: inicio, DataFim: fim), CancellationToken.None);
 
         inicioCapturado!.Value.Kind.Should().Be(DateTimeKind.Utc);
         inicioCapturado!.Value.Should().Be(new DateTime(2026, 7, 1, 0, 0, 0, DateTimeKind.Utc));

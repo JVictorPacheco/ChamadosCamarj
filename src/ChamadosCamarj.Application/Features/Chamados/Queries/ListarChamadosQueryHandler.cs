@@ -9,10 +9,12 @@ namespace ChamadosCamarj.Application.Features.Chamados.Queries;
 public class ListarChamadosQueryHandler : IRequestHandler<ListarChamadosQuery, PagedResult<ChamadoResponse>>
 {
     private readonly IChamadoRepository _chamadoRepository;
+    private readonly ICurrentUserService _currentUser;
 
-    public ListarChamadosQueryHandler(IChamadoRepository chamadoRepository)
+    public ListarChamadosQueryHandler(IChamadoRepository chamadoRepository, ICurrentUserService currentUser)
     {
         _chamadoRepository = chamadoRepository;
+        _currentUser = currentUser;
     }
 
     public async Task<PagedResult<ChamadoResponse>> Handle(ListarChamadosQuery request, CancellationToken cancellationToken)
@@ -52,14 +54,15 @@ public class ListarChamadosQueryHandler : IRequestHandler<ListarChamadosQuery, P
             Enum.TryParse<SlaStatus>(request.SlaStatus, ignoreCase: true, out var slaParsed))
             slaStatus = slaParsed;
 
+        var acesso = _currentUser.ObterContextoAcesso();
+
         // Se há filtro SLA (calculado em memória), carregamos todos sem paginação e filtramos
         if (slaStatus.HasValue)
         {
             var (todos, totalIgnorado) = await _chamadoRepository.ListarAsync(
-                1, int.MaxValue, status, prioridade, request.ResponsavelId,
+                acesso, 1, int.MaxValue, status, prioridade, request.ResponsavelId,
                 request.CategoriaId, request.Busca, request.SolicitanteEmail,
-                statusEntre, dataInicio, dataFim, request.UsuarioLogadoId,
-                request.GrupoId, null, request.Perfil, cancellationToken);
+                statusEntre, dataInicio, dataFim, null, cancellationToken);
 
             var filtrados = todos.Where(c => SlaCalculo.CalcularStatus(c.DataLimite) == slaStatus.Value).ToList();
             var totalFiltrado = filtrados.Count;
@@ -71,11 +74,10 @@ public class ListarChamadosQueryHandler : IRequestHandler<ListarChamadosQuery, P
         }
 
         var (items, total) = await _chamadoRepository.ListarAsync(
-            request.Pagina, request.TamanhoPagina, status, prioridade,
+            acesso, request.Pagina, request.TamanhoPagina, status, prioridade,
             request.ResponsavelId, request.CategoriaId, request.Busca,
             request.SolicitanteEmail, statusEntre, dataInicio, dataFim,
-            request.UsuarioLogadoId, request.GrupoId, motivoEncerramento,
-            request.Perfil, cancellationToken);
+            motivoEncerramento, cancellationToken);
 
         return new PagedResult<ChamadoResponse>(
             items.Select(c => c.ToResponse()).ToList(),

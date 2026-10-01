@@ -1,3 +1,4 @@
+using ChamadosCamarj.Application.Common.Autorizacao;
 using ChamadosCamarj.Domain.Enums;
 using MediatR;
 
@@ -8,4 +9,8 @@ public record AlterarStatusChamadoCommand(
     StatusChamado NovoStatus,
     Guid? UsuarioId = null,
     string UsuarioNome = "Sistema"
-) : IRequest;
+) : IRequest, IRequerAcessoChamado
+{
+    Guid IRequerAcessoChamado.ChamadoId => Id;
+    AcaoChamado IRequerAcessoChamado.Acao => AcaoChamado.AlterarStatus;
+}

@@ -16,10 +16,11 @@ public class ChamadoCriadoNotificationHandler : INotificationHandler<ChamadoCria
 
     public async Task Handle(ChamadoCriadoNotification notification, CancellationToken cancellationToken)
     {
+        // Vai para TODOS os conectados: só identificadores, nunca conteúdo (spec autorizacao-chamados
+        // AC-19). Quem precisa dos dados rebusca pela API, que aplica as regras de acesso.
         await _hubContext.Clients.Group("Todos").SendAsync("ChamadoCriado", new
         {
             notification.ChamadoId,
-            notification.Titulo,
             Status = notification.Status.ToString()
         }, cancellationToken);
 
@@ -61,11 +62,11 @@ public class ComentarioAdicionadoNotificationHandler : INotificationHandler<Come
 
     public async Task Handle(ComentarioAdicionadoNotification notification, CancellationToken cancellationToken)
     {
+        // Sem autor nem texto: antes, todo usuário conectado recebia o conteúdo de qualquer
+        // comentário, inclusive os internos (AC-19).
         await _hubContext.Clients.Group("Todos").SendAsync("ComentarioAdicionado", new
         {
-            notification.ChamadoId,
-            notification.Autor,
-            notification.Conteudo
+            notification.ChamadoId
         }, cancellationToken);
     }
 }

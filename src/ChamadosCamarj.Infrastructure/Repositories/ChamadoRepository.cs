@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using ChamadosCamarj.Domain.Common;
 using ChamadosCamarj.Domain.Entities;
+using ChamadosCamarj.Domain.Enums;
 using ChamadosCamarj.Domain.Interfaces;
 using ChamadosCamarj.Infrastructure.Data;
 using ChamadosCamarj.Application.Common.Exceptions;
@@ -167,7 +169,49 @@ public class ChamadoRepository : IChamadoRepository
             .ToListAsync(cancellationToken);
     }
 
+    /// <summary>
+    /// Regra ÚNICA de "quem pode ver qual chamado" — usada pela listagem, pelo PodeVerAsync e pelas
+    /// métricas do Dashboard. Spec: .specs/features/autorizacao-chamados (AC-01, AC-02, AC-08, AC-11).
+    /// "Chamado do grupo" = aberto por um membro do grupo OU com responsável membro do grupo.
+    /// </summary>
+    private IQueryable<Chamado> AplicarVisibilidade(IQueryable<Chamado> query, ContextoAcesso acesso)
+    {
+        if (acesso.Perfil == Perfil.Admin)
+            return query;
+
+        var usuarioId = acesso.UsuarioId;
+        var email = (acesso.Email ?? string.Empty).Trim().ToLowerInvariant();
+        var atendente = acesso.Perfil == Perfil.Atendente;
+
+        if (!acesso.GrupoId.HasValue)
+        {
+            return atendente
+                ? query.Where(c => c.ResponsavelId == null
+                                || c.ResponsavelId == usuarioId
+                                || c.SolicitanteEmail.ToLower() == email)
+                : query.Where(c => c.SolicitanteEmail.ToLower() == email);
+        }
+
+        var grupoId = acesso.GrupoId.Value;
+        var membros = _context.UsuariosPerfil.Where(u => u.GrupoId == grupoId);
+
+        return atendente
+            ? query.Where(c => c.ResponsavelId == null
+                            || c.ResponsavelId == usuarioId
+                            || c.SolicitanteEmail.ToLower() == email
+                            || membros.Any(u => u.Id == c.ResponsavelId || u.Email == c.SolicitanteEmail.ToLower()))
+            : query.Where(c => c.SolicitanteEmail.ToLower() == email
+                            || membros.Any(u => u.Id == c.ResponsavelId || u.Email == c.SolicitanteEmail.ToLower()));
+    }
+
+    public async Task<bool> PodeVerAsync(Guid chamadoId, ContextoAcesso acesso, CancellationToken cancellationToken = default)
+    {
+        return await AplicarVisibilidade(_dbSet.AsNoTracking().Where(c => c.Id == chamadoId), acesso)
+            .AnyAsync(cancellationToken);
+    }
+
     public async Task<(IEnumerable<Chamado> Items, int Total)> ListarAsync(
+        ContextoAcesso acesso,
         int pagina,
         int tamanhoPagina,
         Domain.Enums.StatusChamado? status = null,
@@ -179,35 +223,10 @@ public class ChamadoRepository : IChamadoRepository
         IEnumerable<Domain.Enums.StatusChamado>? statusEntre = null,
         DateTime? dataInicio = null,
         DateTime? dataFim = null,
-        Guid? usuarioLogadoId = null,
-        Guid? grupoId = null,
         Domain.Enums.MotivoEncerramento? motivoEncerramento = null,
-        string? perfil = null,
         CancellationToken cancellationToken = default)
     {
-        var query = _dbSet.AsNoTracking().AsQueryable();
-
-        if (grupoId.HasValue && usuarioLogadoId.HasValue)
-        {
-            if (perfil == "Atendente")
-            {
-                query = query.Where(c =>
-                    !c.ResponsavelId.HasValue ||
-                    c.ResponsavelId == usuarioLogadoId.Value ||
-                    _context.UsuariosPerfil.Any(u => u.Id == c.ResponsavelId && u.GrupoId == grupoId.Value)
-                );
-            }
-            else
-            {
-                query = query.Where(c =>
-                    (c.ResponsavelId.HasValue &&
-                     (c.ResponsavelId == usuarioLogadoId.Value ||
-                      _context.UsuariosPerfil.Any(u => u.Id == c.ResponsavelId && u.GrupoId == grupoId.Value)))
-                    ||
-                    _context.UsuariosPerfil.Any(u => u.Id == usuarioLogadoId.Value && u.Email == c.SolicitanteEmail)
-                );
-            }
-        }
+        var query = AplicarVisibilidade(_dbSet.AsNoTracking(), acesso);
 
         if (status.HasValue)
             query = query.Where(c => c.Status == status.Value);
@@ -229,7 +248,8 @@ public class ChamadoRepository : IChamadoRepository
                 : query.Where(c => c.Titulo.Contains(busca) || c.Descricao.Contains(busca));
         }
 
-        if (!string.IsNullOrWhiteSpace(solicitanteEmail) && !(grupoId.HasValue && usuarioLogadoId.HasValue))
+        // Filtro comum, aplicado POR CIMA da visibilidade — nunca a substitui.
+        if (!string.IsNullOrWhiteSpace(solicitanteEmail))
             query = query.Where(c => c.SolicitanteEmail == solicitanteEmail);
 
         if (statusEntre is not null)
@@ -269,18 +289,17 @@ public class ChamadoRepository : IChamadoRepository
         return await _dbSet.CountAsync(c => c.Status == status, cancellationToken);
     }
 
-    public async Task<Dictionary<Domain.Enums.StatusChamado, int>> ContarPorStatusAgrupadoAsync(CancellationToken cancellationToken = default)
+    public async Task<Dictionary<Domain.Enums.StatusChamado, int>> ContarPorStatusAgrupadoAsync(ContextoAcesso acesso, CancellationToken cancellationToken = default)
     {
-        return await _dbSet
+        return await AplicarVisibilidade(_dbSet.AsNoTracking(), acesso)
             .GroupBy(c => c.Status)
             .Select(g => new { Status = g.Key, Quantidade = g.Count() })
             .ToDictionaryAsync(x => x.Status, x => x.Quantidade, cancellationToken);
     }
 
-    public async Task<(int TotalResolvidos, int DentroPrazo)> ContarSlaComplianceAsync(DateTime inicio, DateTime fim, CancellationToken cancellationToken = default)
+    public async Task<(int TotalResolvidos, int DentroPrazo)> ContarSlaComplianceAsync(ContextoAcesso acesso, DateTime inicio, DateTime fim, CancellationToken cancellationToken = default)
     {
-        var resolvidos = await _dbSet
-            .AsNoTracking()
+        var resolvidos = await AplicarVisibilidade(_dbSet.AsNoTracking(), acesso)
             .Where(c => c.DataConclusao.HasValue
                 && c.DataConclusao >= inicio
                 && c.DataConclusao <= fim
@@ -293,19 +312,19 @@ public class ChamadoRepository : IChamadoRepository
         return (total, dentroPrazo);
     }
 
-    public async Task<int> ContarResolvidosHojeAsync(CancellationToken cancellationToken = default)
+    public async Task<int> ContarResolvidosHojeAsync(ContextoAcesso acesso, CancellationToken cancellationToken = default)
     {
         var hoje = DateTime.UtcNow.Date;
-        return await _dbSet.CountAsync(c =>
+        return await AplicarVisibilidade(_dbSet.AsNoTracking(), acesso).CountAsync(c =>
             c.Status == Domain.Enums.StatusChamado.Resolvido &&
             c.DataConclusao.HasValue &&
             c.DataConclusao.Value.Date == hoje,
             cancellationToken);
     }
 
-    public async Task<double?> ObterTempoMedioResolucaoHorasAsync(CancellationToken cancellationToken = default)
+    public async Task<double?> ObterTempoMedioResolucaoHorasAsync(ContextoAcesso acesso, CancellationToken cancellationToken = default)
     {
-        var resolvidos = await _dbSet
+        var resolvidos = await AplicarVisibilidade(_dbSet.AsNoTracking(), acesso)
             .Where(c => c.Status == Domain.Enums.StatusChamado.Resolvido
                 && c.DataConclusao.HasValue)
             .Select(c => new { c.DataCriacao, DataConclusao = c.DataConclusao!.Value })
@@ -317,9 +336,9 @@ public class ChamadoRepository : IChamadoRepository
         return resolvidos.Average(r => (r.DataConclusao - r.DataCriacao).TotalHours);
     }
 
-    public async Task<List<Domain.Interfaces.CategoriaContagem>> ContarPorCategoriaAsync(CancellationToken cancellationToken = default)
+    public async Task<List<Domain.Interfaces.CategoriaContagem>> ContarPorCategoriaAsync(ContextoAcesso acesso, CancellationToken cancellationToken = default)
     {
-        return await _dbSet
+        return await AplicarVisibilidade(_dbSet.AsNoTracking(), acesso)
             .Where(c => c.Status != Domain.Enums.StatusChamado.Fechado
                      && c.Status != Domain.Enums.StatusChamado.Cancelado)
             .GroupBy(c => new { CategoriaId = c.Categoria != null ? (Guid?)c.Categoria.Id : null, CategoriaNome = c.Categoria != null ? c.Categoria.Nome : "Sem categoria" })
@@ -327,9 +346,9 @@ public class ChamadoRepository : IChamadoRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<Dictionary<string, int>> ContarPorPrioridadeAsync(CancellationToken cancellationToken = default)
+    public async Task<Dictionary<string, int>> ContarPorPrioridadeAsync(ContextoAcesso acesso, CancellationToken cancellationToken = default)
     {
-        return await _dbSet
+        return await AplicarVisibilidade(_dbSet.AsNoTracking(), acesso)
             .Where(c => c.Status != Domain.Enums.StatusChamado.Fechado
                      && c.Status != Domain.Enums.StatusChamado.Cancelado)
             .GroupBy(c => c.Prioridade)

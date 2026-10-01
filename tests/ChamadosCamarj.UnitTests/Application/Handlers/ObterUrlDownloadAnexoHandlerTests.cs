@@ -30,7 +30,7 @@ public class ObterUrlDownloadAnexoHandlerTests
         _storageServiceMock.Setup(s => s.ObterUrlAssinadaAsync($"{chamadoId}/abc.pdf", 3600, It.IsAny<CancellationToken>()))
             .ReturnsAsync("https://storage.example/signed-url");
 
-        var url = await _handler.Handle(new ObterUrlDownloadAnexoQuery(anexoId), CancellationToken.None);
+        var url = await _handler.Handle(new ObterUrlDownloadAnexoQuery(chamadoId, anexoId), CancellationToken.None);
 
         url.Should().Be("https://storage.example/signed-url");
     }
@@ -42,7 +42,24 @@ public class ObterUrlDownloadAnexoHandlerTests
         _chamadoRepositoryMock.Setup(r => r.ObterAnexoPorIdAsync(anexoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync((Anexo?)null);
 
-        var act = async () => await _handler.Handle(new ObterUrlDownloadAnexoQuery(anexoId), CancellationToken.None);
+        var act = async () => await _handler.Handle(new ObterUrlDownloadAnexoQuery(Guid.NewGuid(), anexoId), CancellationToken.None);
         await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task Handle_QuandoAnexoEhDeOutroChamado_DeveLancarNotFoundSemGerarUrl()
+    {
+        // O behavior checou o acesso ao chamado da URL; o anexo precisa ser DESSE chamado,
+        // senão bastaria combinar um chamado visível com o anexo de outro.
+        var anexoId = Guid.NewGuid();
+        var chamadoDoAnexo = Guid.NewGuid();
+        var anexo = new Anexo(chamadoDoAnexo, "nota.pdf", $"{chamadoDoAnexo}/abc.pdf", "application/pdf", 1024);
+        _chamadoRepositoryMock.Setup(r => r.ObterAnexoPorIdAsync(anexoId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(anexo);
+
+        var act = async () => await _handler.Handle(new ObterUrlDownloadAnexoQuery(Guid.NewGuid(), anexoId), CancellationToken.None);
+
+        await act.Should().ThrowAsync<NotFoundException>();
+        _storageServiceMock.Verify(s => s.ObterUrlAssinadaAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 }
