@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.SignalR;
 
 namespace ChamadosCamarj.WebApi.Hubs;
@@ -7,32 +8,32 @@ namespace ChamadosCamarj.WebApi.Hubs;
 /// </summary>
 public class ChamadosHub : Hub
 {
+    /// <summary>Atendentes e Admins: recebem avisos operacionais, como os alertas de SLA.</summary>
+    public const string GrupoAtendimento = "Atendimento";
+
     public override async Task OnConnectedAsync()
     {
         // Grupo padrão: todos os clientes recebem notificações globais
         await Groups.AddToGroupAsync(Context.ConnectionId, "Todos");
+
+        // Grupos por perfil são definidos SÓ aqui, pelo servidor, a partir do token — o cliente
+        // não escolhe em que grupo entra (spec correcoes-acesso-chamados AC-04).
+        if (EhAtendimento(Context.User))
+            await Groups.AddToGroupAsync(Context.ConnectionId, GrupoAtendimento);
+
         await base.OnConnectedAsync();
+    }
+
+    public static bool EhAtendimento(ClaimsPrincipal? usuario)
+    {
+        var perfil = usuario?.FindFirst("perfil")?.Value;
+        return string.Equals(perfil, "Atendente", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(perfil, "Admin", StringComparison.OrdinalIgnoreCase);
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, "Todos");
         await base.OnDisconnectedAsync(exception);
-    }
-
-    /// <summary>
-    /// Permite que o cliente entre em um grupo específico (ex: perfil "Atendente").
-    /// </summary>
-    public async Task EntrarGrupo(string grupo)
-    {
-        await Groups.AddToGroupAsync(Context.ConnectionId, grupo);
-    }
-
-    /// <summary>
-    /// Permite que o cliente saia de um grupo específico.
-    /// </summary>
-    public async Task SairGrupo(string grupo)
-    {
-        await Groups.RemoveFromGroupAsync(Context.ConnectionId, grupo);
     }
 }

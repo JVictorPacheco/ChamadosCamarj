@@ -7,7 +7,9 @@ namespace ChamadosCamarj.Application.Mappings;
 
 public static class ChamadoMappings
 {
-    public static ChamadoResponse ToResponse(this Chamado chamado) =>
+    /// <param name="incluirInternos">false para Solicitante: a contagem de comentários não pode
+    /// revelar comentários internos (spec correcoes-acesso-chamados AC-02).</param>
+    public static ChamadoResponse ToResponse(this Chamado chamado, bool incluirInternos = true) =>
         new(
             chamado.Id,
             chamado.Numero,
@@ -25,7 +27,9 @@ public static class ChamadoMappings
             chamado.DataConclusao,
             chamado.DataCriacao,
             chamado.DataAtualizacao,
-            chamado.Comentarios.Count,
+            incluirInternos
+                ? chamado.Comentarios.Count
+                : chamado.Comentarios.Count(c => c.Tipo == TipoComentario.Publico),
             chamado.Anexos.Count,
             SlaCalculo.CalcularStatus(chamado.DataLimite),
             SlaCalculo.FormatarLabel(chamado.DataLimite),
