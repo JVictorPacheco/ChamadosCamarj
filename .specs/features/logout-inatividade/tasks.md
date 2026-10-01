@@ -28,3 +28,14 @@
 | **Após o review:** a mensagem aparece nos dois caminhos e some no próximo login | ✅ |
 
 Durante a verificação, o teste de duas abas falhou na primeira tentativa por **erro do próprio teste**: o relógio do Playwright é um só por contexto, e ele foi adiantado duas vezes por passo. Corrigido o teste, o cenário passou. O código não mudou.
+
+## Rodada 2 do review (2026-10-01): correções aplicadas, verificação na tela PENDENTE
+- R2-01 🔴 (suspensão do computador renovava a sessão): todo gesto e a volta para a aba
+  (`focus`/`visibilitychange`) medem o tempo parado pelo relógio de parede antes de renovar.
+- R2-02 🟡 (reabertura vencida montava a área logada por um instante): a rota protegida checa antes
+  de montar o `AppLayout`; nenhuma tela, API nem heartbeat do chat roda.
+- R2-03 🟡 (aviso de inatividade num "Sair" normal): o `AppLayout` apaga o aviso ao montar.
+- `npm run build` e lint ok. **A verificação na tela dos cenários B (suspensão), C (reabertura) e D
+  (Sair após aviso antigo) foi interrompida:** o sistema ficou sem memória (0,5 GB livres) e o
+  Claude Code encerrou a API e o frontend locais. Os dados de teste foram apagados (contagem 0).
+  Falta: rodar os cenários B/C/D e a 3ª rodada de review antes do merge.
