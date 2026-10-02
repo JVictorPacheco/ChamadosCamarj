@@ -22,6 +22,8 @@ import { useTheme } from '@/hooks/useTheme'
 import { useSignalR } from '@/hooks/useSignalR'
 import { useConversas } from '@/features/chat/hooks/useConversas'
 import { useChatHeartbeat } from '@/features/chat/hooks/useChatHeartbeat'
+import { useInactivityLogout } from '@/hooks/useInactivityLogout'
+import { MINUTOS_INATIVIDADE, limparLogoutPorInatividade, marcarLogoutPorInatividade } from '@/auth/logoutInatividade'
 import { PreferenciasDialog } from '@/features/chat/components/PreferenciasDialog'
 import { Kanban, LayoutDashboard, Inbox, FileBarChart, Users, Archive, Sun, Moon, Settings, Tags, FolderKanban, MessageSquare } from 'lucide-react'
 import logoCamarj from '../assets/logo-camarj.png'
@@ -89,6 +91,16 @@ export function AppLayout() {
     logout()
     navigate('/login')
   }
+
+  // Sessão ativa nesta aba: um aviso de inatividade antigo não pode aparecer num "Sair" futuro
+  // (review R2-03).
+  useEffect(limparLogoutPorInatividade, [])
+
+  // Decisão de 2026-07-18: 20 min sem interação desconecta (spec logout-inatividade).
+  useInactivityLogout(MINUTOS_INATIVIDADE, () => {
+    marcarLogoutPorInatividade()
+    sair()
+  })
 
   return (
     <SidebarProvider>

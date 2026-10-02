@@ -1,6 +1,40 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-10-01
+> Atualizado em: 2026-10-02
+
+---
+
+## Sessão de 2026-10-01/02 — Logout por inatividade ligado
+
+### Contexto
+Pendência de 2026-09-29. Investigação: o hook `useInactivityLogout` nasceu no commit `8166ff0`
+(2026-07-18) e **nunca foi chamado** — foi esquecido, não removido de propósito. A regra (20 min)
+foi decidida e confirmada pelo usuário em 2026-07-18. Fluxo `/sdd`, artefatos em
+`.specs/features/logout-inatividade/`.
+
+### O que foi feito (branch `feature/logout-inatividade`)
+- 20 min sem gesto real (mouse, clique, teclado, roda, toque) em nenhuma aba → desconecta e mostra
+  "Sua sessão foi encerrada por inatividade" na tela de login (até o próximo login).
+- Atividade compartilhada entre abas (`localStorage`); o tempo parado é medido pelo relógio de
+  parede, então a suspensão do computador não renova a sessão.
+- Sessão reaberta depois do limite (navegador fechado, aba descartada) é encerrada pela
+  `ProtectedRoute` **antes** de montar a área logada (nenhuma tela, API ou heartbeat do chat roda).
+- **Efeito no deploy:** quem estiver logado no momento do deploy precisa entrar de novo uma vez
+  (sessão sem a marca nova vale como vencida). Abas abertas com o código antigo devem ser recarregadas.
+- Obsidian `Acesso e Login` atualizado. Só frontend; nenhuma migration.
+
+### Verificação
+- 3 rodadas de review independente: **2 bloqueantes encontrados e corrigidos**:
+  - `scroll` disparado pelo próprio navegador ao chegar atualização em tempo real mantinha a
+    sessão para sempre;
+  - depois da suspensão do notebook, o primeiro gesto renovava a sessão.
+  A 3ª rodada não teve bloqueantes; os 2 🟡 dela foram corrigidos.
+- Tela (Playwright com relógio simulado, conta de teste apagada): 1 e 2 abas, scroll automático,
+  suspensão de 90 min, reabertura vencida (0 chamadas à API), "Sair" após aviso antigo — todos OK.
+  As correções da 3ª rodada (fase de captura; sessão sem marca) foram verificadas por build/lint e
+  revisão de código, não na tela.
+- A verificação foi interrompida uma vez porque a máquina ficou sem memória (o Claude Code encerrou
+  API e frontend); retomada em 2026-10-02.
 
 ---
 
@@ -159,7 +193,7 @@ negócio**; nomes **sem emoji**; **nenhum status/andamento** no vault (fica só 
 ### Pontos levantados durante a escrita (não corrigidos — decisão do usuário)
 - **SLA em horas corridas**, não úteis (`Chamado.CalcularDataLimite`) — documentado como ponto de
   atenção para o negócio em `20 Funcionalidades/SLA.md`.
-- **Logout por inatividade não está ativo:** o hook `useInactivityLogout` existe em
+- ~~**Logout por inatividade não está ativo:**~~ **Resolvido em 2026-10-02** (`logout-inatividade`). o hook `useInactivityLogout` existe em
   `frontend/src/hooks/` mas não é usado em nenhum componente (a decisão de 2026-07-18 previa 20 min).
 - ~~**Visibilidade de Solicitante com grupo:** em `ChamadoRepository` (filtro por `grupoId`), um
   usuário que não é Atendente mas tem grupo parece enxergar também chamados atribuídos a colegas
