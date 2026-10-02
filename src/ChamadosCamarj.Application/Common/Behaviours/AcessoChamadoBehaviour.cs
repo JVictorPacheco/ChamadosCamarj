@@ -36,14 +36,20 @@ public class AcessoChamadoBehaviour<TRequest, TResponse> : IPipelineBehavior<TRe
         if (!await _chamadoRepository.PodeVerAsync(requisicao.ChamadoId, acesso, cancellationToken))
             throw new NotFoundException("Chamado", requisicao.ChamadoId);
 
-        var solicitanteEmail = string.Empty;
-        if (ChamadoPermissoes.DependeDoSolicitante(requisicao.Acao) && acesso.Perfil == Perfil.Solicitante)
+        // Só consulta o chamado quando a regra depende dele (quem abriu, responsável, status).
+        var dados = new DadosDoChamado(string.Empty, null, StatusChamado.Aberto);
+        if (ChamadoPermissoes.DependeDoChamado(requisicao.Acao, acesso.Perfil))
         {
             var chamado = await _chamadoRepository.ObterPorIdAsync(requisicao.ChamadoId, cancellationToken);
-            solicitanteEmail = chamado?.SolicitanteEmail ?? string.Empty;
+            if (chamado is not null)
+                dados = new DadosDoChamado(chamado.SolicitanteEmail, chamado.ResponsavelId, chamado.Status);
+
+            // Encerrado: mensagem própria para qualquer pessoa que vê, inclusive o Admin (spec editar-chamado AC-10).
+            if (requisicao.Acao == AcaoChamado.Editar && ChamadoPermissoes.EdicaoBloqueadaPorEncerramento(dados))
+                throw new BadRequestException(ChamadoPermissoes.MensagemEdicaoEncerrado);
         }
 
-        if (!ChamadoPermissoes.Pode(requisicao.Acao, acesso, solicitanteEmail))
+        if (!ChamadoPermissoes.Pode(requisicao.Acao, acesso, dados))
             throw new ForbiddenException("Você não tem permissão para realizar esta ação neste chamado.");
 
         return await next();

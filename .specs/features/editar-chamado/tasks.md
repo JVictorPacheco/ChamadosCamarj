@@ -10,19 +10,19 @@
 
 ## Backend
 
-- [ ] **T01** Domínio: `Chamado.AtualizarDados` retorna `bool` (houve mudança), não toca
+- [x] **T01** Domínio: `Chamado.AtualizarDados` retorna `bool` (houve mudança), não toca
   `DataAtualizacao` sem mudança e lança `InvalidOperationException` em chamado encerrado.
   *AC-10, AC-16 · design §2.3.*
   **Pronto quando:** testes de domínio: mudança → true e versão muda; texto igual → false e versão
   igual; Resolvido/Fechado/Cancelado → exceção.
-- [ ] **T02** `ChamadoPermissoes`: `DadosDoChamado`, `Pode(acao, acesso, DadosDoChamado)`, regra nova
+- [x] **T02** `ChamadoPermissoes`: `DadosDoChamado`, `Pode(acao, acesso, DadosDoChamado)`, regra nova
   de `Editar`, `DependeDoChamado`, `EdicaoBloqueadaPorEncerramento`; ajustar os 2 testes da regra
   antiga e criar os da nova. *AC-01..AC-11 · C1, C2.*
   **Pronto quando:** testes da regra: quem abriu sem responsável (Solicitante e Atendente) → pode;
   quem abriu com responsável → não; responsável atual → pode; outro Atendente que vê → não;
   Solicitante colega de grupo → não; Admin com/sem grupo → pode; encerrado → ninguém; reaberto (sem
   responsável) → quem abriu pode. Testes das outras ações inalterados e passando.
-- [ ] **T03** `AcessoChamadoBehaviour`: carrega o chamado quando `DependeDoChamado`; `Editar` em
+- [x] **T03** `AcessoChamadoBehaviour`: carrega o chamado quando `DependeDoChamado`; `Editar` em
   encerrado → 400 com a mensagem do AC-10 (antes do 403); 403 pela regra. *AC-02, AC-06, AC-10,
   AC-20, AC-22 · design §2.2.*
   **Pronto quando:** testes do behaviour: 404 continua antes de tudo; Admin em encerrado → 400 com a
