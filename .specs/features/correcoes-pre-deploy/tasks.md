@@ -75,14 +75,14 @@
 
 ## Verificação
 
-- [ ] **T13** Verificação ao vivo (backend e frontend locais, banco real), com contas de teste
+- [x] **T13** Verificação ao vivo (backend e frontend locais, banco real), com contas de teste
   `teste.cpd.*`, criadas e apagadas por script no scratchpad:
   - AC-01..04: o alerta chega a quem vê, não chega a quem não vê, chega ao Admin e não chega ao
     Solicitante (forçando um chamado de teste perto do prazo);
   - AC-06/07 via API;
   - AC-09/10/12/13/14 em duas abas (A e B);
   - AC-23 com chamada sem `If-Match`.
-- [ ] **T15** E2E: trocar "Categoria" por Área/Tipo em `chamados.spec.ts` e `fluxo-completo.spec.ts`;
+- [x] **T15** E2E: trocar "Categoria" por Área/Tipo em `chamados.spec.ts` e `fluxo-completo.spec.ts`;
   em `admin.spec.ts`, trocar a página `/admin/categorias` pela de Tipos de chamado; títulos com
   `[TESTE-E2E]`; novo `e2e/conflito.spec.ts`: abre o detalhe, altera o chamado por fora (API) e
   clica numa ação → mensagem do AC-10 e dados recarregados; o mesmo no Kanban (AC-14). Rodar a suíte
