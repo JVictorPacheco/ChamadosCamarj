@@ -1,31 +1,36 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-10-02 (fechamento de correcoes-pre-deploy)
+> Atualizado em: 2026-10-02 (release #51 em main; ordem das próximas features)
 
 ---
 
 ## ▶ ONDE PARAMOS (2026-10-02) — ler isto primeiro ao retomar
 
-**`develop` tem tudo** — as 4 features do #44 (já em `main`) e `correcoes-pre-deploy` (PR #49,
-mergeado pelo usuário em 2026-10-02, commit `0b76c9d`; gates em `develop`: 0 erros, 444 testes, build
-do frontend ok). `develop` está 19 commits à frente de `main`. O usuário decidiu **fazer o deploy
-só depois desta feature**, junto.
+**`main` == `develop`** desde o release **#51** (mergeado pelo usuário em 2026-10-02, commit
+`389afb0`; Cloudflare Pages success). Em `main`: as 4 features do #44 + `correcoes-pre-deploy` (#49)
++ docs (#48, #50). **Falta só o deploy** pelo irmão do usuário.
 
-**Próximos passos, nesta ordem:**
-1. **Usuário:** promover `develop` → `main` (PR de release).
-2. **Usuário:** trocar a senha da conta `suporte@camarj.com.br` (informada na conversa da sessão de
-   2026-10-02 para rodar os E2E; a senha antiga continua no histórico do git, mas já não vale).
-3. **Deploy pelo irmão do usuário.** **Backend e frontend precisam subir juntos.** Avisos do deploy:
+**Ordem de execução combinada com o usuário (2026-10-02):**
+0. **Deploy pelo irmão do usuário.** **Backend e frontend precisam subir juntos.** Avisos do deploy:
    - quem estiver logado vai precisar entrar de novo uma vez (logout por inatividade);
    - o Kanban do Atendente sem equipe passa a mostrar só o que é dele;
    - **a migration `AddAreaETipoChamado` JÁ ESTÁ APLICADA no banco** (dev = prod, aplicada em
      2026-10-02). A versão antiga em produção continua funcionando com ela, mas até o deploy
      **não reclassificar tipo de chamado real** (a versão antiga não conhece essa ação no histórico);
    - `correcoes-pre-deploy` **não tem migration**.
-4. Depois do deploy validado: reclassificar os 40 chamados antigos ("Não classificado") pelo detalhe
-   e abrir a feature de **limpeza de Categorias** (ROADMAP).
-5. O usuário quer **planejar uma feature nova** comigo depois do deploy. Já registrada no ROADMAP:
-   **"Editar chamado"** (modal; Solicitante edita os que abriu, Atendente os que assumiu, Admin todos).
+1. **Editar chamado** — spec aprovada em 2026-10-02 (`.specs/features/editar-chamado/`), em andamento
+   na branch `feature/editar-chamado`.
+2. **Controle de acesso por módulo** — spec aprovada em 2026-10-02 (`.specs/features/controle-de-acesso/`).
+3. **SLA em dias úteis + cadastro de feriados** — decisões de negócio tomadas (ver Pendências); falta spec.
+4. **Limpeza de Categorias** — depois do deploy e de reclassificar os 40 chamados antigos ("Não classificado").
+- Avulso, a qualquer momento: correção do modal "Alterar prioridade" (abre com a prioridade de quando
+  a página carregou) — como bugfix, com `/analise-cod`.
+- Do usuário: trocar a senha de `suporte@camarj.com.br`; verificar os AC-49 a AC-52 do chat.
+- Backlog sem prioridade: abertura por e-mail (IMAP), filtro de SLA na tela, exportação CSV/PDF, carga
+  por atendente.
+
+**Processo:** toda feature (e toda correção de bug) passa pela análise de impacto `/analise-cod` — o
+usuário pediu cuidado explícito com efeitos fora do escopo (regra 5).
 
 ### Pendências gerais (consolidado em 2026-10-02, pós correcoes-pre-deploy)
 - **SLA — DECIDIDO pelo usuário em 2026-10-02:** conta só o **expediente de 08:00 às 18:00 em dias
@@ -1008,7 +1013,7 @@ manual ainda.
 
 4. **Orquestração de IA com SDD.** Toda feature nova segue o ciclo spec → design → tasks → implementação → review independente → gate checks → PR. **No Claude Code:** `/sdd` (specify → plan → tasks → implement → review por sub-agente novo → close), com 2 aprovações do usuário (a spec e a abertura do PR) e paradas obrigatórias em mudança de contrato, decisão em aberto e ação em banco real. **No OpenCode:** `@spec` → `@build-backend`/`@build-frontend` → `@review` → gate checks → commit/merge, pedindo a cada agente que salve seus artefatos. O merge é sempre do usuário. Guia completo: `docs/GUIA-ORQUESTRACAO-SDD.md`. *(Atualizada em 2026-10-02, feature correcoes-pre-deploy: antes descrevia só o OpenCode.)*
 
-5. **Não quebrar nada fora do escopo da feature atual — e se for preciso tocar em código compartilhado com outra feature, avisar ANTES de fazer, não só relatar depois.** Antes de editar um arquivo que não pertence exclusivamente à feature em andamento (hook/contexto global, controller/handler de outra feature, repositório usado por múltiplos domínios, layout compartilhado), identificar quem mais depende dele e checar explicitamente se a mudança preserva o comportamento existente pra quem não usa a feature atual (idealmente com um teste ou verificação cobrindo esse caso, não só "parece que não quebra"). Ao encerrar a sessão, fazer uma análise de regressão explícita nesses pontos de toque cross-feature antes de dizer "nada quebrou" — não é o mesmo que rodar a suíte de testes e assumir que cobre tudo. (Gap 5, caso real: sessão de chat-corporativo mexeu em `AuthContext`/`useSignalR`/`AppLayout` — globais — e em `UsuariosPage`/`UsuarioFormDialog`/`AtualizarUsuarioPerfilCommandHandler` — feature de Usuários, não de Chat — sem uma checagem de regressão dedicada até o usuário pedir explicitamente no fim da sessão.)
+5. **Não quebrar nada fora do escopo da feature atual — e se for preciso tocar em código compartilhado com outra feature, avisar ANTES de fazer, não só relatar depois.** Antes de editar um arquivo que não pertence exclusivamente à feature em andamento (hook/contexto global, controller/handler de outra feature, repositório usado por múltiplos domínios, layout compartilhado), identificar quem mais depende dele e checar explicitamente se a mudança preserva o comportamento existente pra quem não usa a feature atual (idealmente com um teste ou verificação cobrindo esse caso, não só "parece que não quebra"). Ao encerrar a sessão, fazer uma análise de regressão explícita nesses pontos de toque cross-feature antes de dizer "nada quebrou" — não é o mesmo que rodar a suíte de testes e assumir que cobre tudo. (Gap 5, caso real: sessão de chat-corporativo mexeu em `AuthContext`/`useSignalR`/`AppLayout` — globais — e em `UsuariosPage`/`UsuarioFormDialog`/`AtualizarUsuarioPerfilCommandHandler` — feature de Usuários, não de Chat — sem uma checagem de regressão dedicada até o usuário pedir explicitamente no fim da sessão.) **Ferramenta (desde 2026-10-02, a pedido do usuário):** a skill `/analise-cod` faz essa análise sobre o diff — inventário do que mudou, consumidores fora do escopo e se algum teste cobre cada um — e grava `impacto.md` na pasta da feature; no `/sdd` roda sozinha no fim da implementação, e fora dele deve rodar em toda correção de bug. Impacto sem teste (🔴) só segue com decisão do usuário.
 
 6. **Feature só está pronta quando a documentação funcional (Obsidian) reflete o novo comportamento.** Ao concluir uma feature ou mudar uma regra de negócio, atualizar a nota correspondente em `docs/obsidian/` (normalmente em `20 Funcionalidades/`, e `Perfis e Permissões`/`Ciclo de Vida do Chamado` se a mudança tocar permissões ou status), com a propriedade `atualizado` na data do dia. Decisão relevante vira um ADR novo em `40 Decisões/`. O vault descreve **o sistema como ele é** — andamento, sessões e pendências continuam só aqui no `.specs/`. (Gap 6, caso real: o vault parou em 2026-07-21 e ficou mais de 2 meses sem registrar Chat, Grupos, SLA nem o deploy real — reescrito em 2026-09-29.)
 

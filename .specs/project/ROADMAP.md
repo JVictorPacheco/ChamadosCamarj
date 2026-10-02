@@ -334,10 +334,10 @@
 - [x] 444 testes; 2 rodadas de review independente (1 bloqueante corrigido).
 - Spec: `.specs/features/correcoes-pre-deploy/` · ADR-009 no Obsidian.
 
-## ✏️ Editar Chamado (BACKLOG — regras definidas pelo usuário em 2026-10-02)
+## ✏️ Editar Chamado (SPEC APROVADA — 2026-10-02; 1º da fila, em andamento)
 
 - [ ] **Modal** "Editar" no detalhe do chamado (não uma tela nova) para título e descrição.
-- [ ] Quem edita: **Solicitante** só os chamados que **abriu**; **Atendente** só os que **assumiu** (é o responsável); **Admin** todos. *(Hoje a API permite a qualquer Atendente que vê o chamado e não permite ao Solicitante — a regra muda nesta feature.)*
+- [ ] Quem edita: **quem abriu** (qualquer perfil) enquanto ninguém assumiu; o **responsável atual**; o **Admin** todos. Ninguém edita chamado encerrado (reaberto volta às regras). Só título e descrição; histórico com antes e depois. Spec: `.specs/features/editar-chamado/`.
 - [ ] Leva o AC-11 de `correcoes-pre-deploy`: em conflito de edição simultânea, o modal continua aberto com o texto digitado. A proteção por versão no servidor já existe.
 
 ## 🧹 Limpeza de Categorias (BACKLOG — depois do deploy)
@@ -351,3 +351,11 @@
 - [ ] Lista de feriados: **cadastro pelo Admin** (tela para ver/adicionar/remover os feriados do ano), já vindo com os feriados nacionais e estaduais do RJ do ano preenchidos, e aviso ao Admin quando a lista do ano seguinte estiver vazia (decisão do usuário, 2026-10-02).
 - [ ] Chamado aberto **fora do expediente** (ou em fim de semana/feriado): o prazo **começa a contar às 08:00 do próximo dia útil** (decisão do usuário, 2026-10-02).
 - [ ] **Aviso a quem abre fora do expediente** (decisão do usuário, 2026-10-02). Proposta a detalhar na spec: na tela de abertura, antes de enviar — "Você está abrindo o chamado fora do horário de atendimento (seg. a sex., 08:00 às 18:00). O prazo começa a contar às 08:00 de <próximo dia útil>." — e, no detalhe, o selo de prazo mostra "Prazo começa a contar em <data>, 08:00" até o início da contagem.
+
+## 🔐 Controle de Acesso por Módulo (SPEC APROVADA — 2026-10-02; 2º da fila)
+
+- [ ] Tela "Controle de acesso" (só Admin): cada pessoa herda o padrão do perfil e o Admin liga/desliga módulos dela (Arquivo, Kanban, Fila, Dashboard, Relatório mensal); Solicitante pode **ganhar** só módulos de consulta; Chat (3 níveis) unificado nesta tela.
+- [ ] Admin sempre com acesso total (não ajustável); Abrir/Meus chamados fixos; mudança vale na hora; auditoria; mudança de perfil zera os ajustes (mantém o Chat).
+- Spec: `.specs/features/controle-de-acesso/spec.md`.
+
+> **Ordem de execução combinada (2026-10-02):** deploy → Editar Chamado → Controle de Acesso → SLA em Dias Úteis → Limpeza de Categorias.
