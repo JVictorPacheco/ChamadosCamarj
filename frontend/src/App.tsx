@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router'
+import { temModulo } from '@/lib/modulos'
+import type { ModuloSistema } from '@/types/api'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { ApiError } from '@/lib/api'
 import { ThemeProvider } from '@/hooks/useTheme'
@@ -94,6 +96,30 @@ function ProtectedRoute() {
   )
 }
 
+const AVISO_MODULO_RETIRADO = 'Seu acesso a este módulo foi retirado.'
+
+/**
+ * Tela de módulo (spec controle-de-acesso AC-11/AC-12): sem o módulo, volta para "Meus chamados" com o
+ * aviso. Como o perfil se atualiza em tempo real (AcessosAtualizados), quem está na tela e perde o
+ * módulo sai na hora. O servidor confere de novo onde importa (Dashboard, Relatório).
+ */
+function RequerModulo({ modulo }: { modulo: ModuloSistema }) {
+  const { perfil } = useAuth()
+  if (!temModulo(perfil, modulo)) {
+    return <Navigate to="/chamados" replace state={{ avisoModulo: AVISO_MODULO_RETIRADO }} />
+  }
+  return <Outlet />
+}
+
+/** Telas de Administração: só Admin, também pelo endereço (antes só o menu escondia). */
+function RequerAdmin() {
+  const { perfil } = useAuth()
+  if (perfil?.tipo !== 'Admin') {
+    return <Navigate to="/chamados" replace />
+  }
+  return <Outlet />
+}
+
 function AppRoutes() {
   return (
     <Routes>
@@ -102,15 +128,28 @@ function AppRoutes() {
       <Route element={<ProtectedRoute />}>
         <Route path="/chamados" element={<ChamadosListPage />} />
         <Route path="/chamados/novo" element={<AbrirChamadoPage />} />
-        <Route path="/chamados/arquivo" element={<ArquivoChamadosPage />} />
         <Route path="/chamados/:id" element={<ChamadoDetailPage />} />
-        <Route path="/atendimento/kanban" element={<KanbanPage />} />
-        <Route path="/atendimento/dashboard" element={<DashboardPage />} />
-        <Route path="/atendimento/fila" element={<FilaAtendimentoPage />} />
-        <Route path="/atendimento/relatorio-mensal" element={<RelatorioMensalPage />} />
-        <Route path="/admin/usuarios" element={<UsuariosPage />} />
-        <Route path="/admin/tipos" element={<TiposPage />} />
-        <Route path="/admin/grupos" element={<GruposPage />} />
+        {/* spec controle-de-acesso: cada tela de módulo exige o módulo; perdeu com a tela aberta → sai (AC-11). */}
+        <Route element={<RequerModulo modulo="Arquivo" />}>
+          <Route path="/chamados/arquivo" element={<ArquivoChamadosPage />} />
+        </Route>
+        <Route element={<RequerModulo modulo="Kanban" />}>
+          <Route path="/atendimento/kanban" element={<KanbanPage />} />
+        </Route>
+        <Route element={<RequerModulo modulo="Dashboard" />}>
+          <Route path="/atendimento/dashboard" element={<DashboardPage />} />
+        </Route>
+        <Route element={<RequerModulo modulo="Fila" />}>
+          <Route path="/atendimento/fila" element={<FilaAtendimentoPage />} />
+        </Route>
+        <Route element={<RequerModulo modulo="RelatorioMensal" />}>
+          <Route path="/atendimento/relatorio-mensal" element={<RelatorioMensalPage />} />
+        </Route>
+        <Route element={<RequerAdmin />}>
+          <Route path="/admin/usuarios" element={<UsuariosPage />} />
+          <Route path="/admin/tipos" element={<TiposPage />} />
+          <Route path="/admin/grupos" element={<GruposPage />} />
+        </Route>
         <Route path="/chat" element={<ChatPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/chamados" replace />} />

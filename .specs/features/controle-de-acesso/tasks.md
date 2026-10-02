@@ -43,7 +43,7 @@
 - [x] **T07** Tipos e API (`modulos` no perfil; `/acessos`), `AuthContext.atualizarModulos`, evento
   `AcessosAtualizados` no `useSignalR`. *C2, C6.*
   **Pronto quando:** build ok.
-- [ ] **T08** `AppLayout` por módulo + item "Controle de acesso"; `RequerModulo`/`RequerAdmin` nas rotas;
+- [x] **T08** `AppLayout` por módulo + item "Controle de acesso"; `RequerModulo`/`RequerAdmin` nas rotas;
   aviso "Seu acesso a este módulo foi retirado.". *AC-05, AC-11..AC-13 · C8.*
   **Pronto quando:** build ok; verificação na tela (T12).
 - [ ] **T09** `ControleAcessoPage` (lista com busca, painel por pessoa, padrão × ajustado, Chat, salvar,
