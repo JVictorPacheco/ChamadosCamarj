@@ -1,7 +1,7 @@
 ---
 tipo: visão
 status: vigente
-atualizado: 2026-09-29
+atualizado: 2026-10-02
 tags: [visão, glossário]
 ---
 
@@ -17,7 +17,9 @@ Termos usados no portal e nesta documentação, em ordem alfabética.
 | **Assumir** | Ação do atendente de tomar um chamado para si; o chamado passa a *Em andamento*. |
 | **Atendente** | Perfil de quem trata chamados. |
 | **Cancelado** | Chamado interrompido antes de ser resolvido, sempre com um motivo. |
-| **Categoria** | Assunto do chamado (ex.: Reembolso, Autorização/Auditoria). São 8. |
+| **Área** | De onde o chamado é aberto. É a mesma lista das equipes (ex.: Reembolso, Financeiro). |
+| **Tipo** | Natureza do pedido: Incidente, Dúvida, Solicitação, Customização ou Melhoria. |
+| **Categoria** | *(nome antigo)* Substituída por Área + Tipo em 2026-10. |
 | **Chamado** | Registro formal de uma solicitação, identificado por um número `CAM-N`. |
 | **ChatPerfil** | Nível de acesso de uma pessoa ao chat: *Sem acesso*, *Participante* ou *Criador de grupo*. Definido pelo Admin. |
 | **Comentário interno** | Comentário visível só para Atendentes e Admin — o solicitante não vê. |
@@ -39,4 +41,4 @@ Termos usados no portal e nesta documentação, em ordem alfabética.
 | **Resolvido** | O atendente concluiu o trabalho; aguarda o encerramento. **Não é o mesmo que Fechado.** |
 | **SLA** | *Service Level Agreement* — prazo máximo para resolver o chamado, conforme a prioridade. Ver [[SLA]]. |
 | **Solicitante** | Quem abre o chamado. |
-| **Triagem automática** | Sugestão de categoria e equipe feita pelo sistema a partir das palavras do chamado. |
+| **Triagem automática** | Sugestão de área e tipo feita pelo sistema a partir das palavras do chamado. |

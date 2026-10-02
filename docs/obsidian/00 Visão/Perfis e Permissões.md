@@ -1,7 +1,7 @@
 ---
 tipo: visão
 status: vigente
-atualizado: 2026-10-01
+atualizado: 2026-10-02
 spec: .specs/features/autorizacao-chamados/spec.md
 tags: [visão, permissões]
 ---
@@ -21,8 +21,8 @@ Usuários são cadastrados pelo Admin — não existe autocadastro. Ver [[Admini
 
 ## Quais chamados cada perfil vê
 
-"Chamados da equipe" são os **abertos por** um colega da mesma equipe **ou sob responsabilidade**
-de um colega da mesma equipe. Ver [[Grupos e Equipes]].
+"Chamados da equipe" são os **abertos por** um colega da mesma equipe, os **sob responsabilidade**
+de um colega da mesma equipe e os com a **área** da equipe. Ver [[Grupos e Equipes]].
 
 | Perfil | Vê |
 |---|---|
@@ -48,6 +48,7 @@ encontrado".
 | Encerrar (Resolvido → Fechado) | — | ✅ | ✅ |
 | Cancelar (enquanto Aberto ou Em andamento) | só os que abriu | ✅ | ✅ |
 | Editar título e descrição | — | ✅ | ✅ |
+| Reclassificar o tipo do chamado | — | ✅ | ✅ |
 | Reabrir chamado finalizado | — | ✅ | ✅ |
 | Reatribuir para outro atendente | — | — | ✅ |
 | Alterar prioridade | — | — | ✅ |
@@ -60,7 +61,7 @@ encontrado".
 | Abrir chamado, Meus chamados, Arquivo | ✅ | ✅ | ✅ |
 | Fila, Kanban, Dashboard | — | ✅ | ✅ |
 | Relatório Mensal | — | ✅ só os próprios números | ✅ completo |
-| Admin: Usuários, Categorias, Grupos | — | — | ✅ |
+| Admin: Usuários, Tipos de chamado, Áreas e Grupos | — | — | ✅ |
 | Chat | depende do acesso ao chat | depende do acesso ao chat | depende do acesso ao chat |
 
 > O bloqueio é **real** e acontece no sistema, não só na tela: esconder um botão ou link é só

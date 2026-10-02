@@ -1,7 +1,7 @@
 ---
 tipo: funcionalidade
 status: vigente
-atualizado: 2026-09-29
+atualizado: 2026-10-02
 spec: .specs/features/fase-6-admin-log/spec.md
 tags: [funcionalidade, admin]
 ---
@@ -18,12 +18,14 @@ Telas exclusivas do **Admin**, no menu *Admin*.
 - **Redefinir senha** de um usuário.
 - Proteção: não é possível desativar nem rebaixar o **último Admin ativo**.
 
-## Categorias
-- Criar e editar as categorias de chamado.
-- Hoje são 8: Autorização/Auditoria, Atendimento, Super e Tendência, Reembolso, Financeiro,
-  Credenciado, Comercial, Contas Médicas.
+## Tipos de chamado
+- Criar, editar, desativar e reativar os tipos: Incidente, Dúvida, Solicitação, Customização e
+  Melhoria são os iniciais.
+- Um tipo desativado some da abertura, mas continua aparecendo nos chamados antigos.
+- As edições do Admin ficam; o sistema não volta os nomes ao padrão quando reinicia.
 
-## Grupos (equipes)
+## Áreas e Grupos (equipes)
+As áreas usadas na abertura de chamados **são** as equipes cadastradas aqui.
 - Criar, editar, ativar e desativar equipes. Ver [[Grupos e Equipes]].
 
 ## Ações de controle sobre chamados
