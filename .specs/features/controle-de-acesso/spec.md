@@ -1,6 +1,6 @@
 # Controle de Acesso por Módulo — Especificação
 
-> **SDD:** spec-aprovada
+> **SDD:** implementando
 > **Status:** `Pendente`
 > **Branch:** `feature/controle-de-acesso`
 > **Criada em:** 2026-10-02
