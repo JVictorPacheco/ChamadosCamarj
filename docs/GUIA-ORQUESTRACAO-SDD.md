@@ -1,10 +1,57 @@
 # Guia Prático: Orquestração de IA + SDD no ChamadosCamarj
 
-> Como usar os 5 agentes de IA com Spec-Driven Development, do planejamento ao deploy, garantindo que nada se perca.
+> Como conduzir uma feature com Spec-Driven Development, do pedido ao merge. O projeto é trabalhado
+> por duas ferramentas: **Claude Code**, com o fluxo `/sdd`, usado desde 2026-10-01, e **OpenCode**,
+> com os agentes `@spec`/`@build-*`/`@review`. As regras são as mesmas nas duas (Constitution no
+> `.specs/project/STATE.md`); muda só a forma de chamar cada fase.
 
 ---
 
-## Os 5 agentes e seus papéis
+## Claude Code — fluxo `/sdd`
+
+As skills globais ficam em `~/.claude/skills/`. A configuração deste projeto (pastas, arquivos,
+gates) está no bloco `sdd-config` do `CLAUDE.md`.
+
+```
+/sdd <descrição da feature>
+    │
+    ▼
+[1] Specify + Clarify ──► spec.md (perguntas ao usuário em português, nada vira suposição)
+    │
+    ◆ APROVAÇÃO 1 — o usuário aprova a spec
+    │
+    ▼
+[2] Plan ──► design.md, com Constitution Check, mudanças de contrato e pontos cross-feature
+    │        (se houver contrato/cross-feature/decisão aberta: PARA e pergunta ao usuário)
+    ▼
+[3] Tasks + Analyze ──► tasks.md rastreado aos ACs; checagem spec ↔ design ↔ tasks
+    │
+    ▼
+[4] Implement ──► branch feature/<nome>, tarefa a tarefa, commits atômicos, testes a cada bloco
+    │
+    ▼
+[5] Review ──► sub-agente NOVO, sem o contexto de quem implementou → review.md;
+    │          bloqueantes corrigidos (até 3 rodadas)
+    ▼
+[6] Close ──► gates, regressão cross-feature, STATE/ROADMAP, nota do Obsidian (regra 6)
+    │
+    ◆ APROVAÇÃO 2 — o usuário autoriza o PR (base develop). O merge é sempre do usuário.
+```
+
+- A linha `> **SDD:** <fase>` logo abaixo do título da spec diz em que fase a feature está.
+  `/sdd continuar <feature>` retoma de onde parou; `/sdd status` lista todas.
+- Fases avulsas: `/sdd-specify`, `/sdd-plan`, `/sdd-tasks`, `/sdd-implement`, `/sdd-review`,
+  `/sdd-close`.
+- Paradas fora das 2 aprovações: pergunta de produto sem resposta, mudança de contrato, ação
+  destrutiva ou em banco real, gates falhando, bloqueante na 3ª rodada de review.
+
+---
+
+## OpenCode — agentes `@spec` / `@build-*` / `@review`
+
+---
+
+### Os 5 agentes e seus papéis
 
 | Agente | Modelo | Função | Permissões |
 |---|---|---|---|

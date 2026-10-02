@@ -69,7 +69,7 @@
   **Pronto quando:** `favicon.png` ≤ 20 KB e a imagem conferida visualmente.
 
 ## Bloco E — Processo
-- [ ] **T14** [P] Regra 4 da Constitution (STATE.md) e `docs/GUIA-ORQUESTRACAO-SDD.md` descrevem o
+- [x] **T14** [P] Regra 4 da Constitution (STATE.md) e `docs/GUIA-ORQUESTRACAO-SDD.md` descrevem o
   `/sdd` (fases + 2 aprovações) e mantêm o OpenCode. *AC-19 · §6.*
   **Pronto quando:** os dois textos citam `/sdd` e `@spec`.
 
