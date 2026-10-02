@@ -80,6 +80,15 @@ export function listarAreas(): Promise<GrupoResponse[]> {
   return apiFetch<GrupoResponse[]>('/grupos')
 }
 
+/** Edita título e descrição (spec editar-chamado). Quem pode é decidido no servidor. */
+export function atualizarChamado(chamadoId: string, dados: { titulo: string; descricao: string }, versao?: string): Promise<void> {
+  return apiFetch<void>(`/chamados/${chamadoId}`, {
+    method: 'PUT',
+    headers: cabecalhoVersao(versao),
+    body: JSON.stringify(dados),
+  })
+}
+
 export function reclassificarTipo(chamadoId: string, novoTipoId: string, versao?: string): Promise<void> {
   return apiFetch<void>(`/chamados/${chamadoId}/tipo`, {
     method: 'PATCH',

@@ -36,15 +36,15 @@
 
 ## Frontend
 
-- [ ] **T05** `types/api.ts` (`ChamadoEditado`), `api.ts` (`atualizarChamado` com `If-Match`),
+- [x] **T05** `types/api.ts` (`ChamadoEditado`), `api.ts` (`atualizarChamado` com `If-Match`),
   `useAtualizarChamado`, `lib/permissoes.ts` (`podeEditarChamado`). *AC-01..AC-11 (botão), C5.*
   **Pronto quando:** `npm run build` ok.
-- [ ] **T06** `EditarChamadoModal` + botão "Editar" no `BotoesAcao`: preenchimento ao abrir, limites e
+- [x] **T06** `EditarChamadoModal` + botão "Editar" no `BotoesAcao`: preenchimento ao abrir, limites e
   erros nos campos, salvar sem mudança fecha sem chamar a API, conflito mantém o texto e mostra
   "Texto atual no chamado" e passa a usar a versão nova, 403/400 mantém o texto. *AC-12..AC-15,
   AC-19..AC-21.*
   **Pronto quando:** build ok; verificação na tela (T09).
-- [ ] **T07** `TimelineHistorico`: "Chamado editado" com antes → depois por campo; JSON inválido mostra
+- [x] **T07** `TimelineHistorico`: "Chamado editado" com antes → depois por campo; JSON inválido mostra
   texto cru. *AC-17, AC-18.*
   **Pronto quando:** build ok; verificação na tela (T09).
 

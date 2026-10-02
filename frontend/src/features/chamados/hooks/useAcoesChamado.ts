@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import {
+  atualizarChamado,
   atribuirChamado,
   resolverChamado,
   fecharChamado,
@@ -102,6 +103,16 @@ export function useForcarEncerramentoChamado(chamadoId: string, versao?: string)
   return useMutation({
     mutationFn: (dados: { motivo: MotivoEncerramento; motivoOutro?: string; observacao?: string }) =>
       forcarEncerramento(chamadoId, dados.motivo, dados.motivoOutro, dados.observacao, versao),
+    onSuccess: () => invalidarChamado(queryClient, chamadoId),
+    onError: (erro) => recarregarSeConflito(queryClient, chamadoId, erro),
+  })
+}
+
+/** Editar título e descrição (spec editar-chamado). Em 409 recarrega o chamado; o modal decide o resto. */
+export function useAtualizarChamado(chamadoId: string, versao?: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (dados: { titulo: string; descricao: string }) => atualizarChamado(chamadoId, dados, versao),
     onSuccess: () => invalidarChamado(queryClient, chamadoId),
     onError: (erro) => recarregarSeConflito(queryClient, chamadoId, erro),
   })
