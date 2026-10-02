@@ -334,7 +334,7 @@
 - [x] 444 testes; 2 rodadas de review independente (1 bloqueante corrigido).
 - Spec: `.specs/features/correcoes-pre-deploy/` · ADR-009 no Obsidian.
 
-## ✏️ Editar Chamado (FECHADA — 2026-10-02; PR para `develop`)
+## ✏️ Editar Chamado (FECHADA — 2026-10-02; PR #52 para `develop`)
 
 - [ ] **Modal** "Editar" no detalhe do chamado (não uma tela nova) para título e descrição.
 - [ ] Quem edita: **quem abriu** (qualquer perfil) enquanto ninguém assumiu; o **responsável atual**; o **Admin** todos. Ninguém edita chamado encerrado (reaberto volta às regras). Só título e descrição; histórico com antes e depois. Spec: `.specs/features/editar-chamado/`.

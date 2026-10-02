@@ -18,7 +18,7 @@
      2026-10-02). A versão antiga em produção continua funcionando com ela, mas até o deploy
      **não reclassificar tipo de chamado real** (a versão antiga não conhece essa ação no histórico);
    - `correcoes-pre-deploy` **não tem migration**.
-1. **Editar chamado** — **FECHADA em 2026-10-02** na branch `feature/editar-chamado` (PR para `develop`
+1. **Editar chamado** — **FECHADA em 2026-10-02** na branch `feature/editar-chamado` (**PR #52** para `develop`
    a cargo do usuário). Ver seção da sessão abaixo.
 2. **Controle de acesso por módulo** — spec aprovada em 2026-10-02 (`.specs/features/controle-de-acesso/`).
 3. **SLA em dias úteis + cadastro de feriados** — decisões de negócio tomadas (ver Pendências); falta spec.

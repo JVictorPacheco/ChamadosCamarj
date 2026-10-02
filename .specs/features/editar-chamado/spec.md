@@ -194,4 +194,4 @@ A pessoa pode editar o chamado quando ele **não está encerrado** (Resolvido, F
 - [x] Obsidian atualizado (regra 6): Acompanhamento do Chamado, Perfis e Permissões
 - [x] `spec.md` com status final; `STATE.md` e `ROADMAP.md` atualizados
 - [x] `/analise-cod` sem 🔴; review sem bloqueantes
-- [ ] PR aberto com base `develop`
+- [x] PR aberto com base `develop` — #52 (2026-10-02)
