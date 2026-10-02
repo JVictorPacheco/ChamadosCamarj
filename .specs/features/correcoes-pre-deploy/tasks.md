@@ -10,7 +10,7 @@
 ## Backend
 
 ### Bloco B — Anexo × comentário (menor, primeiro)
-- [ ] **T01** `IChamadoRepository.ComentarioPertenceAoChamadoAsync` + implementação; checagem em
+- [x] **T01** `IChamadoRepository.ComentarioPertenceAoChamadoAsync` + implementação; checagem em
   `AdicionarAnexoCommandHandler` antes do upload (`BadRequestException` com o texto do AC-06).
   *AC-06, AC-07, AC-08 · design §3 · contrato C4, C7.*
   **Pronto quando:** testes do handler passam: comentário de outro chamado → 400 e `UploadAsync`

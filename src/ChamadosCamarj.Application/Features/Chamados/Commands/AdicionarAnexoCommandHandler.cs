@@ -23,6 +23,11 @@ public class AdicionarAnexoCommandHandler : IRequestHandler<AdicionarAnexoComman
         if (!existe)
             throw new NotFoundException("Chamado", request.ChamadoId);
 
+        // Antes do upload, para não sobrar arquivo no storage (spec correcoes-pre-deploy AC-06/AC-07).
+        if (request.ComentarioId.HasValue
+            && !await _chamadoRepository.ComentarioPertenceAoChamadoAsync(request.ComentarioId.Value, request.ChamadoId, cancellationToken))
+            throw new BadRequestException("O comentário informado não pertence a este chamado.");
+
         var extensao = Path.GetExtension(request.NomeArquivoOriginal);
         var caminho = $"{request.ChamadoId}/{Guid.NewGuid()}{extensao}";
 

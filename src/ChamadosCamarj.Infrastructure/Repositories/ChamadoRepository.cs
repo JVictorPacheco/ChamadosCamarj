@@ -4,6 +4,7 @@ using ChamadosCamarj.Domain.Entities;
 using ChamadosCamarj.Domain.Enums;
 using ChamadosCamarj.Domain.Interfaces;
 using ChamadosCamarj.Infrastructure.Data;
+using ChamadosCamarj.Application.Common;
 using ChamadosCamarj.Application.Common.Exceptions;
 
 namespace ChamadosCamarj.Infrastructure.Repositories;
@@ -218,6 +219,43 @@ public class ChamadoRepository : IChamadoRepository
     {
         return await AplicarVisibilidade(_dbSet.AsNoTracking().Where(c => c.Id == chamadoId), acesso)
             .AnyAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Guid>> ListarAtendentesQuePodemVerAsync(Guid chamadoId, CancellationToken cancellationToken = default)
+    {
+        var atendentes = await _context.UsuariosPerfil
+            .AsNoTracking()
+            .Where(u => u.Perfil == Perfil.Atendente && u.Ativo)
+            .Select(u => new { u.Id, u.Email, u.GrupoId })
+            .ToListAsync(cancellationToken);
+
+        // Uma consulta por Atendente, reaproveitando a regra única de visibilidade. Só roda quando um
+        // chamado muda de situação de prazo, e são poucos Atendentes.
+        var resultado = new List<Guid>();
+        foreach (var a in atendentes)
+        {
+            var acesso = new ContextoAcesso(a.Id, a.Email, Perfil.Atendente, a.GrupoId);
+            if (await PodeVerAsync(chamadoId, acesso, cancellationToken))
+                resultado.Add(a.Id);
+        }
+        return resultado;
+    }
+
+    public async Task<bool> ComentarioPertenceAoChamadoAsync(Guid comentarioId, Guid chamadoId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Set<Comentario>()
+            .AnyAsync(c => c.Id == comentarioId && c.ChamadoId == chamadoId, cancellationToken);
+    }
+
+    public async Task<string?> ObterVersaoAsync(Guid chamadoId, CancellationToken cancellationToken = default)
+    {
+        var datas = await _dbSet
+            .AsNoTracking()
+            .Where(c => c.Id == chamadoId)
+            .Select(c => new { c.DataAtualizacao, c.DataCriacao })
+            .FirstOrDefaultAsync(cancellationToken);
+
+        return datas is null ? null : VersaoChamado.De(datas.DataAtualizacao, datas.DataCriacao);
     }
 
     public async Task<(IEnumerable<Chamado> Items, int Total)> ListarAsync(

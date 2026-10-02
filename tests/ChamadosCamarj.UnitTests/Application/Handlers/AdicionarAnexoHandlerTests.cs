@@ -71,6 +71,8 @@ public class AdicionarAnexoHandlerTests
 
         _chamadoRepositoryMock.Setup(r => r.ExisteAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
+        _chamadoRepositoryMock.Setup(r => r.ComentarioPertenceAoChamadoAsync(comentarioId, chamadoId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
         _storageServiceMock.Setup(s => s.UploadAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((string caminho, string _, Stream _, CancellationToken _) => caminho);
 
@@ -105,5 +107,44 @@ public class AdicionarAnexoHandlerTests
         _storageServiceMock.Verify(s => s.RemoverAsync(
             It.Is<string>(caminho => caminho.StartsWith(chamadoId.ToString())),
             It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    // spec correcoes-pre-deploy AC-06 / AC-07: comentário de outro chamado (ou inexistente — o
+    // repositório devolve false nos dois casos) é recusado antes do upload.
+    [Fact]
+    public async Task Handle_ComComentarioQueNaoPertenceAoChamado_DeveRecusarSemFazerUpload()
+    {
+        var chamadoId = Guid.NewGuid();
+        var comentarioDeOutroChamado = Guid.NewGuid();
+
+        _chamadoRepositoryMock.Setup(r => r.ExisteAsync(chamadoId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        _chamadoRepositoryMock.Setup(r => r.ComentarioPertenceAoChamadoAsync(comentarioDeOutroChamado, chamadoId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        var command = new AdicionarAnexoCommand(chamadoId, comentarioDeOutroChamado, "foto.jpg", "image/jpeg", Stream.Null, 1024);
+
+        var act = async () => await _handler.Handle(command, CancellationToken.None);
+        await act.Should().ThrowAsync<BadRequestException>()
+            .WithMessage("O comentário informado não pertence a este chamado.");
+
+        _storageServiceMock.Verify(s => s.UploadAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Never);
+        _chamadoRepositoryMock.Verify(r => r.AdicionarAnexoAsync(It.IsAny<Anexo>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    // AC-08: sem comentário, a checagem nem é feita.
+    [Fact]
+    public async Task Handle_SemComentario_NaoConsultaComentario()
+    {
+        var chamadoId = Guid.NewGuid();
+        _chamadoRepositoryMock.Setup(r => r.ExisteAsync(chamadoId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        _storageServiceMock.Setup(s => s.UploadAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((string caminho, string _, Stream _, CancellationToken _) => caminho);
+
+        await _handler.Handle(new AdicionarAnexoCommand(chamadoId, null, "nota.pdf", "application/pdf", Stream.Null, 10), CancellationToken.None);
+
+        _chamadoRepositoryMock.Verify(r => r.ComentarioPertenceAoChamadoAsync(It.IsAny<Guid>(), It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
+        _chamadoRepositoryMock.Verify(r => r.AdicionarAnexoAsync(It.IsAny<Anexo>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 }

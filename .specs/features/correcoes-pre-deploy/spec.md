@@ -1,6 +1,6 @@
 # Correções Pré-Deploy — Especificação
 
-> **SDD:** tasks-prontas
+> **SDD:** implementando
 > **Status:** `Em andamento`
 > **Branch:** `feature/correcoes-pre-deploy`
 > **Criada em:** 2026-10-02
