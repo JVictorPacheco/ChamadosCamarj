@@ -1,6 +1,6 @@
 # Correções Pré-Deploy — Especificação
 
-> **SDD:** em-review
+> **SDD:** revisada
 > **Status:** `Em andamento`
 > **Branch:** `feature/correcoes-pre-deploy`
 > **Criada em:** 2026-10-02

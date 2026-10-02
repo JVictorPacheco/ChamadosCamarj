@@ -47,7 +47,8 @@ public class SlaMonitorService : BackgroundService
 
             foreach (var c in chamados)
             {
-                var evento = _enviados.EventoANotificar(c.Id, SlaCalculo.CalcularStatus(c.DataLimite));
+                var status = SlaCalculo.CalcularStatus(c.DataLimite);
+                var evento = _enviados.EventoANotificar(c.Id, status);
                 if (evento is null) continue;
 
                 var mensagem = evento == "SlaAtencao"
@@ -55,6 +56,7 @@ public class SlaMonitorService : BackgroundService
                     : $"CAM-{c.Numero} — PRAZO ESTOURADO!";
                 _logger.LogInformation("{Evento}: CAM-{Numero}", evento, c.Numero);
                 await notificador.NotificarAsync(c.Id, c.Numero, evento, mensagem, stoppingToken);
+                _enviados.RegistrarEnvio(c.Id, status);
             }
 
             // Esquecer chamados que já foram finalizados

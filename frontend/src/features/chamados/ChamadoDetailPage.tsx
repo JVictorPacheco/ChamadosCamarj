@@ -45,10 +45,14 @@ const MOTIVO_LABELS: Record<MotivoEncerramento, string> = {
 function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
   const { perfil } = useAuth()
   const atribuir = useAtribuirChamado(chamado.id, chamado.versao)
-  const resolver = useResolverChamado(chamado.id, chamado.versao)
-  const fechar = useFecharChamado(chamado.id, chamado.versao)
-  const cancelar = useCancelarChamado(chamado.id, chamado.versao)
-  const reabrir = useReabrirChamado(chamado.id, chamado.versao)
+  // Versão de quando o diálogo/modal foi aberto: uma recarga em segundo plano com ele aberto não
+  // pode trocar a versão por baixo, senão a alteração de outra pessoa seria sobrescrita sem aviso
+  // (spec correcoes-pre-deploy AC-09; review-2 R-01).
+  const [versaoAoAbrir, setVersaoAoAbrir] = useState(chamado.versao)
+  const resolver = useResolverChamado(chamado.id, versaoAoAbrir)
+  const fechar = useFecharChamado(chamado.id, versaoAoAbrir)
+  const cancelar = useCancelarChamado(chamado.id, versaoAoAbrir)
+  const reabrir = useReabrirChamado(chamado.id, versaoAoAbrir)
   // Enquanto o chamado recarrega (ex.: logo após a própria ação), a versão na tela ainda é a antiga:
   // bloquear os botões evita um 409 falso (spec correcoes-pre-deploy AC-12).
   const recarregando = useIsFetching({ queryKey: ['chamado', chamado.id] }) > 0
@@ -87,6 +91,7 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
   }
 
   const abrirConfirmacao = (acao: 'resolver' | 'encerrar' | 'cancelar' | 'reabrir') => {
+    setVersaoAoAbrir(chamado.versao)
     setConfirmarAcao(acao)
     if (acao === 'encerrar') setMotivoSelecionado('Resolvido')
     if (acao === 'cancelar') setMotivoSelecionado('CanceladoSolicitante')
@@ -147,19 +152,19 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
       )}
 
       {isAdmin && !statusFinal && (
-        <Button variant="outline" disabled={recarregando} onClick={() => setReatribuirAberto(true)}>
+        <Button variant="outline" disabled={recarregando} onClick={() => { setVersaoAoAbrir(chamado.versao); setReatribuirAberto(true) }}>
           Reatribuir
         </Button>
       )}
 
       {isAdmin && !statusFinal && (
-        <Button variant="outline" disabled={recarregando} onClick={() => setPrioridadeAberto(true)}>
+        <Button variant="outline" disabled={recarregando} onClick={() => { setVersaoAoAbrir(chamado.versao); setPrioridadeAberto(true) }}>
           Alterar prioridade
         </Button>
       )}
 
       {isAdmin && !statusFinal && (
-        <Button variant="destructive" disabled={recarregando} onClick={() => setForcarEncerramentoAberto(true)}>
+        <Button variant="destructive" disabled={recarregando} onClick={() => { setVersaoAoAbrir(chamado.versao); setForcarEncerramentoAberto(true) }}>
           Forçar Encerramento
         </Button>
       )}
@@ -245,20 +250,20 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
         onOpenChange={setReatribuirAberto}
         chamadoId={chamado.id}
         responsavelAtualId={chamado.responsavelId}
-        versao={chamado.versao}
+        versao={versaoAoAbrir}
       />
       <AlterarPrioridadeModal
         open={prioridadeAberto}
         onOpenChange={setPrioridadeAberto}
         chamadoId={chamado.id}
         prioridadeAtual={chamado.prioridade}
-        versao={chamado.versao}
+        versao={versaoAoAbrir}
       />
       <ForcarEncerramentoModal
         open={forcarEncerramentoAberto}
         onOpenChange={setForcarEncerramentoAberto}
         chamadoId={chamado.id}
-        versao={chamado.versao}
+        versao={versaoAoAbrir}
       />
     </div>
   )
