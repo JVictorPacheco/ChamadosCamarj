@@ -7,7 +7,9 @@ namespace ChamadosCamarj.Application.Features.Chamados.Commands;
 public record AtualizarChamadoCommand(
     Guid Id,
     string Titulo,
-    string Descricao
+    string Descricao,
+    Guid? UsuarioId = null,
+    string UsuarioNome = "Sistema"
 ) : IRequest, IRequerAcessoChamado
 {
     Guid IRequerAcessoChamado.ChamadoId => Id;

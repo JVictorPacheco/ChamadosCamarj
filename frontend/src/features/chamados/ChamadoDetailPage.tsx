@@ -23,6 +23,8 @@ import { TimelineHistorico } from './components/TimelineHistorico'
 import { AnexosList } from './components/AnexosList'
 import { UploadAnexoForm } from './components/UploadAnexoForm'
 import { TipoChamadoCampo } from './components/TipoChamadoCampo'
+import { EditarChamadoModal } from './components/EditarChamadoModal'
+import { podeEditarChamado } from './lib/permissoes'
 import { useChamado } from './hooks/useChamado'
 import {
   useAtribuirChamado,
@@ -59,6 +61,7 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
   const [reatribuirAberto, setReatribuirAberto] = useState(false)
   const [prioridadeAberto, setPrioridadeAberto] = useState(false)
   const [forcarEncerramentoAberto, setForcarEncerramentoAberto] = useState(false)
+  const [editarAberto, setEditarAberto] = useState(false)
   const [confirmarAcao, setConfirmarAcao] = useState<'resolver' | 'encerrar' | 'cancelar' | 'reabrir' | null>(null)
   const [motivoSelecionado, setMotivoSelecionado] = useState<MotivoEncerramento>('Resolvido')
   const [motivoOutroTexto, setMotivoOutroTexto] = useState('')
@@ -111,6 +114,12 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
 
   return (
     <div className="flex flex-wrap gap-3">
+      {podeEditarChamado(chamado, perfil) && (
+        <Button variant="outline" disabled={recarregando} onClick={() => setEditarAberto(true)}>
+          Editar
+        </Button>
+      )}
+
       {isAtendente && status === 'Aberto' && (
         <Button disabled={isPending} onClick={() => atribuir.mutate()}>
           {atribuir.isPending ? 'Assumindo...' : 'Assumir'}
@@ -259,6 +268,7 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
         prioridadeAtual={chamado.prioridade}
         versao={versaoAoAbrir}
       />
+      {editarAberto && <EditarChamadoModal chamado={chamado} onClose={() => setEditarAberto(false)} />}
       <ForcarEncerramentoModal
         open={forcarEncerramentoAberto}
         onOpenChange={setForcarEncerramentoAberto}

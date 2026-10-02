@@ -142,6 +142,9 @@ grupo, de forma igual em todas as telas, independente do que o navegador enviar.
 - **AC-20:** Dado um Solicitante, quando ele tenta editar o título ou a descrição de um chamado
   (inclusive um que abriu), então recebe a recusa. Atendente e Admin podem, nos chamados que
   conseguem ver. O Solicitante complementa por comentário.
+  **⚠️ Substituído em 2026-10-02 pela spec `editar-chamado`:** quem abriu (qualquer perfil) edita
+  enquanto ninguém assumiu; o responsável atual edita; o Admin edita todos; ninguém edita chamado
+  encerrado.
 - **AC-21:** Dado o Relatório Mensal, quando um Solicitante o pede, então recebe a recusa; quando um
   Atendente o pede, então recebe só os próprios números, qualquer que seja o atendente informado
   no pedido. O Admin continua vendo o relatório completo.

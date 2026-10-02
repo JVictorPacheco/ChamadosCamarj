@@ -2,7 +2,7 @@
 tipo: visão
 status: vigente
 atualizado: 2026-10-02
-spec: .specs/features/autorizacao-chamados/spec.md
+spec: .specs/features/autorizacao-chamados/spec.md, .specs/features/editar-chamado/spec.md
 tags: [visão, permissões]
 ---
 
@@ -47,7 +47,7 @@ encontrado".
 | Resolver | — | ✅ | ✅ |
 | Encerrar (Resolvido → Fechado) | — | ✅ | ✅ |
 | Cancelar (enquanto Aberto ou Em andamento) | só os que abriu | ✅ | ✅ |
-| Editar título e descrição | — | ✅ | ✅ |
+| Editar título e descrição (chamado não encerrado) | os que abriu, enquanto ninguém assumiu | os que abriu (enquanto ninguém assumiu) e os que assumiu | todos |
 | Reclassificar o tipo do chamado | — | ✅ | ✅ |
 | Reabrir chamado finalizado | — | ✅ | ✅ |
 | Reatribuir para outro atendente | — | — | ✅ |
