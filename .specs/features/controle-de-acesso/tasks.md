@@ -33,7 +33,7 @@
   C3, C6.*
   **Pronto quando:** testes dos handlers: só Admin; recusa alvo Admin/si mesmo/módulo não ajustável;
   auditoria uma linha por item mudado; notificação publicada; Chat delega ao comando existente.
-- [ ] **T06** Mudança de perfil em Usuários zera ajustes (AC-15) + `ChatPerfil` opcional no
+- [x] **T06** Mudança de perfil em Usuários zera ajustes (AC-15) + `ChatPerfil` opcional no
   `AtualizarUsuarioPerfilCommand`. *AC-10, AC-15 · C7.*
   **Pronto quando:** testes: perfil muda → ajustes zerados, auditoria e notificação; perfil igual → ajustes
   mantidos; `ChatPerfil` null não mexe no Chat; testes existentes do handler passando.

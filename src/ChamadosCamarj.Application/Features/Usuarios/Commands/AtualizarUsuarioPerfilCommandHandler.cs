@@ -1,3 +1,6 @@
+using ChamadosCamarj.Domain.Entities;
+using ChamadosCamarj.Application.Common.Notifications;
+using ChamadosCamarj.Application.Common.Autorizacao;
 using MediatR;
 using ChamadosCamarj.Application.Common.Authorization;
 using ChamadosCamarj.Application.Common.Exceptions;
@@ -13,11 +16,14 @@ public class AtualizarUsuarioPerfilCommandHandler : IRequestHandler<AtualizarUsu
 {
     private readonly IUsuarioPerfilRepository _usuarioPerfilRepository;
     private readonly IMediator _mediator;
+    private readonly IAuditoriaAcessoRepository _auditoriaAcesso;
 
     public AtualizarUsuarioPerfilCommandHandler(
         IUsuarioPerfilRepository usuarioPerfilRepository,
-        IMediator mediator)
+        IMediator mediator,
+        IAuditoriaAcessoRepository auditoriaAcesso)
     {
+        _auditoriaAcesso = auditoriaAcesso;
         _usuarioPerfilRepository = usuarioPerfilRepository;
         _mediator = mediator;
     }
@@ -47,7 +53,14 @@ public class AtualizarUsuarioPerfilCommandHandler : IRequestHandler<AtualizarUsu
         else if (!request.Ativo && usuario.Ativo)
             usuario.Desativar();
 
+        var perfilAnterior = usuario.Perfil;
         usuario.Atualizar(request.Nome, request.Perfil, request.GrupoId);
+
+        // spec controle-de-acesso AC-15: mudou o perfil, os ajustes de módulos (feitos para o perfil antigo)
+        // são apagados e a pessoa passa ao padrão do novo perfil. O Chat é mantido.
+        var perfilMudou = perfilAnterior != request.Perfil;
+        if (perfilMudou)
+            usuario.VoltarAoPadraoDeModulos();
 
         await _usuarioPerfilRepository.AtualizarAsync(usuario, cancellationToken);
 
@@ -57,16 +70,27 @@ public class AtualizarUsuarioPerfilCommandHandler : IRequestHandler<AtualizarUsu
         // de novo (review-fase9-independente.md #1: AC-46/47/48 não valiam aqui). Em vez de manter
         // duas cópias sincronizadas à mão, despacha o mesmo comando: um único lugar decide o que
         // acontece quando o ChatPerfil de alguém muda, não importa por qual tela.
-        if (request.ChatPerfil != usuario.ChatPerfil)
+        if (request.ChatPerfil is { } novoChat && novoChat != usuario.ChatPerfil)
         {
             await _mediator.Send(
-                new DefinirChatPerfilCommand(usuario.Id, request.ChatPerfil, request.PerfilRequisitante ?? "", request.RequisitanteId, request.RequisitanteNome),
+                new DefinirChatPerfilCommand(usuario.Id, novoChat, request.PerfilRequisitante ?? "", request.RequisitanteId, request.RequisitanteNome),
                 cancellationToken);
 
             // DefinirChatPerfilCommandHandler persiste a mudança lendo/salvando sua própria cópia
             // (repositório usa AsNoTracking) — sem isso, a resposta desta chamada devolveria o
             // ChatPerfil antigo, mesmo já correto no banco.
-            usuario.DefinirChatPerfil(request.ChatPerfil);
+            usuario.DefinirChatPerfil(novoChat);
+        }
+
+        if (perfilMudou)
+        {
+            await _auditoriaAcesso.AdicionarAsync(
+                [AuditoriaAcesso.Criar(usuario.Id, usuario.Nome, request.RequisitanteId, request.RequisitanteNome,
+                    "Perfil", perfilAnterior.ToString(), $"{request.Perfil} (ajustes zerados)")],
+                cancellationToken);
+            // O menu da pessoa muda junto com o perfil: avisa na hora (AC-11/AC-13).
+            await _mediator.Publish(new AcessosAtualizadosNotification(
+                usuario.Id, ModulosDeAcesso.Nomes(usuario.ModulosEfetivos()), usuario.ChatPerfil), cancellationToken);
         }
 
         return usuario.ToResponse();

@@ -9,7 +9,9 @@ public record AtualizarUsuarioPerfilCommand(
     string Nome,
     Perfil Perfil,
     bool Ativo,
-    ChatPerfil ChatPerfil,
+    // Opcional desde o controle de acesso (spec controle-de-acesso AC-10): a tela de Usuários não manda mais;
+    // null = não mexe no Chat. Quem ainda mandar continua funcionando.
+    ChatPerfil? ChatPerfil,
     Guid? GrupoId = null,
     string? PerfilRequisitante = null,
     Guid RequisitanteId = default,

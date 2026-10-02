@@ -1,3 +1,4 @@
+using ChamadosCamarj.Application.Common.Notifications;
 using ChamadosCamarj.Application.Common.Exceptions;
 using ChamadosCamarj.Application.Features.Chat.Commands.DefinirChatPerfil;
 using ChamadosCamarj.Application.Features.Usuarios.Commands;
@@ -14,13 +15,15 @@ public class AtualizarUsuarioPerfilHandlerTests
 {
     private readonly Mock<IUsuarioPerfilRepository> _repositoryMock = new();
     private readonly Mock<IMediator> _mediatorMock = new();
+    private readonly Mock<IAuditoriaAcessoRepository> _auditoriaMock = new();
     private readonly AtualizarUsuarioPerfilCommandHandler _handler;
 
     public AtualizarUsuarioPerfilHandlerTests()
     {
         _handler = new AtualizarUsuarioPerfilCommandHandler(
             _repositoryMock.Object,
-            _mediatorMock.Object);
+            _mediatorMock.Object,
+            _auditoriaMock.Object);
     }
 
     [Fact]
@@ -220,5 +223,56 @@ public class AtualizarUsuarioPerfilHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         _mediatorMock.Verify(m => m.Send(It.IsAny<DefinirChatPerfilCommand>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    // ── spec controle-de-acesso ───────────────────────────────────────────────
+
+    [Fact]
+    public async Task Handle_QuandoPerfilMuda_ZeraAjustesDeModulos_AuditaEAvisa()
+    {
+        // AC-15: ajustes feitos para o perfil antigo são apagados; o Chat é mantido.
+        var usuario = new UsuarioPerfil("ana@camarj.com.br", "Ana", Perfil.Atendente);
+        usuario.AjustarModulos(ModuloSistema.Nenhum, ModuloSistema.RelatorioMensal);
+        usuario.DefinirChatPerfil(ChatPerfil.Participante);
+        _repositoryMock.Setup(r => r.ObterPorIdAsync(usuario.Id, It.IsAny<CancellationToken>())).ReturnsAsync(usuario);
+        var auditoria = new List<AuditoriaAcesso>();
+        _auditoriaMock.Setup(a => a.AdicionarAsync(It.IsAny<IEnumerable<AuditoriaAcesso>>(), It.IsAny<CancellationToken>()))
+            .Callback<IEnumerable<AuditoriaAcesso>, CancellationToken>((r, _) => auditoria.AddRange(r))
+            .Returns(Task.CompletedTask);
+
+        await _handler.Handle(new AtualizarUsuarioPerfilCommand(usuario.Id, "Ana", Perfil.Admin, true, null, PerfilRequisitante: "Admin"), CancellationToken.None);
+
+        usuario.TemAjusteDeModulos.Should().BeFalse();
+        usuario.ChatPerfil.Should().Be(ChatPerfil.Participante);
+        auditoria.Should().ContainSingle().Which.Item.Should().Be("Perfil");
+        _mediatorMock.Verify(m => m.Publish(It.Is<AcessosAtualizadosNotification>(n => n.UsuarioId == usuario.Id), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_QuandoPerfilNaoMuda_MantemAjustesENaoAvisa()
+    {
+        var usuario = new UsuarioPerfil("ana@camarj.com.br", "Ana", Perfil.Atendente);
+        usuario.AjustarModulos(ModuloSistema.Nenhum, ModuloSistema.RelatorioMensal);
+        _repositoryMock.Setup(r => r.ObterPorIdAsync(usuario.Id, It.IsAny<CancellationToken>())).ReturnsAsync(usuario);
+
+        await _handler.Handle(new AtualizarUsuarioPerfilCommand(usuario.Id, "Ana Maria", Perfil.Atendente, true, null, PerfilRequisitante: "Admin"), CancellationToken.None);
+
+        usuario.ModulosRetirados.Should().Be(ModuloSistema.RelatorioMensal);
+        _auditoriaMock.Verify(a => a.AdicionarAsync(It.IsAny<IEnumerable<AuditoriaAcesso>>(), It.IsAny<CancellationToken>()), Times.Never);
+        _mediatorMock.Verify(m => m.Publish(It.IsAny<AcessosAtualizadosNotification>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_ChatPerfilNulo_NaoMexeNoChat()
+    {
+        // AC-10: a tela de Usuários não manda mais o Chat.
+        var usuario = new UsuarioPerfil("ana@camarj.com.br", "Ana", Perfil.Atendente);
+        usuario.DefinirChatPerfil(ChatPerfil.CriadorDeGrupo);
+        _repositoryMock.Setup(r => r.ObterPorIdAsync(usuario.Id, It.IsAny<CancellationToken>())).ReturnsAsync(usuario);
+
+        var response = await _handler.Handle(new AtualizarUsuarioPerfilCommand(usuario.Id, "Ana", Perfil.Atendente, true, null, PerfilRequisitante: "Admin"), CancellationToken.None);
+
+        response!.ChatPerfil.Should().Be(ChatPerfil.CriadorDeGrupo);
+        _mediatorMock.Verify(m => m.Send(It.IsAny<ChamadosCamarj.Application.Features.Chat.Commands.DefinirChatPerfil.DefinirChatPerfilCommand>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 }

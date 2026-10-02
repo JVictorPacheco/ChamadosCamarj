@@ -18,6 +18,6 @@ public class AtualizarUsuarioPerfilCommandValidator : AbstractValidator<Atualiza
             .IsInEnum().WithMessage("Perfil inválido.");
 
         RuleFor(c => c.ChatPerfil)
-            .IsInEnum().WithMessage("Perfil de chat inválido.");
+            .IsInEnum().When(c => c.ChatPerfil.HasValue).WithMessage("Perfil de chat inválido.");
     }
 }
