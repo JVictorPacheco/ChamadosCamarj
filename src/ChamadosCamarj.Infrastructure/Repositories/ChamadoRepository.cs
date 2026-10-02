@@ -241,6 +241,13 @@ public class ChamadoRepository : IChamadoRepository
         return resultado;
     }
 
+    public async Task<IReadOnlyCollection<Guid>> ListarIdsVisiveisAsync(ContextoAcesso acesso, CancellationToken cancellationToken = default)
+    {
+        return await AplicarVisibilidade(_dbSet.AsNoTracking(), acesso)
+            .Select(c => c.Id)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<bool> ComentarioPertenceAoChamadoAsync(Guid comentarioId, Guid chamadoId, CancellationToken cancellationToken = default)
     {
         return await _context.Set<Comentario>()

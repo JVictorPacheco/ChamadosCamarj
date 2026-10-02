@@ -23,7 +23,7 @@
 - [x] **T03** `Modulos` em `AutenticacaoResponse` e `UsuarioPerfilResponse` (login, `/auth/me`, Google,
   lista de Usuários). *AC-11, AC-13, AC-16 · C2.*
   **Pronto quando:** testes de login/mapping mostram os módulos efetivos.
-- [ ] **T04** `ModuloGuard` + Dashboard (2 handlers) e Relatório (controller + `IdsVisiveis` +
+- [x] **T04** `ModuloGuard` + Dashboard (2 handlers) e Relatório (controller + `IdsVisiveis` +
   `ListarIdsVisiveisAsync`). *AC-07, AC-12 · C4, C5.*
   **Pronto quando:** testes: Solicitante sem módulo → 403 (como hoje); Solicitante com Dashboard → ok;
   Atendente sem Relatório → 403; Relatório do Solicitante filtrado pelos visíveis; Atendente continua só
