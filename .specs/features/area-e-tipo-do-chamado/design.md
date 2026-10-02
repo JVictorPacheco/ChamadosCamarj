@@ -81,7 +81,8 @@ Migration EF `AddAreaETipoChamado`:
 **Compatibilidade com o código antigo em produção até o deploy:** ele continua abrindo chamados
 (grava `CategoriaId` e deixa `AreaId`/`TipoId` vazios), listando e filtrando por categoria.
 
-**Preenchimento contínuo:** o mesmo preenchimento do passo 3 roda, de forma idempotente, no
+**Preenchimento contínuo:** o preenchimento do passo 3 (sem o passo 2, que cria áreas e roda **só na
+migration**, senão recriaria áreas renomeadas pelo Admin — review R-01) roda, de forma idempotente, no
 `DatabaseSeeder` a cada subida da API nova. Assim os chamados abertos pelo código antigo entre a
 migration e o deploy recebem área e tipo assim que a versão nova sobe.
 
@@ -89,8 +90,13 @@ migration e o deploy recebem área e tipo assim que a versão nova sobe.
 banco só por compatibilidade. **Limpeza futura** (outra feature, depois do deploy validado): tornar
 `AreaId`/`TipoId` obrigatórias e remover `Categorias` e `CategoriaId`.
 
-**Volta atrás:** o `Down` remove `AreaId`, `TipoId` e `TiposChamado` e devolve `CategoriaId` a
-obrigatório. Os grupos criados no passo 2 ficam.
+**Volta atrás:** o `Down` remove `AreaId`, `TipoId` e `TiposChamado`; `CategoriaId` **continua
+opcional** (chamados abertos pela versão nova não têm categoria — review R-07). Os grupos criados no
+passo 2 ficam. Usar o `Down` depois do deploy deixa os chamados novos sem área/tipo/categoria.
+
+**Convivência até o deploy (review R-06):** enquanto a produção roda a versão antiga, não reclassificar
+chamados reais pela versão nova (a versão antiga não conhece a ação de histórico nova). Fazer o deploy
+de backend e frontend juntos e logo depois de aplicada a migration.
 
 **Conferência ao aplicar:** contar os chamados por categoria antes e por área depois (precisam
 bater) e conferir que nenhum chamado ficou sem área ou tipo.
