@@ -6,13 +6,13 @@
 
 ## ▶ ONDE PARAMOS (2026-10-02) — ler isto primeiro ao retomar
 
-**`main` está com as 4 features do PR #44** (autorização, correções de acesso, logout por
-inatividade, área e tipo — mergeado em 2026-10-02, commit `62384a5`). **A feature
-`correcoes-pre-deploy` está fechada na branch `feature/correcoes-pre-deploy`**, com PR para
-`develop` — **PR #49**. O usuário decidiu **fazer o deploy só depois dela**, junto.
+**`develop` tem tudo** — as 4 features do #44 (já em `main`) e `correcoes-pre-deploy` (PR #49,
+mergeado pelo usuário em 2026-10-02, commit `0b76c9d`; gates em `develop`: 0 erros, 444 testes, build
+do frontend ok). `develop` está 19 commits à frente de `main`. O usuário decidiu **fazer o deploy
+só depois desta feature**, junto.
 
 **Próximos passos, nesta ordem:**
-1. **Usuário:** mergear o PR de `correcoes-pre-deploy` em `develop` e depois `develop` → `main`.
+1. **Usuário:** promover `develop` → `main` (PR de release).
 2. **Usuário:** trocar a senha da conta `suporte@camarj.com.br` (informada na conversa da sessão de
    2026-10-02 para rodar os E2E; a senha antiga continua no histórico do git, mas já não vale).
 3. **Deploy pelo irmão do usuário.** **Backend e frontend precisam subir juntos.** Avisos do deploy:
@@ -30,7 +30,8 @@ inatividade, área e tipo — mergeado em 2026-10-02, commit `62384a5`). **A fea
 ### Pendências gerais (consolidado em 2026-10-02, pós correcoes-pre-deploy)
 - **SLA — DECIDIDO pelo usuário em 2026-10-02:** conta só o **expediente de 08:00 às 18:00 em dias
   úteis**; sábado, domingo e feriados **nacionais e estaduais do RJ** não contam. Feature própria
-  (ROADMAP "SLA em Dias Úteis"). Falta decidir na spec: como a lista de feriados é mantida.
+  (ROADMAP "SLA em Dias Úteis"). Lista de feriados: **cadastro pelo Admin**, já preenchida com os do
+  ano e com aviso quando faltar a do ano seguinte (decidido em 2026-10-02).
 - **Demonstração em tela:** CAM-99 e CAM-100 `[TESTE-TELA]` apagados em 2026-10-02 com OK do usuário.
 - **Achado na demonstração em tela (2026-10-02):** o modal "Alterar prioridade" abre marcando a
   prioridade de quando a página carregou, não a atual (ex.: abriu em "Média" com o chamado já
