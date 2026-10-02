@@ -1,6 +1,6 @@
 # Editar Chamado — Especificação
 
-> **SDD:** implementando
+> **SDD:** em-review
 > **Status:** `Pendente`
 > **Branch:** `feature/editar-chamado`
 > **Criada em:** 2026-10-02
@@ -151,7 +151,11 @@ A pessoa pode editar o chamado quando ele **não está encerrado** (Resolvido, F
 
 | Critério | Arquivo de Teste | Método de Teste | Status |
 |----------|-----------------|-----------------|--------|
-| AC-01..AC-25 | a definir no design/tasks | — | ⬜ Pendente |
+| AC-01..AC-11 | `ChamadoPermissoesTests` (regra), `AcessoChamadoBehaviourTests` (400/403) + ao vivo 23/23 | `Editar_*`, `Editar_ChamadoEncerrado_DaBadRequest...`, `Editar_AtendenteQueNaoEhResponsavel_DaForbidden` | ✅ |
+| AC-12..AC-15 | `e2e/editar-chamado.spec.ts` | `Admin edita título e descrição...` | ✅ |
+| AC-16..AC-18 | `ChamadoTests`, `AtualizarChamadoHandlerTests` + ao vivo | `AtualizarDados_SemMudanca_*`, `Handle_SoTitulo_*`, `Handle_SemMudanca_*` | ✅ |
+| AC-19..AC-21 | `e2e/editar-chamado.spec.ts` + ao vivo | `conflito mantém o texto...`; AC-20 403; AC-21 comentário | ✅ |
+| AC-22..AC-25 | gates + `impacto.md` | 474 testes, E2E 17/17, build 0/0 | ✅ |
 
 ---
 

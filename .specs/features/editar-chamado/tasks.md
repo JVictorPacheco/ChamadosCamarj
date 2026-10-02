@@ -53,11 +53,11 @@
 - [x] **T08** E2E `e2e/editar-chamado.spec.ts`: Admin edita (histórico aparece); botão ausente em
   chamado encerrado; conflito mantém o texto no modal e o segundo "Salvar" grava. Títulos `[TESTE-E2E]`.
   Suíte inteira passando. *AC-25.*
-- [ ] **T09** Verificação ao vivo (API + tela) com contas `teste.edit.*` (Solicitante que abre,
+- [x] **T09** Verificação ao vivo (API + tela) com contas `teste.edit.*` (Solicitante que abre,
   Atendente responsável, outro Atendente da mesma equipe, Solicitante colega): AC-01..AC-11, AC-19,
   AC-20. **PARADA:** dados de teste (chamados com `ChamadoEditado` no histórico — a versão antiga em
   produção não lê esse valor) apagados só com OK do usuário, **antes** do fim da sessão.
-- [ ] **T10** Gates + `/analise-cod` (sem 🔴 em aberto) + rastreabilidade na spec. *AC-22..AC-25.*
+- [x] **T10** Gates + `/analise-cod` (sem 🔴 em aberto) + rastreabilidade na spec. *AC-22..AC-25.*
 
 ---
 
