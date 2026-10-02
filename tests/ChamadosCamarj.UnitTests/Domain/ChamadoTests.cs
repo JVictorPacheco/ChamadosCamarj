@@ -7,10 +7,10 @@ namespace ChamadosCamarj.UnitTests.Domain;
 
 public class ChamadoTests
 {
-    private static readonly Guid CategoriaId = Guid.NewGuid();
+    private static readonly Guid AreaId = Guid.NewGuid();
 
     private static Chamado CriarChamado(PrioridadeChamado prioridade = PrioridadeChamado.Media)
-        => new("Título teste", "Descrição teste", "João", "joao@camarj.com.br", CategoriaId, prioridade);
+        => new("Título teste", "Descrição teste", "João", "joao@camarj.com.br", AreaId, Guid.NewGuid(), prioridade);
 
     // ── Construtor ────────────────────────────────────────────────────────────
 
@@ -26,7 +26,7 @@ public class ChamadoTests
     [InlineData("Título", "")]
     public void Criar_ComCamposObrigatoriosVazios_DeveLancarArgumentException(string titulo, string descricao)
     {
-        var act = () => new Chamado(titulo, descricao, "João", "joao@camarj.com.br", CategoriaId, Guid.NewGuid());
+        var act = () => new Chamado(titulo, descricao, "João", "joao@camarj.com.br", AreaId, Guid.NewGuid());
         act.Should().Throw<ArgumentException>();
     }
 

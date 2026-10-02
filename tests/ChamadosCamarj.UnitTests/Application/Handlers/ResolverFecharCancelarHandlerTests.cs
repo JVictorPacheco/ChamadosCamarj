@@ -19,7 +19,7 @@ public class ResolverFecharCancelarHandlerTests
     private readonly Mock<IUnitOfWork> _unitOfWorkMock = new();
 
     private Chamado ChamadoAberto()
-        => new("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
+        => new("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid(), Guid.NewGuid());
 
     // ── Resolver ─────────────────────────────────────────────────────────────
 

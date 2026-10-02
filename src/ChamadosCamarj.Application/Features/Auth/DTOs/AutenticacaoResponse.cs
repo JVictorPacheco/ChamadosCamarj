@@ -9,5 +9,6 @@ public record AutenticacaoResponse(
     string Email,
     Perfil Perfil,
     ChatPerfil ChatPerfil,
-    bool MostrarConfirmacaoLeitura
+    bool MostrarConfirmacaoLeitura,
+    Guid? GrupoId = null
 );

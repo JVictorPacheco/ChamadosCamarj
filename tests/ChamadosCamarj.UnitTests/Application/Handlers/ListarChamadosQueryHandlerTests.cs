@@ -36,11 +36,11 @@ public class ListarChamadosQueryHandlerTests
         _repositoryMock
             .Setup(r => r.ListarAsync(
                 It.IsAny<ContextoAcesso>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<StatusChamado?>(),
-                It.IsAny<PrioridadeChamado?>(), It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<string?>(),
+                It.IsAny<PrioridadeChamado?>(), It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<string?>(),
                 It.IsAny<string?>(), It.IsAny<IEnumerable<StatusChamado>?>(), It.IsAny<DateTime?>(),
                 It.IsAny<DateTime?>(), It.IsAny<MotivoEncerramento?>(), It.IsAny<CancellationToken>()))
-            .Callback<ContextoAcesso, int, int, StatusChamado?, PrioridadeChamado?, Guid?, Guid?, string?, string?, IEnumerable<StatusChamado>?, DateTime?, DateTime?, MotivoEncerramento?, CancellationToken>(
-                (acesso, _, _, _, _, _, _, _, _, statusEntre, dataInicio, dataFim, _, _) =>
+            .Callback<ContextoAcesso, int, int, StatusChamado?, PrioridadeChamado?, Guid?, Guid?, Guid?, string?, string?, IEnumerable<StatusChamado>?, DateTime?, DateTime?, MotivoEncerramento?, CancellationToken>(
+                (acesso, _, _, _, _, _, _, _, _, _, statusEntre, dataInicio, dataFim, _, _) =>
                     capturar?.Invoke(acesso, statusEntre, dataInicio, dataFim))
             .ReturnsAsync((lista, lista.Count));
     }
@@ -78,7 +78,7 @@ public class ListarChamadosQueryHandlerTests
         await _handler.Handle(query, CancellationToken.None);
 
         _repositoryMock.Verify(r => r.ListarAsync(
-            It.IsAny<ContextoAcesso>(), 1, 10, null, null, null, null, null, "ana.colaboradora@camarj.com.br",
+            It.IsAny<ContextoAcesso>(), 1, 10, null, null, null, null, null, null, "ana.colaboradora@camarj.com.br",
             null, null, null, null, It.IsAny<CancellationToken>()),
             Times.Once);
     }

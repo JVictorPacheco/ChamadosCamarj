@@ -27,7 +27,7 @@ public class ForcarEncerramentoChamadoHandlerTests
             _unitOfWorkMock.Object);
     }
 
-    private static Chamado CriarChamado() => new("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
+    private static Chamado CriarChamado() => new("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid(), Guid.NewGuid());
 
     [Fact]
     public async Task Handle_ComoAdmin_DeveFecharChamadoAbertoERegistrarHistorico()

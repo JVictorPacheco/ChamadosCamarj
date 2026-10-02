@@ -23,7 +23,8 @@ public class ObterRelatorioMensalQueryHandlerTests
     private static EventoRelatorioItem Evento(
         AcaoHistorico acao,
         DateTime dataHora,
-        string categoria = "Atendimento",
+        string area = "Atendimento",
+        string tipo = "Incidente",
         Guid? responsavelId = null,
         string? responsavelNome = null,
         DateTime? dataCriacao = null,
@@ -34,7 +35,8 @@ public class ObterRelatorioMensalQueryHandlerTests
             Guid.NewGuid(),
             acao,
             dataHora,
-            categoria,
+            area,
+            tipo,
             responsavelId,
             responsavelNome,
             dataCriacao ?? dataHora,
@@ -94,7 +96,8 @@ public class ObterRelatorioMensalQueryHandlerTests
         result.TotalAbertos.Should().Be(0);
         result.TotalResolvidos.Should().Be(0);
         result.TotalCancelados.Should().Be(0);
-        result.PorCategoria.Should().BeEmpty();
+        result.PorArea.Should().BeEmpty();
+        result.PorTipo.Should().BeEmpty();
         result.Comparacao.Should().BeNull();
     }
 
