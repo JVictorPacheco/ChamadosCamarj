@@ -14,6 +14,9 @@
     <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <!-- Sem esta referência, o Npgsql transitivo puxa o EF 9.0.1 e o Infrastructure usa o 9.0.x mais
+         recente (9.*), gerando o aviso MSB3277. Mesma faixa de versão dos projetos src. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.*" />
   </ItemGroup>
 
   <ItemGroup>

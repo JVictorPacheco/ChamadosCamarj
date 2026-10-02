@@ -1,8 +1,8 @@
 ---
 tipo: funcionalidade
 status: vigente
-atualizado: 2026-10-01
-spec: .specs/features/sla-tracking/spec.md
+atualizado: 2026-10-02
+spec: .specs/features/sla-tracking/spec.md, .specs/features/correcoes-pre-deploy/spec.md
 tags: [funcionalidade, sla]
 ---
 
@@ -36,10 +36,14 @@ O selo aparece nos cartões, no detalhe e alimenta o indicador de cumprimento de
 A cada 5 minutos o sistema confere os prazos. Quando um chamado entra em **atenção** ou fica
 **atrasado**, aparece um aviso na tela por alguns segundos ("CAM-123 — próximo do prazo!" /
 "CAM-123 — PRAZO ESTOURADO!"), uma vez por situação.
-- O aviso vai **só para Atendentes e Admins** conectados. Solicitantes não recebem.
+- **Admins** recebem o aviso de todos os chamados.
+- **Atendentes** recebem só o aviso dos chamados que **conseguem ver** (sem responsável, os deles e
+  os da equipe deles) — a mesma regra da lista de chamados. Chamado de outra equipe não gera aviso.
+- **Solicitantes** não recebem aviso.
 - O aviso mostra só o número do chamado, sem título nem conteúdo.
-- Hoje o aviso vai para **todos** os Atendentes, inclusive os que não enxergam aquele chamado
-  (por exemplo, de outra equipe). Eles veem apenas o número.
+- Quem recebe é decidido pela equipe gravada no cadastro. Se um Atendente muda de equipe, os avisos
+  já seguem a equipe nova, mas as telas só seguem depois que ele entra de novo no sistema.
+- Se o aviso não puder ser entregue (falha momentânea), ele é tentado de novo na verificação seguinte.
 
 ## Regras de negócio
 - O prazo é calculado **na abertura**, a partir da prioridade.

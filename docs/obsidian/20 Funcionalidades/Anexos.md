@@ -1,8 +1,8 @@
 ---
 tipo: funcionalidade
 status: vigente
-atualizado: 2026-09-29
-spec: .specs/features/anexos-storage/spec.md
+atualizado: 2026-10-02
+spec: .specs/features/anexos-storage/spec.md, .specs/features/correcoes-pre-deploy/spec.md
 tags: [funcionalidade, anexos]
 ---
 
@@ -28,6 +28,7 @@ Todos os perfis.
 | Quem enviou | Registrado automaticamente com o usuário logado |
 | Remover | Admin remove qualquer anexo; os demais só os que eles mesmos enviaram |
 | Remoção | Pede confirmação e apaga de verdade (arquivo e registro) |
+| Anexo em comentário | Só pode ser ligado a um comentário **do mesmo chamado**; caso contrário é recusado ("O comentário informado não pertence a este chamado.") e nada é guardado |
 
 ## Onde ficam
 No armazenamento de arquivos do Supabase, separado do banco de dados. Os arquivos do

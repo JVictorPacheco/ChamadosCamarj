@@ -38,6 +38,7 @@ public static class ChamadoMappings
             SlaCalculo.CalcularStatus(chamado.DataLimite),
             SlaCalculo.FormatarLabel(chamado.DataLimite),
             SlaCalculo.CalcularHorasRestantes(chamado.DataLimite),
+            VersaoChamado.De(chamado.DataAtualizacao, chamado.DataCriacao),
             chamado.MotivoEncerramento,
             chamado.MotivoOutro
         );

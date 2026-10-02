@@ -80,49 +80,62 @@ export function listarAreas(): Promise<GrupoResponse[]> {
   return apiFetch<GrupoResponse[]>('/grupos')
 }
 
-export function reclassificarTipo(chamadoId: string, novoTipoId: string): Promise<void> {
+export function reclassificarTipo(chamadoId: string, novoTipoId: string, versao?: string): Promise<void> {
   return apiFetch<void>(`/chamados/${chamadoId}/tipo`, {
     method: 'PATCH',
+    headers: cabecalhoVersao(versao),
     body: JSON.stringify({ novoTipoId }),
   })
+}
+
+/**
+ * Versão do chamado que a tela mostrou, enviada no If-Match: se outra pessoa alterou o chamado
+ * depois disso, o servidor recusa com 409 (spec correcoes-pre-deploy AC-09). Sem versão, sem checagem.
+ */
+function cabecalhoVersao(versao?: string): Record<string, string> | undefined {
+  return versao ? { 'If-Match': `"${versao}"` } : undefined
 }
 
 // Quem fez a ação (usuarioId/usuarioNome) vem do token no backend agora — nenhuma
 // das funções abaixo precisa mais receber/mandar essa informação pelo cliente.
 
-export function alterarStatus(chamadoId: string, novoStatus: StatusChamado): Promise<void> {
+export function alterarStatus(chamadoId: string, novoStatus: StatusChamado, versao?: string): Promise<void> {
   return apiFetch<void>(`/chamados/${chamadoId}/status`, {
     method: 'PUT',
+    headers: cabecalhoVersao(versao),
     body: JSON.stringify({ novoStatus }),
   })
 }
 
-export function atribuirChamado(chamadoId: string): Promise<void> {
+export function atribuirChamado(chamadoId: string, versao?: string): Promise<void> {
   return apiFetch<void>(`/chamados/${chamadoId}/atribuir`, {
     method: 'PATCH',
+    headers: cabecalhoVersao(versao),
   })
 }
 
-export function resolverChamado(chamadoId: string): Promise<void> {
-  return apiFetch<void>(`/chamados/${chamadoId}/resolver`, { method: 'PATCH' })
+export function resolverChamado(chamadoId: string, versao?: string): Promise<void> {
+  return apiFetch<void>(`/chamados/${chamadoId}/resolver`, { method: 'PATCH', headers: cabecalhoVersao(versao) })
 }
 
-export function fecharChamado(chamadoId: string, motivo: MotivoEncerramento, motivoOutro?: string, observacao?: string): Promise<void> {
+export function fecharChamado(chamadoId: string, motivo: MotivoEncerramento, motivoOutro?: string, observacao?: string, versao?: string): Promise<void> {
   return apiFetch<void>(`/chamados/${chamadoId}/fechar`, {
     method: 'PATCH',
+    headers: cabecalhoVersao(versao),
     body: JSON.stringify({ motivo, motivoOutro, observacao }),
   })
 }
 
-export function cancelarChamado(chamadoId: string, motivo: MotivoEncerramento, motivoOutro?: string, observacao?: string): Promise<void> {
+export function cancelarChamado(chamadoId: string, motivo: MotivoEncerramento, motivoOutro?: string, observacao?: string, versao?: string): Promise<void> {
   return apiFetch<void>(`/chamados/${chamadoId}/cancelar`, {
     method: 'PATCH',
+    headers: cabecalhoVersao(versao),
     body: JSON.stringify({ motivo, motivoOutro, observacao }),
   })
 }
 
-export function reabrirChamado(chamadoId: string): Promise<void> {
-  return apiFetch<void>(`/chamados/${chamadoId}/reabrir`, { method: 'PATCH' })
+export function reabrirChamado(chamadoId: string, versao?: string): Promise<void> {
+  return apiFetch<void>(`/chamados/${chamadoId}/reabrir`, { method: 'PATCH', headers: cabecalhoVersao(versao) })
 }
 
 export interface ReatribuirRequest {
@@ -130,23 +143,26 @@ export interface ReatribuirRequest {
   novoResponsavelNome: string
 }
 
-export function reatribuirChamado(chamadoId: string, dados: ReatribuirRequest): Promise<void> {
+export function reatribuirChamado(chamadoId: string, dados: ReatribuirRequest, versao?: string): Promise<void> {
   return apiFetch<void>(`/chamados/${chamadoId}/reatribuir`, {
     method: 'PATCH',
+    headers: cabecalhoVersao(versao),
     body: JSON.stringify(dados),
   })
 }
 
-export function alterarPrioridade(chamadoId: string, novaPrioridade: PrioridadeChamado): Promise<void> {
+export function alterarPrioridade(chamadoId: string, novaPrioridade: PrioridadeChamado, versao?: string): Promise<void> {
   return apiFetch<void>(`/chamados/${chamadoId}/prioridade`, {
     method: 'PATCH',
+    headers: cabecalhoVersao(versao),
     body: JSON.stringify({ novaPrioridade }),
   })
 }
 
-export function forcarEncerramento(chamadoId: string, motivo: MotivoEncerramento, motivoOutro?: string, observacao?: string): Promise<void> {
+export function forcarEncerramento(chamadoId: string, motivo: MotivoEncerramento, motivoOutro?: string, observacao?: string, versao?: string): Promise<void> {
   return apiFetch<void>(`/chamados/${chamadoId}/forcar-encerramento`, {
     method: 'PATCH',
+    headers: cabecalhoVersao(versao),
     body: JSON.stringify({ motivo, motivoOutro, observacao }),
   })
 }

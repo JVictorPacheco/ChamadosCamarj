@@ -1,45 +1,121 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-10-02 (pós-merge do #44)
+> Atualizado em: 2026-10-02 (fechamento de correcoes-pre-deploy)
 
 ---
 
 ## ▶ ONDE PARAMOS (2026-10-02) — ler isto primeiro ao retomar
 
-**`main` == `develop`.** O PR #44 (`develop` → `main`) foi mergeado pelo usuário em 2026-10-02
-(commit `62384a5`) com as 4 features: #43 autorização, #45 correções de acesso, #46 logout por
-inatividade, #47 área e tipo. Conferido: build 0 erros, 401 testes, `npm run build` ok, Cloudflare
-Pages success. Branches remotas dessas features apagadas em 2026-10-02 (GitHub só tem `main` e
-`develop`).
+**`main` está com as 4 features do PR #44** (autorização, correções de acesso, logout por
+inatividade, área e tipo — mergeado em 2026-10-02, commit `62384a5`). **A feature
+`correcoes-pre-deploy` está fechada na branch `feature/correcoes-pre-deploy`**, com PR para
+`develop` — **PR #49**. O usuário decidiu **fazer o deploy só depois dela**, junto.
 
 **Próximos passos, nesta ordem:**
-1. **Deploy pelo irmão do usuário (pendente).** **Backend e frontend precisam subir juntos.** Avisos
-   do deploy:
+1. **Usuário:** mergear o PR de `correcoes-pre-deploy` em `develop` e depois `develop` → `main`.
+2. **Usuário:** trocar a senha da conta `suporte@camarj.com.br` (informada na conversa da sessão de
+   2026-10-02 para rodar os E2E; a senha antiga continua no histórico do git, mas já não vale).
+3. **Deploy pelo irmão do usuário.** **Backend e frontend precisam subir juntos.** Avisos do deploy:
    - quem estiver logado vai precisar entrar de novo uma vez (logout por inatividade);
    - o Kanban do Atendente sem equipe passa a mostrar só o que é dele;
    - **a migration `AddAreaETipoChamado` JÁ ESTÁ APLICADA no banco** (dev = prod, aplicada em
      2026-10-02). A versão antiga em produção continua funcionando com ela, mas até o deploy
-     **não reclassificar tipo de chamado real** (a versão antiga não conhece essa ação no histórico).
-2. Depois do deploy validado: reclassificar os 40 chamados antigos ("Não classificado") pelo detalhe
-   e abrir a feature de **limpeza** (tornar `AreaId`/`TipoId` obrigatórios; remover `Categorias` e
-   `CategoriaId`).
-3. Pendências abertas: ver "Pendências gerais" logo abaixo.
+     **não reclassificar tipo de chamado real** (a versão antiga não conhece essa ação no histórico);
+   - `correcoes-pre-deploy` **não tem migration**.
+4. Depois do deploy validado: reclassificar os 40 chamados antigos ("Não classificado") pelo detalhe
+   e abrir a feature de **limpeza de Categorias** (ROADMAP).
+5. O usuário quer **planejar uma feature nova** comigo depois do deploy. Já registrada no ROADMAP:
+   **"Editar chamado"** (modal; Solicitante edita os que abriu, Atendente os que assumiu, Admin todos).
 
-### Pendências gerais (consolidado em 2026-10-02)
-- **Decisão de negócio:** SLA em horas corridas × horas úteis.
-- **Operacional:** contas de teste antigas `teste.admin2`/`teste.alvo2` no Supabase (apagar só com OK
-  do usuário); verificação manual do usuário dos AC-49 a AC-52 do chat.
-- **Técnicas pequenas:** favicon de 218 KB; testes E2E do Playwright (`frontend/e2e`) ainda usam
-  "Categoria"; conflito de versão do EF no projeto de testes (9.0.1 × 9.0.19); alerta de SLA vai para
-  todos os Atendentes, inclusive os que não veem aquele chamado (R-02 das correções); nenhuma ação
-  sobre chamado manda a versão lida (edição simultânea sobrescreve sem 409); `ComentarioId` do anexo
-  não é validado contra o chamado; migrations em duas pastas (as novas vão em `Data/Migrations`).
-- **Processo/ferramentas:** Constitution regra 4 e `docs/GUIA-ORQUESTRACAO-SDD.md` ainda descrevem
-  só o fluxo do OpenCode (`@spec`...), não o `/sdd` do Claude Code; ideias pendentes nas skills SDD:
-  hook lembrando de atualizar o STATE e comandos equivalentes para o OpenCode.
-- **Backlog do ROADMAP:** abertura por e-mail (IMAP), alertas de SLA com filtro na tela, exportação
-  CSV/PDF da lista, carga por atendente.
-- Efeito colateral dos testes: a numeração `CAM-N` pulou ~20 números ao todo (inofensivo).
+### Pendências gerais (consolidado em 2026-10-02, pós correcoes-pre-deploy)
+- **SLA — DECIDIDO pelo usuário em 2026-10-02:** conta só o **expediente de 08:00 às 18:00 em dias
+  úteis**; sábado, domingo e feriados **nacionais e estaduais do RJ** não contam. Feature própria
+  (ROADMAP "SLA em Dias Úteis"). Falta decidir na spec: como a lista de feriados é mantida.
+- **Demonstração em tela:** CAM-99 e CAM-100 `[TESTE-TELA]` apagados em 2026-10-02 com OK do usuário.
+- **Achado na demonstração em tela (2026-10-02):** o modal "Alterar prioridade" abre marcando a
+  prioridade de quando a página carregou, não a atual (ex.: abriu em "Média" com o chamado já
+  "Urgente"). Pré-existente; não afeta a proteção de conflito.
+- **Operacional:** verificação manual do usuário dos AC-49 a AC-52 do chat.
+  ~~Contas de teste `teste.admin2`/`teste.alvo2`~~ — **apagadas em 2026-10-02** com OK do usuário
+  (junto com as 2 conversas, 14 mensagens e 14 registros de auditoria do chat delas). ~~Bucket
+  `chat-arquivos` não criado~~ — **existe** (havia arquivos nele em 2026-10-02).
+- **Técnicas pequenas:** migrations em duas pastas (as novas vão em `Data/Migrations`; unificar foi
+  descartado por risco). Resolvidos em 2026-10-02 por `correcoes-pre-deploy`: ~~favicon 218 KB~~,
+  ~~E2E com "Categoria"~~, ~~conflito de versão do EF~~, ~~alerta de SLA para todos os Atendentes~~,
+  ~~edição simultânea sem 409~~, ~~`ComentarioId` do anexo sem validação~~.
+- **Da review de `correcoes-pre-deploy` (aceitas):** R-02 (regra de destinatários do SLA só testada
+  com mock + ao vivo), R-05 parcial (E2E não encadeia várias ações seguidas). R-04 aceito pelo
+  usuário: o alerta segue a equipe do cadastro e as telas seguem o token até o próximo login.
+- **Processo/ferramentas:** ~~regra 4 e guia só com OpenCode~~ (resolvido 2026-10-02). Ideias
+  pendentes nas skills SDD: hook lembrando de atualizar o STATE e comandos equivalentes no OpenCode.
+- **Backlog do ROADMAP:** Editar chamado, limpeza de Categorias, abertura por e-mail (IMAP), alertas
+  de SLA com filtro na tela, exportação CSV/PDF da lista, carga por atendente.
+- Efeito colateral dos testes: a numeração `CAM-N` pulou ~40 números ao todo (inofensivo).
+
+---
+
+## Sessão de 2026-10-02 (tarde) — Correções Pré-Deploy
+
+### Contexto
+O usuário pediu para fechar as pendências técnicas **antes** do deploy, para subir tudo junto. Escopo
+escolhido por ele: alerta de SLA filtrado, validação do anexo, edição simultânea (409), arrumação
+técnica (E2E, EF, favicon) e docs de processo (regra 4). Fluxo `/sdd` completo. Spec, design,
+tasks e 2 reviews em `.specs/features/correcoes-pre-deploy/`.
+
+### Decisões do usuário (2026-10-02)
+- Conflito vale para **todas** as ações que alteram o chamado; comentário e anexo nunca conflitam.
+- No conflito: avisa e recarrega, mantendo o texto digitado (na edição — ver AC-11).
+- **AC-11 adiado:** não existe tela de edição de título/descrição. Virou a feature **"Editar
+  chamado"** no ROADMAP, com a regra: Solicitante edita os que abriu, Atendente os que assumiu,
+  Admin todos — **modal**, não tela nova.
+- Mudanças de contrato C1–C7 aprovadas antes de implementar (regra 3).
+- R-04 da review: aceito como está.
+- Limpeza: apagar tudo, inclusive as contas antigas e o chat delas.
+
+### O que foi feito
+- **SLA:** `SlaAlertaNotificador` envia para o grupo novo `Admins` e para os Atendentes que veem o
+  chamado (`ListarAtendentesQuePodemVerAsync`, reaproveita a regra única de visibilidade);
+  `SlaAlertasEnviados` (não repetir alerta; só registra após envio bem-sucedido).
+- **Anexo:** `ComentarioPertenceAoChamadoAsync` checado antes do upload (400).
+- **Edição simultânea:** `ChamadoResponse.versao` (microssegundos da última alteração),
+  cabeçalho `If-Match`, `VersaoChamadoBehaviour` depois do `AcessoChamadoBehaviour` (404 antes de
+  409); tela envia a versão em todas as ações, captura a versão ao abrir diálogos/modais, bloqueia
+  botões/arraste durante a recarga e mostra a mensagem no Kanban. ADR-009.
+- **Arrumação:** E2E com Área/Tipo, credenciais em `E2E_EMAIL`/`E2E_SENHA` (senha saiu do código),
+  `e2e/conflito.spec.ts`; `Microsoft.EntityFrameworkCore.Relational 9.*` no projeto de testes;
+  favicon 64×64 (3,5 KB).
+- **Processo:** regra 4 da Constitution e `docs/GUIA-ORQUESTRACAO-SDD.md` com o `/sdd`.
+- **Obsidian:** SLA, Anexos, Acompanhamento do Chamado, Fila/Kanban/Dashboard, Home; ADR-009.
+
+### Demonstração em tela (2026-10-02, a pedido do usuário)
+- Navegador visível (Playwright MCP), backend e frontend locais: abrir com Área/Tipo; Assumir com
+  versão velha → aviso + recarga; refazer → ok; botões bloqueados na recarga; modal de prioridade com
+  versão velha → recusado no modal; comentário de outra pessoa não gera conflito (Resolver ok); Kanban
+  sem tempo real → aviso e cartão de volta à coluna. Chamados CAM-99 e CAM-100 `[TESTE-TELA]`.
+
+### Verificação
+- `dotnet test` **444/444** (eram 401); `dotnet build` 0 erros, sem MSB3277; `npm run build` ok;
+  lint sem avisos novos.
+- **E2E 14/14** (backend e frontend locais contra o banco real), rodados de novo após as correções
+  do review; o teste de conflito no Kanban bloqueia o tempo real para ser determinístico.
+- **Ao vivo via API:** 409 com a mensagem, comentário não muda a versão, sem `If-Match` funciona,
+  404 antes de 409, anexo com comentário alheio/inexistente → 400, PDF no próprio chamado aceito.
+- **SLA ao vivo:** 5 contas conectadas antes de o backend subir; 3 Atendentes × 23 chamados reais
+  atrasados: recebe ⇔ vê (69/69); Solicitante nada; Admin 25/26 (o 1º alerta saiu no mesmo instante
+  da entrada no grupo — corrida da partida).
+- **Review independente:** rodada 1 BLOQUEADO (R-01: AC-05 sem teste → corrigido) + 5 🟡; rodada 2
+  APROVADO COM RESSALVAS, 2 🟡 corrigidos.
+
+### Dados de teste no banco real — **todos apagados em 2026-10-02 com OK do usuário**
+- 22 chamados `[TESTE-CPD]`/`[TESTE-E2E]` (CAM-77 a CAM-98), 5 comentários, 45 entradas de histórico,
+  1 anexo (banco + storage), 4 contas `teste.cpd.*`.
+- Contas antigas `teste.admin2`/`teste.alvo2` + 2 conversas, 14 mensagens (7 do usuário real na
+  conversa com `teste.alvo2`), 4 participações, 2 presenças, 14 registros de auditoria do chat e 2
+  arquivos do bucket `chat-arquivos`.
+- Feito por console Npgsql no scratchpad (a API não tem rota de exclusão), com inspeção só-leitura
+  antes e transação com conferência. Nenhuma conta `teste.*` restante. A ADR-005 ("chamados nunca são
+  apagados") vale para chamados reais; estes eram só de teste.
+- Playwright: instalado o navegador `chromium-headless-shell v1228` exigido pela versão do projeto.
 
 ---
 
@@ -927,7 +1003,7 @@ manual ainda.
 
 3. **Mudança de contrato compartilhado entre camadas é sinalizada ANTES de aplicar, não só relatada depois.** Se uma mudança remove/altera um método de uma interface usada por múltiplos consumidores, muda uma assinatura pública, ou qualquer coisa que outra camada/feature dependa — avisar o usuário antes de aplicar, não só narrar no resumo final. (Gap 3, caso real: remoção de `RemoverAsync`/`DownloadAsync` de `IStorageService` foi feita e só reportada depois.)
 
-4. **Orquestração de IA com SDD.** Para cada feature nova, seguir: `@spec` → `@build-backend`/`@build-frontend` → `@review` → gate checks → commit/merge. Sempre pedir pra cada agente salvar seus artefatos. Guia completo: `docs/GUIA-ORQUESTRACAO-SDD.md`.
+4. **Orquestração de IA com SDD.** Toda feature nova segue o ciclo spec → design → tasks → implementação → review independente → gate checks → PR. **No Claude Code:** `/sdd` (specify → plan → tasks → implement → review por sub-agente novo → close), com 2 aprovações do usuário (a spec e a abertura do PR) e paradas obrigatórias em mudança de contrato, decisão em aberto e ação em banco real. **No OpenCode:** `@spec` → `@build-backend`/`@build-frontend` → `@review` → gate checks → commit/merge, pedindo a cada agente que salve seus artefatos. O merge é sempre do usuário. Guia completo: `docs/GUIA-ORQUESTRACAO-SDD.md`. *(Atualizada em 2026-10-02, feature correcoes-pre-deploy: antes descrevia só o OpenCode.)*
 
 5. **Não quebrar nada fora do escopo da feature atual — e se for preciso tocar em código compartilhado com outra feature, avisar ANTES de fazer, não só relatar depois.** Antes de editar um arquivo que não pertence exclusivamente à feature em andamento (hook/contexto global, controller/handler de outra feature, repositório usado por múltiplos domínios, layout compartilhado), identificar quem mais depende dele e checar explicitamente se a mudança preserva o comportamento existente pra quem não usa a feature atual (idealmente com um teste ou verificação cobrindo esse caso, não só "parece que não quebra"). Ao encerrar a sessão, fazer uma análise de regressão explícita nesses pontos de toque cross-feature antes de dizer "nada quebrou" — não é o mesmo que rodar a suíte de testes e assumir que cobre tudo. (Gap 5, caso real: sessão de chat-corporativo mexeu em `AuthContext`/`useSignalR`/`AppLayout` — globais — e em `UsuariosPage`/`UsuarioFormDialog`/`AtualizarUsuarioPerfilCommandHandler` — feature de Usuários, não de Chat — sem uma checagem de regressão dedicada até o usuário pedir explicitamente no fim da sessão.)
 
