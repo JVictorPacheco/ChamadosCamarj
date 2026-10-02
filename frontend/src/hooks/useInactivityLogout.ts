@@ -40,7 +40,10 @@ export function registrarInicioDeSessao(): void {
  */
 export function sessaoVencidaPorInatividade(minutos: number): boolean {
   const ultima = lerUltimaAtividade()
-  return ultima > 0 && Date.now() - ultima >= minutos * 60_000
+  // Sem marca nenhuma = sessão aberta antes desta proteção existir (login antigo, anterior ao
+  // deploy): sem como saber há quanto tempo está parada, então vale como vencida e pede um novo
+  // login uma única vez (review R3-02). Todo login novo grava a marca antes de entrar.
+  return ultima === 0 || Date.now() - ultima >= minutos * 60_000
 }
 
 /**
@@ -110,8 +113,10 @@ export function useInactivityLogout(minutos: number, aoExpirar: () => void): voi
       if (document.visibilityState === 'visible') verificar()
     }
 
+    // Fase de captura: o gesto é avaliado ANTES dos handlers da tela. Depois de uma suspensão, o
+    // primeiro Enter desconecta em vez de enviar o rascunho do chat com a sessão vencida (R3-01).
     EVENTOS_DE_ATIVIDADE.forEach((evento) =>
-      window.addEventListener(evento, registrarAtividade, { passive: true }),
+      window.addEventListener(evento, registrarAtividade, { capture: true, passive: true }),
     )
     window.addEventListener('focus', verificar)
     document.addEventListener('visibilitychange', aoVoltarParaAba)
@@ -127,7 +132,9 @@ export function useInactivityLogout(minutos: number, aoExpirar: () => void): voi
 
     return () => {
       clearTimeout(timer)
-      EVENTOS_DE_ATIVIDADE.forEach((evento) => window.removeEventListener(evento, registrarAtividade))
+      EVENTOS_DE_ATIVIDADE.forEach((evento) =>
+        window.removeEventListener(evento, registrarAtividade, { capture: true }),
+      )
       window.removeEventListener('focus', verificar)
       document.removeEventListener('visibilitychange', aoVoltarParaAba)
     }

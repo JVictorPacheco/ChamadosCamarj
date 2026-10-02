@@ -1,7 +1,7 @@
 # Logout por Inatividade — Especificação
 
-> **SDD:** em-review
-> **Status:** `Em andamento`
+> **SDD:** fechada
+> **Status:** `Concluída`
 > **Branch:** `feature/logout-inatividade`
 > **Criada em:** 2026-10-01
 > **Atualizada em:** 2026-10-01
@@ -93,7 +93,10 @@ com um aviso do motivo.
 | Testes: verificação manual com o tempo reduzido + `npm run build` | Testes unitários de frontend | O projeto não tem testes unitários de frontend (decisão registrada em `TESTING.md`) |
 
 **Pontos de toque cross-feature:** `AppLayout` (compartilhado por todas as telas autenticadas):
-só ganha a chamada do hook e o `navigate` com o motivo; `LoginPage`: só ganha a mensagem.
+só ganha a chamada do hook e o `navigate` com o motivo; `LoginPage`: ganha a mensagem e grava a
+marca de início de sessão; `ProtectedRoute` (`App.tsx`, rota de toda a área logada): encerra a sessão
+vencida antes de montar o `AppLayout` (review R2-02). **Efeito no deploy:** quem estiver logado no
+momento do deploy precisa entrar de novo uma vez (review R3-02).
 
 ---
 

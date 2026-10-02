@@ -1,6 +1,6 @@
 # Roadmap — ChamadosCamarj
 
-> Última atualização: 2026-10-01
+> Última atualização: 2026-10-02
 
 ## ✅ Fase 0 — Setup
 
@@ -316,6 +316,10 @@
 ## 🩹 Correções de Acesso a Chamados (FECHADA — 2026-10-01)
 
 - [x] Edição de título/descrição volta a funcionar (dava 409 sempre); contagem de comentários sem internos para Solicitante; alertas de SLA e aviso de comentário interno só para Atendente/Admin; hub sem métodos para o cliente escolher grupo. 387 testes. Spec: `.specs/features/correcoes-acesso-chamados/`.
+
+## ⏻ Logout por Inatividade (FECHADA — 2026-10-02)
+
+- [x] 20 min sem gesto em nenhuma aba desconecta; suspensão do computador e reabertura vencida também encerram a sessão. 3 rodadas de review (2 bloqueantes corrigidos). Spec: `.specs/features/logout-inatividade/`.
 
 ## 🏷️ Área e Tipo do Chamado (SPEC APROVADA — próxima feature)
 
