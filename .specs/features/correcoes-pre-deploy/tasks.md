@@ -18,13 +18,13 @@
   upload feito.
 
 ### Bloco A — Alerta de SLA
-- [ ] **T02** `IChamadoRepository.ListarAtendentesQuePodemVerAsync` (Atendentes ativos, reaproveita
+- [x] **T02** `IChamadoRepository.ListarAtendentesQuePodemVerAsync` (Atendentes ativos, reaproveita
   `AplicarVisibilidade`). *AC-01, AC-02 · design §2 · C4.*
   **Pronto quando:** compila; o método não duplica a regra de visibilidade (usa `AplicarVisibilidade`).
-- [ ] **T03** Grupo `Admins` em `ChamadosHub.OnConnectedAsync`. *AC-03, AC-04 · C5.*
+- [x] **T03** Grupo `Admins` em `ChamadosHub.OnConnectedAsync`. *AC-03, AC-04 · C5.*
   **Pronto quando:** teste do `OnConnectedAsync` mostra que o Admin entra em `Todos`, `Atendimento` e
   `Admins`, o Atendente não entra em `Admins` e o Solicitante só entra em `Todos`.
-- [ ] **T04** `SlaAlertaNotificador` (envia para `Admins` + `Clients.Users(atendentes que veem)`),
+- [x] **T04** `SlaAlertaNotificador` (envia para `Admins` + `Clients.Users(atendentes que veem)`),
   registrado em DI, e `SlaMonitorService` passa a usá-lo. *AC-01..05 · design §2.*
   **Pronto quando:** testes do notificador provam o envio para `Admins` e para exatamente os ids
   devolvidos pelo repositório, e que lista vazia não chama `Users`. O monitor não referencia mais

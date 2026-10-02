@@ -1,26 +1,21 @@
 using System.Collections.Concurrent;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using ChamadosCamarj.Application.Common;
 using ChamadosCamarj.Infrastructure.Data;
-using ChamadosCamarj.WebApi.Hubs;
 
 namespace ChamadosCamarj.WebApi.Services;
 
 public class SlaMonitorService : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly IHubContext<ChamadosHub> _hubContext;
     private readonly ILogger<SlaMonitorService> _logger;
     private readonly ConcurrentDictionary<Guid, SlaStatus> _notificados = new();
 
     public SlaMonitorService(
         IServiceScopeFactory scopeFactory,
-        IHubContext<ChamadosHub> hubContext,
         ILogger<SlaMonitorService> logger)
     {
         _scopeFactory = scopeFactory;
-        _hubContext = hubContext;
         _logger = logger;
     }
 
@@ -40,6 +35,7 @@ public class SlaMonitorService : BackgroundService
         {
             using var scope = _scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var notificador = scope.ServiceProvider.GetRequiredService<SlaAlertaNotificador>();
 
             var chamados = await db.Chamados
                 .AsNoTracking()
@@ -58,23 +54,13 @@ public class SlaMonitorService : BackgroundService
                 {
                     _notificados[c.Id] = SlaStatus.Atencao;
                     _logger.LogInformation("SLA atenção: CAM-{Numero}", c.Numero);
-                    await _hubContext.Clients.Group(ChamadosHub.GrupoAtendimento).SendAsync("SlaAtencao", new
-                    {
-                        chamadoId = c.Id.ToString(),
-                        numero = c.Numero,
-                        mensagem = $"CAM-{c.Numero} — próximo do prazo!",
-                    }, stoppingToken);
+                    await notificador.NotificarAsync(c.Id, c.Numero, "SlaAtencao", $"CAM-{c.Numero} — próximo do prazo!", stoppingToken);
                 }
                 else if (status == SlaStatus.Atrasado && (!_notificados.ContainsKey(c.Id) || _notificados[c.Id] != SlaStatus.Atrasado))
                 {
                     _notificados[c.Id] = SlaStatus.Atrasado;
                     _logger.LogInformation("SLA atrasado: CAM-{Numero}", c.Numero);
-                    await _hubContext.Clients.Group(ChamadosHub.GrupoAtendimento).SendAsync("SlaAtrasado", new
-                    {
-                        chamadoId = c.Id.ToString(),
-                        numero = c.Numero,
-                        mensagem = $"CAM-{c.Numero} — PRAZO ESTOURADO!",
-                    }, stoppingToken);
+                    await notificador.NotificarAsync(c.Id, c.Numero, "SlaAtrasado", $"CAM-{c.Numero} — PRAZO ESTOURADO!", stoppingToken);
                 }
             }
 
