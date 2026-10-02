@@ -61,10 +61,10 @@
   **Pronto quando:** build ok; verificação ao vivo da T13.
 
 ## Bloco D — Arrumação técnica
-- [ ] **T11** [P] Alinhar a versão do EF no `.csproj` de testes (reproduzir o aviso antes e
+- [x] **T11** [P] Alinhar a versão do EF no `.csproj` de testes (reproduzir o aviso antes e
   conferir que sumiu depois). *AC-17 · §5.*
   **Pronto quando:** `dotnet build` sem o aviso de conflito de versão.
-- [ ] **T12** [P] Favicon 64×64 PNG ≤ 20 KB, mesmo nome e mesma imagem (PowerShell +
+- [x] **T12** [P] Favicon 64×64 PNG ≤ 20 KB, mesmo nome e mesma imagem (PowerShell +
   System.Drawing, script no scratchpad). *AC-18.*
   **Pronto quando:** `favicon.png` ≤ 20 KB e a imagem conferida visualmente.
 
