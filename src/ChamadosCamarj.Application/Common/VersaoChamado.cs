@@ -8,6 +8,9 @@ namespace ChamadosCamarj.Application.Common;
 /// </summary>
 public static class VersaoChamado
 {
+    public const string MensagemConflito =
+        "Outra pessoa alterou este chamado. Os dados foram atualizados; confira e refaça a ação.";
+
     public static string De(DateTime? dataAtualizacao, DateTime dataCriacao) =>
         ((dataAtualizacao ?? dataCriacao).Ticks / 10).ToString(System.Globalization.CultureInfo.InvariantCulture);
 }

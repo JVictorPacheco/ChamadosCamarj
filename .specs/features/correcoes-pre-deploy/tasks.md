@@ -31,13 +31,13 @@
   `GrupoAtendimento` e mantém o `_notificados` (AC-05).
 
 ### Bloco C — Edição simultânea (backend)
-- [ ] **T05** `VersaoChamado.De` + `ChamadoResponse.Versao` + `ChamadoMappings`. *AC-09, AC-12 · §4.1 · C1.*
+- [x] **T05** `VersaoChamado.De` + `ChamadoResponse.Versao` + `ChamadoMappings`. *AC-09, AC-12 · §4.1 · C1.*
   **Pronto quando:** teste: `Ticks` com fração abaixo de microssegundo dá a mesma versão que o valor
   truncado; `DataAtualizacao` nula usa `DataCriacao`; `ToResponse` preenche `Versao`.
-- [ ] **T06** `ChamadoPermissoes.AlteraChamado(acao)`. *AC-09, AC-13.*
+- [x] **T06** `ChamadoPermissoes.AlteraChamado(acao)`. *AC-09, AC-13.*
   **Pronto quando:** teste por ação: as 11 ações de alteração dão true; `Ver`, `ComentarPublico`,
   `ComentarInterno` e `Anexar` dão false.
-- [ ] **T07** `IChamadoRepository.ObterVersaoAsync`, `IVersaoLidaAccessor` (WebApi, lê `If-Match`
+- [x] **T07** `IChamadoRepository.ObterVersaoAsync`, `IVersaoLidaAccessor` (WebApi, lê `If-Match`
   sem aspas), `VersaoChamadoBehaviour` registrado depois do `AcessoChamadoBehaviour`, e a mensagem
   do 409 do repositório igual à do AC-10. *AC-09, AC-10, AC-13, AC-23 · §4.2 · C2, C3, C6.*
   **Pronto quando:** testes do behaviour cobrem: versão igual → segue; versão diferente → 409 com o

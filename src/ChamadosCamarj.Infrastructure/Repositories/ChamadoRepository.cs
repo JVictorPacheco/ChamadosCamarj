@@ -42,7 +42,7 @@ public class ChamadoRepository : IChamadoRepository
         }
         catch (DbUpdateConcurrencyException)
         {
-            throw new ConflictException("Este chamado foi modificado por outro usuario. Recarregue a pagina e tente novamente.");
+            throw new ConflictException(VersaoChamado.MensagemConflito);
         }
     }
 

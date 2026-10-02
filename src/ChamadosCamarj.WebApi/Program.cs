@@ -52,6 +52,8 @@ builder.Services.AddMediatR(cfg =>
     cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
     // Depois da validação: request inválido falha antes de consultar o banco.
     cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(AcessoChamadoBehaviour<,>));
+    // Depois do acesso: quem não vê o chamado recebe 404, não 409.
+    cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(VersaoChamadoBehaviour<,>));
 });
 // ─────────────────────────────
 // FluentValidation
@@ -166,6 +168,7 @@ builder.Services.AddAuthorizationBuilder()
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddScoped<IVersaoLidaAccessor, VersaoLidaAccessor>();
 
 // ─────────────────────────────
 // OpenAPI (nativo .NET 10)

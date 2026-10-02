@@ -27,6 +27,8 @@ public record ChamadoResponse(
     SlaStatus SlaStatus,
     string SlaLabel,
     double? SlaHorasRestantes,
+    // Versão para a checagem de edição simultânea (spec correcoes-pre-deploy AC-09) — texto opaco.
+    string Versao,
     Domain.Enums.MotivoEncerramento? MotivoEncerramento = null,
     string? MotivoOutro = null
 );
