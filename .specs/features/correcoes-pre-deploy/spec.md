@@ -1,6 +1,6 @@
 # Correções Pré-Deploy — Especificação
 
-> **SDD:** implementando
+> **SDD:** em-review
 > **Status:** `Em andamento`
 > **Branch:** `feature/correcoes-pre-deploy`
 > **Criada em:** 2026-10-02
@@ -158,7 +158,20 @@ de processo desatualizada.
 
 | Critério | Arquivo de Teste | Método de Teste | Status |
 |----------|-----------------|-----------------|--------|
-| AC-01..AC-23 | a definir no design/tasks | — | ⬜ Pendente |
+| AC-01, AC-02 | `WebApi/Services/SlaAlertaNotificadorTests.cs` + ao vivo | `Notificar_EnviaParaAdminsEParaOsAtendentesQueVeem`, `Notificar_NuncaUsaOGrupoDeAtendimentoInteiro`; ao vivo: 3 Atendentes × 23 chamados reais atrasados, recebe ⇔ vê (69/69) | ✅ |
+| AC-03 | `ChamadosHubTests.cs`, `SlaAlertaNotificadorTests.cs` + ao vivo | `OnConnectedAsync_SoAdminEntraNoGrupoAdmins`; ao vivo 25/26 (o 1º alerta disparou junto com a entrada no grupo — corrida da partida, ver review) | ✅ |
+| AC-04 | `ChamadosHubTests.cs` + ao vivo | Solicitante só no grupo `Todos`; ao vivo não recebeu nenhum alerta | ✅ |
+| AC-05 | `SlaMonitorService` inalterado (`_notificados`) | Leitura de código | ✅ |
+| AC-06, AC-07, AC-08 | `AdicionarAnexoHandlerTests.cs` + ao vivo | `Handle_ComComentarioQueNaoPertenceAoChamado_DeveRecusarSemFazerUpload`, `Handle_SemComentario_NaoConsultaComentario`, `Handle_ComComentarioId_DeveVincularAnexoAoComentario`; ao vivo 400 com a mensagem, PDF aceito no próprio chamado | ✅ |
+| AC-09, AC-10 (servidor), AC-13, AC-23 | `Concorrencia/VersaoChamadoBehaviourTests.cs` + ao vivo | `VersaoDiferente_Recusa409ComAMensagemDoAC10`, `Comentario_NuncaDaConflito`, `SemVersaoInformada_SegueSemConsultar`; ao vivo 409/204 e 404 antes de 409 | ✅ |
+| AC-10 (tela), AC-12 | `frontend/e2e/conflito.spec.ts` + `VersaoChamadoTests.cs` | `detalhe: ação sobre versão desatualizada...`; `De_IgnoraFracaoAbaixoDeMicrossegundo` | ✅ |
+| AC-11 | — | **Adiado** (futura feature "Editar chamado") | ⏭️ |
+| AC-14 | `frontend/e2e/conflito.spec.ts` | `kanban: mover cartão desatualizado...` | ✅ |
+| AC-15, AC-16 | `frontend/e2e/*` | 14/14 passando; títulos `[TESTE-E2E]` | ✅ (limpeza pendente de OK) |
+| AC-17 | `dotnet build` | sem MSB3277 | ✅ |
+| AC-18 | `frontend/public/favicon.png` | 3.569 bytes, 64×64, conferido visualmente | ✅ |
+| AC-19 | STATE.md regra 4, `docs/GUIA-ORQUESTRACAO-SDD.md` | Leitura | ✅ |
+| AC-20..AC-22 | gates | 438 testes, builds ok | ✅ |
 
 ---
 

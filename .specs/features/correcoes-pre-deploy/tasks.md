@@ -89,7 +89,7 @@
   inteira. *AC-10, AC-14, AC-15, AC-16, AC-21 (parte de tela).*
   **Pronto quando:** todos passam. **PARADA:** listar os dados `[TESTE-E2E]`/`teste.cpd.*` criados
   e só apagar com o OK do usuário.
-- [ ] **T16** Gates (`dotnet build`, `dotnet test`, `npm run build`) e marcação da rastreabilidade
+- [x] **T16** Gates (`dotnet build`, `dotnet test`, `npm run build`) e marcação da rastreabilidade
   na spec (AC → teste). *AC-20, AC-21, AC-22.*
 
 > ROADMAP: registrar no close a futura feature **"Editar chamado"** (modal; Solicitante: os que abriu;
