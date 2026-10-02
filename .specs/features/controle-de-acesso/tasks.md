@@ -10,7 +10,7 @@
 
 ## Backend
 
-- [ ] **T01** `ModuloSistema` (`[Flags]`) + `ModulosDeAcesso` (`Padrao`, `Ajustaveis`, `Efetivos`,
+- [x] **T01** `ModuloSistema` (`[Flags]`) + `ModulosDeAcesso` (`Padrao`, `Ajustaveis`, `Efetivos`,
   `CalcularAjustes`). *AC-02..AC-08, AC-16 · design §2.*
   **Pronto quando:** testes: padrões batem com a matriz atual (Solicitante = Arquivo; Atendente e Admin =
   os 5); Admin sempre os 5; ajuste dá Dashboard/Relatório a Solicitante; Kanban/Fila nunca para Solicitante
