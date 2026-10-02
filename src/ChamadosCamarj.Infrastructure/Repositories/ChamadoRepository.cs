@@ -66,7 +66,8 @@ public class ChamadoRepository : IChamadoRepository
     public async Task<Chamado?> ObterPorIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .Include(c => c.Categoria)
+            .Include(c => c.Area)
+            .Include(c => c.Tipo)
             .Include(c => c.Comentarios)
             .Include(c => c.Anexos)
             .AsNoTracking()
@@ -77,7 +78,8 @@ public class ChamadoRepository : IChamadoRepository
     public async Task<Chamado?> ObterPorIdComTrackingAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .Include(c => c.Categoria)
+            .Include(c => c.Area)
+            .Include(c => c.Tipo)
             .Include(c => c.Comentarios)
             .Include(c => c.Anexos)
             .AsSplitQuery()
@@ -121,7 +123,8 @@ public class ChamadoRepository : IChamadoRepository
     public async Task<IEnumerable<Chamado>> ObterTodosAsync(CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .Include(c => c.Categoria)
+            .Include(c => c.Area)
+            .Include(c => c.Tipo)
             .Include(c => c.Comentarios)
             .Include(c => c.Anexos)
             .AsNoTracking()
@@ -132,7 +135,8 @@ public class ChamadoRepository : IChamadoRepository
     public async Task<IEnumerable<Chamado>> ObterPorStatusAsync(Domain.Enums.StatusChamado status, CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .Include(c => c.Categoria)
+            .Include(c => c.Area)
+            .Include(c => c.Tipo)
             .AsNoTracking()
             .Where(c => c.Status == status)
             .OrderByDescending(c => c.DataCriacao)
@@ -142,7 +146,8 @@ public class ChamadoRepository : IChamadoRepository
     public async Task<IEnumerable<Chamado>> ObterPorSolicitanteAsync(string email, CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .Include(c => c.Categoria)
+            .Include(c => c.Area)
+            .Include(c => c.Tipo)
             .AsNoTracking()
             .Where(c => c.SolicitanteEmail == email)
             .OrderByDescending(c => c.DataCriacao)
@@ -152,7 +157,8 @@ public class ChamadoRepository : IChamadoRepository
     public async Task<IEnumerable<Chamado>> ObterPorResponsavelAsync(Guid responsavelId, CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .Include(c => c.Categoria)
+            .Include(c => c.Area)
+            .Include(c => c.Tipo)
             .AsNoTracking()
             .Where(c => c.ResponsavelId == responsavelId)
             .OrderByDescending(c => c.DataCriacao)
@@ -162,7 +168,8 @@ public class ChamadoRepository : IChamadoRepository
     public async Task<IEnumerable<Chamado>> ObterAtrasadosAsync(CancellationToken cancellationToken = default)
     {
         return await _dbSet
-            .Include(c => c.Categoria)
+            .Include(c => c.Area)
+            .Include(c => c.Tipo)
             .AsNoTracking()
             .Where(c => c.DataLimite != null && c.DataLimite < DateTime.UtcNow && c.Status != Domain.Enums.StatusChamado.Resolvido && c.Status != Domain.Enums.StatusChamado.Fechado && c.Status != Domain.Enums.StatusChamado.Cancelado)
             .OrderBy(c => c.DataLimite)
@@ -172,7 +179,8 @@ public class ChamadoRepository : IChamadoRepository
     /// <summary>
     /// Regra ÚNICA de "quem pode ver qual chamado" — usada pela listagem, pelo PodeVerAsync e pelas
     /// métricas do Dashboard. Spec: .specs/features/autorizacao-chamados (AC-01, AC-02, AC-08, AC-11).
-    /// "Chamado do grupo" = aberto por um membro do grupo OU com responsável membro do grupo.
+    /// "Chamado do grupo" = aberto por um membro do grupo OU com responsável membro do grupo OU
+    /// com área = o grupo (spec area-e-tipo-do-chamado AC-07).
     /// </summary>
     private IQueryable<Chamado> AplicarVisibilidade(IQueryable<Chamado> query, ContextoAcesso acesso)
     {
@@ -199,8 +207,10 @@ public class ChamadoRepository : IChamadoRepository
             ? query.Where(c => c.ResponsavelId == null
                             || c.ResponsavelId == usuarioId
                             || c.SolicitanteEmail.ToLower() == email
+                            || c.AreaId == grupoId
                             || membros.Any(u => u.Id == c.ResponsavelId || u.Email == c.SolicitanteEmail.ToLower()))
             : query.Where(c => c.SolicitanteEmail.ToLower() == email
+                            || c.AreaId == grupoId
                             || membros.Any(u => u.Id == c.ResponsavelId || u.Email == c.SolicitanteEmail.ToLower()));
     }
 
@@ -217,7 +227,8 @@ public class ChamadoRepository : IChamadoRepository
         Domain.Enums.StatusChamado? status = null,
         Domain.Enums.PrioridadeChamado? prioridade = null,
         Guid? responsavelId = null,
-        Guid? categoriaId = null,
+        Guid? areaId = null,
+        Guid? tipoId = null,
         string? busca = null,
         string? solicitanteEmail = null,
         IEnumerable<Domain.Enums.StatusChamado>? statusEntre = null,
@@ -237,8 +248,11 @@ public class ChamadoRepository : IChamadoRepository
         if (responsavelId.HasValue)
             query = query.Where(c => c.ResponsavelId == responsavelId.Value);
 
-        if (categoriaId.HasValue)
-            query = query.Where(c => c.CategoriaId == categoriaId.Value);
+        if (areaId.HasValue)
+            query = query.Where(c => c.AreaId == areaId.Value);
+
+        if (tipoId.HasValue)
+            query = query.Where(c => c.TipoId == tipoId.Value);
 
         if (!string.IsNullOrWhiteSpace(busca))
         {
@@ -267,7 +281,8 @@ public class ChamadoRepository : IChamadoRepository
         var total = await query.CountAsync(cancellationToken);
 
         var items = await query
-            .Include(c => c.Categoria)
+            .Include(c => c.Area)
+            .Include(c => c.Tipo)
             .Include(c => c.Comentarios)
             .Include(c => c.Anexos)
             .AsSplitQuery()
@@ -336,13 +351,23 @@ public class ChamadoRepository : IChamadoRepository
         return resolvidos.Average(r => (r.DataConclusao - r.DataCriacao).TotalHours);
     }
 
-    public async Task<List<Domain.Interfaces.CategoriaContagem>> ContarPorCategoriaAsync(ContextoAcesso acesso, CancellationToken cancellationToken = default)
+    public async Task<List<ContagemPorNome>> ContarPorAreaAsync(ContextoAcesso acesso, CancellationToken cancellationToken = default)
     {
         return await AplicarVisibilidade(_dbSet.AsNoTracking(), acesso)
             .Where(c => c.Status != Domain.Enums.StatusChamado.Fechado
                      && c.Status != Domain.Enums.StatusChamado.Cancelado)
-            .GroupBy(c => new { CategoriaId = c.Categoria != null ? (Guid?)c.Categoria.Id : null, CategoriaNome = c.Categoria != null ? c.Categoria.Nome : "Sem categoria" })
-            .Select(g => new Domain.Interfaces.CategoriaContagem(g.Key.CategoriaNome, g.Key.CategoriaId, g.Count()))
+            .GroupBy(c => new { c.AreaId, Nome = c.Area != null ? c.Area.Nome : "Sem área" })
+            .Select(g => new ContagemPorNome(g.Key.Nome, g.Key.AreaId, g.Count()))
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<List<ContagemPorNome>> ContarPorTipoAsync(ContextoAcesso acesso, CancellationToken cancellationToken = default)
+    {
+        return await AplicarVisibilidade(_dbSet.AsNoTracking(), acesso)
+            .Where(c => c.Status != Domain.Enums.StatusChamado.Fechado
+                     && c.Status != Domain.Enums.StatusChamado.Cancelado)
+            .GroupBy(c => new { c.TipoId, Nome = c.Tipo != null ? c.Tipo.Nome : "Não classificado" })
+            .Select(g => new ContagemPorNome(g.Key.Nome, g.Key.TipoId, g.Count()))
             .ToListAsync(cancellationToken);
     }
 

@@ -103,7 +103,7 @@ public class AcessoChamadoBehaviourTests
         Usuario("Solicitante", email: "ana@camarj.com.br");
         PodeVer(true);
         _repositoryMock.Setup(r => r.ObterPorIdAsync(_chamadoId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Chamado("T", "D", "Ana", "ana@camarj.com.br", Guid.NewGuid()));
+            .ReturnsAsync(new Chamado("T", "D", "Ana", "ana@camarj.com.br", Guid.NewGuid(), Guid.NewGuid()));
 
         await Executar(new CancelarChamadoCommand(_chamadoId, MotivoEncerramento.CanceladoSolicitante), Unit.Value);
 
@@ -116,7 +116,7 @@ public class AcessoChamadoBehaviourTests
         Usuario("Solicitante", email: "bruno@camarj.com.br");
         PodeVer(true);   // vê porque é do grupo (AC-02)...
         _repositoryMock.Setup(r => r.ObterPorIdAsync(_chamadoId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Chamado("T", "D", "Ana", "ana@camarj.com.br", Guid.NewGuid()));
+            .ReturnsAsync(new Chamado("T", "D", "Ana", "ana@camarj.com.br", Guid.NewGuid(), Guid.NewGuid()));
 
         var act = () => Executar(new CancelarChamadoCommand(_chamadoId, MotivoEncerramento.CanceladoSolicitante), Unit.Value);
 

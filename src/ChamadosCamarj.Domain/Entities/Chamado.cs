@@ -12,7 +12,8 @@ public class Chamado : BaseEntity
         string descricao,
         string solicitanteNome,
         string solicitanteEmail,
-        Guid categoriaId,
+        Guid areaId,
+        Guid tipoId,
         PrioridadeChamado prioridade = PrioridadeChamado.Media,
         OrigemChamado origem = OrigemChamado.Portal)
     {
@@ -24,12 +25,17 @@ public class Chamado : BaseEntity
             throw new ArgumentException("Nome do solicitante é obrigatório.", nameof(solicitanteNome));
         if (string.IsNullOrWhiteSpace(solicitanteEmail))
             throw new ArgumentException("Email do solicitante é obrigatório.", nameof(solicitanteEmail));
+        if (areaId == Guid.Empty)
+            throw new ArgumentException("Área é obrigatória.", nameof(areaId));
+        if (tipoId == Guid.Empty)
+            throw new ArgumentException("Tipo é obrigatório.", nameof(tipoId));
 
         Titulo = titulo;
         Descricao = descricao;
         SolicitanteNome = solicitanteNome;
         SolicitanteEmail = solicitanteEmail;
-        CategoriaId = categoriaId;
+        AreaId = areaId;
+        TipoId = tipoId;
         Prioridade = prioridade;
         Origem = origem;
         Status = StatusChamado.Aberto;
@@ -46,7 +52,13 @@ public class Chamado : BaseEntity
     public string SolicitanteEmail { get; private set; } = string.Empty;
     public Guid? ResponsavelId { get; private set; }
     public string? ResponsavelNome { get; private set; }
-    public Guid CategoriaId { get; private set; }
+    // Área = grupo de onde o chamado é aberto; Tipo = natureza do pedido (spec area-e-tipo-do-chamado).
+    // Opcionais no banco só por compatibilidade com o código anterior durante o deploy (design §3);
+    // toda abertura nova exige os dois.
+    public Guid? AreaId { get; private set; }
+    public Guid? TipoId { get; private set; }
+    /// <summary>Legado: substituída por Área + Tipo. Mantida no banco até a limpeza pós-deploy.</summary>
+    public Guid? CategoriaId { get; private set; }
     public DateTime? DataLimite { get; private set; }
     public DateTime? DataConclusao { get; private set; }
     public OrigemChamado Origem { get; private set; }
@@ -56,6 +68,8 @@ public class Chamado : BaseEntity
     public string? MotivoOutro { get; private set; }
 
     // Navegação EF
+    public Grupo? Area { get; private set; }
+    public TipoChamado? Tipo { get; private set; }
     public Categoria? Categoria { get; private set; }
     public ICollection<Comentario> Comentarios { get; private set; } = [];
     public ICollection<Anexo> Anexos { get; private set; } = [];
@@ -211,6 +225,15 @@ public class Chamado : BaseEntity
                 throw new InvalidOperationException($"Status '{novoStatus}' não reconhecido.");
         }
 
+        DataAtualizacao = DateTime.UtcNow;
+    }
+
+    public void ReclassificarTipo(Guid tipoId)
+    {
+        if (tipoId == Guid.Empty)
+            throw new ArgumentException("Tipo é obrigatório.", nameof(tipoId));
+
+        TipoId = tipoId;
         DataAtualizacao = DateTime.UtcNow;
     }
 

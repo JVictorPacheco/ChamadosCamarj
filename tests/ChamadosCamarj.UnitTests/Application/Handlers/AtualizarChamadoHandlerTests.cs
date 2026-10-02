@@ -25,7 +25,7 @@ public class AtualizarChamadoHandlerTests
     public async Task Handle_DeveBuscarComTracking_EPersistirOsDadosNovos()
     {
         var id = Guid.NewGuid();
-        var chamado = new Chamado("Antigo", "Descrição antiga", "Ana", "ana@camarj.com.br", Guid.NewGuid());
+        var chamado = new Chamado("Antigo", "Descrição antiga", "Ana", "ana@camarj.com.br", Guid.NewGuid(), Guid.NewGuid());
         _repositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(id, It.IsAny<CancellationToken>())).ReturnsAsync(chamado);
 
         await _handler.Handle(new AtualizarChamadoCommand(id, "Novo", "Descrição nova"), CancellationToken.None);

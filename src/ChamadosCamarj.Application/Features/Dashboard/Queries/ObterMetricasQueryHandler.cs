@@ -27,7 +27,8 @@ public class ObterMetricasQueryHandler : IRequestHandler<ObterMetricasQuery, Das
 
         var totalResolvidosHoje = await _chamadoRepository.ContarResolvidosHojeAsync(acesso, cancellationToken);
         var tempoMedio = await _chamadoRepository.ObterTempoMedioResolucaoHorasAsync(acesso, cancellationToken);
-        var porCategoria = await _chamadoRepository.ContarPorCategoriaAsync(acesso, cancellationToken);
+        var porArea = await _chamadoRepository.ContarPorAreaAsync(acesso, cancellationToken);
+        var porTipo = await _chamadoRepository.ContarPorTipoAsync(acesso, cancellationToken);
         var porPrioridade = await _chamadoRepository.ContarPorPrioridadeAsync(acesso, cancellationToken);
 
         var inicioMes = new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, 1, 0, 0, 0, DateTimeKind.Utc);
@@ -41,7 +42,8 @@ public class ObterMetricasQueryHandler : IRequestHandler<ObterMetricasQuery, Das
         return new DashboardMetricsResponse(
             totalResolvidosHoje,
             tempoMedio.HasValue ? Math.Round(tempoMedio.Value, 1) : null,
-            porCategoria.Select(c => new PorCategoriaItem(c.Nome, c.CategoriaId, c.Quantidade)).ToList(),
+            porArea.Select(c => new PorNomeItem(c.Nome, c.Id, c.Quantidade)).ToList(),
+            porTipo.Select(c => new PorNomeItem(c.Nome, c.Id, c.Quantidade)).ToList(),
             porPrioridade.Select(kvp => new PorPrioridadeItem(kvp.Key, kvp.Value)).ToList(),
             slaItem
         );

@@ -18,6 +18,7 @@ public enum AcaoChamado
     AlterarStatus,
     Cancelar,
     Editar,
+    ReclassificarTipo,
     Reatribuir,
     AlterarPrioridade,
     ForcarEncerramento

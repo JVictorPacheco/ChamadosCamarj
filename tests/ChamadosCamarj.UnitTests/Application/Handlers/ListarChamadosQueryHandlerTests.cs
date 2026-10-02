@@ -86,7 +86,7 @@ public class ListarChamadosQueryHandlerTests
     [Fact]
     public async Task Handle_DeveMapearOsChamadosRetornadosPeloRepositorio()
     {
-        var chamado = new Chamado("Título", "Descrição", "Ana", "ana.colaboradora@camarj.com.br", Guid.NewGuid());
+        var chamado = new Chamado("Título", "Descrição", "Ana", "ana.colaboradora@camarj.com.br", Guid.NewGuid(), Guid.NewGuid());
         SetupListar(itens: [chamado]);
 
         var result = await _handler.Handle(new ListarChamadosQuery(), CancellationToken.None);
@@ -102,7 +102,7 @@ public class ListarChamadosQueryHandlerTests
     {
         // spec correcoes-acesso-chamados AC-02 (review R-04: a listagem também precisa de teste)
         _currentUserMock.SetupGet(c => c.Perfil).Returns(perfil);
-        var chamado = new Chamado("Título", "Descrição", "Ana", "ana.colaboradora@camarj.com.br", Guid.NewGuid());
+        var chamado = new Chamado("Título", "Descrição", "Ana", "ana.colaboradora@camarj.com.br", Guid.NewGuid(), Guid.NewGuid());
         chamado.Comentarios.Add(new Comentario(chamado.Id, "Ana", "público"));
         chamado.Comentarios.Add(new Comentario(chamado.Id, "Atendente", "interno", TipoComentario.Interno));
         SetupListar(itens: [chamado]);

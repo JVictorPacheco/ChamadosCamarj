@@ -46,7 +46,7 @@ public class DemoTestChamadoCompletoWorkflow
             descricao: "Não consigo acessar meu email corporativo",
             solicitanteNome: "João Silva",
             solicitanteEmail: "joao.silva@camarj.com.br",
-            categoriaId: Guid.NewGuid(),
+            categoriaId: Guid.NewGuid(), Guid.NewGuid(),
             prioridade: PrioridadeChamado.Alta
         );
 

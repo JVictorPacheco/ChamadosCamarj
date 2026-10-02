@@ -26,7 +26,7 @@ public class ChamadoTests
     [InlineData("Título", "")]
     public void Criar_ComCamposObrigatoriosVazios_DeveLancarArgumentException(string titulo, string descricao)
     {
-        var act = () => new Chamado(titulo, descricao, "João", "joao@camarj.com.br", CategoriaId);
+        var act = () => new Chamado(titulo, descricao, "João", "joao@camarj.com.br", CategoriaId, Guid.NewGuid());
         act.Should().Throw<ArgumentException>();
     }
 

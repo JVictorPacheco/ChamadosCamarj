@@ -4,50 +4,50 @@ using ChamadosCamarj.Application.Common;
 using ChamadosCamarj.Application.Common.Exceptions;
 using ChamadosCamarj.Application.Common.Authorization;
 using ChamadosCamarj.Domain.Interfaces;
-using ChamadosCamarj.Application.Features.Categorias.Commands;
-using ChamadosCamarj.Application.Features.Categorias.DTOs;
-using ChamadosCamarj.Application.Features.Categorias.Queries;
+using ChamadosCamarj.Application.Features.Tipos.Commands;
+using ChamadosCamarj.Application.Features.Tipos.DTOs;
+using ChamadosCamarj.Application.Features.Tipos.Queries;
 
 namespace ChamadosCamarj.WebApi.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/tipos")]
 [Produces("application/json")]
-public class CategoriasController : ControllerBase
+public class TiposController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly ICurrentUserService _currentUser;
-    private readonly ICategoriaRepository _categoriaRepository;
+    private readonly ITipoChamadoRepository _tipoRepository;
 
-    public CategoriasController(IMediator mediator, ICurrentUserService currentUser, ICategoriaRepository categoriaRepository)
+    public TiposController(IMediator mediator, ICurrentUserService currentUser, ITipoChamadoRepository tipoRepository)
     {
         _mediator = mediator;
         _currentUser = currentUser;
-        _categoriaRepository = categoriaRepository;
+        _tipoRepository = tipoRepository;
     }
 
     /// <summary>
-    /// Lista categorias (apenas ativas por padrão)
+    /// Lista tipos de chamado (apenas ativos por padrão)
     /// </summary>
     [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<CategoriaResponse>), StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<CategoriaResponse>>> Listar(
-        [FromQuery] bool? apenasAtivas = true,
+    [ProducesResponseType(typeof(IEnumerable<TipoChamadoResponse>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IEnumerable<TipoChamadoResponse>>> Listar(
+        [FromQuery] bool? apenasAtivos = true,
         CancellationToken cancellationToken = default)
     {
-        var result = await _mediator.Send(new ListarCategoriasQuery(apenasAtivas), cancellationToken);
+        var result = await _mediator.Send(new ListarTiposChamadoQuery(apenasAtivos), cancellationToken);
         return Ok(result);
     }
 
     /// <summary>
-    /// Cria uma nova categoria (somente Admin)
+    /// Cria um novo tipo de chamado (somente Admin)
     /// </summary>
     [HttpPost]
-    [ProducesResponseType(typeof(CategoriaResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(TipoChamadoResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
-    public async Task<ActionResult<CategoriaResponse>> Criar(
-        [FromBody] CriarCategoriaCommand command,
+    public async Task<ActionResult<TipoChamadoResponse>> Criar(
+        [FromBody] CriarTipoChamadoCommand command,
         CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(command with { PerfilRequisitante = _currentUser.Perfil }, cancellationToken);
@@ -55,7 +55,7 @@ public class CategoriasController : ControllerBase
     }
 
     /// <summary>
-    /// Atualiza uma categoria existente (somente Admin)
+    /// Atualiza um tipo existente (somente Admin)
     /// </summary>
     [HttpPut("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -63,19 +63,19 @@ public class CategoriasController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Atualizar(
         Guid id,
-        [FromBody] AtualizarCategoriaCommand command,
+        [FromBody] AtualizarTipoChamadoCommand command,
         CancellationToken cancellationToken)
     {
         var result = await _mediator.Send(command with { Id = id, PerfilRequisitante = _currentUser.Perfil }, cancellationToken);
 
         if (result is null)
-            return NotFound(new { message = "Categoria não encontrada." });
+            return NotFound(new { message = "Tipo de chamado não encontrado." });
 
         return NoContent();
     }
 
     /// <summary>
-    /// Exclui uma categoria (somente Admin). Categorias com chamados vinculados não podem ser excluídas.
+    /// Exclui um tipo (somente Admin). TipoChamados com chamados vinculados não podem ser excluídos.
     /// </summary>
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -88,14 +88,14 @@ public class CategoriasController : ControllerBase
     {
         PerfilRequisitanteGuard.ExigirAdmin(_currentUser.Perfil);
 
-        var categoria = await _categoriaRepository.ObterPorIdAsync(id, cancellationToken);
-        if (categoria is null)
-            return NotFound(new { message = "Categoria não encontrada." });
+        var tipo = await _tipoRepository.ObterPorIdAsync(id, cancellationToken);
+        if (tipo is null)
+            return NotFound(new { message = "Tipo de chamado não encontrado." });
 
-        if (await _categoriaRepository.PossuiChamadosAsync(id, cancellationToken))
-            return Conflict(new { message = "Não é possível excluir esta categoria porque existem chamados vinculados a ela. Desative-a em vez disso." });
+        if (await _tipoRepository.PossuiChamadosAsync(id, cancellationToken))
+            return Conflict(new { message = "Não é possível excluir este tipo porque existem chamados vinculados a ele. Desative-o em vez disso." });
 
-        await _categoriaRepository.RemoverAsync(categoria, cancellationToken);
+        await _tipoRepository.RemoverAsync(tipo, cancellationToken);
 
         return NoContent();
     }

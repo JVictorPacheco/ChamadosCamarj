@@ -25,7 +25,7 @@ public static class ChamadoPermissoes
 
             AcaoChamado.ComentarInterno or AcaoChamado.Assumir or AcaoChamado.Resolver
                 or AcaoChamado.Encerrar or AcaoChamado.Reabrir or AcaoChamado.AlterarStatus
-                or AcaoChamado.Editar => atendente,
+                or AcaoChamado.Editar or AcaoChamado.ReclassificarTipo => atendente,
 
             // Reatribuir, AlterarPrioridade, ForcarEncerramento: só Admin (já tratado acima)
             _ => false
