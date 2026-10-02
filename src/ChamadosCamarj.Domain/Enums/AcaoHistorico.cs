@@ -16,5 +16,6 @@ public enum AcaoHistorico
     StatusAlterado = 9,
     EncerramentoForcado = 10,
     Reaberto = 11,
-    TipoReclassificado = 12
+    TipoReclassificado = 12,
+    ChamadoEditado = 13
 }

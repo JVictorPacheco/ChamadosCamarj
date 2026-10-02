@@ -28,7 +28,7 @@
   **Pronto quando:** testes do behaviour: 404 continua antes de tudo; Admin em encerrado → 400 com a
   mensagem; Atendente não responsável → 403; ações que não dependem do chamado não fazem a consulta
   extra.
-- [ ] **T04** `AcaoHistorico.ChamadoEditado`; `AtualizarChamadoCommand` + `UsuarioId`/`UsuarioNome`
+- [x] **T04** `AcaoHistorico.ChamadoEditado`; `AtualizarChamadoCommand` + `UsuarioId`/`UsuarioNome`
   (controller); handler com transação, no-op sem mudança e histórico JSON só dos campos que mudaram.
   *AC-16..AC-18 · C3, C4.*
   **Pronto quando:** testes do handler: só título → histórico com `{"titulo":…}`; título e descrição →
