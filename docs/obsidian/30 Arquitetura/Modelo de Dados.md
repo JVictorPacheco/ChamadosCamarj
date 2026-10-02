@@ -1,7 +1,7 @@
 ---
 tipo: arquitetura
 status: vigente
-atualizado: 2026-09-29
+atualizado: 2026-10-02
 tags: [arquitetura, dados]
 ---
 
@@ -14,7 +14,8 @@ código.
 
 ```mermaid
 erDiagram
-    CATEGORIA ||--o{ CHAMADO : classifica
+    GRUPO |o--o{ CHAMADO : "área"
+    TIPO_CHAMADO |o--o{ CHAMADO : classifica
     CHAMADO ||--o{ COMENTARIO : tem
     CHAMADO ||--o{ ANEXO : tem
     COMENTARIO |o--o{ ANEXO : "pode ter"
@@ -65,9 +66,9 @@ erDiagram
         string Nome
         bool Ativo
     }
-    CATEGORIA {
+    TIPO_CHAMADO {
         string Nome
-        bool Ativa
+        bool Ativo
     }
 ```
 

@@ -19,8 +19,11 @@ public class ObterUrlDownloadAnexoQueryHandler : IRequestHandler<ObterUrlDownloa
 
     public async Task<string> Handle(ObterUrlDownloadAnexoQuery request, CancellationToken cancellationToken)
     {
-        var anexo = await _chamadoRepository.ObterAnexoPorIdAsync(request.AnexoId, cancellationToken)
-            ?? throw new NotFoundException("Anexo", request.AnexoId);
+        // O acesso ao chamado já foi checado pelo AcessoChamadoBehaviour; aqui garantimos que o
+        // anexo é DESSE chamado — senão bastaria passar um chamado visível com o anexo de outro.
+        var anexo = await _chamadoRepository.ObterAnexoPorIdAsync(request.AnexoId, cancellationToken);
+        if (anexo is null || anexo.ChamadoId != request.ChamadoId)
+            throw new NotFoundException("Anexo", request.AnexoId);
 
         return await _storageService.ObterUrlAssinadaAsync(anexo.CaminhoStorage, ExpiracaoSegundos, cancellationToken);
     }

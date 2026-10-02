@@ -3,12 +3,13 @@ namespace ChamadosCamarj.Application.Features.Dashboard.DTOs;
 public record DashboardMetricsResponse(
     int TotalResolvidosHoje,
     double? TempoMedioResolucaoHoras,
-    List<PorCategoriaItem> PorCategoria,
+    List<PorNomeItem> PorArea,
+    List<PorNomeItem> PorTipo,
     List<PorPrioridadeItem> PorPrioridade,
     SlaComplianceItem? SlaCompliance
 );
 
 public record SlaComplianceItem(int TotalResolvidos, int DentroPrazo, double Percentual);
 
-public record PorCategoriaItem(string CategoriaNome, Guid? CategoriaId, int Quantidade);
+public record PorNomeItem(string Nome, Guid? Id, int Quantidade);
 public record PorPrioridadeItem(string Prioridade, int Quantidade);

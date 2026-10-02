@@ -15,7 +15,9 @@ public class AtualizarChamadoCommandHandler : IRequestHandler<AtualizarChamadoCo
 
     public async Task Handle(AtualizarChamadoCommand request, CancellationToken cancellationToken)
     {
-        var chamado = await _chamadoRepository.ObterPorIdAsync(request.Id, cancellationToken)
+        // Com tracking, como os demais handlers de escrita desde o controle de concorrência (2026-07-31):
+        // sem ele, o EF compara DataAtualizacao com o valor já alterado e todo save dava 409.
+        var chamado = await _chamadoRepository.ObterPorIdComTrackingAsync(request.Id, cancellationToken)
             ?? throw new NotFoundException("Chamado", request.Id);
 
         chamado.AtualizarDados(request.Titulo, request.Descricao);

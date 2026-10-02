@@ -9,15 +9,13 @@ public record ListarChamadosQuery(
     string? Status = null,
     string? Prioridade = null,
     Guid? ResponsavelId = null,
-    Guid? CategoriaId = null,
+    Guid? AreaId = null,
+    Guid? TipoId = null,
     string? Busca = null,
     string? SolicitanteEmail = null,
     bool? Finalizados = null,
     DateTime? DataInicio = null,
     DateTime? DataFim = null,
     string? SlaStatus = null,
-    string? MotivoEncerramento = null,
-    Guid? UsuarioLogadoId = null,
-    Guid? GrupoId = null,
-    string? Perfil = null
+    string? MotivoEncerramento = null
 ) : IRequest<PagedResult<ChamadoResponse>>;

@@ -25,7 +25,7 @@ public class HistoricoQueryHandlerTests
     public async Task Handle_DeveListarHistoricoDosChamado()
     {
         var chamadoId = Guid.NewGuid();
-        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
+        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid(), Guid.NewGuid());
         
         var historicos = new List<HistoricoEntrada>
         {
@@ -51,7 +51,7 @@ public class HistoricoQueryHandlerTests
     public async Task Handle_DeveRetornarHistoricoOrdenadoDescendentePorData()
     {
         var chamadoId = Guid.NewGuid();
-        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
+        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid(), Guid.NewGuid());
         
         var agora = DateTime.UtcNow;
         var historicos = new List<HistoricoEntrada>
@@ -92,7 +92,7 @@ public class HistoricoQueryHandlerTests
     public async Task Handle_DeveRetornarVazioQuandoNaoHaHistorico()
     {
         var chamadoId = Guid.NewGuid();
-        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
+        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid(), Guid.NewGuid());
 
         _chamadoRepositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
@@ -111,7 +111,7 @@ public class HistoricoQueryHandlerTests
     {
         var chamadoId = Guid.NewGuid();
         var usuarioId = Guid.NewGuid();
-        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
+        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid(), Guid.NewGuid());
         
         var historico = HistoricoEntrada.Criar(
             chamadoId, 

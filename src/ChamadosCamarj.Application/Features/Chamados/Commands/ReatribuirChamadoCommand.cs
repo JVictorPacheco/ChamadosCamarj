@@ -1,4 +1,6 @@
 using MediatR;
+using ChamadosCamarj.Application.Common.Autorizacao;
+using ChamadosCamarj.Domain.Enums;
 
 namespace ChamadosCamarj.Application.Features.Chamados.Commands;
 
@@ -8,4 +10,8 @@ public record ReatribuirChamadoCommand(
     string NovoResponsavelNome,
     Guid? UsuarioId = null,
     string UsuarioNome = "Sistema"
-) : IRequest;
+) : IRequest, IRequerAcessoChamado
+{
+    Guid IRequerAcessoChamado.ChamadoId => Id;
+    AcaoChamado IRequerAcessoChamado.Acao => AcaoChamado.Reatribuir;
+}

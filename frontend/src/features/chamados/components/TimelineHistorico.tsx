@@ -13,6 +13,7 @@ const LABEL_ACAO: Record<AcaoHistorico, string> = {
   StatusAlterado: 'Status alterado',
   EncerramentoForcado: 'Encerramento forçado',
   Reaberto: 'Reaberto',
+  TipoReclassificado: 'Tipo alterado',
 }
 
 export function TimelineHistorico({ chamadoId }: { chamadoId: string }) {

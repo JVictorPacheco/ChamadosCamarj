@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/auth/AuthContext'
 import { useDashboardMetrics, useDashboardDistribuicao } from './hooks'
 import { DashboardKpi } from './DashboardKpi'
-import { CategoriaChart } from './CategoriaChart'
+import { BarrasChart, type BarraData } from './BarrasChart'
 import { DonutChart } from '@/components/charts/DonutChart'
 
 const STATUS_MAP: Record<string, string> = {
@@ -32,10 +32,12 @@ export function DashboardPage() {
     if (status) navigate(`/chamados?status=${status}`)
   }, [navigate])
 
-  const handleCategoriaClick = useCallback((item: { categoriaNome: string; categoriaId?: string | null; quantidade: number }) => {
-    if (item.categoriaId) {
-      navigate(`/chamados?categoriaId=${item.categoriaId}`)
-    }
+  const handleAreaClick = useCallback((item: BarraData) => {
+    if (item.id) navigate(`/chamados?areaId=${item.id}`)
+  }, [navigate])
+
+  const handleTipoClick = useCallback((item: BarraData) => {
+    if (item.id) navigate(`/chamados?tipoId=${item.id}`)
   }, [navigate])
 
   const handlePrioridadeClick = useCallback((item: PrioridadeClickData) => {
@@ -128,9 +130,18 @@ export function DashboardPage() {
           </div>
 
           <div className="rounded-lg border bg-card p-4">
-            <h2 className="mb-3 text-sm font-heading">Chamados Ativos por Categoria</h2>
-            {metrics.porCategoria.length > 0 ? (
-              <CategoriaChart data={metrics.porCategoria} onBarClick={handleCategoriaClick} />
+            <h2 className="mb-3 text-sm font-heading">Chamados Ativos por Área</h2>
+            {metrics.porArea.length > 0 ? (
+              <BarrasChart data={metrics.porArea} onBarClick={handleAreaClick} />
+            ) : (
+              <p className="py-8 text-center text-sm text-muted-foreground">Nenhum chamado ativo.</p>
+            )}
+          </div>
+
+          <div className="rounded-lg border bg-card p-4">
+            <h2 className="mb-3 text-sm font-heading">Chamados Ativos por Tipo</h2>
+            {metrics.porTipo.length > 0 ? (
+              <BarrasChart data={metrics.porTipo} onBarClick={handleTipoClick} />
             ) : (
               <p className="py-8 text-center text-sm text-muted-foreground">Nenhum chamado ativo.</p>
             )}
@@ -139,9 +150,9 @@ export function DashboardPage() {
           <div className="rounded-lg border bg-card p-4">
             <h2 className="mb-3 text-sm font-heading">Chamados Ativos por Prioridade</h2>
             {metrics.porPrioridade.length > 0 ? (
-              <CategoriaChart
-                data={metrics.porPrioridade.map(p => ({ categoriaNome: p.prioridade, quantidade: p.quantidade }))}
-                onBarClick={(item) => handlePrioridadeClick({ prioridadeNome: item.categoriaNome, quantidade: item.quantidade })}
+              <BarrasChart
+                data={metrics.porPrioridade.map(p => ({ nome: p.prioridade, quantidade: p.quantidade }))}
+                onBarClick={(item) => handlePrioridadeClick({ prioridadeNome: item.nome, quantidade: item.quantidade })}
               />
             ) : (
               <p className="py-8 text-center text-sm text-muted-foreground">Nenhum chamado ativo.</p>

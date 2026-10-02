@@ -1,7 +1,7 @@
 ---
 tipo: visão
 status: vigente
-atualizado: 2026-09-29
+atualizado: 2026-10-02
 spec: .specs/project/PROJECT.md
 tags: [visão]
 ---
@@ -36,7 +36,7 @@ Detalhes em [[Perfis e Permissões]].
 
 ## O que o sistema oferece hoje
 
-- **Chamados de ponta a ponta** — abertura com sugestão automática de categoria, número `CAM-N`,
+- **Chamados de ponta a ponta** — abertura com sugestão automática de área e tipo, número `CAM-N`,
   comentários públicos e internos, anexos e histórico de tudo o que aconteceu.
   → [[Abertura de Chamados]], [[Acompanhamento do Chamado]]
 - **Trabalho em equipe** — chamados visíveis para a equipe inteira do atendente, cobrindo férias e
@@ -62,6 +62,7 @@ Detalhes em [[Perfis e Permissões]].
 | Item | Quantidade |
 |---|---|
 | Perfis de acesso | 3 |
-| Categorias de chamado | 8 |
+| Áreas (equipes) | 8 |
+| Tipos de chamado | 5 |
 | Equipes (grupos) | 6 |
 | Faixas de prioridade / SLA | 4 |

@@ -1,7 +1,7 @@
 ---
 tipo: funcionalidade
 status: vigente
-atualizado: 2026-09-29
+atualizado: 2026-10-02
 spec: .specs/features/dashboard-kanban-navegacao/spec.md
 tags: [funcionalidade, gestão]
 ---
@@ -26,7 +26,7 @@ Três telas de gestão do dia a dia, exclusivas de **Atendentes e Admin**.
 **Para quê:** a "foto do momento" da operação.
 - Indicadores de hoje (ex.: resolvidos hoje, tempo médio de resolução).
 - **Distribuição por situação** — quantos chamados estão em cada status agora.
-- Chamados por **prioridade** e por **categoria**.
+- Chamados ativos por **prioridade**, por **área** e por **tipo** (clicar numa barra abre a lista filtrada).
 - Cumprimento do **SLA** no mês. Ver [[SLA]].
 - **Tudo é clicável:** clicar numa fatia ou barra abre a lista de chamados já filtrada por aquele
   recorte.

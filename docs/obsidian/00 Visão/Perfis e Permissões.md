@@ -1,8 +1,8 @@
 ---
 tipo: visão
 status: vigente
-atualizado: 2026-09-29
-spec: .specs/features/fase-6-admin-log/spec.md
+atualizado: 2026-10-02
+spec: .specs/features/autorizacao-chamados/spec.md
 tags: [visão, permissões]
 ---
 
@@ -21,11 +21,18 @@ Usuários são cadastrados pelo Admin — não existe autocadastro. Ver [[Admini
 
 ## Quais chamados cada perfil vê
 
+"Chamados da equipe" são os **abertos por** um colega da mesma equipe, os **sob responsabilidade**
+de um colega da mesma equipe e os com a **área** da equipe. Ver [[Grupos e Equipes]].
+
 | Perfil | Vê |
 |---|---|
-| Solicitante | Os chamados que **ele abriu** |
-| Atendente | Chamados **sem responsável** (a fila), os **seus** e os dos **colegas da mesma equipe** |
-| Admin | **Todos** |
+| Solicitante | Os chamados que **ele abriu** e, se tiver equipe, os **chamados da equipe** |
+| Atendente | Chamados **sem responsável** (a fila), os **seus**, os que **ele abriu** e os **chamados da equipe** |
+| Admin | **Todos**, mesmo pertencendo a uma equipe |
+
+Um chamado fora dessa lista **não existe** para o usuário: ele não aparece em nenhuma tela,
+lista, busca ou número do Dashboard, e tentar abri-lo pelo endereço resulta em "Chamado não
+encontrado".
 
 ## Matriz de ações sobre chamados
 
@@ -39,7 +46,9 @@ Usuários são cadastrados pelo Admin — não existe autocadastro. Ver [[Admini
 | Assumir (Aberto → Em andamento) | — | ✅ | ✅ |
 | Resolver | — | ✅ | ✅ |
 | Encerrar (Resolvido → Fechado) | — | ✅ | ✅ |
-| Cancelar (enquanto Aberto ou Em andamento) | ✅ | ✅ | ✅ |
+| Cancelar (enquanto Aberto ou Em andamento) | só os que abriu | ✅ | ✅ |
+| Editar título e descrição | — | ✅ | ✅ |
+| Reclassificar o tipo do chamado | — | ✅ | ✅ |
 | Reabrir chamado finalizado | — | ✅ | ✅ |
 | Reatribuir para outro atendente | — | — | ✅ |
 | Alterar prioridade | — | — | ✅ |
@@ -52,11 +61,16 @@ Usuários são cadastrados pelo Admin — não existe autocadastro. Ver [[Admini
 | Abrir chamado, Meus chamados, Arquivo | ✅ | ✅ | ✅ |
 | Fila, Kanban, Dashboard | — | ✅ | ✅ |
 | Relatório Mensal | — | ✅ só os próprios números | ✅ completo |
-| Admin: Usuários, Categorias, Grupos | — | — | ✅ |
+| Admin: Usuários, Tipos de chamado, Áreas e Grupos | — | — | ✅ |
 | Chat | depende do acesso ao chat | depende do acesso ao chat | depende do acesso ao chat |
 
-> O bloqueio das telas é **real**: não basta esconder o link — quem não tem permissão e tenta
-> acessar pelo endereço recebe uma mensagem de acesso negado.
+> O bloqueio é **real** e acontece no sistema, não só na tela: esconder um botão ou link é só
+> conveniência. Quem tenta uma ação sem permissão, mesmo usando ferramentas do navegador, recebe
+> "acesso negado"; quem tenta abrir um chamado que não pode ver recebe "não encontrado". Ver
+> [[ADR-007 Permissões aplicadas no servidor]].
+>
+> Todas as ações de chamado valem só sobre chamados que a pessoa **pode ver**. A tabela de ações
+> acima vale dentro desse limite. Na abertura, o solicitante registrado é sempre quem está logado.
 
 ## Acesso ao chat
 

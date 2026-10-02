@@ -31,7 +31,7 @@ public class AlterarStatusChamadoHandlerTests
     public async Task Handle_DeveAlterarStatusEPersistir()
     {
         var chamadoId = Guid.NewGuid();
-        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
+        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid(), Guid.NewGuid());
 
         _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
@@ -47,7 +47,7 @@ public class AlterarStatusChamadoHandlerTests
     public async Task Handle_DeveRegistrarHistoricoComAutorEStatusAnteriorENovo()
     {
         var chamadoId = Guid.NewGuid();
-        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
+        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid(), Guid.NewGuid());
         var usuarioId = Guid.NewGuid();
 
         _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
@@ -72,7 +72,7 @@ public class AlterarStatusChamadoHandlerTests
     public async Task Handle_SemAtor_DeveRegistrarHistoricoComoSistema()
     {
         var chamadoId = Guid.NewGuid();
-        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
+        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid(), Guid.NewGuid());
 
         _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
@@ -106,7 +106,7 @@ public class AlterarStatusChamadoHandlerTests
     public async Task Handle_ComTransicaoInvalida_NaoDeveRegistrarHistorico()
     {
         var chamadoId = Guid.NewGuid();
-        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
+        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid(), Guid.NewGuid());
 
         _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);

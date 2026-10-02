@@ -19,57 +19,37 @@ public static class DatabaseSeeder
             [Guid.Parse("b1000000-0000-0000-0000-000000000006")] = ("Atendimento", "Equipe de atendimento"),
         };
 
-        var houveMudancaGrupos = false;
+        // Grupos (= áreas) e tipos de chamado: só cria o que ainda não existe, nem pelo id nem pelo
+        // nome. Nunca sobrescreve — antes o seeder desfazia a cada subida o que o Admin tinha editado
+        // (spec area-e-tipo-do-chamado AC-10).
+        gruposSeed[AreaETipoPadrao.AreaFinanceiro] = ("Financeiro", "Área financeira");
+        gruposSeed[AreaETipoPadrao.AreaSuperETendencia] = ("Super e Tendência", "Supervisão e tendências");
 
+        var nomesGrupos = await db.Grupos.Select(g => g.Nome).ToListAsync();
+        var idsGrupos = await db.Grupos.Select(g => g.Id).ToListAsync();
         foreach (var (id, (nome, descricao)) in gruposSeed)
         {
-            var existente = await db.Grupos.FindAsync(id);
-            if (existente == null)
-            {
+            if (!idsGrupos.Contains(id) && !nomesGrupos.Contains(nome))
                 db.Grupos.Add(new Grupo(nome, descricao) { Id = id });
-                houveMudancaGrupos = true;
-            }
-            else if (existente.Nome != nome)
-            {
-                existente.Atualizar(nome, descricao);
-                houveMudancaGrupos = true;
-            }
         }
 
-        if (houveMudancaGrupos)
-            await db.SaveChangesAsync();
-
-        var categoriasSeed = new Dictionary<Guid, (string Nome, string Descricao)>
+        var nomesTipos = await db.TiposChamado.Select(t => t.Nome).ToListAsync();
+        var idsTipos = await db.TiposChamado.Select(t => t.Id).ToListAsync();
+        foreach (var (id, nome, descricao, ativo) in AreaETipoPadrao.Tipos)
         {
-            [Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567891")] = ("Autorização/Auditoria", "Pedidos de autorização e auditoria"),
-            [Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567892")] = ("Atendimento", "Atendimento geral"),
-            [Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567893")] = ("Super e Tendência", "Assuntos de supervisão e tendências"),
-            [Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567894")] = ("Reembolso", "Solicitações de reembolso"),
-            [Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567895")] = ("Financeiro", "Assuntos financeiros"),
-            [Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567896")] = ("Credenciado", "Assuntos de credenciamento"),
-            [Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567897")] = ("Comercial", "Assuntos comerciais"),
-            [Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567898")] = ("Contas Médicas", "Assuntos de contas médicas"),
-        };
-
-        var houveMudanca = false;
-
-        foreach (var (id, (nome, descricao)) in categoriasSeed)
-        {
-            var existente = await db.Categorias.FindAsync(id);
-            if (existente == null)
-            {
-                db.Categorias.Add(new Categoria(nome, descricao) { Id = id });
-                houveMudanca = true;
-            }
-            else if (existente.Nome != nome)
-            {
-                existente.Atualizar(nome, descricao);
-                houveMudanca = true;
-            }
+            if (idsTipos.Contains(id) || nomesTipos.Contains(nome))
+                continue;
+            var tipo = new TipoChamado(nome, descricao) { Id = id };
+            if (!ativo)
+                tipo.Desativar();
+            db.TiposChamado.Add(tipo);
         }
 
-        if (houveMudanca)
-            await db.SaveChangesAsync();
+        await db.SaveChangesAsync();
+
+        // Chamados sem área/tipo (abertos pela versão anterior durante o deploy) recebem área = grupo
+        // da categoria e tipo = "Não classificado". Idempotente e não cria áreas (review R-01).
+        await db.Database.ExecuteSqlRawAsync(AreaETipoPadrao.SqlPreencherAreaETipo());
 
         if (!await db.UsuariosPerfil.AnyAsync())
         {

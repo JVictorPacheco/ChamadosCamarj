@@ -12,6 +12,8 @@ export interface Perfil {
   email: string
   chatPerfil?: ChatPerfil
   mostrarConfirmacaoLeitura: boolean
+  /** Grupo = área de quem está logado; preenche a Área na abertura (spec area-e-tipo AC-02). */
+  grupoId?: string | null
 }
 
 const STORAGE_KEY = 'chamados-camarj:perfil'
@@ -35,6 +37,7 @@ function paraPerfil(resposta: AutenticacaoResponse): Perfil {
     email: resposta.email,
     chatPerfil: resposta.chatPerfil,
     mostrarConfirmacaoLeitura: resposta.mostrarConfirmacaoLeitura ?? true,
+    grupoId: resposta.grupoId ?? null,
   }
 }
 
@@ -46,6 +49,7 @@ function paraPerfilAtual(resposta: UsuarioPerfilResponse): Perfil {
     email: resposta.email,
     chatPerfil: resposta.chatPerfil,
     mostrarConfirmacaoLeitura: resposta.mostrarConfirmacaoLeitura ?? true,
+    grupoId: resposta.grupoId ?? null,
   }
 }
 

@@ -19,7 +19,8 @@ export type AcaoHistorico =
   | "PrioridadeAlterada"
   | "StatusAlterado"
   | "EncerramentoForcado"
-  | "Reaberto";
+  | "Reaberto"
+  | "TipoReclassificado";
 
 export type SlaStatus = "DentroPrazo" | "Atencao" | "Atrasado";
 
@@ -34,8 +35,10 @@ export interface ChamadoResponse {
   solicitanteEmail: string;
   responsavelId: string | null;
   responsavelNome: string | null;
-  categoriaId: string;
-  categoriaNome: string | null;
+  areaId: string | null;
+  areaNome: string | null;
+  tipoId: string | null;
+  tipoNome: string | null;
   dataLimite: string | null; // ISO 8601
   dataConclusao: string | null;
   dataCriacao: string;
@@ -67,11 +70,11 @@ export interface AnexoResponse {
   dataCriacao: string;
 }
 
-export interface CategoriaResponse {
+export interface TipoChamadoResponse {
   id: string;
   nome: string;
   descricao: string;
-  ativa: boolean;
+  ativo: boolean;
 }
 
 export interface PagedResult<T> {
@@ -87,9 +90,8 @@ export interface PagedResult<T> {
 export interface AbrirChamadoRequest {
   titulo: string;
   descricao: string;
-  solicitanteNome: string;
-  solicitanteEmail: string;
-  categoriaId: string;
+  areaId: string;
+  tipoId: string;
   prioridade?: PrioridadeChamado;
 }
 

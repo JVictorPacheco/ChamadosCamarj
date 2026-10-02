@@ -28,7 +28,7 @@ public class AtribuirChamadoHandlerTests
     {
         var chamadoId = Guid.NewGuid();
         var responsavelId = Guid.NewGuid();
-        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
+        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid(), Guid.NewGuid());
 
         _repositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);

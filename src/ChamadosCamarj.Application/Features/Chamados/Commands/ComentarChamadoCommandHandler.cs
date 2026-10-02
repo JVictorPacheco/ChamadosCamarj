@@ -33,7 +33,8 @@ public class ComentarChamadoCommandHandler : IRequestHandler<ComentarChamadoComm
         await _publisher.Publish(new ComentarioAdicionadoNotification(
             request.ChamadoId,
             request.Autor,
-            request.Conteudo
+            request.Conteudo,
+            request.Interno
         ), cancellationToken);
 
         return new ComentarioResponse(comentario.Id, comentario.Autor, comentario.Conteudo, comentario.Tipo, comentario.DataCriacao);

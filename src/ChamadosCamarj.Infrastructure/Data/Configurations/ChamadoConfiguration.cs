@@ -69,7 +69,23 @@ public class ChamadoConfiguration : IEntityTypeConfiguration<Chamado>
         builder.HasOne(c => c.Categoria)
             .WithMany(cat => cat.Chamados)
             .HasForeignKey(c => c.CategoriaId)
+            .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(c => c.Area)
+            .WithMany()
+            .HasForeignKey(c => c.AreaId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(c => c.Tipo)
+            .WithMany(t => t.Chamados)
+            .HasForeignKey(c => c.TipoId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(c => c.AreaId);
+        builder.HasIndex(c => c.TipoId);
 
         builder.HasMany(c => c.Comentarios)
             .WithOne(com => com.Chamado)

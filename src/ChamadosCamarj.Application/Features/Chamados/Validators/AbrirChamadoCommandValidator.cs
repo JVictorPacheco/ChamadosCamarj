@@ -24,7 +24,10 @@ public class AbrirChamadoCommandValidator : AbstractValidator<AbrirChamadoComman
             .EmailAddress().WithMessage("Email inválido.")
             .MaximumLength(200);
 
-        RuleFor(c => c.CategoriaId)
-            .NotEmpty().WithMessage("Categoria é obrigatória.");
+        RuleFor(c => c.AreaId)
+            .NotEmpty().WithMessage("Área é obrigatória.");
+
+        RuleFor(c => c.TipoId)
+            .NotEmpty().WithMessage("Tipo é obrigatório.");
     }
 }

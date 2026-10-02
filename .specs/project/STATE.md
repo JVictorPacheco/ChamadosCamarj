@@ -1,6 +1,246 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-09-29
+> Atualizado em: 2026-10-02
+
+---
+
+## ▶ ONDE PARAMOS (2026-10-02) — ler isto primeiro ao retomar
+
+**Tudo o que foi pedido nesta rodada está em `develop`.** `develop` está à frente de `main` por 4
+features (autorização, correções de acesso, logout por inatividade, área e tipo).
+
+**Próximos passos, nesta ordem:**
+1. **Usuário:** mergear o PR `develop` → `main` (#44, que se atualiza sozinho com tudo) e combinar o
+   deploy com o irmão. **Backend e frontend precisam subir juntos.** Avisos do deploy:
+   - quem estiver logado vai precisar entrar de novo uma vez (logout por inatividade);
+   - o Kanban do Atendente sem equipe passa a mostrar só o que é dele;
+   - **a migration `AddAreaETipoChamado` JÁ ESTÁ APLICADA no banco** (dev = prod, aplicada em
+     2026-10-02). A versão antiga em produção continua funcionando com ela, mas até o deploy
+     **não reclassificar tipo de chamado real** (a versão antiga não conhece essa ação no histórico).
+2. Depois do deploy validado: reclassificar os 40 chamados antigos ("Não classificado") pelo detalhe
+   e abrir a feature de **limpeza** (tornar `AreaId`/`TipoId` obrigatórios; remover `Categorias` e
+   `CategoriaId`).
+3. Pendências abertas: ver "Pendências gerais" logo abaixo.
+
+### Pendências gerais (consolidado em 2026-10-02)
+- **Decisão de negócio:** SLA em horas corridas × horas úteis.
+- **Operacional:** contas de teste antigas `teste.admin2`/`teste.alvo2` no Supabase (apagar só com OK
+  do usuário); verificação manual do usuário dos AC-49 a AC-52 do chat.
+- **Técnicas pequenas:** favicon de 218 KB; testes E2E do Playwright (`frontend/e2e`) ainda usam
+  "Categoria"; conflito de versão do EF no projeto de testes (9.0.1 × 9.0.19); alerta de SLA vai para
+  todos os Atendentes, inclusive os que não veem aquele chamado (R-02 das correções); nenhuma ação
+  sobre chamado manda a versão lida (edição simultânea sobrescreve sem 409); `ComentarioId` do anexo
+  não é validado contra o chamado; migrations em duas pastas (as novas vão em `Data/Migrations`).
+- **Processo/ferramentas:** Constitution regra 4 e `docs/GUIA-ORQUESTRACAO-SDD.md` ainda descrevem
+  só o fluxo do OpenCode (`@spec`...), não o `/sdd` do Claude Code; ideias pendentes nas skills SDD:
+  hook lembrando de atualizar o STATE e comandos equivalentes para o OpenCode.
+- **Backlog do ROADMAP:** abertura por e-mail (IMAP), alertas de SLA com filtro na tela, exportação
+  CSV/PDF da lista, carga por atendente.
+- Efeito colateral dos testes: a numeração `CAM-N` pulou ~20 números ao todo (inofensivo).
+
+---
+
+## Sessão de 2026-10-02 — Área e Tipo do chamado
+
+### Contexto
+Pedido do usuário: "Categoria" listava áreas (Reembolso, Financeiro...), não o tipo do pedido.
+Decisões (2026-10-01/02): campo **Área** (= lista de grupos/equipes) + **Tipo** (Incidente, Dúvida,
+Solicitação, Customização, Melhoria, configurável pelo Admin); chamados antigos "Não classificado";
+área pré-preenchida com o grupo de quem abre. Spec, design, tasks e review em
+`.specs/features/area-e-tipo-do-chamado/`. ADR-008 no Obsidian. Implementado num git worktree
+(`Projects/ChamadosCamarj-area`) para não atrapalhar o review do logout.
+
+### O que foi feito
+- Backend: `TipoChamado` + CRUD `/api/tipos`; `Chamado.AreaId`/`TipoId`; abertura exige área e tipo
+  ativos; filtros por área/tipo; visibilidade inclui "área = grupo do usuário"; Dashboard e Relatório
+  por área e por tipo; triagem sugere área e tipo; `PATCH /chamados/{id}/tipo` (Atendente/Admin);
+  login devolve `grupoId`; API de categorias removida (entidade/tabela ficam até a limpeza).
+- Migration `AddAreaETipoChamado` **compatível com a versão anterior** (colunas novas opcionais,
+  `CategoriaId` opcional, nada apagado) + preenchimento idempotente no seeder; seeder não sobrescreve
+  mais grupos/tipos editados pelo Admin.
+- Frontend: abertura com Área e Tipo, detalhe com reclassificação de tipo, filtros, cartão,
+  Dashboard, Relatório (+ exportação), Admin "Tipos de chamado" e "Áreas e Grupos".
+
+### Verificação
+- `dotnet test` **401/401**; `npm run build` ok; lint sem avisos novos.
+- Review independente: 1 bloqueante (seeder recriaria áreas renomeadas pelo Admin) + 7 atenção —
+  todos corrigidos ou registrados.
+- **Migration aplicada no Supabase em 2026-10-02** (autorizada): 40 chamados por categoria antes =
+  40 por área depois (Atendimento 16, Autorização/Auditoria 6, Comercial 6, Contas Médicas 2,
+  Credenciado 3, Financeiro 2, Reembolso 5); 0 sem área; os 40 "Não classificado"; grupo Financeiro
+  criado.
+- Ao vivo (API, dados de teste apagados): 21 verificações, incluindo visibilidade por área,
+  reclassificação com histórico, filtros, Dashboard, Relatório, triagem e Admin de tipos. Uma falha
+  real encontrada e corrigida (a resposta da abertura vinha sem os nomes de área/tipo).
+- Tela (Playwright): sem "Categoria", área pré-preenchida, sugestão preenche área e tipo, detalhe
+  mostra os dois.
+
+---
+
+## Sessão de 2026-10-01/02 — Logout por inatividade ligado
+
+### Contexto
+Pendência de 2026-09-29. Investigação: o hook `useInactivityLogout` nasceu no commit `8166ff0`
+(2026-07-18) e **nunca foi chamado** — foi esquecido, não removido de propósito. A regra (20 min)
+foi decidida e confirmada pelo usuário em 2026-07-18. Fluxo `/sdd`, artefatos em
+`.specs/features/logout-inatividade/`.
+
+### O que foi feito (branch `feature/logout-inatividade`)
+- 20 min sem gesto real (mouse, clique, teclado, roda, toque) em nenhuma aba → desconecta e mostra
+  "Sua sessão foi encerrada por inatividade" na tela de login (até o próximo login).
+- Atividade compartilhada entre abas (`localStorage`); o tempo parado é medido pelo relógio de
+  parede, então a suspensão do computador não renova a sessão.
+- Sessão reaberta depois do limite (navegador fechado, aba descartada) é encerrada pela
+  `ProtectedRoute` **antes** de montar a área logada (nenhuma tela, API ou heartbeat do chat roda).
+- **Efeito no deploy:** quem estiver logado no momento do deploy precisa entrar de novo uma vez
+  (sessão sem a marca nova vale como vencida). Abas abertas com o código antigo devem ser recarregadas.
+- Obsidian `Acesso e Login` atualizado. Só frontend; nenhuma migration.
+
+### Verificação
+- 3 rodadas de review independente: **2 bloqueantes encontrados e corrigidos**:
+  - `scroll` disparado pelo próprio navegador ao chegar atualização em tempo real mantinha a
+    sessão para sempre;
+  - depois da suspensão do notebook, o primeiro gesto renovava a sessão.
+  A 3ª rodada não teve bloqueantes; os 2 🟡 dela foram corrigidos.
+- Tela (Playwright com relógio simulado, conta de teste apagada): 1 e 2 abas, scroll automático,
+  suspensão de 90 min, reabertura vencida (0 chamadas à API), "Sair" após aviso antigo — todos OK.
+  As correções da 3ª rodada (fase de captura; sessão sem marca) foram verificadas por build/lint e
+  revisão de código, não na tela.
+- A verificação foi interrompida uma vez porque a máquina ficou sem memória (o Claude Code encerrou
+  API e frontend); retomada em 2026-10-02.
+
+---
+
+## Sessão de 2026-10-01 — Correções de acesso a chamados (pendências da autorização)
+
+### Contexto
+O usuário pediu para tratar juntas, numa correção rápida, três pendências do fechamento de
+`autorizacao-chamados`, e delegou a execução até o fim. Fluxo `/sdd` (Claude Code, Opus 5.5),
+artefatos em `.specs/features/correcoes-acesso-chamados/`.
+
+### O que foi feito (branch `feature/correcoes-acesso-chamados`)
+- **Edição de título/descrição (409 sempre):** `AtualizarChamadoCommandHandler` passou a usar
+  `ObterPorIdComTrackingAsync`, como os demais handlers.
+- **Contagem de comentários:** o Solicitante recebe só a contagem de públicos (lista e detalhe).
+  `ToResponse` agora exige `incluirInternos` explícito.
+- **Alertas de SLA:** vão só para o grupo `Atendimento` (Atendente e Admin), que o servidor define
+  no `OnConnectedAsync` a partir do token.
+- **Removidos `EntrarGrupo`/`SairGrupo` do `ChamadosHub`.** Não tinham nenhum uso e deixavam
+  qualquer cliente entrar em qualquer grupo. *(Mudança de contrato sem consumidores, registrada na
+  spec; não foi citada nominalmente ao usuário antes de aplicar — informada no resumo.)*
+- **Do review:** o aviso de comentário **interno** vai só para o `Atendimento` (antes avisava o
+  Solicitante de que existia um interno).
+- Obsidian `SLA.md` corrigido: dizia que não existiam alertas automáticos, mas existem desde julho.
+- **Nenhuma migration.**
+
+### Gates e verificação
+- `dotnet test` **387/387** (369 → 387, 18 novos); `npm run build` ok.
+- Review independente: 0 bloqueantes, 4 🟡. R-01 e R-04 corrigidos, R-03 com a spec corrigida,
+  R-02 virou pendência.
+- Ao vivo (contas e chamados `teste.autz.*`, apagados no final): edição 204 com título salvo;
+  contagem 1 (Solicitante) × 2 (Atendente) no detalhe e na lista; os dois perfis conectam ao hub e
+  `EntrarGrupo` é recusado. A sequência de número de chamado avançou mais 4 (13 no total hoje).
+
+### Pendências
+- **R-02:** o alerta de SLA vai para todos os Atendentes, inclusive os que não enxergam aquele
+  chamado (só o número). Filtrar exigiria calcular a visibilidade por usuário a cada alerta.
+- **Concorrência (geral, anterior):** nenhuma ação sobre chamado manda a versão que o cliente leu.
+  Duas edições quase simultâneas: a segunda sobrescreve a primeira sem 409.
+- Sem teste automatizado: voltar o `SlaMonitorService` para `Clients.All`.
+
+---
+
+## Sessão de 2026-09-29 a 2026-10-01 — Autorização de chamados no servidor (primeira feature via `/sdd`)
+
+### Contexto
+A investigação da pendência "visibilidade de Solicitante com grupo" achou um problema maior: as
+regras de quem vê e quem faz o quê nos chamados existiam **só nas telas**. O servidor aceitava
+qualquer pedido de qualquer usuário logado:
+- listar todos os chamados (bastava não mandar `solicitanteEmail`);
+- ver detalhe, anexos e histórico de qualquer chamado;
+- resolver, fechar ou reatribuir sendo Solicitante;
+- abrir chamado em nome de outra pessoa.
+
+Além disso, o SignalR mandava para **todos** os conectados o texto de cada comentário, inclusive
+os internos.
+
+Primeira feature conduzida pelas skills globais `/sdd` (Claude Code, Opus 5.5): spec → design →
+tasks → implement → review independente (sub-agente) → fechamento. Artefatos em
+`.specs/features/autorizacao-chamados/`.
+
+### Decisões do usuário
+- **Grupo = cobrir férias.** Solicitante com grupo vê os chamados do grupo, confirmando a regra
+  de 2026-08-01. "Chamado do grupo" = **aberto por** membro **ou** com **responsável** membro. A
+  primeira versão aprovada só olhava o responsável e não atendia o caso; foi revisada antes do código.
+- Nos chamados do colega, o Solicitante vê, comenta e anexa, mas **não cancela**.
+- Atendente acessa só o que vê na lista (fila + seus + os que abriu + grupo). **Muda o Kanban do
+  Atendente sem grupo**, que antes via tudo.
+- O escopo inclui as ações, não só a leitura.
+- Editar título e descrição: só Atendente e Admin.
+- Relatório: Solicitante recebe 403; Atendente recebe sempre os próprios números.
+- SignalR sem conteúdo.
+- Chamado invisível → 404 também nas ações (não revela que existe). 403 só quando o usuário vê o
+  chamado mas não pode fazer a ação.
+- A abertura é sempre em nome do usuário logado.
+
+### O que foi feito (branch `feature/autorizacao-chamados`)
+- **Backend:**
+  - `ContextoAcesso` e `AcaoChamado` no Domain.
+  - `ChamadoPermissoes`: matriz pura de ações × perfis.
+  - `AcessoChamadoBehaviour` (MediatR, depois do `ValidationBehaviour`), aplicado a 18
+    commands/queries via `IRequerAcessoChamado`.
+  - Filtro único `AplicarVisibilidade` no `ChamadoRepository`, usado pela lista, pelo
+    `PodeVerAsync` e pelas métricas do Dashboard.
+  - `ICurrentUserService.Email` novo.
+  - O download de anexo confere se o anexo é do chamado da URL (achado durante a implementação).
+- **Frontend:**
+  - Detalhe sem bloqueio local.
+  - Botão Cancelar só para quem abriu.
+  - Lista e Arquivo não mandam mais `solicitanteEmail`.
+  - Abertura não manda nome nem e-mail.
+- **Docs:**
+  - Spec `grupos-equipes`: item 5 e T6 revisados.
+  - Obsidian: `Perfis e Permissões`, `Grupos e Equipes` e o novo **ADR-007**.
+  - ROADMAP: removida a linha duplicada e desatualizada da confirmação de leitura.
+- **Nenhuma migration.**
+
+### Gates e verificação
+- **Gates:**
+  - `dotnet build`: 0 erros (6 avisos pré-existentes).
+  - `dotnet test`: **369/369**. Eram 324; entraram 45 novos e nenhum foi perdido.
+  - `npm run build`: ok. Lint sem avisos novos.
+- **Filtro SQL:** conferido com `ToQueryString()` para os 5 perfis, num console temporário, sem
+  conexão com o banco.
+- **Review independente** (sub-agente): 0 bloqueantes e 4 🟡 (ver `review.md`).
+  - R-01: coberto pela verificação ao vivo.
+  - R-02: resolvido (texto da spec corrigido).
+  - R-03 e R-04: viraram pendência.
+- **Verificação ao vivo, autorizada pelo usuário:** API local da branch contra o Supabase real.
+  - Criados 6 contas `teste.autz.*`, 1 grupo e 5 chamados `[TESTE-AUTZ]`, **todos apagados no
+    final** (contagem final 0).
+  - Resultado: **30/31 OK.** A falha não é desta feature (ver Pendências).
+  - Efeito colateral irreversível: a sequência `ChamadosNumeroSeq` avançou 9 números no total.
+- **Teste na tela** (Playwright, API e frontend locais, mesmos dados de teste, apagados no final):
+  - Solicitante do grupo: "Meus Chamados" mostra só o dele e o do colega. O chamado do colega abre
+    sem "não pertence" e sem botão Cancelar; no próprio, o Cancelar aparece; chamado alheio mostra
+    "Chamado não encontrado".
+  - Atendente sem grupo: o Kanban mostra só os chamados do escopo dele (mais a fila real).
+
+### Pendências
+- ~~**Bug anterior à feature:**~~ **Resolvido em 2026-10-01** (`correcoes-acesso-chamados`). `PUT /api/chamados/{id}` (editar título e descrição) sempre devolve
+  **409**. Causa: `AtualizarChamadoCommandHandler` usa `ObterPorIdAsync` (sem tracking). A sessão
+  de concorrência de 2026-07-31 migrou os outros handlers para `ObterPorIdComTrackingAsync`, mas
+  esqueceu este. O frontend não usa esse endpoint hoje.
+- ~~**R-03**~~ **Resolvido em 2026-10-01** (`correcoes-acesso-chamados`). (anterior à feature): `QuantidadeComentarios` conta os comentários internos. O
+  Solicitante vê a quantidade, não o conteúdo.
+- ~~**R-04**~~ **Resolvido em 2026-10-01** (`correcoes-acesso-chamados`), só Atendente/Admin recebem. (anterior à feature): os alertas de SLA (`Clients.All`) vão para todos os usuários.
+  Agora levam só o número do chamado, sem título.
+- O `ComentarioId` do anexo não é validado contra o chamado (questão de integridade, não de acesso).
+- Não verificado ao vivo: AC-19 (SignalR).
+- O projeto de testes tem conflito de versão do EF (9.0.1 × 9.0.19) quando referencia tipos do EF
+  diretamente; por isso o filtro SQL não tem teste automatizado. Considerar alinhar as versões.
+- PR da feature: aguardando decisão do usuário (checkpoint 2 do `/sdd`).
+- Próxima feature: `area-e-tipo-do-chamado` (spec aprovada).
 
 ---
 
@@ -26,11 +266,13 @@ negócio**; nomes **sem emoji**; **nenhum status/andamento** no vault (fica só 
 ### Pontos levantados durante a escrita (não corrigidos — decisão do usuário)
 - **SLA em horas corridas**, não úteis (`Chamado.CalcularDataLimite`) — documentado como ponto de
   atenção para o negócio em `20 Funcionalidades/SLA.md`.
-- **Logout por inatividade não está ativo:** o hook `useInactivityLogout` existe em
+- ~~**Logout por inatividade não está ativo:**~~ **Resolvido em 2026-10-02** (`logout-inatividade`). o hook `useInactivityLogout` existe em
   `frontend/src/hooks/` mas não é usado em nenhum componente (a decisão de 2026-07-18 previa 20 min).
-- **Visibilidade de Solicitante com grupo:** em `ChamadoRepository` (filtro por `grupoId`), um
+- ~~**Visibilidade de Solicitante com grupo:** em `ChamadoRepository` (filtro por `grupoId`), um
   usuário que não é Atendente mas tem grupo parece enxergar também chamados atribuídos a colegas
-  do grupo — diverge da regra documentada ("Solicitante vê só os seus"). Precisa de verificação.
+  do grupo — diverge da regra documentada ("Solicitante vê só os seus"). Precisa de verificação.~~
+  **Resolvido em 2026-10-01** (feature `autorizacao-chamados`): a regra do grupo foi confirmada
+  pelo usuário e passou a valer no servidor.
 
 ---
 

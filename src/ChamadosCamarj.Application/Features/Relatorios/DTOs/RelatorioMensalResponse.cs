@@ -9,7 +9,8 @@ public record RelatorioMensalResponse(
     int TotalCancelados,
     double? TempoMedioResolucaoHoras,
     SlaResponse Sla,
-    List<PorCategoriaItem> PorCategoria,
+    List<PorNomeQuantidadeItem> PorArea,
+    List<PorNomeQuantidadeItem> PorTipo,
     List<PorAtendenteItem>? PorAtendente,
     ComparacaoMesAnteriorResponse? Comparacao,
     List<SlaEvolucaoItem>? SlaEvolucao
@@ -18,7 +19,7 @@ public record RelatorioMensalResponse(
 public record SlaResponse(int TotalComPrazo, int DentroDoPrazo, int Estourados, double? PercentualCumprido);
 public record SlaEvolucaoItem(int Ano, int Mes, double? Percentual);
 
-public record PorCategoriaItem(string CategoriaNome, int Quantidade);
+public record PorNomeQuantidadeItem(string Nome, int Quantidade);
 
 public record PorAtendenteItem(string ResponsavelNome, int Abertos, int Resolvidos, int Cancelados);
 

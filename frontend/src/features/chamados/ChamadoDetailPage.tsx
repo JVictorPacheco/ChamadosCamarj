@@ -21,6 +21,7 @@ import { ForcarEncerramentoModal } from './components/ForcarEncerramentoModal'
 import { TimelineHistorico } from './components/TimelineHistorico'
 import { AnexosList } from './components/AnexosList'
 import { UploadAnexoForm } from './components/UploadAnexoForm'
+import { TipoChamadoCampo } from './components/TipoChamadoCampo'
 import { useChamado } from './hooks/useChamado'
 import {
   useAtribuirChamado,
@@ -58,6 +59,8 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
   const isAdmin = perfil?.tipo === 'Admin'
   const isAtendente = perfil?.tipo === 'Admin' || perfil?.tipo === 'Atendente'
   const isSolicitante = perfil?.tipo === 'Solicitante'
+  // Solicitante do grupo vê o chamado do colega, mas só quem abriu pode cancelar (spec autorizacao-chamados AC-06)
+  const abriuOChamado = chamado.solicitanteEmail.toLowerCase() === (perfil?.email ?? '').toLowerCase()
   const status = chamado.status
   const statusFinal = status === 'Fechado' || status === 'Cancelado'
 
@@ -123,7 +126,7 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
         </Button>
       )}
 
-      {(isAtendente || isSolicitante) && (status === 'Aberto' || status === 'EmAndamento') && (
+      {(isAtendente || (isSolicitante && abriuOChamado)) && (status === 'Aberto' || status === 'EmAndamento') && (
         <Button
           variant="destructive"
           disabled={isPending}
@@ -292,22 +295,8 @@ export function ChamadoDetailPage() {
     )
   }
 
+  // Quem pode ver o chamado é decidido pelo servidor: sem acesso, a API responde 404 (tratado acima).
   if (!chamado) return null
-
-  const isAtendente = perfil?.tipo === 'Admin' || perfil?.tipo === 'Atendente'
-
-  if (!isAtendente && chamado.solicitanteEmail !== perfil?.email) {
-    return (
-      <div className="flex flex-col items-center gap-3 p-8 text-center">
-        <Alert variant="destructive" className="max-w-md">
-          <AlertDescription>Este chamado não pertence ao seu perfil ativo.</AlertDescription>
-        </Alert>
-        <Button asChild variant="outline">
-          <Link to="/chamados">Voltar para a lista</Link>
-        </Button>
-      </div>
-    )
-  }
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 p-8">
@@ -346,8 +335,12 @@ export function ChamadoDetailPage() {
 
       <dl className="grid grid-cols-2 gap-6 text-lg text-muted-foreground">
         <div>
-          <dt className="font-medium text-foreground">Categoria</dt>
-          <dd>{chamado.categoriaNome ?? 'Sem categoria'}</dd>
+          <dt className="font-medium text-foreground">Área</dt>
+          <dd>{chamado.areaNome ?? 'Sem área'}</dd>
+        </div>
+        <div>
+          <dt className="font-medium text-foreground">Tipo</dt>
+          <TipoChamadoCampo chamado={chamado} />
         </div>
         <div>
           <dt className="font-medium text-foreground">Aberto em</dt>

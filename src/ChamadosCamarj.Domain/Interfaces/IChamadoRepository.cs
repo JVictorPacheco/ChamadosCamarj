@@ -1,3 +1,4 @@
+using ChamadosCamarj.Domain.Common;
 using ChamadosCamarj.Domain.Entities;
 using ChamadosCamarj.Domain.Enums;
 
@@ -24,33 +25,42 @@ public interface IChamadoRepository
     Task<IEnumerable<Chamado>> ObterPorResponsavelAsync(Guid responsavelId, CancellationToken cancellationToken = default);
     Task<IEnumerable<Chamado>> ObterAtrasadosAsync(CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Lista só os chamados que <paramref name="acesso"/> pode ver. Os demais filtros são
+    /// aplicados por cima dessa regra — nenhum deles amplia a visibilidade.
+    /// </summary>
     Task<(IEnumerable<Chamado> Items, int Total)> ListarAsync(
+        ContextoAcesso acesso,
         int pagina,
         int tamanhoPagina,
         StatusChamado? status = null,
         PrioridadeChamado? prioridade = null,
         Guid? responsavelId = null,
-        Guid? categoriaId = null,
+        Guid? areaId = null,
+        Guid? tipoId = null,
         string? busca = null,
         string? solicitanteEmail = null,
         IEnumerable<StatusChamado>? statusEntre = null,
         DateTime? dataInicio = null,
         DateTime? dataFim = null,
-        Guid? usuarioLogadoId = null,
-        Guid? grupoId = null,
         Domain.Enums.MotivoEncerramento? motivoEncerramento = null,
-        string? perfil = null,
         CancellationToken cancellationToken = default);
 
     // Verificações
     Task<bool> ExisteAsync(Guid id, CancellationToken cancellationToken = default);
 
-    // Dashboard / Métricas
+    /// <summary>
+    /// True se o chamado existe E <paramref name="acesso"/> pode vê-lo — mesma regra do ListarAsync.
+    /// </summary>
+    Task<bool> PodeVerAsync(Guid chamadoId, ContextoAcesso acesso, CancellationToken cancellationToken = default);
+
+    // Dashboard / Métricas — contam só o que o usuário pode ver
     Task<int> ContarPorStatusAsync(StatusChamado status, CancellationToken cancellationToken = default);
-    Task<(int TotalResolvidos, int DentroPrazo)> ContarSlaComplianceAsync(DateTime inicio, DateTime fim, CancellationToken cancellationToken = default);
-    Task<Dictionary<StatusChamado, int>> ContarPorStatusAgrupadoAsync(CancellationToken cancellationToken = default);
-    Task<int> ContarResolvidosHojeAsync(CancellationToken cancellationToken = default);
-    Task<double?> ObterTempoMedioResolucaoHorasAsync(CancellationToken cancellationToken = default);
-    Task<List<CategoriaContagem>> ContarPorCategoriaAsync(CancellationToken cancellationToken = default);
-    Task<Dictionary<string, int>> ContarPorPrioridadeAsync(CancellationToken cancellationToken = default);
+    Task<(int TotalResolvidos, int DentroPrazo)> ContarSlaComplianceAsync(ContextoAcesso acesso, DateTime inicio, DateTime fim, CancellationToken cancellationToken = default);
+    Task<Dictionary<StatusChamado, int>> ContarPorStatusAgrupadoAsync(ContextoAcesso acesso, CancellationToken cancellationToken = default);
+    Task<int> ContarResolvidosHojeAsync(ContextoAcesso acesso, CancellationToken cancellationToken = default);
+    Task<double?> ObterTempoMedioResolucaoHorasAsync(ContextoAcesso acesso, CancellationToken cancellationToken = default);
+    Task<List<ContagemPorNome>> ContarPorAreaAsync(ContextoAcesso acesso, CancellationToken cancellationToken = default);
+    Task<List<ContagemPorNome>> ContarPorTipoAsync(ContextoAcesso acesso, CancellationToken cancellationToken = default);
+    Task<Dictionary<string, int>> ContarPorPrioridadeAsync(ContextoAcesso acesso, CancellationToken cancellationToken = default);
 }
