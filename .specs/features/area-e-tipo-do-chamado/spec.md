@@ -1,7 +1,7 @@
 # Área e Tipo do Chamado — Especificação
 
-> **SDD:** spec-aprovada
-> **Status:** `Pendente`
+> **SDD:** fechada
+> **Status:** `Concluída`
 > **Branch:** `feature/area-e-tipo-do-chamado`
 > **Criada em:** 2026-10-01
 > **Atualizada em:** 2026-10-01
@@ -107,7 +107,16 @@ do pedido. As duas listas podem ser mantidas pelo Admin.
 
 | Critério | Arquivo de Teste | Método de Teste | Status |
 |----------|-----------------|-----------------|--------|
-| AC-01 a AC-16 | a definir no `tasks.md` | — | ⬜ Pendente |
+| AC-01..AC-03 | `AbrirChamadoHandlerTests`, `AbrirChamadoValidatorTests` + ao vivo + tela | — | ✅ |
+| AC-04 | `KeywordTriagemServiceTests` + ao vivo + tela | — | ✅ |
+| AC-05, AC-06 | Migration aplicada: 40 por categoria = 40 por área; 0 sem área | — | ✅ |
+| AC-07 | Ao vivo (Solicitante e Atendente do grupo veem chamado com a área do grupo) | — | ✅ |
+| AC-08, AC-09 | Ao vivo (CRUD de tipos, 409 em nome duplicado, `/categorias` 404) | — | ✅ |
+| AC-10 | Código + review (seeder só cria o que não existe) | — | ✅ (não reiniciado ao vivo com edição) |
+| AC-11 | `ReclassificarTipoChamadoHandlerTests`, `ChamadoPermissoesTests` + ao vivo (histórico) | — | ✅ |
+| AC-12..AC-14 | Ao vivo (Dashboard, Relatório, filtros) | — | ✅ |
+| AC-15 | Tela + busca no `frontend/src` (E2E pendentes) | — | ✅ |
+| AC-16 | 401/401 · build ok | — | ✅ |
 
 ---
 

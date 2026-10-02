@@ -77,6 +77,7 @@ public class AbrirChamadoCommandHandler : IRequestHandler<AbrirChamadoCommand, C
             StatusChamadoNotification.Aberto
         ), cancellationToken);
 
-        return chamado.ToResponse(incluirInternos: false); // chamado recém-aberto: não há comentários
+        // Chamado recém-criado não tem as navegações carregadas: os nomes vêm da área e do tipo já lidos.
+        return chamado.ToResponse(incluirInternos: false) with { AreaNome = area.Nome, TipoNome = tipo.Nome };
     }
 }

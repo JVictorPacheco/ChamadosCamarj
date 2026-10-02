@@ -22,10 +22,10 @@
 - [x] **T12.** Admin: "Tipos de chamado" (`/admin/tipos`) no lugar de Categorias; "Áreas e Grupos" *(AC-08, AC-09, AC-15)*
 
 ## Validação
-- [ ] **T13.** Aplicar a migration no Supabase (aprovada em 2026-10-02) e conferir: chamados por categoria antes = por área depois; nenhum chamado sem área/tipo
-- [ ] **T14.** Verificação ao vivo (API + tela) com dados de teste, apagados no final
+- [x] **T13.** Aplicar a migration no Supabase (aprovada em 2026-10-02) e conferir: chamados por categoria antes = por área depois; nenhum chamado sem área/tipo
+- [x] **T14.** Verificação ao vivo (API + tela) com dados de teste, apagados no final — 21 checagens; 1 falha real corrigida (nomes na resposta da abertura)
 - [x] **T15.** Review independente (1 bloqueante e 7 atenção — corrigidos ou registrados, ver review.md)
-- [ ] **T16.** Gates finais
+- [x] **T16.** Gates finais (401/401, build ok)
 
 ## Pendências conhecidas
 - Testes E2E do Playwright (`frontend/e2e/*.spec.ts`) ainda usam "Categoria" — não fazem parte dos gates; atualizar numa próxima rodada.

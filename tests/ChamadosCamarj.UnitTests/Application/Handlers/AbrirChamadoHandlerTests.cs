@@ -56,6 +56,8 @@ public class AbrirChamadoHandlerTests
         result.Status.Should().Be(StatusChamado.Aberto);
         result.AreaId.Should().Be(_area.Id);
         result.TipoId.Should().Be(_tipo.Id);
+        result.AreaNome.Should().Be("Reembolso");
+        result.TipoNome.Should().Be("Incidente");
     }
 
     [Fact]
