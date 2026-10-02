@@ -206,4 +206,4 @@ de processo desatualizada.
 - [x] ACs verificados por testes automatizados e ao vivo (AC-11 adiado)
 - [x] Obsidian atualizado (regra 6) — SLA, Anexos, Acompanhamento, Kanban, ADR-009
 - [x] `spec.md` com status final; `STATE.md` e `ROADMAP.md` atualizados
-- [ ] PR aberto com base `develop` (checkpoint 2 — aguardando o usuário)
+- [x] PR aberto com base `develop` — #49 (2026-10-02)

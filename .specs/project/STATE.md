@@ -9,7 +9,7 @@
 **`main` está com as 4 features do PR #44** (autorização, correções de acesso, logout por
 inatividade, área e tipo — mergeado em 2026-10-02, commit `62384a5`). **A feature
 `correcoes-pre-deploy` está fechada na branch `feature/correcoes-pre-deploy`**, com PR para
-`develop` (ver seção da sessão abaixo). O usuário decidiu **fazer o deploy só depois dela**, junto.
+`develop` — **PR #49**. O usuário decidiu **fazer o deploy só depois dela**, junto.
 
 **Próximos passos, nesta ordem:**
 1. **Usuário:** mergear o PR de `correcoes-pre-deploy` em `develop` e depois `develop` → `main`.

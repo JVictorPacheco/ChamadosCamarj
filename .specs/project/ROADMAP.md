@@ -325,7 +325,7 @@
 
 - [x] "Categoria" vira **Área** (mesma lista dos grupos); novo campo **Tipo** (Incidente, Dúvida, Solicitação, Customização, Melhoria — configurável pelo Admin). Implementar depois da autorização. Spec: `.specs/features/area-e-tipo-do-chamado/spec.md`.
 
-## 🧰 Correções Pré-Deploy (FECHADA — 2026-10-02; PR para `develop` a abrir)
+## 🧰 Correções Pré-Deploy (FECHADA — 2026-10-02; PR #49 para `develop`)
 
 - [x] Alerta de SLA só para Admins e para os Atendentes que veem o chamado; Solicitante nunca recebe. Aviso que falhar é tentado de novo.
 - [x] Anexo só pode ser ligado a comentário do mesmo chamado.
