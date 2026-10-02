@@ -28,7 +28,13 @@ inatividade, área e tipo — mergeado em 2026-10-02, commit `62384a5`). **A fea
    **"Editar chamado"** (modal; Solicitante edita os que abriu, Atendente os que assumiu, Admin todos).
 
 ### Pendências gerais (consolidado em 2026-10-02, pós correcoes-pre-deploy)
-- **Decisão de negócio:** SLA em horas corridas × horas úteis.
+- **SLA — DECIDIDO pelo usuário em 2026-10-02: conta só dias úteis** (sábado, domingo e feriados não
+  contam). Vira feature própria (ROADMAP "SLA em dias úteis"). A detalhar na spec: horário de
+  expediente (o prazo corre 24h nos dias úteis ou só no expediente, ex.: 8h–18h?) e qual calendário de
+  feriados (nacionais, estaduais RJ, municipais).
+- **Achado na demonstração em tela (2026-10-02):** o modal "Alterar prioridade" abre marcando a
+  prioridade de quando a página carregou, não a atual (ex.: abriu em "Média" com o chamado já
+  "Urgente"). Pré-existente; não afeta a proteção de conflito.
 - **Operacional:** verificação manual do usuário dos AC-49 a AC-52 do chat.
   ~~Contas de teste `teste.admin2`/`teste.alvo2`~~ — **apagadas em 2026-10-02** com OK do usuário
   (junto com as 2 conversas, 14 mensagens e 14 registros de auditoria do chat delas). ~~Bucket
@@ -80,6 +86,12 @@ tasks e 2 reviews em `.specs/features/correcoes-pre-deploy/`.
   favicon 64×64 (3,5 KB).
 - **Processo:** regra 4 da Constitution e `docs/GUIA-ORQUESTRACAO-SDD.md` com o `/sdd`.
 - **Obsidian:** SLA, Anexos, Acompanhamento do Chamado, Fila/Kanban/Dashboard, Home; ADR-009.
+
+### Demonstração em tela (2026-10-02, a pedido do usuário)
+- Navegador visível (Playwright MCP), backend e frontend locais: abrir com Área/Tipo; Assumir com
+  versão velha → aviso + recarga; refazer → ok; botões bloqueados na recarga; modal de prioridade com
+  versão velha → recusado no modal; comentário de outra pessoa não gera conflito (Resolver ok); Kanban
+  sem tempo real → aviso e cartão de volta à coluna. Chamados CAM-99 e CAM-100 `[TESTE-TELA]`.
 
 ### Verificação
 - `dotnet test` **444/444** (eram 401); `dotnet build` 0 erros, sem MSB3277; `npm run build` ok;

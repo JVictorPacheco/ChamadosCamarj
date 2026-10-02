@@ -343,3 +343,8 @@
 ## 🧹 Limpeza de Categorias (BACKLOG — depois do deploy)
 
 - [ ] Reclassificar os 40 chamados antigos "Não classificado"; tornar `AreaId`/`TipoId` obrigatórios; remover `Categorias` e `CategoriaId`.
+
+## 📅 SLA em Dias Úteis (BACKLOG — decisão do usuário em 2026-10-02)
+
+- [ ] O prazo de SLA conta só **dias úteis**: sábado, domingo e feriados não contam.
+- [ ] A definir na spec: prazo corre 24h nos dias úteis ou só no horário de expediente; calendário de feriados (nacionais, estaduais RJ, municipais) e quem o mantém.
