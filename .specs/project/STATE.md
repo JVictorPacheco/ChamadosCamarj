@@ -1,17 +1,20 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-10-02
+> Atualizado em: 2026-10-02 (pós-merge do #44)
 
 ---
 
 ## ▶ ONDE PARAMOS (2026-10-02) — ler isto primeiro ao retomar
 
-**Tudo o que foi pedido nesta rodada está em `develop`.** `develop` está à frente de `main` por 4
-features (autorização, correções de acesso, logout por inatividade, área e tipo).
+**`main` == `develop`.** O PR #44 (`develop` → `main`) foi mergeado pelo usuário em 2026-10-02
+(commit `62384a5`) com as 4 features: #43 autorização, #45 correções de acesso, #46 logout por
+inatividade, #47 área e tipo. Conferido: build 0 erros, 401 testes, `npm run build` ok, Cloudflare
+Pages success. Branches remotas dessas features apagadas em 2026-10-02 (GitHub só tem `main` e
+`develop`).
 
 **Próximos passos, nesta ordem:**
-1. **Usuário:** mergear o PR `develop` → `main` (#44, que se atualiza sozinho com tudo) e combinar o
-   deploy com o irmão. **Backend e frontend precisam subir juntos.** Avisos do deploy:
+1. **Deploy pelo irmão do usuário (pendente).** **Backend e frontend precisam subir juntos.** Avisos
+   do deploy:
    - quem estiver logado vai precisar entrar de novo uma vez (logout por inatividade);
    - o Kanban do Atendente sem equipe passa a mostrar só o que é dele;
    - **a migration `AddAreaETipoChamado` JÁ ESTÁ APLICADA no banco** (dev = prod, aplicada em
