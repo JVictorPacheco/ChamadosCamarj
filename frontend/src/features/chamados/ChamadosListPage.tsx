@@ -16,14 +16,16 @@ const GUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12
 function parseFiltrosFromParams(searchParams: URLSearchParams): FiltroChamadosValue {
   const status = searchParams.get('status') as StatusChamado | null
   const prioridade = searchParams.get('prioridade') as PrioridadeChamado | null
-  const categoriaId = searchParams.get('categoriaId')
+  const areaId = searchParams.get('areaId')
+  const tipoId = searchParams.get('tipoId')
   const busca = searchParams.get('busca')
   const slaStatus = searchParams.get('slaStatus') as SlaStatus | null
 
   return {
     ...(status && STATUS_VALUES.includes(status) ? { status } : {}),
     ...(prioridade && PRIORIDADE_VALUES.includes(prioridade) ? { prioridade } : {}),
-    ...(categoriaId && GUID_REGEX.test(categoriaId) ? { categoriaId } : {}),
+    ...(areaId && GUID_REGEX.test(areaId) ? { areaId } : {}),
+    ...(tipoId && GUID_REGEX.test(tipoId) ? { tipoId } : {}),
     ...(busca ? { busca } : {}),
     ...(slaStatus && SLA_VALUES.includes(slaStatus) ? { slaStatus } : {}),
   }
@@ -55,7 +57,8 @@ export function ChamadosListPage() {
     const params = new URLSearchParams()
     if (novosFiltros.status) params.set('status', novosFiltros.status)
     if (novosFiltros.prioridade) params.set('prioridade', novosFiltros.prioridade)
-    if (novosFiltros.categoriaId) params.set('categoriaId', novosFiltros.categoriaId)
+    if (novosFiltros.areaId) params.set('areaId', novosFiltros.areaId)
+    if (novosFiltros.tipoId) params.set('tipoId', novosFiltros.tipoId)
     if (novosFiltros.busca) params.set('busca', novosFiltros.busca)
     if (novosFiltros.slaStatus) params.set('slaStatus', novosFiltros.slaStatus)
     setSearchParams(params, { replace: true })

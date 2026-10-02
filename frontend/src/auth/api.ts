@@ -9,6 +9,7 @@ export interface AutenticacaoResponse {
   perfil: TipoPerfil
   chatPerfil?: ChatPerfil
   mostrarConfirmacaoLeitura?: boolean
+  grupoId?: string | null
 }
 
 // AC-55 a AC-58: preferência global de privacidade, self-service (não passa por /usuarios).

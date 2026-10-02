@@ -21,6 +21,7 @@ import { ForcarEncerramentoModal } from './components/ForcarEncerramentoModal'
 import { TimelineHistorico } from './components/TimelineHistorico'
 import { AnexosList } from './components/AnexosList'
 import { UploadAnexoForm } from './components/UploadAnexoForm'
+import { TipoChamadoCampo } from './components/TipoChamadoCampo'
 import { useChamado } from './hooks/useChamado'
 import {
   useAtribuirChamado,
@@ -334,8 +335,12 @@ export function ChamadoDetailPage() {
 
       <dl className="grid grid-cols-2 gap-6 text-lg text-muted-foreground">
         <div>
-          <dt className="font-medium text-foreground">Categoria</dt>
-          <dd>{chamado.categoriaNome ?? 'Sem categoria'}</dd>
+          <dt className="font-medium text-foreground">Área</dt>
+          <dd>{chamado.areaNome ?? 'Sem área'}</dd>
+        </div>
+        <div>
+          <dt className="font-medium text-foreground">Tipo</dt>
+          <TipoChamadoCampo chamado={chamado} />
         </div>
         <div>
           <dt className="font-medium text-foreground">Aberto em</dt>

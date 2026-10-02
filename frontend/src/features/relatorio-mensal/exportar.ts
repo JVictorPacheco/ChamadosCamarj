@@ -17,9 +17,15 @@ export function exportarCsv(relatorio: RelatorioMensalResponse) {
   linhas.push(linhaCsv(['SLA cumprido (%)', relatorio.sla.percentualCumprido ?? '—']))
   linhas.push('')
 
-  linhas.push(linhaCsv(['Categoria', 'Quantidade']))
-  for (const item of relatorio.porCategoria) {
-    linhas.push(linhaCsv([item.categoriaNome, item.quantidade]))
+  linhas.push(linhaCsv(['Área', 'Quantidade']))
+  for (const item of relatorio.porArea) {
+    linhas.push(linhaCsv([item.nome, item.quantidade]))
+  }
+
+  linhas.push('')
+  linhas.push(linhaCsv(['Tipo', 'Quantidade']))
+  for (const item of relatorio.porTipo) {
+    linhas.push(linhaCsv([item.nome, item.quantidade]))
   }
 
   if (relatorio.porAtendente) {

@@ -1,5 +1,5 @@
 import { apiFetch } from '@/lib/api'
-import type { CategoriaResponse, GrupoResponse } from '@/types/api'
+import type { GrupoResponse, TipoChamadoResponse } from '@/types/api'
 
 export function listarGrupos(): Promise<GrupoResponse[]> {
   return apiFetch<GrupoResponse[]>('/grupos')
@@ -17,18 +17,18 @@ export function atualizarGrupo(id: string, dados: { nome: string; descricao: str
   return apiFetch<GrupoResponse>(`/grupos/${id}`, { method: 'PUT', body: JSON.stringify(dados) })
 }
 
-export function listarCategoriasAdmin(): Promise<CategoriaResponse[]> {
-  return apiFetch<CategoriaResponse[]>('/categorias?apenasAtivas=false')
+export function listarTiposAdmin(): Promise<TipoChamadoResponse[]> {
+  return apiFetch<TipoChamadoResponse[]>('/tipos?apenasAtivos=false')
 }
 
-export function criarCategoria(dados: { nome: string; descricao: string }): Promise<CategoriaResponse> {
-  return apiFetch<CategoriaResponse>('/categorias', { method: 'POST', body: JSON.stringify(dados) })
+export function criarTipo(dados: { nome: string; descricao: string }): Promise<TipoChamadoResponse> {
+  return apiFetch<TipoChamadoResponse>('/tipos', { method: 'POST', body: JSON.stringify(dados) })
 }
 
-export function atualizarCategoria(id: string, dados: { nome: string; descricao: string; ativa: boolean }): Promise<CategoriaResponse> {
-  return apiFetch<CategoriaResponse>(`/categorias/${id}`, { method: 'PUT', body: JSON.stringify(dados) })
+export function atualizarTipo(id: string, dados: { nome: string; descricao: string; ativo: boolean }): Promise<TipoChamadoResponse> {
+  return apiFetch<TipoChamadoResponse>(`/tipos/${id}`, { method: 'PUT', body: JSON.stringify(dados) })
 }
 
-export function excluirCategoria(id: string): Promise<void> {
-  return apiFetch<void>(`/categorias/${id}`, { method: 'DELETE' })
+export function excluirTipo(id: string): Promise<void> {
+  return apiFetch<void>(`/tipos/${id}`, { method: 'DELETE' })
 }

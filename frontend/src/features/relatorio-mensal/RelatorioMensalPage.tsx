@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/auth/AuthContext'
 import { DonutChart } from '@/components/charts/DonutChart'
 import { DashboardKpi } from '../dashboard/DashboardKpi'
-import { CategoriaChart } from '../dashboard/CategoriaChart'
+import { BarrasChart } from '@/features/dashboard/BarrasChart'
 import { SeletorMes } from './components/SeletorMes'
 import { useRelatorioMensal } from './hooks/useRelatorioMensal'
 import { exportarCsv, imprimirRelatorio } from './exportar'
@@ -167,9 +167,18 @@ export function RelatorioMensalPage() {
           )}
 
           <div className="rounded-lg border bg-card p-4">
-            <h2 className="mb-3 text-sm font-heading">Por categoria</h2>
-            {relatorio.porCategoria.length > 0 ? (
-              <CategoriaChart data={relatorio.porCategoria} />
+            <h2 className="mb-3 text-sm font-heading">Por área</h2>
+            {relatorio.porArea.length > 0 ? (
+              <BarrasChart data={relatorio.porArea} />
+            ) : (
+              <p className="py-8 text-center text-sm text-muted-foreground">Sem dados.</p>
+            )}
+          </div>
+
+          <div className="rounded-lg border bg-card p-4">
+            <h2 className="mb-3 text-sm font-heading">Por tipo</h2>
+            {relatorio.porTipo.length > 0 ? (
+              <BarrasChart data={relatorio.porTipo} />
             ) : (
               <p className="py-8 text-center text-sm text-muted-foreground">Sem dados.</p>
             )}

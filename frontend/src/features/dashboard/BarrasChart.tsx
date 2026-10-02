@@ -1,22 +1,22 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
-interface CategoriaData {
-  categoriaNome: string
+export interface BarraData {
+  nome: string
   quantidade: number
-  categoriaId?: string | null
+  id?: string | null
 }
 
-interface CategoriaChartProps {
-  data: CategoriaData[]
-  onBarClick?: (item: CategoriaData) => void
+interface BarrasChartProps {
+  data: BarraData[]
+  onBarClick?: (item: BarraData) => void
 }
 
-export function CategoriaChart({ data, onBarClick }: CategoriaChartProps) {
+export function BarrasChart({ data, onBarClick }: BarrasChartProps) {
   return (
     <ResponsiveContainer width="100%" height={300}>
       <BarChart data={data} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-        <XAxis dataKey="categoriaNome" tick={{ fontSize: 11 }} />
+        <XAxis dataKey="nome" tick={{ fontSize: 11 }} />
         <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
         <Tooltip />
         <Bar

@@ -41,7 +41,7 @@ export function GruposPage() {
   return (
     <div className="flex flex-col gap-4 p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-heading">Grupos</h1>
+        <h1 className="text-xl font-heading">Áreas e Grupos</h1>
         <Button onClick={abrirNovo}>Novo grupo</Button>
       </div>
 

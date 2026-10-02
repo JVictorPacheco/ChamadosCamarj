@@ -5,8 +5,8 @@ export interface SlaResponse {
   percentualCumprido: number | null
 }
 
-export interface PorCategoriaItem {
-  categoriaNome: string
+export interface PorNomeQuantidadeItem {
+  nome: string
   quantidade: number
 }
 
@@ -38,7 +38,8 @@ export interface RelatorioMensalResponse {
   totalCancelados: number
   tempoMedioResolucaoHoras: number | null
   sla: SlaResponse
-  porCategoria: PorCategoriaItem[]
+  porArea: PorNomeQuantidadeItem[]
+  porTipo: PorNomeQuantidadeItem[]
   porAtendente: PorAtendenteItem[] | null
   comparacao: ComparacaoMesAnteriorResponse | null
   slaEvolucao: SlaEvolucaoItem[] | null

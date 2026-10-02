@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useAuth } from '@/auth/AuthContext'
 import { ApiError } from '@/lib/api'
 import { useAbrirChamado } from './hooks/useAbrirChamado'
-import { useCategorias } from './hooks/useCategorias'
+import { useAreas, useTipos } from './hooks/useTiposEAreas'
 import { SeletorArquivosMultiplo } from './components/SeletorArquivosMultiplo'
 import { uploadAnexo, sugerirTriagem, type TriagemSugestao } from './api'
 import type { PrioridadeChamado } from '@/types/api'
@@ -19,7 +19,8 @@ import type { PrioridadeChamado } from '@/types/api'
 interface FormValues {
   titulo: string
   descricao: string
-  categoriaId: string
+  areaId: string
+  tipoId: string
   prioridade: PrioridadeChamado
 }
 
@@ -29,7 +30,8 @@ export function AbrirChamadoPage() {
   const { perfil } = useAuth()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { data: categorias } = useCategorias()
+  const { data: areas } = useAreas()
+  const { data: tipos } = useTipos()
   const { mutate, isPending, error } = useAbrirChamado()
   const [arquivos, setArquivos] = useState<File[]>([])
   const [enviandoAnexos, setEnviandoAnexos] = useState(false)
@@ -42,7 +44,10 @@ export function AbrirChamadoPage() {
     setValue,
     setError,
     formState: { errors },
-  } = useForm<FormValues>({ defaultValues: { prioridade: 'Media', categoriaId: '' } })
+  } = useForm<FormValues>({
+    // Área já vem com o grupo de quem abre; pode trocar (spec area-e-tipo-do-chamado AC-02).
+    defaultValues: { prioridade: 'Media', areaId: perfil?.grupoId ?? '', tipoId: '' },
+  })
 
   const titulo = useWatch({ control, name: 'titulo' })
   const descricao = useWatch({ control, name: 'descricao' })
@@ -54,9 +59,10 @@ export function AbrirChamadoPage() {
     setSugerindo(true)
     try {
       const resultado = await sugerirTriagem(titulo ?? '', descricao ?? '')
-      if (resultado.temSugestao && resultado.categoriaId) {
+      if (resultado.temSugestao) {
         setSugestao(resultado)
-        setValue('categoriaId', resultado.categoriaId)
+        if (resultado.areaId) setValue('areaId', resultado.areaId)
+        if (resultado.tipoId) setValue('tipoId', resultado.tipoId)
       }
     } catch {
       setSugestao(null)
@@ -72,7 +78,8 @@ export function AbrirChamadoPage() {
       {
         titulo: values.titulo,
         descricao: values.descricao,
-        categoriaId: values.categoriaId,
+        areaId: values.areaId,
+        tipoId: values.tipoId,
         prioridade: values.prioridade,
       },
       {
@@ -100,8 +107,10 @@ export function AbrirChamadoPage() {
           if (!(err instanceof ApiError)) return
 
           if (err.status === 404) {
-            queryClient.invalidateQueries({ queryKey: ['categorias'] })
-            setError('categoriaId', { message: 'Categoria não existe mais. Lista atualizada, selecione outra.' })
+            // Área ou tipo desativado entre abrir a tela e enviar.
+            queryClient.invalidateQueries({ queryKey: ['areas'] })
+            queryClient.invalidateQueries({ queryKey: ['tipos'] })
+            setError('tipoId', { message: 'A área ou o tipo escolhido não está mais disponível. Lista atualizada, selecione de novo.' })
             return
           }
 
@@ -130,39 +139,67 @@ export function AbrirChamadoPage() {
         {errors.descricao && <p className="text-sm text-destructive">{errors.descricao.message}</p>}
       </div>
 
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-muted-foreground">Área e tipo</span>
+        <Button type="button" variant="ghost" size="sm" onClick={handleSugerir} disabled={sugerindo || isPending}>
+          {sugerindo ? 'Sugerindo...' : 'Sugerir área e tipo'}
+        </Button>
+      </div>
+      {sugestao?.temSugestao && (
+        <p className="text-xs text-muted-foreground">
+          Sugestão:{' '}
+          {[sugestao.areaNome && `Área: ${sugestao.areaNome}`, sugestao.tipoNome && `Tipo: ${sugestao.tipoNome}`]
+            .filter(Boolean)
+            .join(' / ')}
+        </p>
+      )}
+
       <div className="flex flex-col gap-1.5">
-        <div className="flex items-center justify-between">
-          <Label>Categoria</Label>
-          <Button type="button" variant="ghost" size="sm" onClick={handleSugerir} disabled={sugerindo || isPending}>
-            {sugerindo ? 'Sugerindo...' : 'Sugerir categoria'}
-          </Button>
-        </div>
-        {sugestao?.temSugestao && (
-          <p className="text-xs text-muted-foreground">
-            Sugestão: {sugestao.categoriaNome}
-            {sugestao.grupoNome ? ` / Grupo: ${sugestao.grupoNome}` : ''}
-          </p>
-        )}
+        <Label>Área</Label>
         <Controller
           control={control}
-          name="categoriaId"
-          rules={{ required: 'Categoria é obrigatória.' }}
+          name="areaId"
+          rules={{ required: 'Área é obrigatória.' }}
           render={({ field }) => (
             <Select onValueChange={field.onChange} value={field.value}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione uma categoria" />
+                <SelectValue placeholder="Selecione a área" />
               </SelectTrigger>
               <SelectContent>
-                {categorias?.map((categoria) => (
-                  <SelectItem key={categoria.id} value={categoria.id}>
-                    {categoria.nome}
+                {areas?.map((area) => (
+                  <SelectItem key={area.id} value={area.id}>
+                    {area.nome}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           )}
         />
-        {errors.categoriaId && <p className="text-sm text-destructive">{errors.categoriaId.message}</p>}
+        {errors.areaId && <p className="text-sm text-destructive">{errors.areaId.message}</p>}
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <Label>Tipo</Label>
+        <Controller
+          control={control}
+          name="tipoId"
+          rules={{ required: 'Tipo é obrigatório.' }}
+          render={({ field }) => (
+            <Select onValueChange={field.onChange} value={field.value}>
+              <SelectTrigger>
+                <SelectValue placeholder="Incidente, dúvida, solicitação..." />
+              </SelectTrigger>
+              <SelectContent>
+                {tipos?.map((tipo) => (
+                  <SelectItem key={tipo.id} value={tipo.id}>
+                    {tipo.nome}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        />
+        {errors.tipoId && <p className="text-sm text-destructive">{errors.tipoId.message}</p>}
       </div>
 
       <div className="flex flex-col gap-1.5">

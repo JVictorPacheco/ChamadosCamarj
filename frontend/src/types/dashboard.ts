@@ -1,7 +1,14 @@
+export interface PorNomeItem {
+  nome: string
+  id: string | null
+  quantidade: number
+}
+
 export interface DashboardMetrics {
   totalResolvidosHoje: number
   tempoMedioResolucaoHoras: number | null
-  porCategoria: { categoriaNome: string; categoriaId: string | null; quantidade: number }[]
+  porArea: PorNomeItem[]
+  porTipo: PorNomeItem[]
   porPrioridade: { prioridade: string; quantidade: number }[]
   slaCompliance: { totalResolvidos: number; dentroPrazo: number; percentual: number } | null
 }
