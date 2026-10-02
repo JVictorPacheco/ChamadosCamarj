@@ -15,7 +15,7 @@
   **Pronto quando:** testes: padrões batem com a matriz atual (Solicitante = Arquivo; Atendente e Admin =
   os 5); Admin sempre os 5; ajuste dá Dashboard/Relatório a Solicitante; Kanban/Fila nunca para Solicitante
   (nem com ajuste gravado errado); `CalcularAjustes` mínimo e recusa módulo não ajustável.
-- [ ] **T02** `UsuarioPerfil` (+`ModulosConcedidos`/`ModulosRetirados`, `AjustarModulos`, `VoltarAoPadrao`),
+- [x] **T02** `UsuarioPerfil` (+`ModulosConcedidos`/`ModulosRetirados`, `AjustarModulos`, `VoltarAoPadrao`),
   `AuditoriaAcesso` (entidade, configuração, repositório), migration `AddControleDeAcesso` (gerada, **não
   aplicada**). *AC-04, AC-14, AC-16 · C1.*
   **Pronto quando:** build ok; migration aditiva (só `AddColumn` com default 0 + `CreateTable`); testes de

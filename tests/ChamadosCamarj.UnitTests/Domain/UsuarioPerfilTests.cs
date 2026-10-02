@@ -75,4 +75,29 @@ public class UsuarioPerfilTests
 
         act.Should().Throw<ArgumentException>();
     }
+
+    // spec controle-de-acesso AC-16: usuário novo (ou existente) começa sem ajuste = padrão do perfil.
+    [Fact]
+    public void Criar_ComecaSemAjusteDeModulos()
+    {
+        var usuario = new UsuarioPerfil("ana@camarj.com.br", "Ana", Perfil.Atendente);
+
+        usuario.ModulosConcedidos.Should().Be(ModuloSistema.Nenhum);
+        usuario.ModulosRetirados.Should().Be(ModuloSistema.Nenhum);
+        usuario.TemAjusteDeModulos.Should().BeFalse();
+    }
+
+    [Fact]
+    public void AjustarModulos_EVoltarAoPadrao()
+    {
+        // AC-03 / AC-04
+        var usuario = new UsuarioPerfil("ana@camarj.com.br", "Ana", Perfil.Atendente);
+
+        usuario.AjustarModulos(ModuloSistema.Nenhum, ModuloSistema.RelatorioMensal);
+        usuario.TemAjusteDeModulos.Should().BeTrue();
+        usuario.ModulosRetirados.Should().Be(ModuloSistema.RelatorioMensal);
+
+        usuario.VoltarAoPadraoDeModulos();
+        usuario.TemAjusteDeModulos.Should().BeFalse();
+    }
 }

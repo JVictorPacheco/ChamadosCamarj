@@ -22,6 +22,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<ChatMensagemReacao> ChatMensagemReacoes => Set<ChatMensagemReacao>();
     public DbSet<ChatPresenca> ChatPresencas => Set<ChatPresenca>();
     public DbSet<ChatHistorico> ChatHistoricos => Set<ChatHistorico>();
+    public DbSet<AuditoriaAcesso> AuditoriaAcessos => Set<AuditoriaAcesso>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
