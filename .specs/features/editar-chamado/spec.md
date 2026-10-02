@@ -98,7 +98,8 @@ A pessoa pode editar o chamado quando ele **não está encerrado** (Resolvido, F
 - **AC-10:** Dado um chamado Resolvido, Fechado ou Cancelado, quando qualquer pessoa, inclusive o
   Admin, abre o detalhe, então não vê "Editar". Uma tentativa por fora da tela é recusada com "Não é
   possível editar um chamado encerrado. Reabra o chamado para editá-lo."
-- **AC-11:** Dado um chamado encerrado que foi **reaberto** (fica Em andamento e sem responsável),
+- **AC-11:** Dado um chamado encerrado que foi **reaberto** (volta a Aberto e sem responsável — corrigido em
+  2026-10-02: a spec dizia "Em andamento", mas reabrir sempre levou a Aberto),
   quando quem o abriu, ou um Admin, abre o detalhe, então volta a poder editar pelas regras acima.
 
 ### O modal

@@ -1,7 +1,7 @@
 # Análise de impacto — editar-chamado
 
 > **Diff:** `origin/develop...feature/editar-chamado` — 19 arquivos de código (+ specs) · **Data:** 2026-10-02
-> **Gates:** `dotnet build` 0 erros / 0 avisos (com os servidores parados — com o backend rodando, o build acusa MSB3021/3027 de cópia de DLL travada, não de código) · `dotnet test` **474/474** · `npm run build` ok · E2E **17/17** · verificação ao vivo **23/23**
+> **Gates:** `dotnet build` 0 erros (avisos só pré-existentes, ex.: CS8634 — corrigido após o review; com os servidores parados — com o backend rodando, o build acusa MSB3021/3027 de cópia de DLL travada, não de código) · `dotnet test` **474/474** · `npm run build` ok · E2E **17/17** · verificação ao vivo **23/23**
 > **Veredito:** IMPACTO COBERTO — nenhum consumidor fora do escopo com comportamento alterado sem teste.
 
 ## Resumo
@@ -45,3 +45,11 @@ Nenhum.
   `TimelineHistorico`, `ChamadoDetailPage`/`BotoesAcao`, `types/api.ts` — todos previstos.
 - Tocados e não listados na tabela de cross-feature, mas previstos em outra seção do design: `ChamadosController`
   (C4) e `useAcoesChamado.ts` (§4). Nenhum arquivo fora do previsto.
+
+## Re-análise após as correções do review (2026-10-02)
+Arquivos alterados depois do review: `EditarChamadoModal.tsx` (R-01 versão adotada uma vez só; R-02
+campos não mudados vão com o valor atual; "Salvar" desabilitado aguardando recarga) e
+`AtualizarChamadoCommandHandler.cs` (`InvalidOperationException` do domínio vira 400 com a mensagem
+do AC-10). Consumidores: o modal só é usado pelo `BotoesAcao`; o handler só pela rota `PUT
+/chamados/{id}`. **Nenhum consumidor novo fora do escopo — continua 🔴 0.** Testes: 475/475
+(+ `Handle_ChamadoEncerradoNoMeioDoCaminho_DaBadRequestComAMensagem`); E2E reexecutado no close.

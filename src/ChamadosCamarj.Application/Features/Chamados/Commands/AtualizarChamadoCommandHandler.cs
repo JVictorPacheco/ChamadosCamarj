@@ -2,6 +2,7 @@ using System.Text.Json;
 using MediatR;
 using ChamadosCamarj.Domain.Enums;
 using ChamadosCamarj.Domain.Interfaces;
+using ChamadosCamarj.Application.Common.Autorizacao;
 using ChamadosCamarj.Application.Common.Exceptions;
 using ChamadosCamarj.Application.Common.Extensions;
 using ChamadosCamarj.Application.Common.Interfaces;
@@ -36,8 +37,19 @@ public class AtualizarChamadoCommandHandler : IRequestHandler<AtualizarChamadoCo
         var tituloAnterior = chamado.Titulo;
         var descricaoAnterior = chamado.Descricao;
 
+        bool mudou;
+        try
+        {
+            mudou = chamado.AtualizarDados(request.Titulo, request.Descricao);
+        }
+        catch (InvalidOperationException)
+        {
+            // Encerrado entre a checagem do behaviour e aqui: mesma mensagem do AC-10, não erro 500.
+            throw new BadRequestException(ChamadoPermissoes.MensagemEdicaoEncerrado);
+        }
+
         // Nada mudou: não grava nem registra (spec editar-chamado AC-16).
-        if (!chamado.AtualizarDados(request.Titulo, request.Descricao))
+        if (!mudou)
             return;
 
         // Histórico com antes e depois só do que mudou (AC-17/AC-18), em JSON por campo.

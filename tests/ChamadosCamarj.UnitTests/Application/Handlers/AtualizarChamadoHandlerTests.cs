@@ -89,4 +89,18 @@ public class AtualizarChamadoHandlerTests
         _historico.Should().BeEmpty();
         _unitOfWorkMock.Verify(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
+
+    [Fact]
+    public async Task Handle_ChamadoEncerradoNoMeioDoCaminho_DaBadRequestComAMensagem()
+    {
+        // review R- sugestão: encerrado entre a checagem do behaviour e a gravação → mensagem do AC-10, não 500.
+        _chamado.Atribuir(Guid.NewGuid(), "Atendente");
+        _chamado.Resolver();
+
+        var act = () => _handler.Handle(new AtualizarChamadoCommand(_id, "Novo", "Nova"), CancellationToken.None);
+
+        await act.Should().ThrowAsync<BadRequestException>()
+            .WithMessage(ChamadosCamarj.Application.Common.Autorizacao.ChamadoPermissoes.MensagemEdicaoEncerrado);
+        _historico.Should().BeEmpty();
+    }
 }

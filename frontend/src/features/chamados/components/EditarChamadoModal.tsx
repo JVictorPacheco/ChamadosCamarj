@@ -28,13 +28,19 @@ export function EditarChamadoModal({ chamado, onClose }: EditarChamadoModalProps
   const [descricao, setDescricao] = useState(chamado.descricao)
   const [versao, setVersao] = useState(chamado.versao)
   const [conflito, setConflito] = useState(false)
+  // Depois de um 409, espera a recarga que ele dispara para adotar a versão nova — uma vez só (review R-01).
+  const [aguardandoRecarga, setAguardandoRecarga] = useState(false)
   const { mutate, isPending, error } = useAtualizarChamado(chamado.id, versao)
 
   // Conflito (AC-19/AC-20): o texto digitado fica; quando o chamado termina de recarregar, o modal
-  // passa a usar a versão nova — a pessoa já viu o aviso e o "Texto atual no chamado".
+  // passa a usar a versão nova — a pessoa já viu o aviso e o "Texto atual no chamado". Só a versão
+  // dessa recarga é adotada; uma alteração posterior volta a ser detectada como conflito (review R-01).
   useEffect(() => {
-    if (conflito) setVersao(chamado.versao)
-  }, [conflito, chamado.versao])
+    if (aguardandoRecarga && chamado.versao !== versao) {
+      setVersao(chamado.versao)
+      setAguardandoRecarga(false)
+    }
+  }, [aguardandoRecarga, chamado.versao, versao])
 
   const erroTitulo = !titulo.trim()
     ? 'Título é obrigatório.'
@@ -50,12 +56,20 @@ export function EditarChamadoModal({ chamado, onClose }: EditarChamadoModalProps
       onClose()
       return
     }
+    // Campo que a pessoa não mudou vai com o valor atual do chamado, não com o texto antigo do modal:
+    // depois de um conflito, isso preserva o que a outra pessoa gravou nele (review R-02).
     mutate(
-      { titulo, descricao },
+      {
+        titulo: titulo !== original.titulo ? titulo : chamado.titulo,
+        descricao: descricao !== original.descricao ? descricao : chamado.descricao,
+      },
       {
         onSuccess: onClose,
         onError: (e) => {
-          if (e instanceof ApiError && e.status === 409) setConflito(true)
+          if (e instanceof ApiError && e.status === 409) {
+            setConflito(true)
+            setAguardandoRecarga(true)
+          }
         },
       },
     )
@@ -103,7 +117,7 @@ export function EditarChamadoModal({ chamado, onClose }: EditarChamadoModalProps
           <Button variant="outline" onClick={onClose}>
             Cancelar
           </Button>
-          <Button onClick={salvar} disabled={isPending || !!erroTitulo || !!erroDescricao}>
+          <Button onClick={salvar} disabled={isPending || aguardandoRecarga || !!erroTitulo || !!erroDescricao}>
             {isPending ? 'Salvando...' : 'Salvar'}
           </Button>
         </DialogFooter>
