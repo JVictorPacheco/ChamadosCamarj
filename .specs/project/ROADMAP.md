@@ -346,5 +346,6 @@
 
 ## 📅 SLA em Dias Úteis (BACKLOG — decisão do usuário em 2026-10-02)
 
-- [ ] O prazo de SLA conta só **dias úteis**: sábado, domingo e feriados não contam.
-- [ ] A definir na spec: prazo corre 24h nos dias úteis ou só no horário de expediente; calendário de feriados (nacionais, estaduais RJ, municipais) e quem o mantém.
+- [ ] O prazo de SLA conta só **horas de expediente: 08:00 às 18:00, em dias úteis** — sábado, domingo e feriados não contam (decisão do usuário, 2026-10-02).
+- [ ] Feriados que contam: **nacionais e estaduais do RJ** (municipais não). Decisão do usuário, 2026-10-02.
+- [ ] A definir na spec: como a lista de feriados é mantida ano a ano (cadastro pelo Admin, lista fixa no sistema ou fonte externa) e o que acontece com chamados abertos fora do expediente.

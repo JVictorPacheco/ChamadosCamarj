@@ -28,10 +28,10 @@ inatividade, área e tipo — mergeado em 2026-10-02, commit `62384a5`). **A fea
    **"Editar chamado"** (modal; Solicitante edita os que abriu, Atendente os que assumiu, Admin todos).
 
 ### Pendências gerais (consolidado em 2026-10-02, pós correcoes-pre-deploy)
-- **SLA — DECIDIDO pelo usuário em 2026-10-02: conta só dias úteis** (sábado, domingo e feriados não
-  contam). Vira feature própria (ROADMAP "SLA em dias úteis"). A detalhar na spec: horário de
-  expediente (o prazo corre 24h nos dias úteis ou só no expediente, ex.: 8h–18h?) e qual calendário de
-  feriados (nacionais, estaduais RJ, municipais).
+- **SLA — DECIDIDO pelo usuário em 2026-10-02:** conta só o **expediente de 08:00 às 18:00 em dias
+  úteis**; sábado, domingo e feriados **nacionais e estaduais do RJ** não contam. Feature própria
+  (ROADMAP "SLA em Dias Úteis"). Falta decidir na spec: como a lista de feriados é mantida.
+- **Demonstração em tela:** CAM-99 e CAM-100 `[TESTE-TELA]` apagados em 2026-10-02 com OK do usuário.
 - **Achado na demonstração em tela (2026-10-02):** o modal "Alterar prioridade" abre marcando a
   prioridade de quando a página carregou, não a atual (ex.: abriu em "Média" com o chamado já
   "Urgente"). Pré-existente; não afeta a proteção de conflito.
