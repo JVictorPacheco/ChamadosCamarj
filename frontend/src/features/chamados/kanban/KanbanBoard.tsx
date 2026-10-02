@@ -3,6 +3,7 @@ import { DndContext, type DragEndEvent, type DragStartEvent, PointerSensor, useS
 import { useQueryClient } from '@tanstack/react-query'
 import type { ChamadoResponse, StatusChamado } from '@/types/api'
 import { alterarStatus } from '@/features/chamados/api'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { KanbanColumn } from './KanbanColumn'
 
 // Cores com sentido: Resolvido usa o token semântico "bom", Cancelado usa "crítico";
@@ -22,6 +23,7 @@ interface KanbanBoardProps {
 export function KanbanBoard({ chamados }: KanbanBoardProps) {
   const queryClient = useQueryClient()
   const [draggingId, setDraggingId] = useState<string | null>(null)
+  const [erro, setErro] = useState<string | null>(null)
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -55,10 +57,15 @@ export function KanbanBoard({ chamados }: KanbanBoardProps) {
         old?.map((c) => (c.id === chamadoId ? { ...c, status: novoStatus } : c)),
       )
 
+      setErro(null)
       try {
-        await alterarStatus(chamadoId, novoStatus)
-      } catch {
-        // Reverte em caso de erro
+        // Versão do cartão que a pessoa arrastou: se o chamado mudou depois, o servidor recusa (spec
+        // correcoes-pre-deploy AC-14) e a mensagem aparece acima do quadro.
+        await alterarStatus(chamadoId, novoStatus, chamado.versao)
+      } catch (e) {
+        setErro(e instanceof Error ? e.message : 'Não foi possível mover o chamado.')
+      } finally {
+        // Sucesso: traz a versão nova. Erro: devolve o cartão à coluna real.
         queryClient.invalidateQueries({ queryKey: ['chamados', 'kanban'] })
       }
     },
@@ -67,6 +74,11 @@ export function KanbanBoard({ chamados }: KanbanBoardProps) {
 
   return (
     <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+      {erro && (
+        <Alert variant="destructive" className="mx-4 mt-4 w-auto">
+          <AlertDescription>{erro}</AlertDescription>
+        </Alert>
+      )}
       <div className="grid grid-cols-5 gap-3 p-4 overflow-x-auto min-w-[900px]">
         {grouped.map((coluna) => (
           <KanbanColumn

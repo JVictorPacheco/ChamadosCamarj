@@ -10,6 +10,8 @@ interface AlterarPrioridadeModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   chamadoId: string
+  /** Versão do chamado exibido (spec correcoes-pre-deploy AC-09). */
+  versao?: string
   prioridadeAtual: PrioridadeChamado
 }
 
@@ -24,10 +26,11 @@ export function AlterarPrioridadeModal({
   open,
   onOpenChange,
   chamadoId,
+  versao,
   prioridadeAtual,
 }: AlterarPrioridadeModalProps) {
   const [novaPrioridade, setNovaPrioridade] = useState<PrioridadeChamado>(prioridadeAtual)
-  const { mutate, isPending, error, reset } = useAlterarPrioridadeChamado(chamadoId)
+  const { mutate, isPending, error, reset } = useAlterarPrioridadeChamado(chamadoId, versao)
 
   const fechar = (proximoEstado: boolean) => {
     if (!proximoEstado) {

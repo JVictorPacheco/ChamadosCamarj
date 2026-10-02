@@ -23,13 +23,15 @@ interface ForcarEncerramentoModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   chamadoId: string
+  /** Versão do chamado exibido (spec correcoes-pre-deploy AC-09). */
+  versao?: string
 }
 
-export function ForcarEncerramentoModal({ open, onOpenChange, chamadoId }: ForcarEncerramentoModalProps) {
+export function ForcarEncerramentoModal({ open, onOpenChange, chamadoId, versao }: ForcarEncerramentoModalProps) {
   const [motivo, setMotivo] = useState<MotivoEncerramento>('AbertoIndevidamente')
   const [motivoOutro, setMotivoOutro] = useState('')
   const [observacao, setObservacao] = useState('')
-  const { mutate, isPending, error, reset } = useForcarEncerramentoChamado(chamadoId)
+  const { mutate, isPending, error, reset } = useForcarEncerramentoChamado(chamadoId, versao)
 
   const fechar = (proximoEstado: boolean) => {
     if (!proximoEstado) {

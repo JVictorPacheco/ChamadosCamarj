@@ -4,6 +4,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useAuth } from '@/auth/AuthContext'
 import { reclassificarTipo } from '../api'
 import { useTipos } from '../hooks/useTiposEAreas'
+import { recarregarSeConflito } from '../hooks/useAcoesChamado'
 import type { ChamadoResponse } from '@/types/api'
 
 /**
@@ -16,12 +17,13 @@ export function TipoChamadoCampo({ chamado }: { chamado: ChamadoResponse }) {
   const podeReclassificar = perfil?.tipo === 'Admin' || perfil?.tipo === 'Atendente'
   const { data: tipos } = useTipos()
   const { mutate, isPending, error } = useMutation({
-    mutationFn: (novoTipoId: string) => reclassificarTipo(chamado.id, novoTipoId),
+    mutationFn: (novoTipoId: string) => reclassificarTipo(chamado.id, novoTipoId, chamado.versao),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chamado', chamado.id] })
       queryClient.invalidateQueries({ queryKey: ['historico', chamado.id] })
       queryClient.invalidateQueries({ queryKey: ['chamados'] })
     },
+    onError: (erro) => recarregarSeConflito(queryClient, chamado.id, erro),
   })
 
   if (!podeReclassificar) return <dd>{chamado.tipoNome ?? 'Não classificado'}</dd>

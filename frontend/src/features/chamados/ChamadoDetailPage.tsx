@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { useIsFetching } from '@tanstack/react-query'
 import { Link, useLocation, useParams } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
@@ -43,11 +44,14 @@ const MOTIVO_LABELS: Record<MotivoEncerramento, string> = {
 
 function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
   const { perfil } = useAuth()
-  const atribuir = useAtribuirChamado(chamado.id)
-  const resolver = useResolverChamado(chamado.id)
-  const fechar = useFecharChamado(chamado.id)
-  const cancelar = useCancelarChamado(chamado.id)
-  const reabrir = useReabrirChamado(chamado.id)
+  const atribuir = useAtribuirChamado(chamado.id, chamado.versao)
+  const resolver = useResolverChamado(chamado.id, chamado.versao)
+  const fechar = useFecharChamado(chamado.id, chamado.versao)
+  const cancelar = useCancelarChamado(chamado.id, chamado.versao)
+  const reabrir = useReabrirChamado(chamado.id, chamado.versao)
+  // Enquanto o chamado recarrega (ex.: logo após a própria ação), a versão na tela ainda é a antiga:
+  // bloquear os botões evita um 409 falso (spec correcoes-pre-deploy AC-12).
+  const recarregando = useIsFetching({ queryKey: ['chamado', chamado.id] }) > 0
   const [reatribuirAberto, setReatribuirAberto] = useState(false)
   const [prioridadeAberto, setPrioridadeAberto] = useState(false)
   const [forcarEncerramentoAberto, setForcarEncerramentoAberto] = useState(false)
@@ -65,7 +69,7 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
   const statusFinal = status === 'Fechado' || status === 'Cancelado'
 
   const isPending =
-    atribuir.isPending || resolver.isPending || fechar.isPending || cancelar.isPending || reabrir.isPending
+    atribuir.isPending || resolver.isPending || fechar.isPending || cancelar.isPending || reabrir.isPending || recarregando
 
   const precisaMotivo = confirmarAcao === 'encerrar' || confirmarAcao === 'cancelar'
 
@@ -241,17 +245,20 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
         onOpenChange={setReatribuirAberto}
         chamadoId={chamado.id}
         responsavelAtualId={chamado.responsavelId}
+        versao={chamado.versao}
       />
       <AlterarPrioridadeModal
         open={prioridadeAberto}
         onOpenChange={setPrioridadeAberto}
         chamadoId={chamado.id}
         prioridadeAtual={chamado.prioridade}
+        versao={chamado.versao}
       />
       <ForcarEncerramentoModal
         open={forcarEncerramentoAberto}
         onOpenChange={setForcarEncerramentoAberto}
         chamadoId={chamado.id}
+        versao={chamado.versao}
       />
     </div>
   )

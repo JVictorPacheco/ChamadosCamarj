@@ -13,7 +13,7 @@ import type { ChamadoResponse } from '@/types/api'
 function LinhaFila({ chamado }: { chamado: ChamadoResponse }) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const atribuir = useAtribuirChamado(chamado.id)
+  const atribuir = useAtribuirChamado(chamado.id, chamado.versao)
 
   return (
     <div className="flex flex-col gap-2">

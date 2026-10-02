@@ -95,11 +95,12 @@ Admin).
   `resolverChamado`, `fecharChamado`, `cancelarChamado`, `reabrirChamado`, `reatribuirChamado`,
   `alterarPrioridade`, `forcarEncerramento`, `reclassificarTipo`) recebem `versao?: string` e
   enviam `If-Match` quando presente. Um helper `cabecalhoVersao(versao)` evita repetir isso.
-- `hooks/useAcoesChamado.ts`: as variáveis da mutation passam a incluir `versao`. Em erro 409, o
+- `hooks/useAcoesChamado.ts`: cada hook recebe `(chamadoId, versao)` — a versão do chamado exibido no momento do clique. Em erro 409, o
   `onError` chama o mesmo `invalidarChamado` (AC-10: recarrega). A mensagem exibida é a do servidor,
   pelo bloco de erro que a página de detalhe já tem.
 - `ChamadoDetailPage` e os modais (`ReatribuirModal`, `AlterarPrioridadeModal`,
-  `ForcarEncerramentoModal`, diálogos de fechar/cancelar) e `TipoChamadoCampo` mandam
+  `ForcarEncerramentoModal`, diálogos de fechar/cancelar), `TipoChamadoCampo` e o "Assumir" da
+  `FilaAtendimentoPage` mandam
   `chamado.versao` do chamado exibido. A página de detalhe não se atualiza sozinha por SignalR,
   então a versão exibida é a que a pessoa viu (`refetchOnWindowFocus` atualiza os dados na tela,
   o que é desejado).

@@ -49,14 +49,14 @@
 ## Frontend
 
 ### Bloco C — Edição simultânea (tela)
-- [ ] **T08** `types/api.ts` (`versao`) + `api.ts`: as 10 funções de ação recebem `versao?` e
+- [x] **T08** `types/api.ts` (`versao`) + `api.ts`: as 10 funções de ação recebem `versao?` e
   enviam `If-Match` (helper único). *AC-09, AC-23 · §4.3 · C1, C2.*
   **Pronto quando:** `npm run build` ok.
-- [ ] **T09** `useAcoesChamado` (variáveis com `versao`; 409 → invalida e recarrega),
+- [x] **T09** `useAcoesChamado` (variáveis com `versao`; 409 → invalida e recarrega),
   `ChamadoDetailPage` + modais + `TipoChamadoCampo` passam `chamado.versao`; botões de ação
   desabilitados durante `isFetching` do chamado. *AC-10, AC-12.*
   **Pronto quando:** build ok; verificação ao vivo da T13.
-- [ ] **T10** `KanbanBoard`: envia `versao`; em erro, mostra a mensagem do servidor numa faixa acima
+- [x] **T10** `KanbanBoard`: envia `versao`; em erro, mostra a mensagem do servidor numa faixa acima
   do quadro e o cartão volta à coluna. *AC-14.*
   **Pronto quando:** build ok; verificação ao vivo da T13.
 

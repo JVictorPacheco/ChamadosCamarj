@@ -9,12 +9,14 @@ interface ReatribuirModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   chamadoId: string
+  /** Versão do chamado exibido (spec correcoes-pre-deploy AC-09). */
+  versao?: string
   responsavelAtualId: string | null
 }
 
-export function ReatribuirModal({ open, onOpenChange, chamadoId, responsavelAtualId }: ReatribuirModalProps) {
+export function ReatribuirModal({ open, onOpenChange, chamadoId, responsavelAtualId, versao }: ReatribuirModalProps) {
   const [novoResponsavelId, setNovoResponsavelId] = useState('')
-  const { mutate, isPending, error, reset } = useReatribuirChamado(chamadoId)
+  const { mutate, isPending, error, reset } = useReatribuirChamado(chamadoId, versao)
   const { data: atendentes, isPending: carregandoAtendentes, isError: erroAtendentes } = useAtendentes()
 
   const opcoes = (atendentes ?? []).filter((atendente) => atendente.id !== responsavelAtualId)
