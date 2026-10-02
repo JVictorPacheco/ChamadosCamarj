@@ -24,6 +24,7 @@ import { RelatorioMensalPage } from './features/relatorio-mensal/RelatorioMensal
 import { UsuariosPage } from './features/admin/UsuariosPage'
 import { TiposPage } from './features/admin/TiposPage'
 import { GruposPage } from './features/admin/GruposPage'
+import { ControleAcessoPage } from './features/admin/ControleAcessoPage'
 import { ChatPage } from './features/chat/ChatPage'
 
 const queryClient = new QueryClient({
@@ -149,6 +150,7 @@ function AppRoutes() {
           <Route path="/admin/usuarios" element={<UsuariosPage />} />
           <Route path="/admin/tipos" element={<TiposPage />} />
           <Route path="/admin/grupos" element={<GruposPage />} />
+          <Route path="/admin/acessos" element={<ControleAcessoPage />} />
         </Route>
         <Route path="/chat" element={<ChatPage />} />
       </Route>

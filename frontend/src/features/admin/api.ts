@@ -1,5 +1,12 @@
 import { apiFetch } from '@/lib/api'
-import type { GrupoResponse, TipoChamadoResponse } from '@/types/api'
+import type {
+  AcessoUsuarioDetalheResponse,
+  AcessoUsuarioResumoResponse,
+  ChatPerfil,
+  GrupoResponse,
+  ModuloSistema,
+  TipoChamadoResponse,
+} from '@/types/api'
 
 export function listarGrupos(): Promise<GrupoResponse[]> {
   return apiFetch<GrupoResponse[]>('/grupos')
@@ -31,4 +38,22 @@ export function atualizarTipo(id: string, dados: { nome: string; descricao: stri
 
 export function excluirTipo(id: string): Promise<void> {
   return apiFetch<void>(`/tipos/${id}`, { method: 'DELETE' })
+}
+
+// ── Controle de acesso (spec controle-de-acesso) ─────────────────────────────
+
+export function listarAcessos(): Promise<AcessoUsuarioResumoResponse[]> {
+  return apiFetch<AcessoUsuarioResumoResponse[]>('/acessos')
+}
+
+export function obterAcessoUsuario(usuarioId: string): Promise<AcessoUsuarioDetalheResponse> {
+  return apiFetch<AcessoUsuarioDetalheResponse>(`/acessos/${usuarioId}`)
+}
+
+export function salvarAcessos(usuarioId: string, dados: { modulos: ModuloSistema[]; chatPerfil: ChatPerfil }): Promise<void> {
+  return apiFetch<void>(`/acessos/${usuarioId}`, { method: 'PUT', body: JSON.stringify(dados) })
+}
+
+export function voltarAoPadrao(usuarioId: string): Promise<void> {
+  return apiFetch<void>(`/acessos/${usuarioId}/padrao`, { method: 'POST' })
 }

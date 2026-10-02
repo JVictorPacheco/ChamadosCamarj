@@ -46,10 +46,10 @@
 - [x] **T08** `AppLayout` por módulo + item "Controle de acesso"; `RequerModulo`/`RequerAdmin` nas rotas;
   aviso "Seu acesso a este módulo foi retirado.". *AC-05, AC-11..AC-13 · C8.*
   **Pronto quando:** build ok; verificação na tela (T12).
-- [ ] **T09** `ControleAcessoPage` (lista com busca, painel por pessoa, padrão × ajustado, Chat, salvar,
+- [x] **T09** `ControleAcessoPage` (lista com busca, painel por pessoa, padrão × ajustado, Chat, salvar,
   voltar ao padrão, auditoria; Admin "acesso total"). *AC-01..AC-04, AC-06, AC-08, AC-09, AC-14.*
   **Pronto quando:** build ok; verificação na tela (T12).
-- [ ] **T10** Usuários sem os controles de Chat. *AC-10 · C9.*
+- [x] **T10** Usuários sem os controles de Chat. *AC-10 · C9.*
   **Pronto quando:** build ok; E2E de admin passando.
 
 ## Verificação

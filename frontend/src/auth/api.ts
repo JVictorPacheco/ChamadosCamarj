@@ -53,7 +53,8 @@ export interface CriarUsuarioRequest {
   perfil: TipoPerfil
   senha: string
   grupoId?: string | null
-  chatPerfil: ChatPerfil
+  /** Opcional desde o controle de acesso: o Chat é ajustado na tela "Controle de acesso". */
+  chatPerfil?: ChatPerfil
 }
 
 export function criarUsuario(dados: CriarUsuarioRequest): Promise<UsuarioPerfilResponse> {
@@ -68,7 +69,8 @@ export interface AtualizarUsuarioRequest {
   perfil: TipoPerfil
   ativo: boolean
   grupoId?: string | null
-  chatPerfil: ChatPerfil
+  /** Opcional desde o controle de acesso: o Chat é ajustado na tela "Controle de acesso". */
+  chatPerfil?: ChatPerfil
 }
 
 export function atualizarUsuario(id: string, dados: AtualizarUsuarioRequest): Promise<void> {

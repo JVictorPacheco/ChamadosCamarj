@@ -10,7 +10,6 @@ import { Label } from '@/components/ui/label'
 import { useAuth } from '@/auth/AuthContext'
 import { useAtualizarUsuario, useRedefinirSenha, useUsuarios } from './hooks/useUsuarios'
 import { UsuarioFormDialog } from './components/UsuarioFormDialog'
-import { ChatPerfilSelect } from '@/features/chat/components/ChatPerfilSelect'
 import type { UsuarioPerfilResponse } from '@/types/api'
 
 export function UsuariosPage() {
@@ -49,7 +48,6 @@ export function UsuariosPage() {
           perfil: usuario.perfil,
           ativo: !usuario.ativo,
           grupoId: usuario.grupoId,
-          chatPerfil: usuario.chatPerfil ?? 'SemAcesso',
         },
       },
       {
@@ -106,7 +104,6 @@ export function UsuariosPage() {
                 <TableHead>Nome</TableHead>
                 <TableHead>E-mail</TableHead>
                 <TableHead>Perfil</TableHead>
-                <TableHead>Chat</TableHead>
                 <TableHead>Grupo</TableHead>
                 <TableHead>Ativo</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
@@ -118,12 +115,6 @@ export function UsuariosPage() {
                   <TableCell>{usuario.nome}</TableCell>
                   <TableCell>{usuario.email}</TableCell>
                   <TableCell>{usuario.perfil}</TableCell>
-                  <TableCell>
-                    <ChatPerfilSelect
-                      usuarioId={usuario.id}
-                      valorAtual={usuario.chatPerfil ?? 'SemAcesso'}
-                    />
-                  </TableCell>
                   <TableCell>{usuario.grupoNome ?? '—'}</TableCell>
                   <TableCell>
                     <Badge variant={usuario.ativo ? 'default' : 'secondary'}>
