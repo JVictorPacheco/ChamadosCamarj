@@ -28,7 +28,7 @@
   **Pronto quando:** testes: Solicitante sem módulo → 403 (como hoje); Solicitante com Dashboard → ok;
   Atendente sem Relatório → 403; Relatório do Solicitante filtrado pelos visíveis; Atendente continua só
   com os próprios.
-- [ ] **T05** API `/api/acessos` (listar, detalhe, salvar, voltar ao padrão) com auditoria, Chat via
+- [x] **T05** API `/api/acessos` (listar, detalhe, salvar, voltar ao padrão) com auditoria, Chat via
   `DefinirChatPerfilCommand` e `AcessosAtualizadosNotification` → SignalR. *AC-01..AC-06, AC-09, AC-14 ·
   C3, C6.*
   **Pronto quando:** testes dos handlers: só Admin; recusa alvo Admin/si mesmo/módulo não ajustável;
