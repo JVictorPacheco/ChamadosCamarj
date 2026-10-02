@@ -43,6 +43,8 @@ export interface ChamadoResponse {
   dataConclusao: string | null;
   dataCriacao: string;
   dataAtualizacao: string | null;
+  /** Versão para a checagem de edição simultânea (spec correcoes-pre-deploy). Texto opaco: nunca converter para Date. */
+  versao: string;
   quantidadeComentarios: number;
   quantidadeAnexos: number;
   slaStatus: SlaStatus;

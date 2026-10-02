@@ -8,8 +8,11 @@ namespace ChamadosCamarj.WebApi.Hubs;
 /// </summary>
 public class ChamadosHub : Hub
 {
-    /// <summary>Atendentes e Admins: recebem avisos operacionais, como os alertas de SLA.</summary>
+    /// <summary>Atendentes e Admins: recebem avisos operacionais, como o de comentário interno.</summary>
     public const string GrupoAtendimento = "Atendimento";
+
+    /// <summary>Só Admins: recebem os alertas de SLA de todos os chamados (spec correcoes-pre-deploy AC-03).</summary>
+    public const string GrupoAdmins = "Admins";
 
     public override async Task OnConnectedAsync()
     {
@@ -21,6 +24,9 @@ public class ChamadosHub : Hub
         if (EhAtendimento(Context.User))
             await Groups.AddToGroupAsync(Context.ConnectionId, GrupoAtendimento);
 
+        if (EhAdmin(Context.User))
+            await Groups.AddToGroupAsync(Context.ConnectionId, GrupoAdmins);
+
         await base.OnConnectedAsync();
     }
 
@@ -30,6 +36,9 @@ public class ChamadosHub : Hub
         return string.Equals(perfil, "Atendente", StringComparison.OrdinalIgnoreCase)
             || string.Equals(perfil, "Admin", StringComparison.OrdinalIgnoreCase);
     }
+
+    public static bool EhAdmin(ClaimsPrincipal? usuario) =>
+        string.Equals(usuario?.FindFirst("perfil")?.Value, "Admin", StringComparison.OrdinalIgnoreCase);
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {

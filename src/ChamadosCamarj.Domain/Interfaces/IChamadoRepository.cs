@@ -54,6 +54,18 @@ public interface IChamadoRepository
     /// </summary>
     Task<bool> PodeVerAsync(Guid chamadoId, ContextoAcesso acesso, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Ids dos Atendentes ativos que podem ver o chamado — mesma regra do PodeVerAsync
+    /// (spec correcoes-pre-deploy AC-01/AC-02, alerta de SLA).
+    /// </summary>
+    Task<IReadOnlyList<Guid>> ListarAtendentesQuePodemVerAsync(Guid chamadoId, CancellationToken cancellationToken = default);
+
+    /// <summary>True se o comentário existe e pertence ao chamado (spec correcoes-pre-deploy AC-06/AC-07).</summary>
+    Task<bool> ComentarioPertenceAoChamadoAsync(Guid comentarioId, Guid chamadoId, CancellationToken cancellationToken = default);
+
+    /// <summary>Versão atual do chamado (ver VersaoChamado), ou null se não existe. Spec correcoes-pre-deploy AC-09.</summary>
+    Task<string?> ObterVersaoAsync(Guid chamadoId, CancellationToken cancellationToken = default);
+
     // Dashboard / Métricas — contam só o que o usuário pode ver
     Task<int> ContarPorStatusAsync(StatusChamado status, CancellationToken cancellationToken = default);
     Task<(int TotalResolvidos, int DentroPrazo)> ContarSlaComplianceAsync(ContextoAcesso acesso, DateTime inicio, DateTime fim, CancellationToken cancellationToken = default);

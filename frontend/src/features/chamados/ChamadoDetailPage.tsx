@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { useIsFetching } from '@tanstack/react-query'
 import { Link, useLocation, useParams } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
@@ -43,11 +44,18 @@ const MOTIVO_LABELS: Record<MotivoEncerramento, string> = {
 
 function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
   const { perfil } = useAuth()
-  const atribuir = useAtribuirChamado(chamado.id)
-  const resolver = useResolverChamado(chamado.id)
-  const fechar = useFecharChamado(chamado.id)
-  const cancelar = useCancelarChamado(chamado.id)
-  const reabrir = useReabrirChamado(chamado.id)
+  const atribuir = useAtribuirChamado(chamado.id, chamado.versao)
+  // Versão de quando o diálogo/modal foi aberto: uma recarga em segundo plano com ele aberto não
+  // pode trocar a versão por baixo, senão a alteração de outra pessoa seria sobrescrita sem aviso
+  // (spec correcoes-pre-deploy AC-09; review-2 R-01).
+  const [versaoAoAbrir, setVersaoAoAbrir] = useState(chamado.versao)
+  const resolver = useResolverChamado(chamado.id, versaoAoAbrir)
+  const fechar = useFecharChamado(chamado.id, versaoAoAbrir)
+  const cancelar = useCancelarChamado(chamado.id, versaoAoAbrir)
+  const reabrir = useReabrirChamado(chamado.id, versaoAoAbrir)
+  // Enquanto o chamado recarrega (ex.: logo após a própria ação), a versão na tela ainda é a antiga:
+  // bloquear os botões evita um 409 falso (spec correcoes-pre-deploy AC-12).
+  const recarregando = useIsFetching({ queryKey: ['chamado', chamado.id] }) > 0
   const [reatribuirAberto, setReatribuirAberto] = useState(false)
   const [prioridadeAberto, setPrioridadeAberto] = useState(false)
   const [forcarEncerramentoAberto, setForcarEncerramentoAberto] = useState(false)
@@ -65,7 +73,7 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
   const statusFinal = status === 'Fechado' || status === 'Cancelado'
 
   const isPending =
-    atribuir.isPending || resolver.isPending || fechar.isPending || cancelar.isPending || reabrir.isPending
+    atribuir.isPending || resolver.isPending || fechar.isPending || cancelar.isPending || reabrir.isPending || recarregando
 
   const precisaMotivo = confirmarAcao === 'encerrar' || confirmarAcao === 'cancelar'
 
@@ -83,6 +91,7 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
   }
 
   const abrirConfirmacao = (acao: 'resolver' | 'encerrar' | 'cancelar' | 'reabrir') => {
+    setVersaoAoAbrir(chamado.versao)
     setConfirmarAcao(acao)
     if (acao === 'encerrar') setMotivoSelecionado('Resolvido')
     if (acao === 'cancelar') setMotivoSelecionado('CanceladoSolicitante')
@@ -143,19 +152,19 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
       )}
 
       {isAdmin && !statusFinal && (
-        <Button variant="outline" onClick={() => setReatribuirAberto(true)}>
+        <Button variant="outline" disabled={recarregando} onClick={() => { setVersaoAoAbrir(chamado.versao); setReatribuirAberto(true) }}>
           Reatribuir
         </Button>
       )}
 
       {isAdmin && !statusFinal && (
-        <Button variant="outline" onClick={() => setPrioridadeAberto(true)}>
+        <Button variant="outline" disabled={recarregando} onClick={() => { setVersaoAoAbrir(chamado.versao); setPrioridadeAberto(true) }}>
           Alterar prioridade
         </Button>
       )}
 
       {isAdmin && !statusFinal && (
-        <Button variant="destructive" onClick={() => setForcarEncerramentoAberto(true)}>
+        <Button variant="destructive" disabled={recarregando} onClick={() => { setVersaoAoAbrir(chamado.versao); setForcarEncerramentoAberto(true) }}>
           Forçar Encerramento
         </Button>
       )}
@@ -241,17 +250,20 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
         onOpenChange={setReatribuirAberto}
         chamadoId={chamado.id}
         responsavelAtualId={chamado.responsavelId}
+        versao={versaoAoAbrir}
       />
       <AlterarPrioridadeModal
         open={prioridadeAberto}
         onOpenChange={setPrioridadeAberto}
         chamadoId={chamado.id}
         prioridadeAtual={chamado.prioridade}
+        versao={versaoAoAbrir}
       />
       <ForcarEncerramentoModal
         open={forcarEncerramentoAberto}
         onOpenChange={setForcarEncerramentoAberto}
         chamadoId={chamado.id}
+        versao={versaoAoAbrir}
       />
     </div>
   )

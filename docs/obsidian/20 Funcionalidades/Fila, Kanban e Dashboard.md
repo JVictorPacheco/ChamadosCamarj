@@ -2,7 +2,7 @@
 tipo: funcionalidade
 status: vigente
 atualizado: 2026-10-02
-spec: .specs/features/dashboard-kanban-navegacao/spec.md
+spec: .specs/features/dashboard-kanban-navegacao/spec.md, .specs/features/correcoes-pre-deploy/spec.md
 tags: [funcionalidade, gestão]
 ---
 
@@ -21,6 +21,9 @@ Três telas de gestão do dia a dia, exclusivas de **Atendentes e Admin**.
 - **Arrastar** o cartão entre colunas muda o status — respeitando as regras do
   [[Ciclo de Vida do Chamado]].
 - **Clicar** no cartão abre o detalhe.
+- Se outra pessoa alterou o chamado depois que o quadro foi carregado, mover o cartão é recusado:
+  aparece o aviso de [[Acompanhamento do Chamado#Proteção contra edição simultânea|edição
+  simultânea]] acima do quadro e o cartão volta à coluna em que estava.
 
 ## Dashboard
 **Para quê:** a "foto do momento" da operação.

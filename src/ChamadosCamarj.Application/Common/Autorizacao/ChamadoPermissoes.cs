@@ -32,6 +32,16 @@ public static class ChamadoPermissoes
         };
     }
 
+    /// <summary>
+    /// Ações que alteram o chamado e por isso conferem a versão lida (spec correcoes-pre-deploy
+    /// AC-09). Comentar e anexar só acrescentam e nunca dão conflito (AC-13).
+    /// </summary>
+    public static bool AlteraChamado(AcaoChamado acao) => acao is
+        AcaoChamado.Assumir or AcaoChamado.Resolver or AcaoChamado.Encerrar or AcaoChamado.Reabrir
+        or AcaoChamado.AlterarStatus or AcaoChamado.Cancelar or AcaoChamado.Editar
+        or AcaoChamado.ReclassificarTipo or AcaoChamado.Reatribuir or AcaoChamado.AlterarPrioridade
+        or AcaoChamado.ForcarEncerramento;
+
     /// <summary>Ações cuja decisão depende de quem abriu o chamado.</summary>
     public static bool DependeDoSolicitante(AcaoChamado acao) => acao == AcaoChamado.Cancelar;
 

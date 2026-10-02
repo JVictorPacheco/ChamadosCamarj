@@ -1,11 +1,13 @@
 import { test, expect } from '@playwright/test'
+import { credenciais } from './helpers'
 
 test('login com email e senha - sucesso', async ({ page }) => {
   await page.goto('/login')
   await expect(page.getByRole('heading', { name: /Portal de Chamados|Entrar/i })).toBeVisible()
 
-  await page.locator('#email').fill('suporte@camarj.com.br')
-  await page.locator('#senha').fill('Akira.321')
+  const { email, senha } = credenciais()
+  await page.locator('#email').fill(email)
+  await page.locator('#senha').fill(senha)
   await page.getByRole('button', { name: /Entrar|Login/i }).click()
 
   await page.waitForURL('**/chamados')

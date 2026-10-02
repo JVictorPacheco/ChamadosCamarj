@@ -306,7 +306,7 @@
 - [x] **Confirmação de leitura (AC-26/27) + preferência de privacidade com reciprocidade (AC-53 a AC-58)** — indicador "Visto"/"Visto por todos" na última mensagem própria, toggle "Mostrar confirmação de leitura" (default ligado) no novo dialog Preferências (sidebar), reciprocidade estilo WhatsApp (quem desliga deixa de mostrar E de ver leitura alheia). Migration `AddMostrarConfirmacaoLeituraUsuarioPerfil` aplicada no Supabase real em 2026-09-08. 324 testes no total, 0 falhas. Review independente (nível high): 3 achados, todos corrigidos. Verificado ao vivo (Playwright + API contra Supabase real) sem bugs. PR #31 (`feature/chat-confirmacao-leitura` → `develop`) e PR #32 (`develop` → `main`) mergeados em 2026-09-08 — `main` está com tudo.
 - ~~Read receipts — "não mergeado"~~ *(item duplicado e desatualizado, removido em 2026-10-01: a feature foi mergeada em 2026-09-08 — ver item acima)*
 
-## 🔐 Autorização de Chamados no Servidor (FECHADA — 2026-10-01, PR pendente de merge)
+## 🔐 Autorização de Chamados no Servidor (FECHADA — 2026-10-01; em `main` desde o PR #44, 2026-10-02)
 
 - [x] Regra única de visibilidade no servidor: Solicitante (os seus + os da equipe), Atendente (fila + seus + os que abriu + equipe), Admin (todos, mesmo com equipe). "Chamado da equipe" = aberto por membro **ou** com responsável membro.
 - [x] Matriz de ações aplicada no servidor (404 se não vê, 403 se vê mas não pode); abertura sempre em nome do usuário logado; Dashboard e Relatório protegidos por perfil; SignalR sem conteúdo.
@@ -324,3 +324,30 @@
 ## 🏷️ Área e Tipo do Chamado (FECHADA — 2026-10-02; migration já aplicada no banco)
 
 - [x] "Categoria" vira **Área** (mesma lista dos grupos); novo campo **Tipo** (Incidente, Dúvida, Solicitação, Customização, Melhoria — configurável pelo Admin). Implementar depois da autorização. Spec: `.specs/features/area-e-tipo-do-chamado/spec.md`.
+
+## 🧰 Correções Pré-Deploy (FECHADA — 2026-10-02; PR #49 para `develop`)
+
+- [x] Alerta de SLA só para Admins e para os Atendentes que veem o chamado; Solicitante nunca recebe. Aviso que falhar é tentado de novo.
+- [x] Anexo só pode ser ligado a comentário do mesmo chamado.
+- [x] **Edição simultânea:** ação sobre versão desatualizada do chamado é recusada com aviso e a tela recarrega (detalhe, diálogos, modais, fila, tipo e Kanban); comentário e anexo nunca são recusados; tela antiga sem versão continua funcionando. ADR-009.
+- [x] E2E atualizados (Área/Tipo, credenciais por variável de ambiente, teste de conflito) — 14/14; aviso de versão do EF zerado; favicon 218 KB → 3,5 KB; regra 4 e guia de orquestração com o `/sdd`.
+- [x] 444 testes; 2 rodadas de review independente (1 bloqueante corrigido).
+- Spec: `.specs/features/correcoes-pre-deploy/` · ADR-009 no Obsidian.
+
+## ✏️ Editar Chamado (BACKLOG — regras definidas pelo usuário em 2026-10-02)
+
+- [ ] **Modal** "Editar" no detalhe do chamado (não uma tela nova) para título e descrição.
+- [ ] Quem edita: **Solicitante** só os chamados que **abriu**; **Atendente** só os que **assumiu** (é o responsável); **Admin** todos. *(Hoje a API permite a qualquer Atendente que vê o chamado e não permite ao Solicitante — a regra muda nesta feature.)*
+- [ ] Leva o AC-11 de `correcoes-pre-deploy`: em conflito de edição simultânea, o modal continua aberto com o texto digitado. A proteção por versão no servidor já existe.
+
+## 🧹 Limpeza de Categorias (BACKLOG — depois do deploy)
+
+- [ ] Reclassificar os 40 chamados antigos "Não classificado"; tornar `AreaId`/`TipoId` obrigatórios; remover `Categorias` e `CategoriaId`.
+
+## 📅 SLA em Dias Úteis (BACKLOG — decisão do usuário em 2026-10-02)
+
+- [ ] O prazo de SLA conta só **horas de expediente: 08:00 às 18:00, em dias úteis** — sábado, domingo e feriados não contam (decisão do usuário, 2026-10-02).
+- [ ] Feriados que contam: **nacionais e estaduais do RJ** (municipais não). Decisão do usuário, 2026-10-02.
+- [ ] Lista de feriados: **cadastro pelo Admin** (tela para ver/adicionar/remover os feriados do ano), já vindo com os feriados nacionais e estaduais do RJ do ano preenchidos, e aviso ao Admin quando a lista do ano seguinte estiver vazia (decisão do usuário, 2026-10-02).
+- [ ] Chamado aberto **fora do expediente** (ou em fim de semana/feriado): o prazo **começa a contar às 08:00 do próximo dia útil** (decisão do usuário, 2026-10-02).
+- [ ] **Aviso a quem abre fora do expediente** (decisão do usuário, 2026-10-02). Proposta a detalhar na spec: na tela de abertura, antes de enviar — "Você está abrindo o chamado fora do horário de atendimento (seg. a sex., 08:00 às 18:00). O prazo começa a contar às 08:00 de <próximo dia útil>." — e, no detalhe, o selo de prazo mostra "Prazo começa a contar em <data>, 08:00" até o início da contagem.
