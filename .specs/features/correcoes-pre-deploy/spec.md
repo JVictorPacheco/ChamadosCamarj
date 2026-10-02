@@ -161,7 +161,7 @@ de processo desatualizada.
 | AC-01, AC-02 | `WebApi/Services/SlaAlertaNotificadorTests.cs` + ao vivo | `Notificar_EnviaParaAdminsEParaOsAtendentesQueVeem`, `Notificar_NuncaUsaOGrupoDeAtendimentoInteiro`; ao vivo: 3 Atendentes × 23 chamados reais atrasados, recebe ⇔ vê (69/69) | ✅ |
 | AC-03 | `ChamadosHubTests.cs`, `SlaAlertaNotificadorTests.cs` + ao vivo | `OnConnectedAsync_SoAdminEntraNoGrupoAdmins`; ao vivo 25/26 (o 1º alerta disparou junto com a entrada no grupo — corrida da partida, ver review) | ✅ |
 | AC-04 | `ChamadosHubTests.cs` + ao vivo | Solicitante só no grupo `Todos`; ao vivo não recebeu nenhum alerta | ✅ |
-| AC-05 | `SlaMonitorService` inalterado (`_notificados`) | Leitura de código | ✅ |
+| AC-05 | `WebApi/Services/SlaAlertasEnviadosTests.cs` | `MesmaSituacaoNaVerificacaoSeguinte_NaoNotificaDeNovo` e mais 4 (review R-01) | ✅ |
 | AC-06, AC-07, AC-08 | `AdicionarAnexoHandlerTests.cs` + ao vivo | `Handle_ComComentarioQueNaoPertenceAoChamado_DeveRecusarSemFazerUpload`, `Handle_SemComentario_NaoConsultaComentario`, `Handle_ComComentarioId_DeveVincularAnexoAoComentario`; ao vivo 400 com a mensagem, PDF aceito no próprio chamado | ✅ |
 | AC-09, AC-10 (servidor), AC-13, AC-23 | `Concorrencia/VersaoChamadoBehaviourTests.cs` + ao vivo | `VersaoDiferente_Recusa409ComAMensagemDoAC10`, `Comentario_NuncaDaConflito`, `SemVersaoInformada_SegueSemConsultar`; ao vivo 409/204 e 404 antes de 409 | ✅ |
 | AC-10 (tela), AC-12 | `frontend/e2e/conflito.spec.ts` + `VersaoChamadoTests.cs` | `detalhe: ação sobre versão desatualizada...`; `De_IgnoraFracaoAbaixoDeMicrossegundo` | ✅ |

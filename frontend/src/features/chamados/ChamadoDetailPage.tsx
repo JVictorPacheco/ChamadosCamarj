@@ -147,19 +147,19 @@ function BotoesAcao({ chamado }: { chamado: ChamadoResponse }) {
       )}
 
       {isAdmin && !statusFinal && (
-        <Button variant="outline" onClick={() => setReatribuirAberto(true)}>
+        <Button variant="outline" disabled={recarregando} onClick={() => setReatribuirAberto(true)}>
           Reatribuir
         </Button>
       )}
 
       {isAdmin && !statusFinal && (
-        <Button variant="outline" onClick={() => setPrioridadeAberto(true)}>
+        <Button variant="outline" disabled={recarregando} onClick={() => setPrioridadeAberto(true)}>
           Alterar prioridade
         </Button>
       )}
 
       {isAdmin && !statusFinal && (
-        <Button variant="destructive" onClick={() => setForcarEncerramentoAberto(true)}>
+        <Button variant="destructive" disabled={recarregando} onClick={() => setForcarEncerramentoAberto(true)}>
           Forçar Encerramento
         </Button>
       )}

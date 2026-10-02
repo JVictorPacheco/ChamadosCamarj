@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using Microsoft.EntityFrameworkCore;
 using ChamadosCamarj.Application.Common;
 using ChamadosCamarj.Infrastructure.Data;
@@ -9,7 +8,7 @@ public class SlaMonitorService : BackgroundService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<SlaMonitorService> _logger;
-    private readonly ConcurrentDictionary<Guid, SlaStatus> _notificados = new();
+    private readonly SlaAlertasEnviados _enviados = new();
 
     public SlaMonitorService(
         IServiceScopeFactory scopeFactory,
@@ -48,26 +47,18 @@ public class SlaMonitorService : BackgroundService
 
             foreach (var c in chamados)
             {
-                var status = SlaCalculo.CalcularStatus(c.DataLimite);
+                var evento = _enviados.EventoANotificar(c.Id, SlaCalculo.CalcularStatus(c.DataLimite));
+                if (evento is null) continue;
 
-                if (status == SlaStatus.Atencao && (!_notificados.ContainsKey(c.Id) || _notificados[c.Id] != SlaStatus.Atencao))
-                {
-                    _notificados[c.Id] = SlaStatus.Atencao;
-                    _logger.LogInformation("SLA atenção: CAM-{Numero}", c.Numero);
-                    await notificador.NotificarAsync(c.Id, c.Numero, "SlaAtencao", $"CAM-{c.Numero} — próximo do prazo!", stoppingToken);
-                }
-                else if (status == SlaStatus.Atrasado && (!_notificados.ContainsKey(c.Id) || _notificados[c.Id] != SlaStatus.Atrasado))
-                {
-                    _notificados[c.Id] = SlaStatus.Atrasado;
-                    _logger.LogInformation("SLA atrasado: CAM-{Numero}", c.Numero);
-                    await notificador.NotificarAsync(c.Id, c.Numero, "SlaAtrasado", $"CAM-{c.Numero} — PRAZO ESTOURADO!", stoppingToken);
-                }
+                var mensagem = evento == "SlaAtencao"
+                    ? $"CAM-{c.Numero} — próximo do prazo!"
+                    : $"CAM-{c.Numero} — PRAZO ESTOURADO!";
+                _logger.LogInformation("{Evento}: CAM-{Numero}", evento, c.Numero);
+                await notificador.NotificarAsync(c.Id, c.Numero, evento, mensagem, stoppingToken);
             }
 
-            // Limpar chamados que já foram finalizados
-            var finalizados = chamados.Select(c => c.Id).ToHashSet();
-            foreach (var key in _notificados.Keys.Where(k => !finalizados.Contains(k)).ToList())
-                _notificados.TryRemove(key, out _);
+            // Esquecer chamados que já foram finalizados
+            _enviados.ManterSo(chamados.Select(c => c.Id));
         }
         catch (Exception ex)
         {

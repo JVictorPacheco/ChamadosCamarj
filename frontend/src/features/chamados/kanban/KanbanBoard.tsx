@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { DndContext, type DragEndEvent, type DragStartEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
-import { useQueryClient } from '@tanstack/react-query'
+import { useIsFetching, useQueryClient } from '@tanstack/react-query'
 import type { ChamadoResponse, StatusChamado } from '@/types/api'
 import { alterarStatus } from '@/features/chamados/api'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -24,6 +24,9 @@ export function KanbanBoard({ chamados }: KanbanBoardProps) {
   const queryClient = useQueryClient()
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [erro, setErro] = useState<string | null>(null)
+  // Enquanto o quadro recarrega, as versões dos cartões podem estar velhas: soltar agora daria 409
+  // falso (spec correcoes-pre-deploy AC-12). O cartão simplesmente volta ao lugar.
+  const recarregando = useIsFetching({ queryKey: ['chamados', 'kanban'] }) > 0
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -45,6 +48,7 @@ export function KanbanBoard({ chamados }: KanbanBoardProps) {
       setDraggingId(null)
       const { active, over } = event
       if (!over) return
+      if (recarregando) return
 
       const chamadoId = String(active.id)
       const novoStatus = over.id as StatusChamado
@@ -69,7 +73,7 @@ export function KanbanBoard({ chamados }: KanbanBoardProps) {
         queryClient.invalidateQueries({ queryKey: ['chamados', 'kanban'] })
       }
     },
-    [chamados, queryClient],
+    [chamados, queryClient, recarregando],
   )
 
   return (

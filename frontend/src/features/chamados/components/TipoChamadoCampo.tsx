@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useIsFetching, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useAuth } from '@/auth/AuthContext'
@@ -14,6 +14,8 @@ import type { ChamadoResponse } from '@/types/api'
 export function TipoChamadoCampo({ chamado }: { chamado: ChamadoResponse }) {
   const { perfil } = useAuth()
   const queryClient = useQueryClient()
+  // Logo após a própria troca, a versão na tela ainda é a antiga: esperar a recarga evita 409 falso (AC-12).
+  const recarregando = useIsFetching({ queryKey: ['chamado', chamado.id] }) > 0
   const podeReclassificar = perfil?.tipo === 'Admin' || perfil?.tipo === 'Atendente'
   const { data: tipos } = useTipos()
   const { mutate, isPending, error } = useMutation({
@@ -36,7 +38,7 @@ export function TipoChamadoCampo({ chamado }: { chamado: ChamadoResponse }) {
       <Select
         value={tipoAtualAtivo ? (chamado.tipoId ?? undefined) : undefined}
         onValueChange={(novoTipoId) => mutate(novoTipoId)}
-        disabled={isPending}
+        disabled={isPending || recarregando}
       >
         <SelectTrigger className="max-w-xs" aria-label="Tipo do chamado">
           <SelectValue placeholder={chamado.tipoNome ?? 'Não classificado'} />
