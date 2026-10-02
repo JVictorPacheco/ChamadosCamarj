@@ -349,4 +349,5 @@
 - [ ] O prazo de SLA conta só **horas de expediente: 08:00 às 18:00, em dias úteis** — sábado, domingo e feriados não contam (decisão do usuário, 2026-10-02).
 - [ ] Feriados que contam: **nacionais e estaduais do RJ** (municipais não). Decisão do usuário, 2026-10-02.
 - [ ] Lista de feriados: **cadastro pelo Admin** (tela para ver/adicionar/remover os feriados do ano), já vindo com os feriados nacionais e estaduais do RJ do ano preenchidos, e aviso ao Admin quando a lista do ano seguinte estiver vazia (decisão do usuário, 2026-10-02).
-- [ ] A definir na spec: o que acontece com chamados abertos fora do expediente (ex.: o prazo começa a contar às 08:00 do próximo dia útil?).
+- [ ] Chamado aberto **fora do expediente** (ou em fim de semana/feriado): o prazo **começa a contar às 08:00 do próximo dia útil** (decisão do usuário, 2026-10-02).
+- [ ] **Aviso a quem abre fora do expediente** (decisão do usuário, 2026-10-02). Proposta a detalhar na spec: na tela de abertura, antes de enviar — "Você está abrindo o chamado fora do horário de atendimento (seg. a sex., 08:00 às 18:00). O prazo começa a contar às 08:00 de <próximo dia útil>." — e, no detalhe, o selo de prazo mostra "Prazo começa a contar em <data>, 08:00" até o início da contagem.

@@ -31,7 +31,9 @@ só depois desta feature**, junto.
 - **SLA — DECIDIDO pelo usuário em 2026-10-02:** conta só o **expediente de 08:00 às 18:00 em dias
   úteis**; sábado, domingo e feriados **nacionais e estaduais do RJ** não contam. Feature própria
   (ROADMAP "SLA em Dias Úteis"). Lista de feriados: **cadastro pelo Admin**, já preenchida com os do
-  ano e com aviso quando faltar a do ano seguinte (decidido em 2026-10-02).
+  ano e com aviso quando faltar a do ano seguinte (decidido em 2026-10-02). Chamado aberto fora do
+  expediente começa a contar às 08:00 do próximo dia útil, **com aviso a quem abre** (decidido em
+  2026-10-02; texto e onde aparece a detalhar na spec).
 - **Demonstração em tela:** CAM-99 e CAM-100 `[TESTE-TELA]` apagados em 2026-10-02 com OK do usuário.
 - **Achado na demonstração em tela (2026-10-02):** o modal "Alterar prioridade" abre marcando a
   prioridade de quando a página carregou, não a atual (ex.: abriu em "Média" com o chamado já
