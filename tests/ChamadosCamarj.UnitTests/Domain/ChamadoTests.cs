@@ -305,4 +305,46 @@ public class ChamadoTests
 
         act.Should().Throw<ArgumentException>();
     }
+
+    // spec editar-chamado AC-16: salvar sem mudança não grava nem muda a versão.
+    [Fact]
+    public void AtualizarDados_ComMudanca_RetornaTrueEMudaAVersao()
+    {
+        var chamado = CriarChamado();
+
+        chamado.AtualizarDados("Novo título", "Descrição teste").Should().BeTrue();
+
+        chamado.DataAtualizacao.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void AtualizarDados_SemMudanca_RetornaFalseENaoMudaAVersao()
+    {
+        var chamado = CriarChamado();
+
+        chamado.AtualizarDados("Título teste", "Descrição teste").Should().BeFalse();
+
+        chamado.DataAtualizacao.Should().BeNull();
+    }
+
+    // spec editar-chamado AC-10: encerrado não se edita.
+    [Theory]
+    [InlineData("Resolvido")]
+    [InlineData("Fechado")]
+    [InlineData("Cancelado")]
+    public void AtualizarDados_EmChamadoEncerrado_DeveLancarInvalidOperationException(string situacao)
+    {
+        var chamado = CriarChamado();
+        chamado.Atribuir(Guid.NewGuid(), "Atendente");
+        switch (situacao)
+        {
+            case "Resolvido": chamado.Resolver(); break;
+            case "Fechado": chamado.Resolver(); chamado.Fechar(Resolvido); break;
+            case "Cancelado": chamado.Cancelar(CanceladoSolicitante); break;
+        }
+
+        var act = () => chamado.AtualizarDados("Outro título", "Outra descrição");
+
+        act.Should().Throw<InvalidOperationException>();
+    }
 }

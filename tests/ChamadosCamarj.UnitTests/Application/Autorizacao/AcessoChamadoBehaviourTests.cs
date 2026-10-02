@@ -1,3 +1,4 @@
+using ChamadosCamarj.Application.Common.Autorizacao;
 using ChamadosCamarj.Application.Common;
 using ChamadosCamarj.Application.Common.Behaviours;
 using ChamadosCamarj.Application.Common.Exceptions;
@@ -132,5 +133,83 @@ public class AcessoChamadoBehaviourTests
         var act = () => Executar(new ObterUrlDownloadAnexoQuery(_chamadoId, Guid.NewGuid()), "url");
 
         await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    // ── Editar (spec editar-chamado) ─────────────────────────────────────────
+
+    private Chamado ChamadoNoBanco(string emailDeQuemAbriu = "ana@camarj.com.br")
+    {
+        var chamado = new Chamado("T", "D", "Ana", emailDeQuemAbriu, Guid.NewGuid(), Guid.NewGuid());
+        _repositoryMock.Setup(r => r.ObterPorIdAsync(_chamadoId, It.IsAny<CancellationToken>())).ReturnsAsync(chamado);
+        return chamado;
+    }
+
+    [Fact]
+    public async Task Editar_ChamadoEncerrado_DaBadRequestComAMensagem_InclusiveParaAdmin()
+    {
+        // AC-10
+        Usuario("Admin");
+        PodeVer(true);
+        var chamado = ChamadoNoBanco();
+        chamado.Atribuir(Guid.NewGuid(), "Atendente");
+        chamado.Resolver();
+
+        var act = () => Executar(new AtualizarChamadoCommand(_chamadoId, "Novo", "Nova"), Unit.Value);
+
+        await act.Should().ThrowAsync<BadRequestException>().WithMessage(ChamadoPermissoes.MensagemEdicaoEncerrado);
+        _handlerChamado.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task Editar_AtendenteQueNaoEhResponsavel_DaForbidden()
+    {
+        // AC-06
+        Usuario("Atendente", email: "b@camarj.com.br");
+        PodeVer(true);
+        ChamadoNoBanco().Atribuir(Guid.NewGuid(), "Atendente A");
+
+        var act = () => Executar(new AtualizarChamadoCommand(_chamadoId, "Novo", "Nova"), Unit.Value);
+
+        await act.Should().ThrowAsync<ForbiddenException>();
+    }
+
+    [Fact]
+    public async Task Editar_ResponsavelAtual_ChamaOHandler()
+    {
+        // AC-05
+        var atendenteId = Guid.NewGuid();
+        Usuario("Atendente", email: "a@camarj.com.br");
+        _currentUserMock.SetupGet(c => c.UsuarioId).Returns(atendenteId);
+        PodeVer(true);
+        ChamadoNoBanco().Atribuir(atendenteId, "Atendente A");
+
+        await Executar(new AtualizarChamadoCommand(_chamadoId, "Novo", "Nova"), Unit.Value);
+
+        _handlerChamado.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Editar_QuemAbriuSemResponsavel_ChamaOHandler()
+    {
+        // AC-01
+        Usuario("Solicitante", email: "ana@camarj.com.br");
+        PodeVer(true);
+        ChamadoNoBanco("ana@camarj.com.br");
+
+        await Executar(new AtualizarChamadoCommand(_chamadoId, "Novo", "Nova"), Unit.Value);
+
+        _handlerChamado.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task AcoesQueNaoDependemDoChamado_NaoFazemConsultaExtra()
+    {
+        // Ponto de toque cross-feature: a mudança não pode encarecer as outras ações.
+        Usuario("Atendente");
+        PodeVer(true);
+
+        await Executar(new ResolverChamadoCommand(_chamadoId), Unit.Value);
+
+        _repositoryMock.Verify(r => r.ObterPorIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 }

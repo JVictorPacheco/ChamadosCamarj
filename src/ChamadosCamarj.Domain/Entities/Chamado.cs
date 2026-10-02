@@ -237,16 +237,26 @@ public class Chamado : BaseEntity
         DataAtualizacao = DateTime.UtcNow;
     }
 
-    public void AtualizarDados(string titulo, string descricao)
+    /// <summary>
+    /// Edita título e descrição (spec editar-chamado). Retorna false, sem tocar a versão, quando nada
+    /// mudou (AC-16). Encerrado não se edita (AC-10) — a API barra antes; isto é a última defesa.
+    /// </summary>
+    public bool AtualizarDados(string titulo, string descricao)
     {
         if (string.IsNullOrWhiteSpace(titulo))
             throw new ArgumentException("Título é obrigatório.", nameof(titulo));
         if (string.IsNullOrWhiteSpace(descricao))
             throw new ArgumentException("Descrição é obrigatória.", nameof(descricao));
+        if (Status is StatusChamado.Resolvido or StatusChamado.Fechado or StatusChamado.Cancelado)
+            throw new InvalidOperationException($"Não é possível editar um chamado com status '{Status}'.");
+
+        if (titulo == Titulo && descricao == Descricao)
+            return false;
 
         Titulo = titulo;
         Descricao = descricao;
         DataAtualizacao = DateTime.UtcNow;
+        return true;
     }
 
     private static DateTime? CalcularDataLimite(PrioridadeChamado prioridade) => prioridade switch

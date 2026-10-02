@@ -20,7 +20,8 @@ export type AcaoHistorico =
   | "StatusAlterado"
   | "EncerramentoForcado"
   | "Reaberto"
-  | "TipoReclassificado";
+  | "TipoReclassificado"
+  | "ChamadoEditado";
 
 export type SlaStatus = "DentroPrazo" | "Atencao" | "Atrasado";
 

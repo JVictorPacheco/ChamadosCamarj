@@ -122,7 +122,7 @@ public class ChamadosController : ControllerBase
         [FromBody] AtualizarChamadoRequest request,
         CancellationToken cancellationToken)
     {
-        await _mediator.Send(new AtualizarChamadoCommand(id, request.Titulo, request.Descricao), cancellationToken);
+        await _mediator.Send(new AtualizarChamadoCommand(id, request.Titulo, request.Descricao, _currentUser.UsuarioId, _currentUser.Nome), cancellationToken);
         return NoContent();
     }
 

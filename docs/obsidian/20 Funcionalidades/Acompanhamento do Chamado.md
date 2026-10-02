@@ -2,7 +2,7 @@
 tipo: funcionalidade
 status: vigente
 atualizado: 2026-10-02
-spec: .specs/features/fase-6-admin-log/spec.md, .specs/features/correcoes-pre-deploy/spec.md
+spec: .specs/features/fase-6-admin-log/spec.md, .specs/features/correcoes-pre-deploy/spec.md, .specs/features/editar-chamado/spec.md
 tags: [funcionalidade, chamado]
 ---
 
@@ -52,5 +52,18 @@ pessoa alterou o chamado**, a ação é recusada e a alteração da outra pessoa
 - nos diálogos e janelas (ex.: Alterar prioridade), vale a versão de quando a janela foi aberta;
 - enquanto o chamado está recarregando, os botões de ação ficam bloqueados por um instante.
 
-Ainda não existe tela para editar título e descrição — está prevista (modal no detalhe; o
-Solicitante edita os chamados que abriu, o Atendente os que assumiu e o Admin todos).
+
+## Editar título e descrição
+No detalhe, o botão **Editar** abre uma janela com o título e a descrição atuais.
+- **Quem pode** (chamado não encerrado): quem **abriu** o chamado, enquanto ninguém o assumiu; o
+  **responsável atual**; o **Admin**. Colegas da mesma equipe não editam. Ver [[Perfis e Permissões]].
+- Chamado **Resolvido, Fechado ou Cancelado não se edita** — nem pelo Admin. Para corrigir, reabra
+  (o chamado volta a Aberto, sem responsável, e quem abriu volta a poder editar).
+- Mesmos limites da abertura (título até 200 caracteres, descrição até 5.000). Salvar sem mudar nada
+  não registra nada.
+- O **histórico** mostra "Chamado editado", quem editou, quando e o texto de antes e de depois — só
+  do que mudou.
+- **Edição simultânea:** se outra pessoa alterou o chamado com a janela aberta, o "Salvar" é recusado
+  com o aviso de sempre, **o texto digitado continua na janela** e aparece o "Texto atual no chamado"
+  para conferir; salvar de novo grava. O que a pessoa não mudou na janela não apaga o que a outra
+  gravou.
