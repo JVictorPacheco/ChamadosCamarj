@@ -1,3 +1,4 @@
+using ChamadosCamarj.Application.Common.Autorizacao;
 using ChamadosCamarj.Application.Features.Usuarios.DTOs;
 using ChamadosCamarj.Domain.Entities;
 
@@ -15,6 +16,7 @@ public static class UsuarioPerfilMappings
             usuarioPerfil.GrupoId,
             usuarioPerfil.Grupo?.Nome,
             usuarioPerfil.ChatPerfil,
-            usuarioPerfil.MostrarConfirmacaoLeitura
+            usuarioPerfil.MostrarConfirmacaoLeitura,
+            ModulosDeAcesso.Nomes(usuarioPerfil.ModulosEfetivos())
         );
 }

@@ -10,5 +10,7 @@ public record AutenticacaoResponse(
     Perfil Perfil,
     ChatPerfil ChatPerfil,
     bool MostrarConfirmacaoLeitura,
-    Guid? GrupoId = null
+    Guid? GrupoId = null,
+    // Módulos que a pessoa usa (spec controle-de-acesso) — monta o menu da tela.
+    IReadOnlyList<string>? Modulos = null
 );

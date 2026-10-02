@@ -20,7 +20,7 @@
   aplicada**). *AC-04, AC-14, AC-16 · C1.*
   **Pronto quando:** build ok; migration aditiva (só `AddColumn` com default 0 + `CreateTable`); testes de
   domínio.
-- [ ] **T03** `Modulos` em `AutenticacaoResponse` e `UsuarioPerfilResponse` (login, `/auth/me`, Google,
+- [x] **T03** `Modulos` em `AutenticacaoResponse` e `UsuarioPerfilResponse` (login, `/auth/me`, Google,
   lista de Usuários). *AC-11, AC-13, AC-16 · C2.*
   **Pronto quando:** testes de login/mapping mostram os módulos efetivos.
 - [ ] **T04** `ModuloGuard` + Dashboard (2 handlers) e Relatório (controller + `IdsVisiveis` +

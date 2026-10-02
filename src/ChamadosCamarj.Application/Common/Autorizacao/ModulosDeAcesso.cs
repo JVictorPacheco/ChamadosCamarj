@@ -1,4 +1,5 @@
 using ChamadosCamarj.Application.Common.Exceptions;
+using ChamadosCamarj.Domain.Entities;
 using ChamadosCamarj.Domain.Enums;
 
 namespace ChamadosCamarj.Application.Common.Autorizacao;
@@ -64,6 +65,10 @@ public static class ModulosDeAcesso
             .Where(m => m is not (ModuloSistema.Nenhum or ModuloSistema.Todos) && modulos.HasFlag(m))
             .Select(m => m.ToString())
             .ToList();
+
+    /// <summary>Módulos efetivos de uma pessoa, a partir do cadastro.</summary>
+    public static ModuloSistema ModulosEfetivos(this UsuarioPerfil usuario) =>
+        Efetivos(usuario.Perfil, usuario.ModulosConcedidos, usuario.ModulosRetirados);
 
     public static ModuloSistema DeNomes(IEnumerable<string> nomes)
     {
