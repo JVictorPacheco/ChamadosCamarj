@@ -50,7 +50,7 @@
 
 ## Verificação
 
-- [ ] **T08** E2E `e2e/editar-chamado.spec.ts`: Admin edita (histórico aparece); botão ausente em
+- [x] **T08** E2E `e2e/editar-chamado.spec.ts`: Admin edita (histórico aparece); botão ausente em
   chamado encerrado; conflito mantém o texto no modal e o segundo "Salvar" grava. Títulos `[TESTE-E2E]`.
   Suíte inteira passando. *AC-25.*
 - [ ] **T09** Verificação ao vivo (API + tela) com contas `teste.edit.*` (Solicitante que abre,
