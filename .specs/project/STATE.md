@@ -6,9 +6,9 @@
 
 ## ▶ ONDE PARAMOS (2026-10-02) — ler isto primeiro ao retomar
 
-**`main` == `develop`** desde o release **#51** (mergeado pelo usuário em 2026-10-02, commit
-`389afb0`; Cloudflare Pages success). Em `main`: as 4 features do #44 + `correcoes-pre-deploy` (#49)
-+ docs (#48, #50). **Falta só o deploy** pelo irmão do usuário.
+**`main` == `develop`** desde o release **#53** (mergeado pelo usuário em 2026-10-02, commit
+`d517df3`; Cloudflare Pages success). Em `main`: as 4 features do #44 + `correcoes-pre-deploy` (#49)
++ `editar-chamado` (#52) + docs (#48, #50). **Falta só o deploy** pelo irmão do usuário.
 
 **Ordem de execução combinada com o usuário (2026-10-02):**
 0. **Deploy pelo irmão do usuário.** **Backend e frontend precisam subir juntos.** Avisos do deploy:
@@ -18,9 +18,9 @@
      2026-10-02). A versão antiga em produção continua funcionando com ela, mas até o deploy
      **não reclassificar tipo de chamado real** (a versão antiga não conhece essa ação no histórico);
    - `correcoes-pre-deploy` **não tem migration**.
-1. **Editar chamado** — **FECHADA em 2026-10-02** na branch `feature/editar-chamado` (**PR #52** para `develop`
-   a cargo do usuário). Ver seção da sessão abaixo.
-2. **Controle de acesso por módulo** — spec aprovada em 2026-10-02 (`.specs/features/controle-de-acesso/`).
+1. **Editar chamado** — **em `main`** (PR #52, release #53, 2026-10-02). Ver seção da sessão abaixo.
+2. **Controle de acesso por módulo** — spec aprovada; **em andamento** na branch `feature/controle-de-acesso`
+   (`.specs/features/controle-de-acesso/`).
 3. **SLA em dias úteis + cadastro de feriados** — decisões de negócio tomadas (ver Pendências); falta spec.
 4. **Limpeza de Categorias** — depois do deploy e de reclassificar os 40 chamados antigos ("Não classificado").
 - Avulso, a qualquer momento: correção do modal "Alterar prioridade" (abre com a prioridade de quando
