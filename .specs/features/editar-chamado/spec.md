@@ -1,6 +1,6 @@
 # Editar Chamado — Especificação
 
-> **SDD:** spec-aprovada
+> **SDD:** implementando
 > **Status:** `Pendente`
 > **Branch:** `feature/editar-chamado`
 > **Criada em:** 2026-10-02
