@@ -40,7 +40,7 @@
 
 ## Frontend
 
-- [ ] **T07** Tipos e API (`modulos` no perfil; `/acessos`), `AuthContext.atualizarModulos`, evento
+- [x] **T07** Tipos e API (`modulos` no perfil; `/acessos`), `AuthContext.atualizarModulos`, evento
   `AcessosAtualizados` no `useSignalR`. *C2, C6.*
   **Pronto quando:** build ok.
 - [ ] **T08** `AppLayout` por módulo + item "Controle de acesso"; `RequerModulo`/`RequerAdmin` nas rotas;

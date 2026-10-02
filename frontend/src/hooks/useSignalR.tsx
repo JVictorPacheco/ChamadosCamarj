@@ -63,6 +63,8 @@ export function SignalRProvider({ children }: { children: ReactNode }) {
     // AC-47/48: chega mesmo pra quem não tem acesso ao chat — essa conexão (/hubs/chamados) é
     // global, ao contrário do ChatHub, que só existe na tela /chat.
     conn.on('ChatPerfilAtualizado', (payload) => notify({ type: 'ChatPerfilAtualizado', payload }))
+    // spec controle-de-acesso: menu da pessoa muda na hora quando o Admin ajusta os acessos dela.
+    conn.on('AcessosAtualizados', (payload) => notify({ type: 'AcessosAtualizados', payload }))
     // Bug #10: mesmo motivo — quem não está na tela /chat precisa saber que chegou mensagem nova
     // pra atualizar o badge de não lidas da sidebar, e só esta conexão global alcança essa pessoa.
     conn.on('ChatConversaAtualizada', () => notify({ type: 'ChatConversaAtualizada' }))

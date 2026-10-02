@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { atualizarPreferenciaLeitura as atualizarPreferenciaLeituraApi, autenticarGoogle, login, obterPerfilAtual, type AutenticacaoResponse } from './api'
 import { clearToken, getToken, registrarLogoutAutomatico, setToken } from '@/lib/api'
-import type { ChatPerfil, TipoPerfil, UsuarioPerfilResponse } from '@/types/api'
+import type { ChatPerfil, ModuloSistema, TipoPerfil, UsuarioPerfilResponse } from '@/types/api'
+import { modulosPadrao } from '@/lib/modulos'
 
 export type { TipoPerfil }
 
@@ -14,6 +15,8 @@ export interface Perfil {
   mostrarConfirmacaoLeitura: boolean
   /** Grupo = área de quem está logado; preenche a Área na abertura (spec area-e-tipo AC-02). */
   grupoId?: string | null
+  /** Módulos que a pessoa usa (spec controle-de-acesso) — monta o menu. */
+  modulos: ModuloSistema[]
 }
 
 const STORAGE_KEY = 'chamados-camarj:perfil'
@@ -24,6 +27,7 @@ interface AuthContextValue {
   loginComSenha: (email: string, senha: string) => Promise<void>
   logout: () => void
   atualizarChatPerfil: (novo: ChatPerfil) => void
+  atualizarAcessos: (modulos: ModuloSistema[], chatPerfil: ChatPerfil) => void
   atualizarPreferenciaLeitura: (mostrar: boolean) => Promise<void>
 }
 
@@ -38,6 +42,7 @@ function paraPerfil(resposta: AutenticacaoResponse): Perfil {
     chatPerfil: resposta.chatPerfil,
     mostrarConfirmacaoLeitura: resposta.mostrarConfirmacaoLeitura ?? true,
     grupoId: resposta.grupoId ?? null,
+    modulos: resposta.modulos ?? modulosPadrao(resposta.perfil),
   }
 }
 
@@ -50,6 +55,7 @@ function paraPerfilAtual(resposta: UsuarioPerfilResponse): Perfil {
     chatPerfil: resposta.chatPerfil,
     mostrarConfirmacaoLeitura: resposta.mostrarConfirmacaoLeitura ?? true,
     grupoId: resposta.grupoId ?? null,
+    modulos: resposta.modulos ?? modulosPadrao(resposta.perfil),
   }
 }
 
@@ -61,7 +67,12 @@ function lerPerfilSalvo(): Perfil | null {
     const perfil = JSON.parse(salvo) as Perfil
     // Perfil salvo antes desta extensão (2026-09-04) não tem o campo — sem isso, ficaria
     // `undefined` em memória mesmo com o tipo dizendo `boolean`.
-    return { ...perfil, mostrarConfirmacaoLeitura: perfil.mostrarConfirmacaoLeitura ?? true }
+    // Idem para os módulos (spec controle-de-acesso): até o /auth/me do boot, vale o padrão do perfil.
+    return {
+      ...perfil,
+      mostrarConfirmacaoLeitura: perfil.mostrarConfirmacaoLeitura ?? true,
+      modulos: perfil.modulos ?? modulosPadrao(perfil.tipo),
+    }
   } catch {
     return null
   }
@@ -128,6 +139,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
   }
 
+  // spec controle-de-acesso AC-11/AC-13: o Admin mudou os acessos desta pessoa (AcessosAtualizados).
+  const atualizarAcessos = (modulos: ModuloSistema[], chatPerfil: ChatPerfil) => {
+    setPerfil((atual) => {
+      if (!atual) return atual
+      const atualizado = { ...atual, modulos, chatPerfil }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(atualizado))
+      return atualizado
+    })
+  }
+
   // AC-56/AC-58: aplica no backend (persiste no perfil) e só então reflete localmente — evita a UI
   // otimista ficar dessincronizada se a requisição falhar (mesmo padrão de erro inline do projeto,
   // sem toast — quem chama trata o reject).
@@ -142,7 +163,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const value = useMemo(
-    () => ({ perfil, loginComGoogle, loginComSenha, logout, atualizarChatPerfil, atualizarPreferenciaLeitura }),
+    () => ({ perfil, loginComGoogle, loginComSenha, logout, atualizarChatPerfil, atualizarAcessos, atualizarPreferenciaLeitura }),
     [perfil],
   )
 
