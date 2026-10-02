@@ -4,6 +4,79 @@
 
 ---
 
+## ▶ ONDE PARAMOS (2026-10-02) — ler isto primeiro ao retomar
+
+**Tudo o que foi pedido nesta rodada está em `develop`.** `develop` está à frente de `main` por 4
+features (autorização, correções de acesso, logout por inatividade, área e tipo).
+
+**Próximos passos, nesta ordem:**
+1. **Usuário:** mergear o PR `develop` → `main` (#44, que se atualiza sozinho com tudo) e combinar o
+   deploy com o irmão. **Backend e frontend precisam subir juntos.** Avisos do deploy:
+   - quem estiver logado vai precisar entrar de novo uma vez (logout por inatividade);
+   - o Kanban do Atendente sem equipe passa a mostrar só o que é dele;
+   - **a migration `AddAreaETipoChamado` JÁ ESTÁ APLICADA no banco** (dev = prod, aplicada em
+     2026-10-02). A versão antiga em produção continua funcionando com ela, mas até o deploy
+     **não reclassificar tipo de chamado real** (a versão antiga não conhece essa ação no histórico).
+2. Depois do deploy validado: reclassificar os 40 chamados antigos ("Não classificado") pelo detalhe
+   e abrir a feature de **limpeza** (tornar `AreaId`/`TipoId` obrigatórios; remover `Categorias` e
+   `CategoriaId`).
+3. Pendências abertas: ver "Pendências gerais" logo abaixo.
+
+### Pendências gerais (consolidado em 2026-10-02)
+- **Decisão de negócio:** SLA em horas corridas × horas úteis.
+- **Operacional:** contas de teste antigas `teste.admin2`/`teste.alvo2` no Supabase (apagar só com OK
+  do usuário); verificação manual do usuário dos AC-49 a AC-52 do chat.
+- **Técnicas pequenas:** favicon de 218 KB; testes E2E do Playwright (`frontend/e2e`) ainda usam
+  "Categoria"; conflito de versão do EF no projeto de testes (9.0.1 × 9.0.19); alerta de SLA vai para
+  todos os Atendentes, inclusive os que não veem aquele chamado (R-02 das correções); nenhuma ação
+  sobre chamado manda a versão lida (edição simultânea sobrescreve sem 409); `ComentarioId` do anexo
+  não é validado contra o chamado; migrations em duas pastas (as novas vão em `Data/Migrations`).
+- **Processo/ferramentas:** Constitution regra 4 e `docs/GUIA-ORQUESTRACAO-SDD.md` ainda descrevem
+  só o fluxo do OpenCode (`@spec`...), não o `/sdd` do Claude Code; ideias pendentes nas skills SDD:
+  hook lembrando de atualizar o STATE e comandos equivalentes para o OpenCode.
+- **Backlog do ROADMAP:** abertura por e-mail (IMAP), alertas de SLA com filtro na tela, exportação
+  CSV/PDF da lista, carga por atendente.
+- Efeito colateral dos testes: a numeração `CAM-N` pulou ~20 números ao todo (inofensivo).
+
+---
+
+## Sessão de 2026-10-02 — Área e Tipo do chamado
+
+### Contexto
+Pedido do usuário: "Categoria" listava áreas (Reembolso, Financeiro...), não o tipo do pedido.
+Decisões (2026-10-01/02): campo **Área** (= lista de grupos/equipes) + **Tipo** (Incidente, Dúvida,
+Solicitação, Customização, Melhoria, configurável pelo Admin); chamados antigos "Não classificado";
+área pré-preenchida com o grupo de quem abre. Spec, design, tasks e review em
+`.specs/features/area-e-tipo-do-chamado/`. ADR-008 no Obsidian. Implementado num git worktree
+(`Projects/ChamadosCamarj-area`) para não atrapalhar o review do logout.
+
+### O que foi feito
+- Backend: `TipoChamado` + CRUD `/api/tipos`; `Chamado.AreaId`/`TipoId`; abertura exige área e tipo
+  ativos; filtros por área/tipo; visibilidade inclui "área = grupo do usuário"; Dashboard e Relatório
+  por área e por tipo; triagem sugere área e tipo; `PATCH /chamados/{id}/tipo` (Atendente/Admin);
+  login devolve `grupoId`; API de categorias removida (entidade/tabela ficam até a limpeza).
+- Migration `AddAreaETipoChamado` **compatível com a versão anterior** (colunas novas opcionais,
+  `CategoriaId` opcional, nada apagado) + preenchimento idempotente no seeder; seeder não sobrescreve
+  mais grupos/tipos editados pelo Admin.
+- Frontend: abertura com Área e Tipo, detalhe com reclassificação de tipo, filtros, cartão,
+  Dashboard, Relatório (+ exportação), Admin "Tipos de chamado" e "Áreas e Grupos".
+
+### Verificação
+- `dotnet test` **401/401**; `npm run build` ok; lint sem avisos novos.
+- Review independente: 1 bloqueante (seeder recriaria áreas renomeadas pelo Admin) + 7 atenção —
+  todos corrigidos ou registrados.
+- **Migration aplicada no Supabase em 2026-10-02** (autorizada): 40 chamados por categoria antes =
+  40 por área depois (Atendimento 16, Autorização/Auditoria 6, Comercial 6, Contas Médicas 2,
+  Credenciado 3, Financeiro 2, Reembolso 5); 0 sem área; os 40 "Não classificado"; grupo Financeiro
+  criado.
+- Ao vivo (API, dados de teste apagados): 21 verificações, incluindo visibilidade por área,
+  reclassificação com histórico, filtros, Dashboard, Relatório, triagem e Admin de tipos. Uma falha
+  real encontrada e corrigida (a resposta da abertura vinha sem os nomes de área/tipo).
+- Tela (Playwright): sem "Categoria", área pré-preenchida, sugestão preenche área e tipo, detalhe
+  mostra os dois.
+
+---
+
 ## Sessão de 2026-10-01/02 — Logout por inatividade ligado
 
 ### Contexto

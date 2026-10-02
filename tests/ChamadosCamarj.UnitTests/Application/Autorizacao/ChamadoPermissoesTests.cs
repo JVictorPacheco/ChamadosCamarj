@@ -33,6 +33,7 @@ public class ChamadoPermissoesTests
     [InlineData(AcaoChamado.Reabrir)]
     [InlineData(AcaoChamado.AlterarStatus)]
     [InlineData(AcaoChamado.Editar)]
+    [InlineData(AcaoChamado.ReclassificarTipo)]
     [InlineData(AcaoChamado.Reatribuir)]
     [InlineData(AcaoChamado.AlterarPrioridade)]
     [InlineData(AcaoChamado.ForcarEncerramento)]
@@ -73,6 +74,7 @@ public class ChamadoPermissoesTests
     [InlineData(AcaoChamado.AlterarStatus)]
     [InlineData(AcaoChamado.Cancelar)]
     [InlineData(AcaoChamado.Editar)]
+    [InlineData(AcaoChamado.ReclassificarTipo)]
     public void Atendente_PodeAcoesDeAtendimento(AcaoChamado acao)
     {
         ChamadoPermissoes.Pode(acao, Ctx(Perfil.Atendente), EmailDono).Should().BeTrue();

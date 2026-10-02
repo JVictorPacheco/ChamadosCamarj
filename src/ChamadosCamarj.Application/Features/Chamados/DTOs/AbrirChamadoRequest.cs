@@ -9,6 +9,7 @@ public record AbrirChamadoRequest(
     // Mantidos opcionais só para não quebrar clientes que ainda os enviam.
     string? SolicitanteNome,
     string? SolicitanteEmail,
-    Guid CategoriaId,
+    Guid AreaId,
+    Guid TipoId,
     PrioridadeChamado Prioridade = PrioridadeChamado.Media
 );

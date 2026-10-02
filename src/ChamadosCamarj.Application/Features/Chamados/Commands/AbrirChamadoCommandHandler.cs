@@ -14,20 +14,23 @@ namespace ChamadosCamarj.Application.Features.Chamados.Commands;
 public class AbrirChamadoCommandHandler : IRequestHandler<AbrirChamadoCommand, ChamadoResponse>
 {
     private readonly IChamadoRepository _chamadoRepository;
-    private readonly ICategoriaRepository _categoriaRepository;
+    private readonly IGrupoRepository _grupoRepository;
+    private readonly ITipoChamadoRepository _tipoRepository;
     private readonly IHistoricoRepository _historicoRepository;
     private readonly IPublisher _publisher;
     private readonly IUnitOfWork _unitOfWork;
 
     public AbrirChamadoCommandHandler(
         IChamadoRepository chamadoRepository,
-        ICategoriaRepository categoriaRepository,
+        IGrupoRepository grupoRepository,
+        ITipoChamadoRepository tipoRepository,
         IHistoricoRepository historicoRepository,
         IPublisher publisher,
         IUnitOfWork unitOfWork)
     {
         _chamadoRepository = chamadoRepository;
-        _categoriaRepository = categoriaRepository;
+        _grupoRepository = grupoRepository;
+        _tipoRepository = tipoRepository;
         _historicoRepository = historicoRepository;
         _publisher = publisher;
         _unitOfWork = unitOfWork;
@@ -35,16 +38,21 @@ public class AbrirChamadoCommandHandler : IRequestHandler<AbrirChamadoCommand, C
 
     public async Task<ChamadoResponse> Handle(AbrirChamadoCommand request, CancellationToken cancellationToken)
     {
-        var categoriaExiste = await _categoriaRepository.ExisteAsync(request.CategoriaId, cancellationToken);
-        if (!categoriaExiste)
-            throw new NotFoundException("Categoria", request.CategoriaId);
+        var area = await _grupoRepository.ObterPorIdAsync(request.AreaId, cancellationToken);
+        if (area is null || !area.Ativo)
+            throw new NotFoundException("Área", request.AreaId);
+
+        var tipo = await _tipoRepository.ObterPorIdAsync(request.TipoId, cancellationToken);
+        if (tipo is null || !tipo.Ativo)
+            throw new NotFoundException("Tipo", request.TipoId);
 
         var chamado = new Chamado(
             request.Titulo,
             request.Descricao,
             request.SolicitanteNome,
             request.SolicitanteEmail,
-            request.CategoriaId,
+            request.AreaId,
+            request.TipoId,
             request.Prioridade
         );
 
@@ -69,6 +77,7 @@ public class AbrirChamadoCommandHandler : IRequestHandler<AbrirChamadoCommand, C
             StatusChamadoNotification.Aberto
         ), cancellationToken);
 
-        return chamado.ToResponse(incluirInternos: false); // chamado recém-aberto: não há comentários
+        // Chamado recém-criado não tem as navegações carregadas: os nomes vêm da área e do tipo já lidos.
+        return chamado.ToResponse(incluirInternos: false) with { AreaNome = area.Nome, TipoNome = tipo.Nome };
     }
 }

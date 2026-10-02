@@ -13,7 +13,9 @@ export function ChamadoCard({ chamado }: { chamado: ChamadoResponse }) {
           <span className="mr-2 text-muted-foreground">{formatarNumeroChamado(chamado.numero)}</span>
           {chamado.titulo}
         </CardTitle>
-        <CardDescription>{chamado.categoriaNome ?? 'Sem categoria'}</CardDescription>
+        <CardDescription>
+          {chamado.areaNome ?? 'Sem área'} · {chamado.tipoNome ?? 'Não classificado'}
+        </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-wrap items-center gap-2">
         <StatusBadge status={chamado.status} />

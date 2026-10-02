@@ -38,7 +38,8 @@ public class ChamadosController : ControllerBase
         [FromQuery] string? status = null,
         [FromQuery] string? prioridade = null,
         [FromQuery] Guid? responsavelId = null,
-        [FromQuery] Guid? categoriaId = null,
+        [FromQuery] Guid? areaId = null,
+        [FromQuery] Guid? tipoId = null,
         [FromQuery] string? busca = null,
         [FromQuery] string? solicitanteEmail = null,
         [FromQuery] bool? finalizados = null,
@@ -49,7 +50,7 @@ public class ChamadosController : ControllerBase
         CancellationToken cancellationToken = default)
     {
         var query = new ListarChamadosQuery(
-            pagina, tamanhoPagina, status, prioridade, responsavelId, categoriaId, busca,
+            pagina, tamanhoPagina, status, prioridade, responsavelId, areaId, tipoId, busca,
             solicitanteEmail, finalizados, dataInicio, dataFim, slaStatus, motivoEncerramento);
         var result = await _mediator.Send(query, cancellationToken);
         return Ok(result);
@@ -89,7 +90,8 @@ public class ChamadosController : ControllerBase
             request.Descricao,
             _currentUser.Nome,
             _currentUser.Email,
-            request.CategoriaId,
+            request.AreaId,
+            request.TipoId,
             request.Prioridade);
 
         var result = await _mediator.Send(command, cancellationToken);
@@ -151,6 +153,22 @@ public class ChamadosController : ControllerBase
     {
         var command = new ReatribuirChamadoCommand(id, request.NovoResponsavelId, request.NovoResponsavelNome, _currentUser.UsuarioId, _currentUser.Nome);
         await _mediator.Send(command, cancellationToken);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Reclassifica o tipo do chamado (Atendente/Admin)
+    /// </summary>
+    [HttpPatch("{id:guid}/tipo")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ReclassificarTipo(
+        Guid id,
+        [FromBody] ReclassificarTipoRequest request,
+        CancellationToken cancellationToken)
+    {
+        await _mediator.Send(new ReclassificarTipoChamadoCommand(id, request.NovoTipoId, _currentUser.UsuarioId, _currentUser.Nome), cancellationToken);
         return NoContent();
     }
 

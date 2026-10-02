@@ -9,6 +9,7 @@ public record AbrirChamadoCommand(
     string Descricao,
     string SolicitanteNome,
     string SolicitanteEmail,
-    Guid CategoriaId,
+    Guid AreaId,
+    Guid TipoId,
     PrioridadeChamado Prioridade = PrioridadeChamado.Media
 ) : IRequest<ChamadoResponse>;

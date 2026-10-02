@@ -1,7 +1,7 @@
 ---
 tipo: processo
 status: vigente
-atualizado: 2026-09-29
+atualizado: 2026-10-02
 tags: [processo, atendimento]
 ---
 
@@ -12,7 +12,7 @@ Como uma solicitação percorre o portal, do pedido do colaborador ao encerramen
 ```mermaid
 flowchart TD
     A([Colaborador precisa de algo]) --> B[Abre o chamado no portal]
-    B --> C{Sistema sugere categoria<br/>e equipe}
+    B --> C{Sistema sugere<br/>área e tipo}
     C --> D[Chamado Aberto<br/>número CAM-N + prazo SLA]
     D --> E[Aparece na Fila,<br/>ordenado por prioridade]
     E --> F[Atendente assume]
@@ -31,7 +31,7 @@ flowchart TD
 
 ## Passo a passo
 
-1. **Abertura** — o colaborador descreve o problema, escolhe a categoria (ou aceita a sugestão
+1. **Abertura** — o colaborador descreve o problema, escolhe a área e o tipo (ou aceita a sugestão
    automática) e a prioridade, e pode anexar arquivos. O chamado recebe um número `CAM-N` e um
    prazo. → [[Abertura de Chamados]]
 2. **Fila** — o chamado entra na fila de *Abertos*, visível para os atendentes, ordenada por

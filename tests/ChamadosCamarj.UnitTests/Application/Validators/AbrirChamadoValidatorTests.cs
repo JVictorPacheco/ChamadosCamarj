@@ -13,6 +13,7 @@ public class AbrirChamadoValidatorTests
         "Descrição válida",
         "João Victor",
         "joao@camarj.com.br",
+        Guid.NewGuid(),
         Guid.NewGuid());
 
     [Fact]
@@ -65,11 +66,20 @@ public class AbrirChamadoValidatorTests
     }
 
     [Fact]
-    public void Validar_ComCategoriaIdVazio_DeveFalhar()
+    public void Validar_ComAreaIdVazio_DeveFalhar()
     {
-        var command = ComandoValido() with { CategoriaId = Guid.Empty };
+        var command = ComandoValido() with { AreaId = Guid.Empty };
         var result = _validator.Validate(command);
         result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain(e => e.PropertyName == nameof(command.CategoriaId));
+        result.Errors.Should().Contain(e => e.PropertyName == nameof(command.AreaId));
+    }
+
+    [Fact]
+    public void Validar_ComTipoIdVazio_DeveFalhar()
+    {
+        var command = ComandoValido() with { TipoId = Guid.Empty };
+        var result = _validator.Validate(command);
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(e => e.PropertyName == nameof(command.TipoId));
     }
 }

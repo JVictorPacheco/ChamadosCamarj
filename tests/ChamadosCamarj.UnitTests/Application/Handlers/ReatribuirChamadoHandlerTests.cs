@@ -33,7 +33,7 @@ public class ReatribuirChamadoHandlerTests
         var chamadoId = Guid.NewGuid();
         var atualResponsavelId = Guid.NewGuid();
         var novoResponsavelId = Guid.NewGuid();
-        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
+        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid(), Guid.NewGuid());
         
         // Atribuir primeiro
         chamado.Atribuir(atualResponsavelId, "Victor");
@@ -57,7 +57,7 @@ public class ReatribuirChamadoHandlerTests
     {
         var chamadoId = Guid.NewGuid();
         var novoResponsavelId = Guid.NewGuid();
-        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
+        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid(), Guid.NewGuid());
         // Chamado está aberto (sem responsável)
 
         _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
@@ -74,7 +74,7 @@ public class ReatribuirChamadoHandlerTests
     public async Task Handle_NaoDeveReatribuirChamadoFechado()
     {
         var chamadoId = Guid.NewGuid();
-        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
+        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid(), Guid.NewGuid());
         chamado.Atribuir(Guid.NewGuid(), "Victor");
         chamado.Resolver();
         chamado.Fechar();
@@ -105,7 +105,7 @@ public class ReatribuirChamadoHandlerTests
     public async Task Handle_DeveRegistrarHistoricoComDetalhesAnteriorENovo()
     {
         var chamadoId = Guid.NewGuid();
-        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
+        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid(), Guid.NewGuid());
         chamado.Atribuir(Guid.NewGuid(), "Victor");
 
         _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))

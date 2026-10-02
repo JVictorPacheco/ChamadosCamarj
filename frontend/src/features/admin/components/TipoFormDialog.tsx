@@ -7,28 +7,28 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ApiError } from '@/lib/api'
-import { useAtualizarCategoria, useCriarCategoria } from '../hooks/useCategorias'
-import type { CategoriaResponse } from '@/types/api'
+import { useAtualizarTipo, useCriarTipo } from '../hooks/useTipos'
+import type { TipoChamadoResponse } from '@/types/api'
 
-interface CategoriaFormDialogProps {
+interface TipoFormDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  categoria: CategoriaResponse | null
+  tipo: TipoChamadoResponse | null
 }
 
 interface FormValues {
   nome: string
   descricao: string
-  ativa: boolean
+  ativo: boolean
 }
 
-const VALORES_PADRAO: FormValues = { nome: '', descricao: '', ativa: true }
+const VALORES_PADRAO: FormValues = { nome: '', descricao: '', ativo: true }
 
-export function CategoriaFormDialog({ open, onOpenChange, categoria }: CategoriaFormDialogProps) {
-  const emEdicao = !!categoria
-  const { mutate: criar, isPending: criando, error: erroCriar, reset: resetCriar } = useCriarCategoria()
+export function TipoFormDialog({ open, onOpenChange, tipo }: TipoFormDialogProps) {
+  const emEdicao = !!tipo
+  const { mutate: criar, isPending: criando, error: erroCriar, reset: resetCriar } = useCriarTipo()
   const { mutate: atualizar, isPending: atualizando, error: erroAtualizar, reset: resetAtualizar } =
-    useAtualizarCategoria()
+    useAtualizarTipo()
 
   const isPending = criando || atualizando
   const erro = erroCriar ?? erroAtualizar
@@ -43,19 +43,19 @@ export function CategoriaFormDialog({ open, onOpenChange, categoria }: Categoria
     formState: { errors },
   } = useForm<FormValues>({ defaultValues: VALORES_PADRAO })
 
-  const ativa = watch('ativa')
+  const ativo = watch('ativo')
 
   useEffect(() => {
     if (!open) return
 
     reset(
-      categoria
-        ? { nome: categoria.nome, descricao: categoria.descricao, ativa: categoria.ativa }
+      tipo
+        ? { nome: tipo.nome, descricao: tipo.descricao, ativo: tipo.ativo }
         : VALORES_PADRAO,
     )
     resetCriar()
     resetAtualizar()
-  }, [open, categoria, reset, resetCriar, resetAtualizar])
+  }, [open, tipo, reset, resetCriar, resetAtualizar])
 
   const fechar = (proximoEstado: boolean) => {
     onOpenChange(proximoEstado)
@@ -75,9 +75,9 @@ export function CategoriaFormDialog({ open, onOpenChange, categoria }: Categoria
   }
 
   const onSubmit = (values: FormValues) => {
-    if (emEdicao && categoria) {
+    if (emEdicao && tipo) {
       atualizar(
-        { id: categoria.id, dados: { nome: values.nome, descricao: values.descricao, ativa: values.ativa } },
+        { id: tipo.id, dados: { nome: values.nome, descricao: values.descricao, ativo: values.ativo } },
         { onSuccess: () => fechar(false), onError: tratarErro },
       )
       return
@@ -96,7 +96,7 @@ export function CategoriaFormDialog({ open, onOpenChange, categoria }: Categoria
     <Dialog open={open} onOpenChange={fechar}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{emEdicao ? 'Editar categoria' : 'Nova categoria'}</DialogTitle>
+          <DialogTitle>{emEdicao ? 'Editar tipo' : 'Novo tipo'}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
@@ -115,11 +115,11 @@ export function CategoriaFormDialog({ open, onOpenChange, categoria }: Categoria
           {emEdicao && (
             <div className="flex items-center gap-2">
               <Checkbox
-                id="ativa"
-                checked={ativa}
-                onCheckedChange={(checked) => setValue('ativa', !!checked)}
+                id="ativo"
+                checked={ativo}
+                onCheckedChange={(checked) => setValue('ativo', !!checked)}
               />
-              <Label htmlFor="ativa">Ativa</Label>
+              <Label htmlFor="ativo">Ativo</Label>
             </div>
           )}
 

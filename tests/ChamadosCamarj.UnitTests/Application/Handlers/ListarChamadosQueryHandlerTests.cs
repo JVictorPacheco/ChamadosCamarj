@@ -36,11 +36,11 @@ public class ListarChamadosQueryHandlerTests
         _repositoryMock
             .Setup(r => r.ListarAsync(
                 It.IsAny<ContextoAcesso>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<StatusChamado?>(),
-                It.IsAny<PrioridadeChamado?>(), It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<string?>(),
+                It.IsAny<PrioridadeChamado?>(), It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<Guid?>(), It.IsAny<string?>(),
                 It.IsAny<string?>(), It.IsAny<IEnumerable<StatusChamado>?>(), It.IsAny<DateTime?>(),
                 It.IsAny<DateTime?>(), It.IsAny<MotivoEncerramento?>(), It.IsAny<CancellationToken>()))
-            .Callback<ContextoAcesso, int, int, StatusChamado?, PrioridadeChamado?, Guid?, Guid?, string?, string?, IEnumerable<StatusChamado>?, DateTime?, DateTime?, MotivoEncerramento?, CancellationToken>(
-                (acesso, _, _, _, _, _, _, _, _, statusEntre, dataInicio, dataFim, _, _) =>
+            .Callback<ContextoAcesso, int, int, StatusChamado?, PrioridadeChamado?, Guid?, Guid?, Guid?, string?, string?, IEnumerable<StatusChamado>?, DateTime?, DateTime?, MotivoEncerramento?, CancellationToken>(
+                (acesso, _, _, _, _, _, _, _, _, _, statusEntre, dataInicio, dataFim, _, _) =>
                     capturar?.Invoke(acesso, statusEntre, dataInicio, dataFim))
             .ReturnsAsync((lista, lista.Count));
     }
@@ -78,7 +78,7 @@ public class ListarChamadosQueryHandlerTests
         await _handler.Handle(query, CancellationToken.None);
 
         _repositoryMock.Verify(r => r.ListarAsync(
-            It.IsAny<ContextoAcesso>(), 1, 10, null, null, null, null, null, "ana.colaboradora@camarj.com.br",
+            It.IsAny<ContextoAcesso>(), 1, 10, null, null, null, null, null, null, "ana.colaboradora@camarj.com.br",
             null, null, null, null, It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -86,7 +86,7 @@ public class ListarChamadosQueryHandlerTests
     [Fact]
     public async Task Handle_DeveMapearOsChamadosRetornadosPeloRepositorio()
     {
-        var chamado = new Chamado("Título", "Descrição", "Ana", "ana.colaboradora@camarj.com.br", Guid.NewGuid());
+        var chamado = new Chamado("Título", "Descrição", "Ana", "ana.colaboradora@camarj.com.br", Guid.NewGuid(), Guid.NewGuid());
         SetupListar(itens: [chamado]);
 
         var result = await _handler.Handle(new ListarChamadosQuery(), CancellationToken.None);
@@ -102,7 +102,7 @@ public class ListarChamadosQueryHandlerTests
     {
         // spec correcoes-acesso-chamados AC-02 (review R-04: a listagem também precisa de teste)
         _currentUserMock.SetupGet(c => c.Perfil).Returns(perfil);
-        var chamado = new Chamado("Título", "Descrição", "Ana", "ana.colaboradora@camarj.com.br", Guid.NewGuid());
+        var chamado = new Chamado("Título", "Descrição", "Ana", "ana.colaboradora@camarj.com.br", Guid.NewGuid(), Guid.NewGuid());
         chamado.Comentarios.Add(new Comentario(chamado.Id, "Ana", "público"));
         chamado.Comentarios.Add(new Comentario(chamado.Id, "Atendente", "interno", TipoComentario.Interno));
         SetupListar(itens: [chamado]);

@@ -31,7 +31,7 @@ public class AlterarPrioridadeHandlerTests
     public async Task Handle_DeveAlterarPrioridadeDeMediaPraUrgente()
     {
         var chamadoId = Guid.NewGuid();
-        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid(), PrioridadeChamado.Media);
+        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid(), Guid.NewGuid(), PrioridadeChamado.Media);
 
         _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
@@ -47,7 +47,7 @@ public class AlterarPrioridadeHandlerTests
     public async Task Handle_DeveAlterarDataLimiteAoMudarPrioridade()
     {
         var chamadoId = Guid.NewGuid();
-        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid(), PrioridadeChamado.Baixa);
+        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid(), Guid.NewGuid(), PrioridadeChamado.Baixa);
         var dataLimiteAnterior = chamado.DataLimite;
 
         _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
@@ -68,7 +68,7 @@ public class AlterarPrioridadeHandlerTests
     public async Task Handle_DeveAceitarTodasAsPrioridades(string prioridade)
     {
         var chamadoId = Guid.NewGuid();
-        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
+        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid(), Guid.NewGuid());
 
         _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
@@ -83,7 +83,7 @@ public class AlterarPrioridadeHandlerTests
     public async Task Handle_DeveRejeitarPrioridadeInvalida()
     {
         var chamadoId = Guid.NewGuid();
-        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
+        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid(), Guid.NewGuid());
 
         _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
@@ -98,7 +98,7 @@ public class AlterarPrioridadeHandlerTests
     public async Task Handle_NaoDeveAlterarPrioridadeDeChamadoFechado()
     {
         var chamadoId = Guid.NewGuid();
-        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
+        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid(), Guid.NewGuid());
         chamado.Atribuir(Guid.NewGuid(), "Victor");
         chamado.Resolver();
         chamado.Fechar();
@@ -116,7 +116,7 @@ public class AlterarPrioridadeHandlerTests
     public async Task Handle_DeveRegistrarHistoricoComPrioridadeAnteriorENova()
     {
         var chamadoId = Guid.NewGuid();
-        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid(), PrioridadeChamado.Media);
+        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid(), Guid.NewGuid(), PrioridadeChamado.Media);
 
         _chamadoRepositoryMock.Setup(r => r.ObterPorIdComTrackingAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);

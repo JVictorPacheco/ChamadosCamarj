@@ -1,7 +1,7 @@
 ---
 tipo: funcionalidade
 status: vigente
-atualizado: 2026-09-29
+atualizado: 2026-10-02
 spec: .specs/features/fase-6-admin-log/spec.md
 tags: [funcionalidade, chamado]
 ---
@@ -17,7 +17,7 @@ Todos os perfis, cada um vendo o que lhe cabe. Ver [[Perfis e Permissões]].
 ## A tela de detalhe
 | Bloco | Conteúdo |
 |---|---|
-| Cabeçalho | Número `CAM-N`, título, status, prioridade, categoria, responsável |
+| Cabeçalho | Número `CAM-N`, título, status, prioridade, área, tipo, responsável. O Atendente pode corrigir o tipo |
 | Prazo | Selo colorido do [[SLA]] com o tempo restante ou o atraso |
 | Ações | Botões que mudam conforme o status e o perfil (assumir, resolver, encerrar, cancelar, reabrir, reatribuir, prioridade, forçar encerramento) |
 | Comentários | Conversa do chamado, com anexos por comentário |

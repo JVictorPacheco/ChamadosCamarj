@@ -321,6 +321,6 @@
 
 - [x] 20 min sem gesto em nenhuma aba desconecta; suspensão do computador e reabertura vencida também encerram a sessão. 3 rodadas de review (2 bloqueantes corrigidos). Spec: `.specs/features/logout-inatividade/`.
 
-## 🏷️ Área e Tipo do Chamado (SPEC APROVADA — próxima feature)
+## 🏷️ Área e Tipo do Chamado (FECHADA — 2026-10-02; migration já aplicada no banco)
 
-- [ ] "Categoria" vira **Área** (mesma lista dos grupos); novo campo **Tipo** (Incidente, Dúvida, Solicitação, Customização, Melhoria — configurável pelo Admin). Implementar depois da autorização. Spec: `.specs/features/area-e-tipo-do-chamado/spec.md`.
+- [x] "Categoria" vira **Área** (mesma lista dos grupos); novo campo **Tipo** (Incidente, Dúvida, Solicitação, Customização, Melhoria — configurável pelo Admin). Implementar depois da autorização. Spec: `.specs/features/area-e-tipo-do-chamado/spec.md`.

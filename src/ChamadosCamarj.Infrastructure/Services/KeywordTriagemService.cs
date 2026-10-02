@@ -1,45 +1,49 @@
 using ChamadosCamarj.Application.Common.Interfaces;
+using ChamadosCamarj.Infrastructure.Data;
 
 namespace ChamadosCamarj.Infrastructure.Services;
 
+/// <summary>
+/// Sugere área (grupo) e tipo do chamado por palavras-chave no título/descrição
+/// (spec area-e-tipo-do-chamado AC-04). A lista de palavras é uma proposta inicial, ajustável.
+/// </summary>
 public class KeywordTriagemService : ITriagemService
 {
-    private static readonly Dictionary<Guid, (string Nome, string[] Keywords)> Categorias = new()
-    {
-        [Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567891")] = ("Autorização/Auditoria", ["autorização", "autorizacao", "auditoria", "auditar", "aprovação", "aprovacao"]),
-        [Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567892")] = ("Atendimento", ["atendimento", "suporte", "ajuda", "dúvida", "duvida", "informação", "informacao", "orientação", "orientacao"]),
-        [Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567893")] = ("Super e Tendência", ["supervisão", "supervisao", "tendência", "tendencia", "superintendência", "superintendencia", "gestão", "gestao"]),
-        [Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567894")] = ("Reembolso", ["reembolso", "restituição", "restituicao", "devolução", "devolucao", "ressarcimento", "pagamento"]),
-        [Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567895")] = ("Financeiro", ["financeiro", "fatura", "faturamento", "nota fiscal", "boleto", "cobrança", "cobranca", "pagamento", "conta"]),
-        [Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567896")] = ("Credenciado", ["credenciado", "credenciamento", "credenciar", "rede credenciada", "prestador"]),
-        [Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567897")] = ("Comercial", ["comercial", "contrato", "venda", "negociação", "negociacao", "proposta", "cliente"]),
-        [Guid.Parse("a1b2c3d4-e5f6-7890-abcd-ef1234567898")] = ("Contas Médicas", ["conta médica", "conta medica", "médico", "medico", "hospital", "procedimento", "cirurgia", "consulta", "guia", "paciente"]),
-    };
-
-    private static readonly Dictionary<Guid, (string Nome, string[] Keywords)> Grupos = new()
+    private static readonly Dictionary<Guid, (string Nome, string[] Keywords)> Areas = new()
     {
         [Guid.Parse("b1000000-0000-0000-0000-000000000001")] = ("Reembolso", ["reembolso", "restituição", "restituicao", "devolução", "devolucao", "ressarcimento"]),
         [Guid.Parse("b1000000-0000-0000-0000-000000000002")] = ("Credenciado", ["credenciado", "credenciamento", "credenciar", "rede credenciada", "prestador"]),
-        [Guid.Parse("b1000000-0000-0000-0000-000000000003")] = ("Comercial", ["comercial", "contrato", "venda", "negociação", "negociacao", "proposta"]),
+        [Guid.Parse("b1000000-0000-0000-0000-000000000003")] = ("Comercial", ["comercial", "contrato", "venda", "negociação", "negociacao", "proposta", "cliente"]),
         [Guid.Parse("b1000000-0000-0000-0000-000000000004")] = ("Contas Médicas", ["conta médica", "conta medica", "médico", "medico", "hospital", "procedimento", "cirurgia", "consulta", "guia", "paciente"]),
         [Guid.Parse("b1000000-0000-0000-0000-000000000005")] = ("Autorização/Auditoria", ["autorização", "autorizacao", "auditoria", "auditar", "aprovação", "aprovacao"]),
-        [Guid.Parse("b1000000-0000-0000-0000-000000000006")] = ("Atendimento", ["atendimento", "suporte", "ajuda", "dúvida", "duvida", "informação", "informacao"]),
+        [Guid.Parse("b1000000-0000-0000-0000-000000000006")] = ("Atendimento", ["atendimento", "ligação", "ligacao", "telefone", "beneficiário", "beneficiario"]),
+        [AreaETipoPadrao.AreaFinanceiro] = ("Financeiro", ["financeiro", "fatura", "faturamento", "nota fiscal", "boleto", "cobrança", "cobranca", "pagamento"]),
+        [AreaETipoPadrao.AreaSuperETendencia] = ("Super e Tendência", ["supervisão", "supervisao", "tendência", "tendencia", "superintendência", "superintendencia", "gestão", "gestao"]),
+    };
+
+    private static readonly Dictionary<Guid, (string Nome, string[] Keywords)> Tipos = new()
+    {
+        [AreaETipoPadrao.TipoIncidente] = ("Incidente", ["erro", "não funciona", "nao funciona", "parou", "travou", "travando", "falha", "caiu", "fora do ar", "bug", "não abre", "nao abre", "lento"]),
+        [AreaETipoPadrao.TipoDuvida] = ("Dúvida", ["dúvida", "duvida", "como faço", "como faco", "como fazer", "onde fica", "como funciona", "?"]),
+        [AreaETipoPadrao.TipoSolicitacao] = ("Solicitação", ["solicito", "solicitação", "solicitacao", "preciso de", "acesso", "cadastrar", "cadastro", "liberar", "segunda via", "instalar"]),
+        [AreaETipoPadrao.TipoCustomizacao] = ("Customização", ["customizar", "customização", "customizacao", "personalizar", "personalização", "personalizacao", "ajustar o", "alterar o layout"]),
+        [AreaETipoPadrao.TipoMelhoria] = ("Melhoria", ["melhoria", "melhorar", "sugestão", "sugestao", "seria bom", "poderia ter", "otimizar"]),
     };
 
     public Task<TriagemSugestao> SugerirAsync(string titulo, string descricao, CancellationToken cancellationToken = default)
     {
         var texto = $"{titulo ?? ""} {descricao ?? ""}".ToLowerInvariant();
 
-        var (categoriaId, categoriaNome, catScore) = MelhorMatch(texto, Categorias);
-        var (grupoId, grupoNome, _) = MelhorMatch(texto, Grupos);
+        var (areaId, areaNome, areaScore) = MelhorMatch(texto, Areas);
+        var (tipoId, tipoNome, tipoScore) = MelhorMatch(texto, Tipos);
 
         return Task.FromResult(new TriagemSugestao
         {
-            CategoriaId = categoriaId,
-            CategoriaNome = categoriaNome,
-            GrupoId = grupoId,
-            GrupoNome = grupoNome,
-            Confianca = catScore
+            AreaId = areaId,
+            AreaNome = areaNome,
+            TipoId = tipoId,
+            TipoNome = tipoNome,
+            Confianca = areaScore + tipoScore
         });
     }
 

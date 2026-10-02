@@ -2,7 +2,8 @@ import { apiFetch } from '@/lib/api'
 import type {
   AbrirChamadoRequest,
   AnexoResponse,
-  CategoriaResponse,
+  GrupoResponse,
+  TipoChamadoResponse,
   ChamadoResponse,
   ComentarChamadoRequest,
   ComentarioResponse,
@@ -19,7 +20,8 @@ export interface ListarChamadosFiltros {
   status?: StatusChamado
   prioridade?: PrioridadeChamado
   responsavelId?: string
-  categoriaId?: string
+  areaId?: string
+  tipoId?: string
   busca?: string
   solicitanteEmail?: string
   finalizados?: boolean
@@ -68,8 +70,21 @@ export function comentar(chamadoId: string, dados: ComentarChamadoRequest): Prom
   })
 }
 
-export function listarCategorias(): Promise<CategoriaResponse[]> {
-  return apiFetch<CategoriaResponse[]>('/categorias')
+/** Tipos ativos — os que podem ser escolhidos na abertura. */
+export function listarTipos(): Promise<TipoChamadoResponse[]> {
+  return apiFetch<TipoChamadoResponse[]>('/tipos')
+}
+
+/** Áreas = grupos (spec area-e-tipo-do-chamado). */
+export function listarAreas(): Promise<GrupoResponse[]> {
+  return apiFetch<GrupoResponse[]>('/grupos')
+}
+
+export function reclassificarTipo(chamadoId: string, novoTipoId: string): Promise<void> {
+  return apiFetch<void>(`/chamados/${chamadoId}/tipo`, {
+    method: 'PATCH',
+    body: JSON.stringify({ novoTipoId }),
+  })
 }
 
 // Quem fez a ação (usuarioId/usuarioNome) vem do token no backend agora — nenhuma
@@ -166,10 +181,10 @@ export function listarHistorico(chamadoId: string): Promise<HistoricoResponse[]>
 }
 
 export interface TriagemSugestao {
-  categoriaId: string | null
-  categoriaNome: string | null
-  grupoId: string | null
-  grupoNome: string | null
+  areaId: string | null
+  areaNome: string | null
+  tipoId: string | null
+  tipoNome: string | null
   confianca: number
   temSugestao: boolean
 }

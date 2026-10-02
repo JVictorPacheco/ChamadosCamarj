@@ -1,8 +1,8 @@
 ---
 tipo: funcionalidade
 status: vigente
-atualizado: 2026-10-01
-spec: .specs/features/autorizacao-chamados/spec.md
+atualizado: 2026-10-02
+spec: .specs/features/area-e-tipo-do-chamado/spec.md
 tags: [funcionalidade, equipes]
 ---
 
@@ -20,8 +20,8 @@ equipe continuam enxergando e acompanhando os chamados dele.
 Reembolso · Credenciado · Comercial · Contas Médicas · Autorização/Auditoria · Atendimento
 
 ## O que é um "chamado da equipe"
-Um chamado é da equipe quando **foi aberto por** um membro da equipe **ou** está **sob a
-responsabilidade** de um membro da equipe.
+Um chamado é da equipe quando **foi aberto por** um membro da equipe, está **sob a
+responsabilidade** de um membro da equipe **ou** tem a **área** da equipe.
 
 ## Regras de negócio
 - Cada usuário pertence a **no máximo uma** equipe.
@@ -33,13 +33,12 @@ responsabilidade** de um membro da equipe.
 - **Admin** vê todos os chamados, **mesmo pertencendo a uma equipe**.
 - O **Admin** cria, edita e desativa equipes e define a equipe de cada usuário. Ver
   [[Administração]].
-- A equipe também é **sugerida automaticamente** na abertura, junto com a categoria. Ver
-  [[Abertura de Chamados]].
+- A lista de equipes é também a lista de **áreas** da abertura de chamado: a área já vem com a
+  equipe de quem abre. Ver [[Abertura de Chamados]] e [[ADR-008 Área do chamado é a equipe]].
 
 As regras completas de quem vê e quem faz o quê estão em [[Perfis e Permissões]].
 
 ## Não confundir
 - **Equipe** (esta nota) organiza quem enxerga e acompanha chamados.
 - **Grupo de chat** é uma conversa coletiva no [[Chat Corporativo]]. São coisas independentes.
-- **Categoria** é o assunto do chamado; equipe é um grupo de pessoas. Os nomes se parecem porque
-  cada área costuma ter a sua categoria.
+- **Tipo** do chamado (incidente, dúvida...) não tem relação com a equipe — é a natureza do pedido.

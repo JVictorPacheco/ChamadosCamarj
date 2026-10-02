@@ -9,7 +9,9 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<Chamado> Chamados => Set<Chamado>();
     public DbSet<Comentario> Comentarios => Set<Comentario>();
+    // Legado (substituída por Área + Tipo); tabela mantida até a limpeza pós-deploy.
     public DbSet<Categoria> Categorias => Set<Categoria>();
+    public DbSet<TipoChamado> TiposChamado => Set<TipoChamado>();
     public DbSet<Anexo> Anexos => Set<Anexo>();
     public DbSet<HistoricoEntrada> Historico => Set<HistoricoEntrada>();
     public DbSet<UsuarioPerfil> UsuariosPerfil => Set<UsuarioPerfil>();

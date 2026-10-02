@@ -62,7 +62,7 @@ public class ListarChamadosQueryHandler : IRequestHandler<ListarChamadosQuery, P
         {
             var (todos, totalIgnorado) = await _chamadoRepository.ListarAsync(
                 acesso, 1, int.MaxValue, status, prioridade, request.ResponsavelId,
-                request.CategoriaId, request.Busca, request.SolicitanteEmail,
+                request.AreaId, request.TipoId, request.Busca, request.SolicitanteEmail,
                 statusEntre, dataInicio, dataFim, null, cancellationToken);
 
             var filtrados = todos.Where(c => SlaCalculo.CalcularStatus(c.DataLimite) == slaStatus.Value).ToList();
@@ -76,7 +76,7 @@ public class ListarChamadosQueryHandler : IRequestHandler<ListarChamadosQuery, P
 
         var (items, total) = await _chamadoRepository.ListarAsync(
             acesso, request.Pagina, request.TamanhoPagina, status, prioridade,
-            request.ResponsavelId, request.CategoriaId, request.Busca,
+            request.ResponsavelId, request.AreaId, request.TipoId, request.Busca,
             request.SolicitanteEmail, statusEntre, dataInicio, dataFim,
             motivoEncerramento, cancellationToken);
 

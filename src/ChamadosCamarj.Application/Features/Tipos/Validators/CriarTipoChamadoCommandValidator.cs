@@ -1,11 +1,11 @@
 using FluentValidation;
-using ChamadosCamarj.Application.Features.Categorias.Commands;
+using ChamadosCamarj.Application.Features.Tipos.Commands;
 
-namespace ChamadosCamarj.Application.Features.Categorias.Validators;
+namespace ChamadosCamarj.Application.Features.Tipos.Validators;
 
-public class CriarCategoriaCommandValidator : AbstractValidator<CriarCategoriaCommand>
+public class CriarTipoChamadoCommandValidator : AbstractValidator<CriarTipoChamadoCommand>
 {
-    public CriarCategoriaCommandValidator()
+    public CriarTipoChamadoCommandValidator()
     {
         RuleFor(c => c.Nome)
             .NotEmpty().WithMessage("Nome é obrigatório.")

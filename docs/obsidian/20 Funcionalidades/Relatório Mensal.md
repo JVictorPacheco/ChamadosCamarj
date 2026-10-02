@@ -1,7 +1,7 @@
 ---
 tipo: funcionalidade
 status: vigente
-atualizado: 2026-09-29
+atualizado: 2026-10-02
 spec: .specs/features/relatorio-mensal/spec.md
 tags: [funcionalidade, relatório]
 ---
@@ -22,7 +22,7 @@ superintendência no fechamento do mês.
 ## Conteúdo
 - **Seletor de mês.**
 - **Totais** de abertos, resolvidos e cancelados, com **variação %** em relação ao mês anterior.
-- Quebra **por categoria** e **por atendente**.
+- Quebras **por área**, **por tipo** e **por atendente** (também na exportação).
 - **Cumprimento do SLA** no mês. Ver [[SLA]].
 - **Tempo médio de resolução.**
 

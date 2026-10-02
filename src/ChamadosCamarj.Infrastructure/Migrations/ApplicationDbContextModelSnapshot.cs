@@ -17,7 +17,7 @@ namespace ChamadosCamarj.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.19")
+                .HasAnnotation("ProductVersion", "9.0.20")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -112,7 +112,10 @@ namespace ChamadosCamarj.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("CategoriaId")
+                    b.Property<Guid?>("AreaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CategoriaId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime?>("DataAtualizacao")
@@ -176,12 +179,17 @@ namespace ChamadosCamarj.Infrastructure.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
+                    b.Property<Guid?>("TipoId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Titulo")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AreaId");
 
                     b.HasIndex("CategoriaId");
 
@@ -197,6 +205,8 @@ namespace ChamadosCamarj.Infrastructure.Migrations
                     b.HasIndex("SolicitanteEmail");
 
                     b.HasIndex("Status");
+
+                    b.HasIndex("TipoId");
 
                     b.ToTable("Chamados", (string)null);
                 });
@@ -569,6 +579,38 @@ namespace ChamadosCamarj.Infrastructure.Migrations
                     b.ToTable("HistoricoEntradas", (string)null);
                 });
 
+            modelBuilder.Entity("ChamadosCamarj.Domain.Entities.TipoChamado", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Ativo")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("DataAtualizacao")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DataCriacao")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Descricao")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Nome")
+                        .IsUnique();
+
+                    b.ToTable("TiposChamado", (string)null);
+                });
+
             modelBuilder.Entity("ChamadosCamarj.Domain.Entities.UsuarioPerfil", b =>
                 {
                     b.Property<Guid>("Id")
@@ -647,13 +689,26 @@ namespace ChamadosCamarj.Infrastructure.Migrations
 
             modelBuilder.Entity("ChamadosCamarj.Domain.Entities.Chamado", b =>
                 {
+                    b.HasOne("ChamadosCamarj.Domain.Entities.Grupo", "Area")
+                        .WithMany()
+                        .HasForeignKey("AreaId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("ChamadosCamarj.Domain.Entities.Categoria", "Categoria")
                         .WithMany("Chamados")
                         .HasForeignKey("CategoriaId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("ChamadosCamarj.Domain.Entities.TipoChamado", "Tipo")
+                        .WithMany("Chamados")
+                        .HasForeignKey("TipoId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Area");
 
                     b.Navigation("Categoria");
+
+                    b.Navigation("Tipo");
                 });
 
             modelBuilder.Entity("ChamadosCamarj.Domain.Entities.ChatMensagem", b =>
@@ -737,6 +792,11 @@ namespace ChamadosCamarj.Infrastructure.Migrations
             modelBuilder.Entity("ChamadosCamarj.Domain.Entities.Grupo", b =>
                 {
                     b.Navigation("Usuarios");
+                });
+
+            modelBuilder.Entity("ChamadosCamarj.Domain.Entities.TipoChamado", b =>
+                {
+                    b.Navigation("Chamados");
                 });
 #pragma warning restore 612, 618
         }

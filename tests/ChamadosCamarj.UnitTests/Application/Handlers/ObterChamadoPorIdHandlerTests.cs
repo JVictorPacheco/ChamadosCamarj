@@ -24,7 +24,7 @@ public class ObterChamadoPorIdHandlerTests
     public async Task Handle_QuandoChamadoExiste_DeveRetornarResponse()
     {
         var chamadoId = Guid.NewGuid();
-        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
+        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid(), Guid.NewGuid());
 
         _repositoryMock.Setup(r => r.ObterPorIdAsync(chamadoId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(chamado);
@@ -48,7 +48,7 @@ public class ObterChamadoPorIdHandlerTests
 
     private Chamado ChamadoComComentarios(Guid id)
     {
-        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid());
+        var chamado = new Chamado("Título", "Descrição", "João", "joao@camarj.com.br", Guid.NewGuid(), Guid.NewGuid());
         chamado.Comentarios.Add(new Comentario(id, "Ana", "público 1"));
         chamado.Comentarios.Add(new Comentario(id, "Ana", "público 2"));
         chamado.Comentarios.Add(new Comentario(id, "Atendente", "interno", TipoComentario.Interno));

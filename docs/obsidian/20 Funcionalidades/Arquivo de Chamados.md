@@ -1,7 +1,7 @@
 ---
 tipo: funcionalidade
 status: vigente
-atualizado: 2026-09-29
+atualizado: 2026-10-02
 spec: .specs/features/arquivo-de-chamados/spec.md
 tags: [funcionalidade, arquivo]
 ---
@@ -21,7 +21,7 @@ Somente chamados **finalizados**: *Resolvido*, *Fechado* e *Cancelado*.
 
 ## Filtros
 - **Período** (De / Até), pela data de abertura.
-- **Status** (entre os três finalizados), **prioridade**, **categoria**.
+- **Status** (entre os três finalizados), **prioridade**, **área**, **tipo**.
 - **Busca** por texto ou número (`CAM-42`).
 
 ## Regras de negócio

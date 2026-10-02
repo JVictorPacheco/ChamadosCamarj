@@ -22,8 +22,11 @@ public static class ChamadoMappings
             chamado.SolicitanteEmail,
             chamado.ResponsavelId,
             chamado.ResponsavelNome,
-            chamado.CategoriaId,
-            chamado.Categoria?.Nome,
+            chamado.AreaId,
+            chamado.Area?.Nome,
+            chamado.TipoId,
+            // Chamados anteriores à mudança (ou abertos pela versão antiga durante o deploy) ainda sem tipo.
+            chamado.Tipo?.Nome ?? "Não classificado",
             chamado.DataLimite,
             chamado.DataConclusao,
             chamado.DataCriacao,

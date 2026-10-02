@@ -62,7 +62,7 @@ builder.Services.AddValidatorsFromAssembly(Assembly.Load("ChamadosCamarj.Applica
 // Dependency Injection
 // ─────────────────────────────
 builder.Services.AddScoped<IChamadoRepository, ChamadoRepository>();
-builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
+builder.Services.AddScoped<ITipoChamadoRepository, TipoChamadoRepository>();
 builder.Services.AddScoped<IHistoricoRepository, HistoricoRepository>();
 builder.Services.AddScoped<IUsuarioPerfilRepository, UsuarioPerfilRepository>();
 builder.Services.AddScoped<IGrupoRepository, GrupoRepository>();

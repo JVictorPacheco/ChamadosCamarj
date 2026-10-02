@@ -36,7 +36,8 @@ public interface IChamadoRepository
         StatusChamado? status = null,
         PrioridadeChamado? prioridade = null,
         Guid? responsavelId = null,
-        Guid? categoriaId = null,
+        Guid? areaId = null,
+        Guid? tipoId = null,
         string? busca = null,
         string? solicitanteEmail = null,
         IEnumerable<StatusChamado>? statusEntre = null,
@@ -59,6 +60,7 @@ public interface IChamadoRepository
     Task<Dictionary<StatusChamado, int>> ContarPorStatusAgrupadoAsync(ContextoAcesso acesso, CancellationToken cancellationToken = default);
     Task<int> ContarResolvidosHojeAsync(ContextoAcesso acesso, CancellationToken cancellationToken = default);
     Task<double?> ObterTempoMedioResolucaoHorasAsync(ContextoAcesso acesso, CancellationToken cancellationToken = default);
-    Task<List<CategoriaContagem>> ContarPorCategoriaAsync(ContextoAcesso acesso, CancellationToken cancellationToken = default);
+    Task<List<ContagemPorNome>> ContarPorAreaAsync(ContextoAcesso acesso, CancellationToken cancellationToken = default);
+    Task<List<ContagemPorNome>> ContarPorTipoAsync(ContextoAcesso acesso, CancellationToken cancellationToken = default);
     Task<Dictionary<string, int>> ContarPorPrioridadeAsync(ContextoAcesso acesso, CancellationToken cancellationToken = default);
 }

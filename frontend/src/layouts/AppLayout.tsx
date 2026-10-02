@@ -220,10 +220,10 @@ export function AppLayout() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={location.pathname === '/admin/categorias'}>
-                    <Link to="/admin/categorias">
+                  <SidebarMenuButton asChild isActive={location.pathname === '/admin/tipos'}>
+                    <Link to="/admin/tipos">
                       <Tags className="h-4 w-4" />
-                      Categorias
+                      Tipos de chamado
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -231,7 +231,7 @@ export function AppLayout() {
                   <SidebarMenuButton asChild isActive={location.pathname === '/admin/grupos'}>
                     <Link to="/admin/grupos">
                       <FolderKanban className="h-4 w-4" />
-                      Grupos
+                      Áreas e Grupos
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

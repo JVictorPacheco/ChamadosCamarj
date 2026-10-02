@@ -50,9 +50,15 @@ public class ObterRelatorioMensalQueryHandler : IRequestHandler<ObterRelatorioMe
             comSla.Count > 0 ? Math.Round(dentroDoPrazo * 100.0 / comSla.Count, 1) : null
         );
 
-        var porCategoria = abertos
-            .GroupBy(e => e.CategoriaNome)
-            .Select(g => new PorCategoriaItem(g.Key, g.Count()))
+        var porArea = abertos
+            .GroupBy(e => e.AreaNome)
+            .Select(g => new PorNomeQuantidadeItem(g.Key, g.Count()))
+            .OrderByDescending(item => item.Quantidade)
+            .ToList();
+
+        var porTipo = abertos
+            .GroupBy(e => e.TipoNome)
+            .Select(g => new PorNomeQuantidadeItem(g.Key, g.Count()))
             .OrderByDescending(item => item.Quantidade)
             .ToList();
 
@@ -102,7 +108,8 @@ public class ObterRelatorioMensalQueryHandler : IRequestHandler<ObterRelatorioMe
             cancelados.Count,
             tempoMedio.HasValue ? Math.Round(tempoMedio.Value, 1) : null,
             sla,
-            porCategoria,
+            porArea,
+            porTipo,
             porAtendente,
             comparacao,
             slaEvolucao

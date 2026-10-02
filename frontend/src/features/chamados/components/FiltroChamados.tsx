@@ -1,12 +1,13 @@
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useCategorias } from '../hooks/useCategorias'
+import { useAreas, useTipos } from '../hooks/useTiposEAreas'
 import type { PrioridadeChamado, StatusChamado, SlaStatus, MotivoEncerramento } from '@/types/api'
 
 export interface FiltroChamadosValue {
   status?: StatusChamado
-  categoriaId?: string
+  areaId?: string
+  tipoId?: string
   busca?: string
   prioridade?: PrioridadeChamado
   dataInicio?: string
@@ -38,7 +39,8 @@ export function FiltroChamados({
   mostrarSla = false,
   mostrarMotivo = false,
 }: FiltroChamadosProps) {
-  const { data: categorias } = useCategorias()
+  const { data: areas } = useAreas()
+  const { data: tipos } = useTipos()
 
   return (
     <div className="flex flex-wrap items-end gap-2">
@@ -81,19 +83,34 @@ export function FiltroChamados({
       </Select>
 
       <Select
-        value={value.categoriaId ?? TODOS}
-        onValueChange={(categoriaId) =>
-          onChange({ ...value, categoriaId: categoriaId === TODOS ? undefined : categoriaId })
-        }
+        value={value.areaId ?? TODOS}
+        onValueChange={(areaId) => onChange({ ...value, areaId: areaId === TODOS ? undefined : areaId })}
       >
         <SelectTrigger>
-          <SelectValue placeholder="Categoria" />
+          <SelectValue placeholder="Área" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={TODOS}>Todas as categorias</SelectItem>
-          {categorias?.map((categoria) => (
-            <SelectItem key={categoria.id} value={categoria.id}>
-              {categoria.nome}
+          <SelectItem value={TODOS}>Todas as áreas</SelectItem>
+          {areas?.map((area) => (
+            <SelectItem key={area.id} value={area.id}>
+              {area.nome}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <Select
+        value={value.tipoId ?? TODOS}
+        onValueChange={(tipoId) => onChange({ ...value, tipoId: tipoId === TODOS ? undefined : tipoId })}
+      >
+        <SelectTrigger>
+          <SelectValue placeholder="Tipo" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value={TODOS}>Todos os tipos</SelectItem>
+          {tipos?.map((tipo) => (
+            <SelectItem key={tipo.id} value={tipo.id}>
+              {tipo.nome}
             </SelectItem>
           ))}
         </SelectContent>

@@ -15,5 +15,6 @@ public enum AcaoHistorico
     PrioridadeAlterada = 8,
     StatusAlterado = 9,
     EncerramentoForcado = 10,
-    Reaberto = 11
+    Reaberto = 11,
+    TipoReclassificado = 12
 }
