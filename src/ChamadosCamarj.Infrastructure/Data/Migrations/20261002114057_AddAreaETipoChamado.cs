@@ -92,7 +92,8 @@ namespace ChamadosCamarj.Infrastructure.Data.Migrations
                     $"VALUES ('{id}', '{nome}', '{descricao}', {(ativo ? "TRUE" : "FALSE")}, now()) ON CONFLICT DO NOTHING;");
             }
 
-            // Área = grupo de mesmo nome da categoria (cria o grupo se faltar); tipo = Não classificado.
+            // Uma área (grupo) para cada categoria que ainda não tem; depois área e tipo dos chamados.
+            migrationBuilder.Sql(AreaETipoPadrao.SqlCriarAreasDasCategorias());
             migrationBuilder.Sql(AreaETipoPadrao.SqlPreencherAreaETipo());
         }
 

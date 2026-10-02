@@ -24,7 +24,7 @@
 ## Validação
 - [ ] **T13.** Aplicar a migration no Supabase (aprovada em 2026-10-02) e conferir: chamados por categoria antes = por área depois; nenhum chamado sem área/tipo
 - [ ] **T14.** Verificação ao vivo (API + tela) com dados de teste, apagados no final
-- [ ] **T15.** Review independente
+- [x] **T15.** Review independente (1 bloqueante e 7 atenção — corrigidos ou registrados, ver review.md)
 - [ ] **T16.** Gates finais
 
 ## Pendências conhecidas

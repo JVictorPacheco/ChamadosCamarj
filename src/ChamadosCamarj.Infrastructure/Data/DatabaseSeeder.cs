@@ -47,8 +47,8 @@ public static class DatabaseSeeder
 
         await db.SaveChangesAsync();
 
-        // Chamados sem área/tipo (anteriores à mudança, ou abertos pela versão anterior durante o
-        // deploy) recebem área = grupo da categoria e tipo = "Não classificado". Idempotente.
+        // Chamados sem área/tipo (abertos pela versão anterior durante o deploy) recebem área = grupo
+        // da categoria e tipo = "Não classificado". Idempotente e não cria áreas (review R-01).
         await db.Database.ExecuteSqlRawAsync(AreaETipoPadrao.SqlPreencherAreaETipo());
 
         if (!await db.UsuariosPerfil.AnyAsync())

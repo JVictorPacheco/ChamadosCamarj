@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import { useNavigate } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
@@ -49,6 +49,11 @@ export function AbrirChamadoPage() {
     defaultValues: { prioridade: 'Media', areaId: perfil?.grupoId ?? '', tipoId: '' },
   })
 
+  // Área padrão (grupo do usuário) só vale se for uma área ativa da lista — review R-04.
+  useEffect(() => {
+    if (areas && perfil?.grupoId && !areas.some((a) => a.id === perfil.grupoId)) setValue('areaId', '')
+  }, [areas, perfil?.grupoId, setValue])
+
   const titulo = useWatch({ control, name: 'titulo' })
   const descricao = useWatch({ control, name: 'descricao' })
 
@@ -61,15 +66,15 @@ export function AbrirChamadoPage() {
       const resultado = await sugerirTriagem(titulo ?? '', descricao ?? '')
       if (resultado.temSugestao) {
         setSugestao(resultado)
-        if (resultado.areaId) setValue('areaId', resultado.areaId)
-        if (resultado.tipoId) setValue('tipoId', resultado.tipoId)
+        if (resultado.areaId && areas?.some((a) => a.id === resultado.areaId)) setValue('areaId', resultado.areaId)
+        if (resultado.tipoId && tipos?.some((t) => t.id === resultado.tipoId)) setValue('tipoId', resultado.tipoId)
       }
     } catch {
       setSugestao(null)
     } finally {
       setSugerindo(false)
     }
-  }, [titulo, descricao, setValue])
+  }, [titulo, descricao, setValue, areas, tipos])
 
   const onSubmit = (values: FormValues) => {
     if (!perfil) return

@@ -3,7 +3,9 @@ import { listarAreas, listarTipos } from '../api'
 
 export function useTipos() {
   return useQuery({
-    queryKey: ['tipos'],
+    // Chave própria: o Admin usa ['tipos'] com a lista completa (inclui inativos) — review R-03.
+    // O Admin invalida ['tipos'], que também invalida esta (prefixo).
+    queryKey: ['tipos', 'ativos'],
     queryFn: listarTipos,
   })
 }

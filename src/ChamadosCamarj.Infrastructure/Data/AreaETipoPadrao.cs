@@ -30,21 +30,27 @@ public static class AreaETipoPadrao
     ];
 
     /// <summary>
-    /// Idempotente. 1) cria um grupo (área) para cada categoria que ainda não tem grupo de mesmo nome;
-    /// 2) área = grupo de mesmo nome da categoria, para chamados sem área; 3) tipo = "Não classificado"
-    /// para chamados sem tipo.
+    /// SÓ NA MIGRATION (uma vez): cria um grupo (área) para cada categoria que ainda não tem grupo de
+    /// mesmo nome, herdando se a categoria estava ativa. Não roda no seeder: com a tabela de categorias
+    /// ainda no banco, rodar a cada subida recriaria uma área que o Admin tivesse renomeado (review R-01).
     /// </summary>
-    public static string SqlPreencherAreaETipo() => $"""
+    public static string SqlCriarAreasDasCategorias() => $"""
         INSERT INTO "Grupos" ("Id", "Nome", "Descricao", "Ativo", "DataCriacao")
         SELECT CASE cat."Nome"
                  WHEN 'Financeiro' THEN '{AreaFinanceiro}'::uuid
                  WHEN 'Super e Tendência' THEN '{AreaSuperETendencia}'::uuid
                  ELSE gen_random_uuid() END,
-               cat."Nome", COALESCE(NULLIF(cat."Descricao", ''), 'Área ' || cat."Nome"), TRUE, now()
+               cat."Nome", COALESCE(NULLIF(cat."Descricao", ''), 'Área ' || cat."Nome"), cat."Ativa", now()
         FROM "Categorias" cat
         WHERE NOT EXISTS (SELECT 1 FROM "Grupos" g WHERE g."Nome" = cat."Nome")
         ON CONFLICT DO NOTHING;
+        """;
 
+    /// <summary>
+    /// Idempotente (migration e cada subida da API): área = grupo de mesmo nome da categoria, para
+    /// chamados sem área; tipo = "Não classificado", para chamados sem tipo. Não cria nada.
+    /// </summary>
+    public static string SqlPreencherAreaETipo() => $"""
         UPDATE "Chamados" c
         SET "AreaId" = g."Id"
         FROM "Categorias" cat
