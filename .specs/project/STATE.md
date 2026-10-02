@@ -18,19 +18,62 @@
      2026-10-02). A versão antiga em produção continua funcionando com ela, mas até o deploy
      **não reclassificar tipo de chamado real** (a versão antiga não conhece essa ação no histórico);
    - `correcoes-pre-deploy` **não tem migration**.
-1. **Editar chamado** — spec aprovada em 2026-10-02 (`.specs/features/editar-chamado/`), em andamento
-   na branch `feature/editar-chamado`.
+1. **Editar chamado** — **FECHADA em 2026-10-02** na branch `feature/editar-chamado` (PR para `develop`
+   a cargo do usuário). Ver seção da sessão abaixo.
 2. **Controle de acesso por módulo** — spec aprovada em 2026-10-02 (`.specs/features/controle-de-acesso/`).
 3. **SLA em dias úteis + cadastro de feriados** — decisões de negócio tomadas (ver Pendências); falta spec.
 4. **Limpeza de Categorias** — depois do deploy e de reclassificar os 40 chamados antigos ("Não classificado").
 - Avulso, a qualquer momento: correção do modal "Alterar prioridade" (abre com a prioridade de quando
   a página carregou) — como bugfix, com `/analise-cod`.
+- Avulso: o diálogo de **Reabrir** diz "voltará para o status Em Andamento", mas reabrir leva a
+  **Aberto** (pré-existente, achado em 2026-10-02) — corrigir o texto como bugfix.
 - Do usuário: trocar a senha de `suporte@camarj.com.br`; verificar os AC-49 a AC-52 do chat.
 - Backlog sem prioridade: abertura por e-mail (IMAP), filtro de SLA na tela, exportação CSV/PDF, carga
   por atendente.
 
 **Processo:** toda feature (e toda correção de bug) passa pela análise de impacto `/analise-cod` — o
 usuário pediu cuidado explícito com efeitos fora do escopo (regra 5).
+
+---
+
+## Sessão de 2026-10-02 (noite) — Editar Chamado
+
+### Contexto
+Primeira feature da ordem combinada. Spec aprovada pelo usuário com as regras dele; fluxo `/sdd`
+completo, **primeira feature com a `/analise-cod`**. Spec, design, tasks, impacto e review em
+`.specs/features/editar-chamado/`.
+
+### Decisões do usuário (2026-10-02)
+- Modal no detalhe; só título e descrição; histórico com antes e depois; sem notificação.
+- Quem edita: **quem abriu** (qualquer perfil) enquanto ninguém assumiu; o **responsável atual**; o
+  **Admin** todos. Colega de grupo não. **Encerrado ninguém edita**; reaberto volta às regras.
+- Contratos C1–C5 aprovados antes de implementar (regra 3).
+
+### O que foi feito
+- Servidor: `ChamadoPermissoes` com `DadosDoChamado` e regra nova de `Editar` (substitui o AC-20 de
+  `autorizacao-chamados`); `AcessoChamadoBehaviour` carrega o chamado só quando a regra depende dele;
+  encerrado → 400 com mensagem própria; `AcaoHistorico.ChamadoEditado` (sem migration) com JSON só dos
+  campos que mudaram; salvar sem mudança não grava.
+- Tela: botão "Editar" (mesma regra, `lib/permissoes.ts`), `EditarChamadoModal` (limites, conflito
+  mantém o texto e mostra "Texto atual no chamado", adota a versão nova uma vez só, campos não
+  alterados vão com o valor atual), histórico "Chamado editado" com antes → depois.
+- Obsidian: Acompanhamento do Chamado, Perfis e Permissões.
+
+### Verificação
+- `dotnet test` **475/475** (eram 444); `dotnet build` 0 erros; `npm run build` ok; lint sem avisos novos.
+- **E2E 17/17** (3 novos), rodado de novo após as correções do review.
+- **Ao vivo via API 23/23** com contas `teste.edit.*` (quem abriu, colega, Atendente responsável, outro
+  Atendente da equipe, Admin; reatribuição, encerrado, reaberto, histórico, conflito).
+- **Na tela com contas não-Admin**: as 5 situações do botão bateram (cobre o R-04).
+- **`/analise-cod`:** 🔴 0 · 🟡 4 · ✅ 9 (re-análise após o review: sem novos consumidores).
+- **Review independente:** APROVADO COM RESSALVAS, 0 bloqueantes; R-01, R-02, R-03 e 2 sugestões
+  corrigidos; R-04 coberto pela verificação na tela.
+
+### Atenção
+- **Antes do deploy, não pode haver entrada `ChamadoEditado` em chamado real:** a versão em produção
+  não conhece esse valor e daria erro ao abrir o histórico. A tela antiga não edita. Dados de teste
+  desta sessão (19 chamados `[TESTE-E2E]`/`[TESTE-EDIT]` CAM-101..119, 4 contas `teste.edit.*`) — todas as
+  16 entradas `ChamadoEditado` do banco estão neles: **PENDENTE DE APAGAR com OK do usuário**.
 
 ### Pendências gerais (consolidado em 2026-10-02, pós correcoes-pre-deploy)
 - **SLA — DECIDIDO pelo usuário em 2026-10-02:** conta só o **expediente de 08:00 às 18:00 em dias

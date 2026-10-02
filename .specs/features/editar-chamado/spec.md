@@ -1,7 +1,7 @@
 # Editar Chamado — Especificação
 
-> **SDD:** em-review
-> **Status:** `Pendente`
+> **SDD:** fechada
+> **Status:** `Concluída`
 > **Branch:** `feature/editar-chamado`
 > **Criada em:** 2026-10-02
 > **Atualizada em:** 2026-10-02
@@ -186,11 +186,12 @@ A pessoa pode editar o chamado quando ele **não está encerrado** (Resolvido, F
 
 ## 8. Gate Checks
 
-- [ ] `dotnet build` — 0 erros
-- [ ] `dotnet test` — X testes, 0 falhas
-- [ ] `npm run build` — 0 erros
-- [ ] E2E Playwright — passando
-- [ ] ACs verificados por testes automatizados ou ao vivo
-- [ ] Obsidian atualizado (regra 6): Acompanhamento do Chamado, Perfis e Permissões
-- [ ] `spec.md` com status final; `STATE.md` e `ROADMAP.md` atualizados
+- [x] `dotnet build` — 0 erros
+- [x] `dotnet test` — 475 testes, 0 falhas
+- [x] `npm run build` — 0 erros
+- [x] E2E Playwright — 17/17
+- [x] ACs verificados por testes automatizados, ao vivo (23/23) e na tela (contas não-Admin)
+- [x] Obsidian atualizado (regra 6): Acompanhamento do Chamado, Perfis e Permissões
+- [x] `spec.md` com status final; `STATE.md` e `ROADMAP.md` atualizados
+- [x] `/analise-cod` sem 🔴; review sem bloqueantes
 - [ ] PR aberto com base `develop`
