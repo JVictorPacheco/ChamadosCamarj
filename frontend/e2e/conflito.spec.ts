@@ -35,6 +35,9 @@ test('detalhe: ação sobre versão desatualizada avisa, recarrega e a nova tent
 })
 
 test('kanban: mover cartão desatualizado avisa e o cartão volta à coluna', async ({ page }) => {
+  // Sem tempo real (conexão caída): o quadro não se atualiza sozinho e fica com a versão antiga —
+  // é o cenário do AC-14. Com o tempo real ativo, o quadro se atualizaria e mover seria legítimo.
+  await page.route('**/hubs/**', (rota) => rota.abort())
   const titulo = `${PREFIXO} Conflito kanban ${Date.now()}`
   const chamado = await criarChamado(page, titulo)
   await page.goto('/atendimento/kanban')
@@ -53,7 +56,9 @@ test('kanban: mover cartão desatualizado avisa e o cartão volta à coluna', as
   await page.mouse.up()
 
   await expect(page.getByText(MENSAGEM)).toBeVisible() // AC-14
-  // O cartão continua na coluna Aberto: o status real não mudou.
+  // O status real não mudou e, na tela, o cartão voltou à coluna Aberto (review R-05).
   const atual = await api<{ status: string }>(page, 'GET', `/chamados/${chamado.id}`)
   expect(atual.status).toBe('Aberto')
+  const colunaAberto = page.locator('div.rounded-lg.border-2', { has: page.getByRole('heading', { name: 'Aberto', exact: true }) })
+  await expect(colunaAberto.getByText(titulo)).toBeVisible()
 })
