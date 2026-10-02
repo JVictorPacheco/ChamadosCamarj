@@ -73,7 +73,8 @@ completo, **primeira feature com a `/analise-cod`**. Spec, design, tasks, impact
 - **Antes do deploy, não pode haver entrada `ChamadoEditado` em chamado real:** a versão em produção
   não conhece esse valor e daria erro ao abrir o histórico. A tela antiga não edita. Dados de teste
   desta sessão (19 chamados `[TESTE-E2E]`/`[TESTE-EDIT]` CAM-101..119, 4 contas `teste.edit.*`) — todas as
-  16 entradas `ChamadoEditado` do banco estão neles: **PENDENTE DE APAGAR com OK do usuário**.
+  16 entradas `ChamadoEditado` do banco estavam neles: **apagados em 2026-10-02 com OK do usuário**
+  (conferido: 0 chamados, 0 contas e 0 `ChamadoEditado` no banco).
 
 ### Pendências gerais (consolidado em 2026-10-02, pós correcoes-pre-deploy)
 - **SLA — DECIDIDO pelo usuário em 2026-10-02:** conta só o **expediente de 08:00 às 18:00 em dias
