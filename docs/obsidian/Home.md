@@ -50,6 +50,7 @@ implementação ficam na seção Arquitetura e nas specs do projeto.
 - [[ADR-006 Número de chamado CAM-N]]
 - [[ADR-007 Permissões aplicadas no servidor]]
 - [[ADR-008 Área do chamado é a equipe]]
+- [[ADR-009 Edição simultânea por versão do chamado]]
 
 **90 Modelos** — para criar notas novas no mesmo padrão
 - [[Modelo - Funcionalidade]] · [[Modelo - Decisão (ADR)]]

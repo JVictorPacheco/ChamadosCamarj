@@ -2,7 +2,7 @@
 tipo: funcionalidade
 status: vigente
 atualizado: 2026-10-02
-spec: .specs/features/fase-6-admin-log/spec.md
+spec: .specs/features/fase-6-admin-log/spec.md, .specs/features/correcoes-pre-deploy/spec.md
 tags: [funcionalidade, chamado]
 ---
 
@@ -42,5 +42,15 @@ sistema**, preparando o terreno para automações futuras.
 Mudanças feitas por outra pessoa aparecem sem recarregar a página.
 
 ## Proteção contra edição simultânea
-Se duas pessoas alterarem o mesmo chamado ao mesmo tempo, a segunda recebe um aviso de conflito
-em vez de sobrescrever silenciosamente a alteração da primeira.
+A tela lembra a versão do chamado que a pessoa estava vendo. Se, entre abrir e agir, **outra
+pessoa alterou o chamado**, a ação é recusada e a alteração da outra pessoa é mantida:
+- aparece "Outra pessoa alterou este chamado. Os dados foram atualizados; confira e refaça a
+  ação." e o chamado é recarregado com os dados atuais;
+- vale para assumir, resolver, encerrar, cancelar, reabrir, mudar status, mudar prioridade,
+  reatribuir, forçar encerramento, reclassificar o tipo e editar título/descrição;
+- **comentários e anexos nunca são recusados** — só acrescentam, não apagam nada de ninguém;
+- nos diálogos e janelas (ex.: Alterar prioridade), vale a versão de quando a janela foi aberta;
+- enquanto o chamado está recarregando, os botões de ação ficam bloqueados por um instante.
+
+Ainda não existe tela para editar título e descrição — está prevista (modal no detalhe; o
+Solicitante edita os chamados que abriu, o Atendente os que assumiu e o Admin todos).

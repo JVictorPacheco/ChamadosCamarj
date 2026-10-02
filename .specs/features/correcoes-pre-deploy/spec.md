@@ -1,7 +1,7 @@
 # Correções Pré-Deploy — Especificação
 
-> **SDD:** revisada
-> **Status:** `Em andamento`
+> **SDD:** fechada
+> **Status:** `Concluída`
 > **Branch:** `feature/correcoes-pre-deploy`
 > **Criada em:** 2026-10-02
 > **Atualizada em:** 2026-10-02
@@ -199,11 +199,11 @@ de processo desatualizada.
 
 ## 8. Gate Checks
 
-- [ ] `dotnet build` — 0 erros, sem aviso de conflito de versão no projeto de testes
-- [ ] `dotnet test` — X testes, 0 falhas
-- [ ] `npm run build` — 0 erros
-- [ ] E2E Playwright — todos passando; dados `[TESTE-E2E]` limpos com OK do usuário
-- [ ] ACs verificados por testes automatizados ou ao vivo
-- [ ] Obsidian atualizado (regra 6)
-- [ ] `spec.md` com status final; `STATE.md` atualizado
-- [ ] PR aberto com base `develop`
+- [x] `dotnet build` — 0 erros, sem aviso de conflito de versão no projeto de testes
+- [x] `dotnet test` — 444 testes, 0 falhas
+- [x] `npm run build` — 0 erros
+- [x] E2E Playwright — 14/14; dados de teste limpos com OK do usuário (2026-10-02)
+- [x] ACs verificados por testes automatizados e ao vivo (AC-11 adiado)
+- [x] Obsidian atualizado (regra 6) — SLA, Anexos, Acompanhamento, Kanban, ADR-009
+- [x] `spec.md` com status final; `STATE.md` e `ROADMAP.md` atualizados
+- [ ] PR aberto com base `develop` (checkpoint 2 — aguardando o usuário)
