@@ -5,6 +5,7 @@ using ChamadosCamarj.Application.Common.Autorizacao;
 using ChamadosCamarj.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using ChamadosCamarj.Application.Features.Relatorios.Queries;
+using ChamadosCamarj.Application.Features.Relatorios;
 using ChamadosCamarj.Domain.Enums;
 
 namespace ChamadosCamarj.WebApi.Controllers;
@@ -44,17 +45,10 @@ public class RelatoriosController : ControllerBase
         // chamados que ele vê.
         await _moduloGuard.ExigirAsync(ModuloSistema.RelatorioMensal, "Você não tem permissão para acessar o relatório.", cancellationToken);
 
-        var acesso = _currentUser.ObterContextoAcesso();
-        IReadOnlyCollection<Guid>? idsVisiveis = null;
-        if (acesso.Perfil == Perfil.Atendente)
-            responsavelId = acesso.UsuarioId;
-        else if (acesso.Perfil == Perfil.Solicitante)
-        {
-            responsavelId = null;
-            idsVisiveis = await _chamadoRepository.ListarIdsVisiveisAsync(acesso, cancellationToken);
-        }
+        var (escopoResponsavel, idsVisiveis) = await RelatorioEscopo.ResolverAsync(
+            _currentUser.ObterContextoAcesso(), responsavelId, _chamadoRepository, cancellationToken);
 
-        var result = await _mediator.Send(new ObterRelatorioMensalQuery(ano, mes, responsavelId, idsVisiveis), cancellationToken);
+        var result = await _mediator.Send(new ObterRelatorioMensalQuery(ano, mes, escopoResponsavel, idsVisiveis), cancellationToken);
         return Ok(result);
     }
 }

@@ -47,9 +47,27 @@ public class AcessosController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> Salvar(Guid usuarioId, [FromBody] SalvarAcessosRequest request, CancellationToken cancellationToken)
     {
+        // Sem o Chat no pedido, recusa — nunca "revogar por omissão" (review R-05).
+        if (request.Modulos is null || request.ChatPerfil is null)
+            return BadRequest(new { message = "Informe os módulos e o nível de Chat." });
+
         await _mediator.Send(new SalvarAcessosCommand(
-            usuarioId, request.Modulos ?? [], request.ChatPerfil,
+            usuarioId, request.Modulos, request.ChatPerfil.Value,
             _currentUser.Perfil, _currentUser.UsuarioId, _currentUser.Nome), cancellationToken);
+        return NoContent();
+    }
+
+    /// <summary>Ajusta só o Chat — vale também para Admins e para o próprio Admin.</summary>
+    [HttpPut("{usuarioId:guid}/chat")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> DefinirChat(Guid usuarioId, [FromBody] DefinirChatDeAcessoRequest request, CancellationToken cancellationToken)
+    {
+        if (request.ChatPerfil is null)
+            return BadRequest(new { message = "Informe o nível de Chat." });
+
+        await _mediator.Send(new DefinirChatDeAcessoCommand(usuarioId, request.ChatPerfil.Value, _currentUser.Perfil, _currentUser.UsuarioId, _currentUser.Nome), cancellationToken);
         return NoContent();
     }
 
@@ -64,4 +82,5 @@ public class AcessosController : ControllerBase
     }
 }
 
-public record SalvarAcessosRequest(IReadOnlyList<string>? Modulos, ChatPerfil ChatPerfil);
+public record SalvarAcessosRequest(IReadOnlyList<string>? Modulos, ChatPerfil? ChatPerfil);
+public record DefinirChatDeAcessoRequest(ChatPerfil? ChatPerfil);

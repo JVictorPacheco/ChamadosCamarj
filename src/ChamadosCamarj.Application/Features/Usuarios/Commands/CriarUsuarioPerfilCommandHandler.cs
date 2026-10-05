@@ -38,6 +38,9 @@ public class CriarUsuarioPerfilCommandHandler : IRequestHandler<CriarUsuarioPerf
             existente.Atualizar(request.Nome, request.Perfil, request.GrupoId);
             existente.DefinirSenhaHash(_passwordHasher.HashPassword(existente, request.Senha));
             existente.DefinirChatPerfil(request.ChatPerfil);
+            // Recriar a conta é começar do zero: ajustes de módulos de antes não voltam sozinhos
+            // (spec controle-de-acesso, review R-03).
+            existente.VoltarAoPadraoDeModulos();
             existente.Ativar();
             await _usuarioPerfilRepository.AtualizarAsync(existente, cancellationToken);
             return existente.ToResponse();

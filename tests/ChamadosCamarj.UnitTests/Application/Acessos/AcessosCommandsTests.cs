@@ -113,9 +113,10 @@ public class AcessosCommandsTests
     }
 
     [Fact]
-    public async Task Salvar_MudarChat_UsaOComandoDeChatExistente_EAudita()
+    public async Task Salvar_MudarChat_UsaOComandoDeChatExistente_EAvisa()
     {
         // AC-09: o mesmo comando de antes (avisos aos participantes e auditoria do chat continuam).
+        // A linha "Chat" da auditoria de acessos é gravada pelo próprio DefinirChatPerfilCommand (review R-06).
         var atendente = Usuario(Perfil.Atendente);
 
         await Executar(atendente.Id, ["Arquivo", "Kanban", "Fila", "Dashboard", "RelatorioMensal"], ChatPerfil.Participante);
@@ -123,8 +124,8 @@ public class AcessosCommandsTests
         _mediatorMock.Verify(m => m.Send(
             It.Is<DefinirChatPerfilCommand>(c => c.UsuarioId == atendente.Id && c.ChatPerfil == ChatPerfil.Participante && c.AdminId == _adminId),
             It.IsAny<CancellationToken>()), Times.Once);
-        var linha = _auditoria.Should().ContainSingle().Subject;
-        (linha.Item, linha.Anterior, linha.Novo).Should().Be(("Chat", "Sem acesso", "Participante"));
+        _auditoria.Should().BeEmpty();
+        _avisos.Should().ContainSingle().Which.ChatPerfil.Should().Be(ChatPerfil.Participante);
         _usuariosMock.Verify(r => r.AtualizarAsync(It.IsAny<UsuarioPerfil>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
@@ -186,5 +187,40 @@ public class AcessosCommandsTests
         var linha = lista.Single(l => l.Id == atendente.Id);
         linha.TemAjuste.Should().BeTrue();
         linha.Modulos.Should().NotContain("Fila");
+    }
+
+    // review R-02 (decisão do usuário): o Chat de um Admin — inclusive o do próprio — continua ajustável.
+    [Fact]
+    public async Task DefinirChatDeAcesso_ParaAdmin_UsaOComandoDeChat()
+    {
+        var admin = Usuario(Perfil.Admin);
+        var handler = new DefinirChatDeAcessoCommandHandler(_usuariosMock.Object, _mediatorMock.Object);
+
+        await handler.Handle(new DefinirChatDeAcessoCommand(admin.Id, ChatPerfil.CriadorDeGrupo, "Admin", admin.Id, "Admin"), CancellationToken.None);
+
+        _mediatorMock.Verify(m => m.Send(
+            It.Is<DefinirChatPerfilCommand>(c => c.UsuarioId == admin.Id && c.ChatPerfil == ChatPerfil.CriadorDeGrupo),
+            It.IsAny<CancellationToken>()), Times.Once);
+        _avisos.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task DefinirChatDeAcesso_QuemNaoEhAdmin_Forbidden()
+    {
+        var atendente = Usuario(Perfil.Atendente);
+        var handler = new DefinirChatDeAcessoCommandHandler(_usuariosMock.Object, _mediatorMock.Object);
+
+        var act = () => handler.Handle(new DefinirChatDeAcessoCommand(atendente.Id, ChatPerfil.Participante, "Atendente"), CancellationToken.None);
+
+        await act.Should().ThrowAsync<ForbiddenException>();
+    }
+
+    // review R-05: pedido inválido é recusado antes de gravar.
+    [Fact]
+    public void Validador_RecusaChatInvalidoEModulosNulos()
+    {
+        var validador = new SalvarAcessosCommandValidator();
+        validador.Validate(new SalvarAcessosCommand(Guid.NewGuid(), null!, (ChatPerfil)99)).Errors
+            .Select(e => e.PropertyName).Should().Contain(["Modulos", "ChatPerfil"]);
     }
 }

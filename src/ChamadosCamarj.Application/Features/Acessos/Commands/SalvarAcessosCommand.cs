@@ -54,15 +54,15 @@ public class SalvarAcessosCommandHandler : IRequestHandler<SalvarAcessosCommand>
         }
 
         var chatAntes = usuario.ChatPerfil;
+        var mudouChat = false;
         if (request.ChatPerfil != chatAntes)
         {
             // Mesmo comando de antes da feature: mantém os avisos aos participantes e a auditoria do chat (AC-09).
             await _mediator.Send(new DefinirChatPerfilCommand(usuario.Id, request.ChatPerfil, request.PerfilRequisitante, request.AdminId, request.AdminNome), cancellationToken);
-            registros.Add(AuditoriaAcesso.Criar(usuario.Id, usuario.Nome, request.AdminId, request.AdminNome,
-                "Chat", AcessosTexto.Chat(chatAntes), AcessosTexto.Chat(request.ChatPerfil)));
+            mudouChat = true; // a auditoria "Chat" é gravada pelo próprio DefinirChatPerfilCommand (review R-06)
         }
 
-        if (registros.Count == 0)
+        if (registros.Count == 0 && !mudouChat)
             return;
 
         await _auditoria.AdicionarAsync(registros, cancellationToken);
@@ -128,5 +128,44 @@ internal static class AcessosGuard
             throw new BadRequestException("O acesso do Admin é total e não pode ser ajustado.");
 
         return usuario;
+    }
+}
+
+/// <summary>
+/// Ajusta só o Chat de uma pessoa — inclusive de um Admin ou do próprio Admin, como era na tela de
+/// Usuários (spec controle-de-acesso AC-06, decisão do usuário após o review R-02). Módulos não mudam.
+/// </summary>
+public record DefinirChatDeAcessoCommand(
+    Guid UsuarioId,
+    ChatPerfil ChatPerfil,
+    string PerfilRequisitante = "",
+    Guid AdminId = default,
+    string AdminNome = "Sistema"
+) : IRequest;
+
+public class DefinirChatDeAcessoCommandHandler : IRequestHandler<DefinirChatDeAcessoCommand>
+{
+    private readonly IUsuarioPerfilRepository _usuarios;
+    private readonly IMediator _mediator;
+
+    public DefinirChatDeAcessoCommandHandler(IUsuarioPerfilRepository usuarios, IMediator mediator)
+    {
+        _usuarios = usuarios;
+        _mediator = mediator;
+    }
+
+    public async Task Handle(DefinirChatDeAcessoCommand request, CancellationToken cancellationToken)
+    {
+        PerfilRequisitanteGuard.ExigirAdmin(request.PerfilRequisitante);
+
+        var usuario = await _usuarios.ObterPorIdAsync(request.UsuarioId, cancellationToken)
+            ?? throw new NotFoundException("Usuário", request.UsuarioId);
+        if (usuario.ChatPerfil == request.ChatPerfil)
+            return;
+
+        // O comando de sempre: avisos aos participantes, auditoria do chat e auditoria de acessos.
+        await _mediator.Send(new DefinirChatPerfilCommand(usuario.Id, request.ChatPerfil, request.PerfilRequisitante, request.AdminId, request.AdminNome), cancellationToken);
+        await _mediator.Publish(new AcessosAtualizadosNotification(
+            usuario.Id, ModulosDeAcesso.Nomes(usuario.ModulosEfetivos()), request.ChatPerfil), cancellationToken);
     }
 }

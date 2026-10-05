@@ -134,4 +134,17 @@ public class ObterDistribuicaoQueryHandlerTests
 
         await act.Should().ThrowAsync<ForbiddenException>();
     }
+
+    // review R-07: perfil do cadastro diferente do perfil do token (ex.: rebaixado e ainda logado) → recusa,
+    // para os números nunca saírem no escopo do perfil antigo.
+    [Fact]
+    public async Task Handle_PerfilDoCadastroDiferenteDoToken_DeveLancarForbidden()
+    {
+        var usuario = Logado(Perfil.Atendente, "ate@camarj.com.br");
+        _currentUserMock.SetupGet(c => c.Perfil).Returns("Admin"); // token antigo
+
+        var act = () => _handler.Handle(new ObterDistribuicaoQuery(), CancellationToken.None);
+
+        await act.Should().ThrowAsync<ForbiddenException>().WithMessage(ModuloGuard.MensagemPerfilMudou);
+    }
 }

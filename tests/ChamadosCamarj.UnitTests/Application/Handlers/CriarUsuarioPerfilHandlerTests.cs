@@ -108,4 +108,21 @@ public class CriarUsuarioPerfilHandlerTests
         var act = async () => await _handler.Handle(command, CancellationToken.None);
         await act.Should().ThrowAsync<ForbiddenException>();
     }
+
+    // spec controle-de-acesso, review R-03: recriar a conta não traz de volta os ajustes de módulos antigos.
+    [Fact]
+    public async Task Handle_ReativandoContaDesativada_VoltaAoPadraoDeModulos()
+    {
+        var existente = new UsuarioPerfil("ana@camarj.com.br", "Ana", Perfil.Solicitante);
+        existente.AjustarModulos(ModuloSistema.Dashboard, ModuloSistema.Nenhum);
+        existente.Desativar();
+        _repositoryMock.Setup(r => r.ObterPorEmailAsync("ana@camarj.com.br", It.IsAny<CancellationToken>())).ReturnsAsync(existente);
+
+        var response = await _handler.Handle(
+            new CriarUsuarioPerfilCommand("ana@camarj.com.br", "Ana", Perfil.Solicitante, "SenhaForte123", PerfilRequisitante: "Admin"),
+            CancellationToken.None);
+
+        existente.TemAjusteDeModulos.Should().BeFalse();
+        response.Modulos.Should().Equal("Arquivo");
+    }
 }
