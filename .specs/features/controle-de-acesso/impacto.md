@@ -41,3 +41,19 @@ Nenhum.
 ## Previsto × real
 - Pontos de toque do design tocados: `UsuarioPerfil`/configuração, `AtualizarUsuarioPerfilCommandHandler`, login/`/auth/me`/mappings, Dashboard (2 handlers), Relatório (controller + handler), `AppLayout`, `App.tsx`, `UsuariosPage`/`UsuarioFormDialog` — todos previstos.
 - Não listado no design: a **remoção do componente `ChatPerfilSelect`** (ficou sem uso com o C9) e o snapshot do EF registrar `ProductVersion` 9.0.19 (anotação da ferramenta). Nenhum consumidor afetado.
+
+## ⚠️ Re-análise após o review (2026-10-05) — o que esta análise deixou passar
+O review independente achou três consumidores fora do escopo que a análise acima **não** listou:
+- **R-01:** `DashboardPage` e `RelatorioMensalPage` tinham trava própria "Solicitante → não disponível". A
+  regra mudou de "perfil" para "módulo" e as **checagens antigas espalhadas pela tela** não foram procuradas.
+- **R-02:** o seletor de Chat removido da tela de Usuários era o **único** caminho para ajustar o Chat de
+  Admins; a análise tratou a remoção como "sem consumidor" sem perguntar *quem perde o caminho*.
+- **R-03:** a **reativação de conta** (`CriarUsuarioPerfilCommandHandler`) não foi tratada como consumidor do
+  estado novo do cadastro.
+Todos corrigidos (ver `review.md`). Arquivos alterados depois do review: `DashboardPage`, `RelatorioMensalPage`,
+`App.tsx`, `ControleAcessoPage`, `useAcessos`, `admin/api.ts`, `DefinirChatPerfilCommandHandler`,
+`CriarUsuarioPerfilCommandHandler`, `ModuloGuard`, `RelatoriosController`, `RelatorioEscopo` (novo),
+`SalvarAcessosCommand`, `AcessosValidators` (novo), `AcessosController`. Consumidores de cada um conferidos:
+o `DefinirChatPerfilCommandHandler` é usado pela tela nova, pela edição de usuário e pela rota antiga — os
+três agora auditam (teste); o `ModuloGuard` só pelo Dashboard e Relatório. **🔴 0 após as correções.**
+Lição incorporada à skill: ao mudar uma regra, procurar no código todas as checagens da regra antiga.

@@ -102,3 +102,21 @@ na máquina). `dotnet test tests/ChamadosCamarj.UnitTests/` rodado nesta revisã
 - `SalvarAcessosCommand`: módulos e Chat são gravados em `SaveChanges` separados, sem transação; uma falha no meio deixa estado parcial sem auditoria. Baixa probabilidade, mas o `IUnitOfWork` já existe no projeto.
 - A listagem do Controle de acesso exibe "Admin — acesso total" também para o próprio Admin; um rótulo "(você)" ajudaria a entender por que não há botão.
 - E2E de AC-05 cobre só Atendente; acrescentar um Solicitante é barato.
+
+---
+
+## Tratamento dos achados (sessão principal, 2026-10-05)
+
+| Achado | Confirmado? | Tratamento |
+|---|---|---|
+| R-01 🔴 | Sim | **Corrigido:** `DashboardPage` e `RelatorioMensalPage` usam `temModulo`. E2E novo: Solicitante com Dashboard abre a tela. |
+| R-02 🔴 | Sim | **Decisão do usuário (2026-10-05): Chat de Admin ajustável na tela nova.** `PUT /api/acessos/{id}/chat` (`DefinirChatDeAcessoCommand`) para qualquer pessoa, inclusive Admin e o próprio; "Ajustar Chat" na linha do Admin. Spec (AC-06) e design (§13) atualizados antes do código. |
+| R-03 🟡 | Sim | **Corrigido:** reativar conta pelo "Novo usuário" volta ao padrão de módulos + teste. |
+| R-04 🟡 | Sim | **Corrigido:** "retirado" só para quem tinha o módulo com a tela aberta; senão "Você não tem permissão para acessar este módulo."; `RequerAdmin` mostra "Você não tem permissão para acessar esta área." (E2E). |
+| R-05 🟡 | Sim | **Corrigido:** sem `chatPerfil` (ou módulos) → 400; validador do comando recusa Chat inválido antes de gravar. |
+| R-06 🟡 | Sim | **Corrigido:** auditoria "Chat" dentro do `DefinirChatPerfilCommandHandler` — todo caminho (tela nova, edição de usuário, rota antiga) é auditado + teste. |
+| R-07 🟡 | Sim | **Corrigido (parte nova):** `ModuloGuard` recusa quando o perfil do cadastro difere do token ("Seu perfil mudou. Entre novamente para continuar.") + teste. **Pendência registrada (pré-existente, fora do escopo):** Admin rebaixado mantém os direitos de Admin do token até ele vencer — as rotas de Admin checam o perfil do token. |
+| R-08 🟡 | Sim | **Corrigido:** escopo extraído para `RelatorioEscopo.ResolverAsync` com 3 testes (Admin, Atendente, Solicitante). |
+| Constitution regra 5 | Sim | O `impacto.md` não pegou R-01..R-03. Re-análise registrada nele; skill `/analise-cod` melhorada (procurar as checagens da regra antiga e caminhos de criação/reativação). |
+
+Verificação após as correções: `dotnet test` **515/515**; E2E **20/20**; ao vivo **22/22**.
