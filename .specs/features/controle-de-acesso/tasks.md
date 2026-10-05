@@ -54,13 +54,13 @@
 
 ## Verificação
 
-- [ ] **T11** **PARADA:** aplicar a migration `AddControleDeAcesso` no banco real **só com OK do usuário**;
+- [x] **T11** **PARADA:** aplicar a migration `AddControleDeAcesso` no banco real **só com OK do usuário**;
   conferir que nada mudou para os usuários atuais (AC-16).
-- [ ] **T12** E2E `e2e/controle-de-acesso.spec.ts` (Admin ajusta um módulo de uma conta de teste e a tela
+- [x] **T12** E2E `e2e/controle-de-acesso.spec.ts` (Admin ajusta um módulo de uma conta de teste e a tela
   da pessoa muda) + suíte inteira; verificação ao vivo/tela com contas `teste.acesso.*` (Solicitante com
   Dashboard, Atendente sem Relatório, menu mudando na hora, rota bloqueada, mudança de perfil zerando).
   Dados de teste apagados com OK do usuário. *AC-01..AC-16, AC-19.*
-- [ ] **T13** Gates + `/analise-cod` (sem 🔴) + rastreabilidade. *AC-17..AC-19.*
+- [x] **T13** Gates + `/analise-cod` (sem 🔴) + rastreabilidade. *AC-17..AC-19.*
 
 ---
 

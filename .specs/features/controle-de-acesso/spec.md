@@ -1,6 +1,6 @@
 # Controle de Acesso por Módulo — Especificação
 
-> **SDD:** implementando
+> **SDD:** em-review
 > **Status:** `Pendente`
 > **Branch:** `feature/controle-de-acesso`
 > **Criada em:** 2026-10-02
@@ -156,7 +156,12 @@ Abrir chamado e Meus chamados: sempre ligados. Módulos de administração: semp
 
 | Critério | Arquivo de Teste | Método de Teste | Status |
 |----------|-----------------|-----------------|--------|
-| AC-01..AC-19 | a definir no design/tasks | — | ⬜ Pendente |
+| AC-02..AC-08, AC-16 | `ModulosDeAcessoTests`, `UsuarioPerfilTests` + banco conferido | `Padroes_SaoIguaisAoMenuDeAntesDaFeature`, `Solicitante_NuncaTemKanbanNemFila_*` | ✅ |
+| AC-01..AC-06, AC-09, AC-14 | `AcessosCommandsTests` + E2E + ao vivo | `Salvar_*`, `VoltarAoPadrao_*`, `Listar_AdminComoAcessoTotal` | ✅ |
+| AC-07, AC-12 | `ObterDistribuicaoQueryHandlerTests`, `ObterRelatorioMensalQueryHandlerTests` + ao vivo | `Handle_SolicitanteComModuloDashboard_*`, `Handle_AtendenteSemModuloDashboard_*`, `Handle_ComIdsVisiveis_*` | ✅ |
+| AC-10, AC-15 | `AtualizarUsuarioPerfilHandlerTests` + ao vivo | `Handle_QuandoPerfilMuda_*`, `Handle_ChatPerfilNulo_*` | ✅ |
+| AC-11, AC-13 | `e2e/controle-de-acesso.spec.ts`, `AcessoSignalRNotificationHandlersTests` | menu muda na hora em outro navegador | ✅ |
+| AC-17..AC-19 | gates + `impacto.md` | 506 testes, E2E 19/19 | ✅ |
 
 ---
 
