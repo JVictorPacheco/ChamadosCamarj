@@ -77,6 +77,11 @@ completo, **primeira feature com a `/analise-cod`**. Spec, design, tasks, impact
   (conferido: 0 chamados, 0 contas e 0 `ChamadoEditado` no banco).
 
 ### Pendências gerais (consolidado em 2026-10-02, pós correcoes-pre-deploy)
+- **🔐 SEGURANÇA (registrada a pedido do usuário em 2026-10-05):** um **Admin rebaixado** (perfil trocado
+  em Usuários) **continua com os direitos de Admin até o login dele vencer**, porque as rotas de
+  Administração conferem o perfil do **token**, e não o do cadastro. Pré-existente (achado R-07 do review de
+  `controle-de-acesso`). Correção sugerida: conferir o perfil no cadastro nas ações de Admin (como o
+  `ModuloGuard` já faz para Dashboard/Relatório) ou invalidar o token quando o perfil muda.
 - **SLA — DECIDIDO pelo usuário em 2026-10-02:** conta só o **expediente de 08:00 às 18:00 em dias
   úteis**; sábado, domingo e feriados **nacionais e estaduais do RJ** não contam. Feature própria
   (ROADMAP "SLA em Dias Úteis"). Lista de feriados: **cadastro pelo Admin**, já preenchida com os do
