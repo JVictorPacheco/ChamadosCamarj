@@ -95,7 +95,9 @@ Abrir chamado e Meus chamados: sempre ligados. Módulos de administração: semp
 - **AC-05:** Dado um Atendente ou Solicitante, quando tenta abrir "Controle de acesso" (pelo menu ou
   pelo endereço), então não vê o menu e recebe "sem permissão".
 - **AC-06:** Dado um Admin na tela, quando procura outro Admin, então ele aparece como "Admin — acesso
-  total", sem opções de ajuste. O Admin também não consegue ajustar a si mesmo.
+  total", sem ajuste de **módulos**. O Admin também não ajusta os próprios módulos. **O Chat dos Admins
+  continua ajustável nesta tela** — inclusive o do próprio Admin, como era na tela de Usuários (decisão do
+  usuário em 2026-10-05, após o review R-02).
 
 ### US-02 — Módulos de consulta para Solicitante
 
@@ -176,6 +178,7 @@ Abrir chamado e Meus chamados: sempre ligados. Módulos de administração: semp
 | Abrir chamado e Meus chamados fixos | Tudo removível | Para tirar tudo, desativa-se a conta |
 | Chat unificado na tela nova, com os 3 níveis | Manter separado em Usuários | Um lugar só para o Admin |
 | Mudança vale na hora | No próximo login | Regra precisa valer de verdade |
+| Chat dos Admins ajustável na tela nova (2026-10-05, review R-02) | Chat automático para Admin | Mantém o que existia na tela de Usuários; 3 Admins hoje estão sem Chat por escolha |
 
 ---
 

@@ -165,3 +165,18 @@ de tempo real atualiza o menu da pessoa na hora (AC-11, AC-13).
 ## 12. Perguntas em Aberto
 
 Nenhuma de produto. Parada obrigatória para: contratos C1–C9 e, depois, aplicar a migration (C1).
+
+---
+
+## 13. Ajustes após o review (2026-10-05)
+
+| Achado | Ajuste no design |
+|---|---|
+| R-01 🔴 | `DashboardPage` e `RelatorioMensalPage` deixam de barrar por perfil e passam a usar `temModulo` (a mesma regra do menu e do servidor). |
+| R-02 🔴 (decisão do usuário) | Chat de Admin ajustável na tela nova: `PUT /api/acessos/{id}/chat` (`DefinirChatDeAcessoCommand`), aceito para **qualquer** usuário (inclusive Admin e o próprio); a linha do Admin mostra "Ajustar Chat". Módulos continuam não ajustáveis para Admin. |
+| R-03 | Recriar conta desativada pelo "Novo usuário" volta ao padrão de módulos. |
+| R-04 | `RequerModulo`: "Seu acesso a este módulo foi retirado." só para quem tinha o módulo com a tela aberta; quem nunca teve recebe "Você não tem permissão para acessar este módulo."; `RequerAdmin` mostra "Você não tem permissão para acessar esta área.". |
+| R-05 | `SalvarAcessosRequest.ChatPerfil` obrigatório (sem ele → 400) e validador do comando (Chat válido) — nada é gravado se o pedido for inválido. |
+| R-06 | A auditoria "Chat" passa para dentro do `DefinirChatPerfilCommandHandler`: **todo** caminho que muda o Chat (tela nova, edição de usuário, `PATCH /usuarios/{id}/chat-perfil`) entra na auditoria de acessos. |
+| R-07 | `ModuloGuard` recusa quando o perfil do cadastro difere do perfil do token ("Seu perfil mudou. Entre novamente para continuar."): os números nunca saem no escopo de um perfil antigo. A parte pré-existente (Admin rebaixado mantém direitos de Admin até o token vencer) vira pendência no STATE. |
+| R-08 | Escopo do relatório extraído do controller para `RelatorioEscopo.ResolverAsync` (Application), com testes. |
