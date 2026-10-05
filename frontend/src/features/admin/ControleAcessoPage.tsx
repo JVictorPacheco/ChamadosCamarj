@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useAcessos, useAcessoUsuario, useSalvarAcessos, useVoltarAoPadrao } from './hooks/useAcessos'
+import { useAcessos, useAcessoUsuario, useDefinirChatDeAcesso, useSalvarAcessos, useVoltarAoPadrao } from './hooks/useAcessos'
 import type { AcessoUsuarioDetalheResponse, AcessoUsuarioResumoResponse, ChatPerfil, ModuloSistema } from '@/types/api'
 
 const NOME_MODULO: Record<ModuloSistema, string> = {
@@ -33,6 +33,7 @@ export function ControleAcessoPage() {
   const { data: pessoas, isPending, isError } = useAcessos()
   const [busca, setBusca] = useState('')
   const [selecionada, setSelecionada] = useState<AcessoUsuarioResumoResponse | null>(null)
+  const [chatDeAdmin, setChatDeAdmin] = useState<AcessoUsuarioResumoResponse | null>(null)
 
   const filtradas = useMemo(() => {
     const termo = busca.trim().toLowerCase()
@@ -101,7 +102,11 @@ export function ControleAcessoPage() {
                   </TableCell>
                   <TableCell>{OPCOES_CHAT.find((o) => o.value === p.chatPerfil)?.label}</TableCell>
                   <TableCell className="text-right">
-                    {!p.acessoTotal && (
+                    {p.acessoTotal ? (
+                      <Button variant="outline" size="sm" onClick={() => setChatDeAdmin(p)}>
+                        Ajustar Chat
+                      </Button>
+                    ) : (
                       <Button variant="outline" size="sm" onClick={() => setSelecionada(p)}>
                         Ajustar acessos
                       </Button>
@@ -122,6 +127,7 @@ export function ControleAcessoPage() {
       )}
 
       {selecionada && <PainelAcessos pessoa={selecionada} onClose={() => setSelecionada(null)} />}
+      {chatDeAdmin && <PainelChatAdmin pessoa={chatDeAdmin} onClose={() => setChatDeAdmin(null)} />}
     </div>
   )
 }
@@ -232,5 +238,46 @@ function FormularioAcessos({ detalhe, onClose }: { detalhe: AcessoUsuarioDetalhe
         </div>
       </DialogFooter>
     </div>
+  )
+}
+
+/** Admin: módulos são sempre totais; só o Chat é ajustável — inclusive o do próprio Admin (review R-02). */
+function PainelChatAdmin({ pessoa, onClose }: { pessoa: AcessoUsuarioResumoResponse; onClose: () => void }) {
+  const [chat, setChat] = useState<ChatPerfil>(pessoa.chatPerfil)
+  const definir = useDefinirChatDeAcesso(pessoa.id)
+
+  return (
+    <Dialog open onOpenChange={(aberto) => { if (!aberto) onClose() }}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Chat de {pessoa.nome}</DialogTitle>
+          <DialogDescription>Admin tem acesso total aos módulos. Aqui você ajusta só o Chat.</DialogDescription>
+        </DialogHeader>
+        <div className="flex flex-col gap-1">
+          <Label htmlFor="chat-admin">Chat</Label>
+          <Select value={chat} onValueChange={(v) => setChat(v as ChatPerfil)} disabled={definir.isPending}>
+            <SelectTrigger id="chat-admin" className="max-w-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {OPCOES_CHAT.map((o) => (
+                <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        {definir.error && (
+          <Alert variant="destructive">
+            <AlertDescription>{definir.error.message}</AlertDescription>
+          </Alert>
+        )}
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancelar</Button>
+          <Button disabled={definir.isPending} onClick={() => definir.mutate(chat, { onSuccess: onClose })}>
+            {definir.isPending ? 'Salvando...' : 'Salvar'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

@@ -71,5 +71,37 @@ test('Atendente ou Solicitante não entra no Controle de acesso pelo endereço',
 
   await page.goto('/admin/acessos') // AC-05
   await expect(page).toHaveURL(/\/chamados$/)
+  await expect(page.getByText('Você não tem permissão para acessar esta área.')).toBeVisible()
   await expect(page.getByRole('link', { name: 'Controle de acesso' })).toHaveCount(0)
+})
+
+// review R-01: o Solicitante que GANHA o Dashboard abre a tela de verdade (antes a página o barrava pelo
+// perfil); e um módulo que ele nunca teve dá "sem permissão", não "retirado" (review R-04).
+test('Solicitante com Dashboard dado pelo Admin abre a tela; Kanban continua sem permissão', async ({ page, browser }) => {
+  const EMAIL_SOL = 'teste.acesso.sol.e2e@camarj.com.br'
+  await login(page)
+  const usuarios = await api<{ id: string; email: string }[]>(page, 'GET', '/usuarios')
+  let sol = usuarios.find((u) => u.email === EMAIL_SOL)
+  if (!sol) sol = await api<{ id: string; email: string }>(page, 'POST', '/usuarios', { email: EMAIL_SOL, nome: 'Teste Acesso Sol E2E', perfil: 'Solicitante', senha: SENHA })
+  await api(page, 'PUT', `/acessos/${sol.id}`, { modulos: ['Arquivo', 'Dashboard'], chatPerfil: 'SemAcesso' })
+
+  const contexto = await browser.newContext()
+  const pessoa = await contexto.newPage()
+  await pessoa.goto('/login')
+  await pessoa.locator('#email').fill(EMAIL_SOL)
+  await pessoa.locator('#senha').fill(SENHA)
+  await pessoa.getByRole('button', { name: /Entrar|Login/i }).click()
+  await pessoa.waitForURL('**/chamados')
+
+  await pessoa.getByRole('link', { name: 'Dashboard' }).click()
+  await expect(pessoa).toHaveURL(/\/atendimento\/dashboard$/)
+  await expect(pessoa.getByText('Esta área não está disponível para o seu perfil.')).toHaveCount(0)
+  await expect(pessoa.getByRole('heading', { name: /Dashboard/i })).toBeVisible()
+
+  await pessoa.goto('/atendimento/kanban')
+  await expect(pessoa).toHaveURL(/\/chamados$/)
+  await expect(pessoa.getByText('Você não tem permissão para acessar este módulo.')).toBeVisible()
+
+  await api(page, 'POST', `/acessos/${sol.id}/padrao`)
+  await contexto.close()
 })

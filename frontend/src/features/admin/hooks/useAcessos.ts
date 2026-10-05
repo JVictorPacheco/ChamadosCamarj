@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { listarAcessos, obterAcessoUsuario, salvarAcessos, voltarAoPadrao } from '../api'
+import { definirChatDeAcesso, listarAcessos, obterAcessoUsuario, salvarAcessos, voltarAoPadrao } from '../api'
 import type { ChatPerfil, ModuloSistema } from '@/types/api'
 
 // Controle de acesso (spec controle-de-acesso). Salvar mexe também no Chat da pessoa, que aparece na
@@ -37,6 +37,14 @@ export function useVoltarAoPadrao(usuarioId: string) {
   const invalidar = useInvalidarAcessos()
   return useMutation({
     mutationFn: () => voltarAoPadrao(usuarioId),
+    onSuccess: invalidar,
+  })
+}
+
+export function useDefinirChatDeAcesso(usuarioId: string) {
+  const invalidar = useInvalidarAcessos()
+  return useMutation({
+    mutationFn: (chatPerfil: ChatPerfil) => definirChatDeAcesso(usuarioId, chatPerfil),
     onSuccess: invalidar,
   })
 }

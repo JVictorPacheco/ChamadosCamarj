@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/auth/AuthContext'
+import { temModulo } from '@/lib/modulos'
 import { DonutChart } from '@/components/charts/DonutChart'
 import { DashboardKpi } from '../dashboard/DashboardKpi'
 import { BarrasChart } from '@/features/dashboard/BarrasChart'
@@ -34,15 +35,16 @@ export function RelatorioMensalPage() {
   const [ano, setAno] = useState(agora.getFullYear())
   const [mes, setMes] = useState(agora.getMonth() + 1)
 
-  const isSolicitante = perfil?.tipo === 'Solicitante'
+  // Mesma regra do menu e do servidor: quem tem o módulo vê (spec controle-de-acesso AC-07, review R-01).
+  const semAcesso = !temModulo(perfil, 'RelatorioMensal')
   const responsavelId = perfil?.tipo === 'Atendente' ? perfil.id : undefined
-  const { data: relatorio, isPending, isError } = useRelatorioMensal(ano, mes, responsavelId, !isSolicitante)
+  const { data: relatorio, isPending, isError } = useRelatorioMensal(ano, mes, responsavelId, !semAcesso)
 
   const totalGeral = relatorio
     ? relatorio.totalAbertos + relatorio.totalResolvidos + relatorio.totalCancelados
     : 0
 
-  if (isSolicitante) {
+  if (semAcesso) {
     return (
       <div className="flex flex-col items-center gap-3 p-8 text-center">
         <Alert variant="destructive" className="max-w-md">

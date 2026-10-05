@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/auth/AuthContext'
+import { temModulo } from '@/lib/modulos'
 import { useDashboardMetrics, useDashboardDistribuicao } from './hooks'
 import { DashboardKpi } from './DashboardKpi'
 import { BarrasChart, type BarraData } from './BarrasChart'
@@ -44,7 +45,8 @@ export function DashboardPage() {
     navigate(`/chamados?prioridade=${item.prioridadeNome}`)
   }, [navigate])
 
-  if (perfil?.tipo === 'Solicitante') {
+  // Mesma regra do menu e do servidor: quem tem o módulo vê (spec controle-de-acesso AC-07, review R-01).
+  if (!temModulo(perfil, 'Dashboard')) {
     return (
       <div className="flex flex-col items-center gap-3 p-8 text-center">
         <Alert variant="destructive" className="max-w-md">

@@ -57,3 +57,8 @@ export function salvarAcessos(usuarioId: string, dados: { modulos: ModuloSistema
 export function voltarAoPadrao(usuarioId: string): Promise<void> {
   return apiFetch<void>(`/acessos/${usuarioId}/padrao`, { method: 'POST' })
 }
+
+/** Só o Chat — vale também para Admins (spec controle-de-acesso, review R-02). */
+export function definirChatDeAcesso(usuarioId: string, chatPerfil: ChatPerfil): Promise<void> {
+  return apiFetch<void>(`/acessos/${usuarioId}/chat`, { method: 'PUT', body: JSON.stringify({ chatPerfil }) })
+}

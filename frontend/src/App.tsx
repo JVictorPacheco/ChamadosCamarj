@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router'
 import { temModulo } from '@/lib/modulos'
@@ -98,6 +98,8 @@ function ProtectedRoute() {
 }
 
 const AVISO_MODULO_RETIRADO = 'Seu acesso a este módulo foi retirado.'
+const AVISO_SEM_PERMISSAO_MODULO = 'Você não tem permissão para acessar este módulo.'
+const AVISO_SEM_PERMISSAO_ADMIN = 'Você não tem permissão para acessar esta área.'
 
 /**
  * Tela de módulo (spec controle-de-acesso AC-11/AC-12): sem o módulo, volta para "Meus chamados" com o
@@ -106,8 +108,12 @@ const AVISO_MODULO_RETIRADO = 'Seu acesso a este módulo foi retirado.'
  */
 function RequerModulo({ modulo }: { modulo: ModuloSistema }) {
   const { perfil } = useAuth()
+  // Tinha o módulo quando a tela abriu? Então perdeu agora ("retirado"); senão, nunca teve ("sem
+  // permissão") — AC-11 × AC-12 (review R-04).
+  const [tinhaAoAbrir] = useState(() => temModulo(perfil, modulo))
   if (!temModulo(perfil, modulo)) {
-    return <Navigate to="/chamados" replace state={{ avisoModulo: AVISO_MODULO_RETIRADO }} />
+    const aviso = tinhaAoAbrir ? AVISO_MODULO_RETIRADO : AVISO_SEM_PERMISSAO_MODULO
+    return <Navigate to="/chamados" replace state={{ avisoModulo: aviso }} />
   }
   return <Outlet />
 }
@@ -116,7 +122,7 @@ function RequerModulo({ modulo }: { modulo: ModuloSistema }) {
 function RequerAdmin() {
   const { perfil } = useAuth()
   if (perfil?.tipo !== 'Admin') {
-    return <Navigate to="/chamados" replace />
+    return <Navigate to="/chamados" replace state={{ avisoModulo: AVISO_SEM_PERMISSAO_ADMIN }} />
   }
   return <Outlet />
 }
