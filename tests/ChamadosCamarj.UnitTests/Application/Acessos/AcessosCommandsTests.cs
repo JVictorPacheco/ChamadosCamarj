@@ -57,7 +57,9 @@ public class AcessosCommandsTests
         var linha = _auditoria.Should().ContainSingle().Subject;
         (linha.Item, linha.Anterior, linha.Novo).Should().Be(("Relatório mensal", "ligado", "desligado"));
         linha.UsuarioId.Should().Be(atendente.Id);
-        _avisos.Should().ContainSingle().Which.Modulos.Should().Equal("Arquivo", "Kanban", "Fila", "Dashboard");
+        var aviso = _avisos.Should().ContainSingle().Subject;
+        aviso.Modulos.Should().Equal("Arquivo", "Kanban", "Fila", "Dashboard");
+        aviso.Perfil.Should().Be(Perfil.Atendente); // review-2 R-03: a tela compara com o perfil da sessão
     }
 
     [Fact]
@@ -201,7 +203,7 @@ public class AcessosCommandsTests
         _mediatorMock.Verify(m => m.Send(
             It.Is<DefinirChatPerfilCommand>(c => c.UsuarioId == admin.Id && c.ChatPerfil == ChatPerfil.CriadorDeGrupo),
             It.IsAny<CancellationToken>()), Times.Once);
-        _avisos.Should().ContainSingle();
+        _avisos.Should().ContainSingle().Which.Perfil.Should().Be(Perfil.Admin);
     }
 
     [Fact]

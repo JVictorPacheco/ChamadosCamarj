@@ -24,6 +24,7 @@ import { useConversas } from '@/features/chat/hooks/useConversas'
 import { useChatHeartbeat } from '@/features/chat/hooks/useChatHeartbeat'
 import { useInactivityLogout } from '@/hooks/useInactivityLogout'
 import { MINUTOS_INATIVIDADE, limparLogoutPorInatividade, marcarLogoutPorInatividade } from '@/auth/logoutInatividade'
+import { limparLogoutPorPerfilAlterado, marcarLogoutPorPerfilAlterado } from '@/auth/logoutPerfilAlterado'
 import { PreferenciasDialog } from '@/features/chat/components/PreferenciasDialog'
 import { Kanban, LayoutDashboard, Inbox, FileBarChart, Users, Archive, Sun, Moon, Settings, Tags, FolderKanban, MessageSquare, ShieldCheck } from 'lucide-react'
 import { temModulo } from '@/lib/modulos'
@@ -64,6 +65,14 @@ export function AppLayout() {
     pathnameRef.current = location.pathname
   }, [location.pathname])
 
+  // review-2 R-03: mesmo motivo do pathnameRef — o efeito de subscribe não reconecta a cada render,
+  // então lê o perfil da sessão e o "sair" por refs.
+  const perfilTipoRef = useRef(perfil?.tipo)
+  const sairRef = useRef<() => void>(() => {})
+  useEffect(() => {
+    perfilTipoRef.current = perfil?.tipo
+  }, [perfil?.tipo])
+
   useEffect(() => {
     const unsub = subscribe((event) => {
       if (event.type === 'SlaAtencao' || event.type === 'SlaAtrasado') {
@@ -76,6 +85,14 @@ export function AppLayout() {
       }
 
       if (event.type === 'AcessosAtualizados') {
+        // spec controle-de-acesso AC-15 (decisão de 2026-10-05): o Admin mudou o perfil desta pessoa.
+        // O token ainda tem o perfil antigo, então ela sai e entra de novo em vez de seguir com
+        // telas e permissões do perfil anterior.
+        if (event.payload.perfil && perfilTipoRef.current && event.payload.perfil !== perfilTipoRef.current) {
+          marcarLogoutPorPerfilAlterado()
+          sairRef.current()
+          return
+        }
         atualizarAcessos(event.payload.modulos, event.payload.chatPerfil)
       }
 
@@ -100,10 +117,14 @@ export function AppLayout() {
     logout()
     navigate('/login')
   }
+  useEffect(() => {
+    sairRef.current = sair
+  })
 
   // Sessão ativa nesta aba: um aviso de inatividade antigo não pode aparecer num "Sair" futuro
   // (review R2-03).
   useEffect(limparLogoutPorInatividade, [])
+  useEffect(limparLogoutPorPerfilAlterado, [])
 
   // Decisão de 2026-07-18: 20 min sem interação desconecta (spec logout-inatividade).
   useInactivityLogout(MINUTOS_INATIVIDADE, () => {

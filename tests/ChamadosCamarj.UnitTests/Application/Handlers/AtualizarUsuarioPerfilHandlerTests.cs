@@ -245,7 +245,7 @@ public class AtualizarUsuarioPerfilHandlerTests
         usuario.TemAjusteDeModulos.Should().BeFalse();
         usuario.ChatPerfil.Should().Be(ChatPerfil.Participante);
         auditoria.Should().ContainSingle().Which.Item.Should().Be("Perfil");
-        _mediatorMock.Verify(m => m.Publish(It.Is<AcessosAtualizadosNotification>(n => n.UsuarioId == usuario.Id), It.IsAny<CancellationToken>()), Times.Once);
+        _mediatorMock.Verify(m => m.Publish(It.Is<AcessosAtualizadosNotification>(n => n.UsuarioId == usuario.Id && n.Perfil == Perfil.Admin),It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

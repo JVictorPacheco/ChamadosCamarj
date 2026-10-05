@@ -1,4 +1,4 @@
-import type { ModuloSistema } from '@/types/api'
+import type { ModuloSistema, TipoPerfil } from '@/types/api'
 
 export interface ChamadoCriadoPayload {
   chamadoId: string
@@ -29,6 +29,8 @@ export interface ChatPerfilAtualizadoPayload {
 export interface AcessosAtualizadosPayload {
   modulos: ModuloSistema[]
   chatPerfil: 'SemAcesso' | 'Participante' | 'CriadorDeGrupo'
+  /** Perfil do cadastro; diferente do da sessão → a tela sai e pede novo login (review-2 R-03). */
+  perfil?: TipoPerfil
 }
 
 export type SignalREvent =

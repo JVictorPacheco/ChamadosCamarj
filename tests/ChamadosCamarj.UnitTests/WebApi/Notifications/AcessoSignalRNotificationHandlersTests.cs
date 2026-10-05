@@ -12,14 +12,15 @@ namespace ChamadosCamarj.UnitTests.WebApi.Notifications;
 public class AcessoSignalRNotificationHandlersTests
 {
     [Fact]
-    public async Task AcessosAtualizados_VaiSoParaOUsuario_ComOsModulos()
+    public async Task AcessosAtualizados_VaiSoParaOUsuario_ComOsModulosEOPerfil()
     {
         var usuarioId = Guid.NewGuid();
         string? destino = null;
         string? evento = null;
+        object? payload = null;
         var proxyMock = new Mock<IClientProxy>();
         proxyMock.Setup(p => p.SendCoreAsync(It.IsAny<string>(), It.IsAny<object?[]>(), It.IsAny<CancellationToken>()))
-            .Callback<string, object?[], CancellationToken>((e, _, _) => evento = e)
+            .Callback<string, object?[], CancellationToken>((e, args, _) => { evento = e; payload = args[0]; })
             .Returns(Task.CompletedTask);
         var clientsMock = new Mock<IHubClients>(MockBehavior.Strict);
         clientsMock.Setup(c => c.User(It.IsAny<string>()))
@@ -29,9 +30,11 @@ public class AcessoSignalRNotificationHandlersTests
         hubMock.Setup(h => h.Clients).Returns(clientsMock.Object);
 
         await new AcessosAtualizadosNotificationHandler(hubMock.Object).Handle(
-            new AcessosAtualizadosNotification(usuarioId, ["Arquivo"], ChatPerfil.SemAcesso), CancellationToken.None);
+            new AcessosAtualizadosNotification(usuarioId, ["Arquivo"], ChatPerfil.SemAcesso, Perfil.Solicitante), CancellationToken.None);
 
         destino.Should().Be(usuarioId.ToString());
         evento.Should().Be("AcessosAtualizados");
+        // review-2 R-03: a tela compara este perfil com o da sessão para saber se precisa sair.
+        payload.Should().BeEquivalentTo(new { modulos = new[] { "Arquivo" }, chatPerfil = "SemAcesso", perfil = "Solicitante" });
     }
 }

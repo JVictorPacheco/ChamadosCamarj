@@ -1,5 +1,5 @@
 import { test, expect, type Browser, type Page } from '@playwright/test'
-import { api, contaDeTeste, desativarContaDeTeste, login } from './helpers'
+import { api, contaDeTeste, credenciais, desativarContaDeTeste, login } from './helpers'
 
 // Controle de acesso — spec controle-de-acesso (AC-01..AC-05, AC-07, AC-11, AC-12, AC-16, AC-19).
 // Contas de teste com senha aleatória por rodada (nunca no código) e desativadas no fim (review-2 R-01).
@@ -99,4 +99,42 @@ test('Solicitante com Dashboard dado pelo Admin abre a tela; Kanban continua sem
     await api(page, 'POST', `/acessos/${conta.id}/padrao`)
     await desativarContaDeTeste(page, conta)
   }
+})
+
+// AC-15 + review-2 R-03 (decisão de 2026-10-05): perfil mudado com o sistema aberto → a pessoa sai na
+// hora e, ao entrar de novo, já vem com o perfil novo.
+test('Admin muda o perfil de quem está com o sistema aberto: a pessoa sai com aviso e volta no perfil novo', async ({ page, browser }) => {
+  await login(page)
+  const conta = await atendenteDeTeste(page)
+  const { contexto, pessoa } = await entrarComo(browser, conta)
+
+  try {
+    await expect(pessoa.getByRole('link', { name: 'Kanban' })).toBeVisible()
+
+    await api(page, 'PUT', `/usuarios/${conta.id}`, { nome: conta.nome, perfil: 'Solicitante', ativo: true })
+
+    await expect(pessoa).toHaveURL(/\/login$/, { timeout: 15000 })
+    await expect(pessoa.getByText('Seu perfil foi alterado. Entre novamente.')).toBeVisible()
+
+    await pessoa.locator('#email').fill(conta.email)
+    await pessoa.locator('#senha').fill(conta.senha)
+    await pessoa.getByRole('button', { name: /Entrar|Login/i }).click()
+    await pessoa.waitForURL('**/chamados')
+    await expect(pessoa.getByRole('link', { name: 'Kanban' })).toHaveCount(0)
+  } finally {
+    await contexto.close()
+    await desativarContaDeTeste(page, conta)
+  }
+})
+
+// review-2 R-02: o painel de Chat de um Admin também mostra o histórico (só abre e fecha — não muda nada).
+test('Painel de Chat de um Admin mostra o histórico de mudanças', async ({ page }) => {
+  await login(page)
+  await page.goto('/admin/acessos')
+  await page.getByLabel('Buscar pessoa').fill(credenciais().email)
+  await page.getByRole('row', { name: new RegExp(credenciais().email) }).getByRole('button', { name: 'Ajustar Chat' }).click()
+  const dialogo = page.getByRole('dialog')
+  await expect(dialogo.getByText('Histórico de mudanças')).toBeVisible()
+  await dialogo.getByRole('button', { name: 'Cancelar' }).click()
+  await expect(dialogo).toBeHidden()
 })

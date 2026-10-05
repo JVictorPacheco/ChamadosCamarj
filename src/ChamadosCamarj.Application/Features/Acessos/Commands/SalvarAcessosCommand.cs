@@ -71,7 +71,7 @@ public class SalvarAcessosCommandHandler : IRequestHandler<SalvarAcessosCommand>
 
         await _auditoria.AdicionarAsync(registros, cancellationToken);
         await _mediator.Publish(new AcessosAtualizadosNotification(
-            usuario.Id, ModulosDeAcesso.Nomes(usuario.ModulosEfetivos()), request.ChatPerfil), cancellationToken);
+            usuario.Id, ModulosDeAcesso.Nomes(usuario.ModulosEfetivos()), request.ChatPerfil, usuario.Perfil), cancellationToken);
     }
 }
 
@@ -110,7 +110,7 @@ public class VoltarAoPadraoCommandHandler : IRequestHandler<VoltarAoPadraoComman
             AcessosTexto.DiferencasDeModulos(usuario, antes, usuario.ModulosEfetivos(), request.AdminId, request.AdminNome),
             cancellationToken);
         await _publisher.Publish(new AcessosAtualizadosNotification(
-            usuario.Id, ModulosDeAcesso.Nomes(usuario.ModulosEfetivos()), usuario.ChatPerfil), cancellationToken);
+            usuario.Id, ModulosDeAcesso.Nomes(usuario.ModulosEfetivos()), usuario.ChatPerfil, usuario.Perfil), cancellationToken);
     }
 }
 
@@ -170,6 +170,6 @@ public class DefinirChatDeAcessoCommandHandler : IRequestHandler<DefinirChatDeAc
         // O comando de sempre: avisos aos participantes, auditoria do chat e auditoria de acessos.
         await _mediator.Send(new DefinirChatPerfilCommand(usuario.Id, request.ChatPerfil, request.PerfilRequisitante, request.AdminId, request.AdminNome), cancellationToken);
         await _mediator.Publish(new AcessosAtualizadosNotification(
-            usuario.Id, ModulosDeAcesso.Nomes(usuario.ModulosEfetivos()), request.ChatPerfil), cancellationToken);
+            usuario.Id, ModulosDeAcesso.Nomes(usuario.ModulosEfetivos()), request.ChatPerfil, usuario.Perfil), cancellationToken);
     }
 }

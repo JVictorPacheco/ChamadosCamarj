@@ -180,3 +180,14 @@ Nenhuma de produto. Parada obrigatória para: contratos C1–C9 e, depois, aplic
 | R-06 | A auditoria "Chat" passa para dentro do `DefinirChatPerfilCommandHandler`: **todo** caminho que muda o Chat (tela nova, edição de usuário, `PATCH /usuarios/{id}/chat-perfil`) entra na auditoria de acessos. |
 | R-07 | `ModuloGuard` recusa quando o perfil do cadastro difere do perfil do token ("Seu perfil mudou. Entre novamente para continuar."): os números nunca saem no escopo de um perfil antigo. A parte pré-existente (Admin rebaixado mantém direitos de Admin até o token vencer) vira pendência no STATE. |
 | R-08 | Escopo do relatório extraído do controller para `RelatorioEscopo.ResolverAsync` (Application), com testes. |
+
+## 14. Ajustes após o review-2 (2026-10-05)
+
+| Achado | Ajuste |
+|---|---|
+| R-01 🔴 (segurança) | E2E sem senha no código: `contaDeTeste` gera senha aleatória por rodada e `desativarContaDeTeste` no fim. As 5 contas `teste.acesso.*` foram desativadas no banco na hora (OK do usuário). |
+| R-02 | Painel "Ajustar Chat" do Admin mostra o histórico de mudanças (mesma lista do painel geral). |
+| R-03 (decisão do usuário) | `AcessosAtualizados` leva o **perfil** do cadastro; se ele difere do perfil da sessão, a tela da pessoa sai e mostra "Seu perfil foi alterado. Entre novamente." no login. |
+| R-04 | Reativação de conta grava "Conta" (e "Chat", se mudou) na auditoria de acessos. |
+| R-05 | Salvar manda o perfil que o painel viu (`perfilEsperado`) e o servidor recusa com 409 se mudou; o painel recarrega ao abrir; editar usuário invalida a lista de acessos. |
+| R-06 | `ObterRelatorioMensalAutorizadoQuery` (módulo + escopo + relatório) com testes; controller só repassa. |

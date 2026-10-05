@@ -21,5 +21,7 @@ public class AcessosAtualizadosNotificationHandler : INotificationHandler<Acesso
             {
                 modulos = notification.Modulos,
                 chatPerfil = notification.ChatPerfil.ToString(),
+                // Perfil do cadastro: diferente do da sessão → a tela sai e pede novo login (review-2 R-03).
+                perfil = notification.Perfil.ToString(),
             }, cancellationToken);
 }

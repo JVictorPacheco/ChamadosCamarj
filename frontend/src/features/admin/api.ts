@@ -6,6 +6,7 @@ import type {
   GrupoResponse,
   ModuloSistema,
   TipoChamadoResponse,
+  TipoPerfil,
 } from '@/types/api'
 
 export function listarGrupos(): Promise<GrupoResponse[]> {
@@ -50,7 +51,8 @@ export function obterAcessoUsuario(usuarioId: string): Promise<AcessoUsuarioDeta
   return apiFetch<AcessoUsuarioDetalheResponse>(`/acessos/${usuarioId}`)
 }
 
-export function salvarAcessos(usuarioId: string, dados: { modulos: ModuloSistema[]; chatPerfil: ChatPerfil }): Promise<void> {
+/** `perfilEsperado`: o perfil que o painel mostrou — se mudou no meio do caminho, o servidor recusa com 409 (review-2 R-05). */
+export function salvarAcessos(usuarioId: string, dados: { modulos: ModuloSistema[]; chatPerfil: ChatPerfil; perfilEsperado: TipoPerfil }): Promise<void> {
   return apiFetch<void>(`/acessos/${usuarioId}`, { method: 'PUT', body: JSON.stringify(dados) })
 }
 

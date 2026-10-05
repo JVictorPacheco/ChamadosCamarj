@@ -90,7 +90,7 @@ public class AtualizarUsuarioPerfilCommandHandler : IRequestHandler<AtualizarUsu
                 cancellationToken);
             // O menu da pessoa muda junto com o perfil: avisa na hora (AC-11/AC-13).
             await _mediator.Publish(new AcessosAtualizadosNotification(
-                usuario.Id, ModulosDeAcesso.Nomes(usuario.ModulosEfetivos()), usuario.ChatPerfil), cancellationToken);
+                usuario.Id, ModulosDeAcesso.Nomes(usuario.ModulosEfetivos()), usuario.ChatPerfil, usuario.Perfil), cancellationToken);
         }
 
         return usuario.ToResponse();

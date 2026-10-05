@@ -140,7 +140,9 @@ Abrir chamado e Meus chamados: sempre ligados. Módulos de administração: semp
 - **AC-15:** Dado uma pessoa com ajustes de módulos, quando o Admin muda o perfil dela em Usuários (ex.:
   Atendente vira Admin, ou Solicitante vira Atendente), então os ajustes de módulos são apagados e ela
   passa ao padrão do novo perfil; o acesso ao Chat é mantido. A mudança fica na auditoria (decisão do
-  usuário, 2026-10-02).
+  usuário, 2026-10-02). Se a pessoa estiver com o sistema aberto, ela é desconectada na hora com o aviso
+  "Seu perfil foi alterado. Entre novamente." e, ao entrar, já vem com o perfil novo (decisão do usuário,
+  2026-10-05, review-2 R-03).
 
 ### Critérios Transversais
 

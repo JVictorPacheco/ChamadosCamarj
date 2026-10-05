@@ -57,3 +57,14 @@ Todos corrigidos (ver `review.md`). Arquivos alterados depois do review: `Dashbo
 o `DefinirChatPerfilCommandHandler` é usado pela tela nova, pela edição de usuário e pela rota antiga — os
 três agora auditam (teste); o `ModuloGuard` só pelo Dashboard e Relatório. **🔴 0 após as correções.**
 Lição incorporada à skill: ao mudar uma regra, procurar no código todas as checagens da regra antiga.
+
+## Re-análise após o review-2 (2026-10-05)
+Itens novos e seus consumidores (as 3 buscas obrigatórias feitas):
+- **`AcessosAtualizadosNotification` ganhou `Perfil`:** 4 publicadores (`SalvarAcessos`, `VoltarAoPadrao`, `DefinirChatDeAcesso`, `AtualizarUsuarioPerfil`) + handler SignalR + 3 testes — todos atualizados; o compilador garante que não sobrou nenhum. ✅
+- **`AppLayout` desconecta quando o perfil do aviso difere do da sessão:** o aviso só traz perfil diferente quando `AtualizarUsuarioPerfil` muda o perfil (os outros publicadores mandam o perfil atual, igual ao do token de quem entrou depois da última mudança). Admin que muda o **próprio** perfil também sai — coerente com a decisão. Coberto por E2E. 🟡
+- **Aviso na tela de login (`logoutPerfilAlterado.ts`):** consumidores `LoginPage` e `AppLayout`; o aviso de inatividade continua igual (arquivo dele não foi tocado). Coberto por `login.spec.ts` + E2E novo. 🟡
+- **`salvarAcessos` com `perfilEsperado` / `useAcessoUsuario` sempre relê:** consumidores só no Controle de acesso. ✅
+- **`useCriarUsuario`/`useAtualizarUsuario` invalidam `['acessos']`:** efeito só de recarga de cache. ✅
+- **Todos os caminhos que gravam o perfil:** `AtualizarUsuarioPerfil` (avisa) e reativação em `CriarUsuarioPerfil` (não avisa — a conta estava desativada; sessão aberta de conta desativada é a pendência de segurança já registrada no STATE). Aceito.
+- **Quem perde o caminho:** nada removido; o histórico só virou componente (`HistoricoAcessos`).
+**🔴 0.** Gates: build 0 erros · 520/520 · E2E 22/22.

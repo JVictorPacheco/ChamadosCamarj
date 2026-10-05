@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useAcessos, useAcessoUsuario, useDefinirChatDeAcesso, useSalvarAcessos, useVoltarAoPadrao } from './hooks/useAcessos'
-import type { AcessoUsuarioDetalheResponse, AcessoUsuarioResumoResponse, ChatPerfil, ModuloSistema } from '@/types/api'
+import type { AcessoUsuarioDetalheResponse, AcessoUsuarioResumoResponse, AuditoriaAcessoResponse, ChatPerfil, ModuloSistema } from '@/types/api'
 
 const NOME_MODULO: Record<ModuloSistema, string> = {
   Arquivo: 'Arquivo',
@@ -133,7 +133,9 @@ export function ControleAcessoPage() {
 }
 
 function PainelAcessos({ pessoa, onClose }: { pessoa: AcessoUsuarioResumoResponse; onClose: () => void }) {
-  const { data: detalhe, isPending, isError } = useAcessoUsuario(pessoa.id)
+  const { data: detalhe, isError, isFetchedAfterMount } = useAcessoUsuario(pessoa.id)
+  // O formulário nasce destes dados: espera a leitura nova, não a do cache (review-2 R-05).
+  const pronto = detalhe && isFetchedAfterMount
 
   return (
     <Dialog open onOpenChange={(aberto) => { if (!aberto) onClose() }}>
@@ -144,13 +146,13 @@ function PainelAcessos({ pessoa, onClose }: { pessoa: AcessoUsuarioResumoRespons
             Perfil {pessoa.perfil}. Abrir chamado e Meus chamados são sempre liberados.
           </DialogDescription>
         </DialogHeader>
-        {isPending && <p className="text-sm text-muted-foreground">Carregando...</p>}
+        {!pronto && !isError && <p className="text-sm text-muted-foreground">Carregando...</p>}
         {isError && (
           <Alert variant="destructive">
             <AlertDescription>Não foi possível carregar os acessos desta pessoa.</AlertDescription>
           </Alert>
         )}
-        {detalhe && <FormularioAcessos detalhe={detalhe} onClose={onClose} />}
+        {pronto && <FormularioAcessos detalhe={detalhe} onClose={onClose} />}
       </DialogContent>
     </Dialog>
   )
@@ -211,20 +213,7 @@ function FormularioAcessos({ detalhe, onClose }: { detalhe: AcessoUsuarioDetalhe
         </Alert>
       )}
 
-      <div className="flex flex-col gap-1">
-        <p className="text-sm font-medium">Histórico de mudanças</p>
-        {detalhe.auditoria.length === 0 ? (
-          <p className="text-xs text-muted-foreground">Nenhuma mudança de acesso registrada.</p>
-        ) : (
-          <ul className="max-h-40 overflow-y-auto text-xs text-muted-foreground">
-            {detalhe.auditoria.map((a, i) => (
-              <li key={i}>
-                {new Date(a.dataHora).toLocaleString('pt-BR')} — {a.alteradoPorNome}: {a.item} {a.anterior} → {a.novo}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+      <HistoricoAcessos auditoria={detalhe.auditoria} />
 
       <DialogFooter className="gap-2 sm:justify-between">
         <Button variant="outline" disabled={!temAjuste || ocupado} onClick={() => voltar.mutate(undefined, { onSuccess: onClose })}>
@@ -232,7 +221,7 @@ function FormularioAcessos({ detalhe, onClose }: { detalhe: AcessoUsuarioDetalhe
         </Button>
         <div className="flex gap-2">
           <Button variant="outline" onClick={onClose}>Cancelar</Button>
-          <Button disabled={ocupado} onClick={() => salvar.mutate({ modulos: marcados, chatPerfil: chat }, { onSuccess: onClose })}>
+          <Button disabled={ocupado} onClick={() => salvar.mutate({ modulos: marcados, chatPerfil: chat, perfilEsperado: detalhe.perfil }, { onSuccess: onClose })}>
             {salvar.isPending ? 'Salvando...' : 'Salvar'}
           </Button>
         </div>
@@ -245,6 +234,8 @@ function FormularioAcessos({ detalhe, onClose }: { detalhe: AcessoUsuarioDetalhe
 function PainelChatAdmin({ pessoa, onClose }: { pessoa: AcessoUsuarioResumoResponse; onClose: () => void }) {
   const [chat, setChat] = useState<ChatPerfil>(pessoa.chatPerfil)
   const definir = useDefinirChatDeAcesso(pessoa.id)
+  // review-2 R-02: o histórico das mudanças de Chat do Admin também fica à vista.
+  const { data: detalhe, isError } = useAcessoUsuario(pessoa.id)
 
   return (
     <Dialog open onOpenChange={(aberto) => { if (!aberto) onClose() }}>
@@ -271,6 +262,13 @@ function PainelChatAdmin({ pessoa, onClose }: { pessoa: AcessoUsuarioResumoRespo
             <AlertDescription>{definir.error.message}</AlertDescription>
           </Alert>
         )}
+        {detalhe ? (
+          <HistoricoAcessos auditoria={detalhe.auditoria} />
+        ) : isError ? (
+          <p className="text-xs text-muted-foreground">Não foi possível carregar o histórico.</p>
+        ) : (
+          <p className="text-xs text-muted-foreground">Carregando histórico...</p>
+        )}
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancelar</Button>
           <Button disabled={definir.isPending} onClick={() => definir.mutate(chat, { onSuccess: onClose })}>
@@ -279,5 +277,25 @@ function PainelChatAdmin({ pessoa, onClose }: { pessoa: AcessoUsuarioResumoRespo
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  )
+}
+
+/** Histórico de mudanças de acesso da pessoa — no painel geral e no de Chat do Admin (review-2 R-02). */
+function HistoricoAcessos({ auditoria }: { auditoria: AuditoriaAcessoResponse[] }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <p className="text-sm font-medium">Histórico de mudanças</p>
+      {auditoria.length === 0 ? (
+        <p className="text-xs text-muted-foreground">Nenhuma mudança de acesso registrada.</p>
+      ) : (
+        <ul className="max-h-40 overflow-y-auto text-xs text-muted-foreground">
+          {auditoria.map((a, i) => (
+            <li key={i}>
+              {new Date(a.dataHora).toLocaleString('pt-BR')} — {a.alteradoPorNome}: {a.item} {a.anterior} → {a.novo}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   )
 }
