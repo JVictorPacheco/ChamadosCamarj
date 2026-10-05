@@ -13,6 +13,7 @@ public class CriarUsuarioPerfilHandlerTests
 {
     private readonly Mock<IUsuarioPerfilRepository> _repositoryMock = new();
     private readonly Mock<IPasswordHasher<UsuarioPerfil>> _passwordHasherMock = new();
+    private readonly Mock<IAuditoriaAcessoRepository> _auditoriaMock = new();
     private readonly CriarUsuarioPerfilCommandHandler _handler;
 
     public CriarUsuarioPerfilHandlerTests()
@@ -21,7 +22,7 @@ public class CriarUsuarioPerfilHandlerTests
             .Setup(h => h.HashPassword(It.IsAny<UsuarioPerfil>(), It.IsAny<string>()))
             .Returns("hash-fake");
 
-        _handler = new CriarUsuarioPerfilCommandHandler(_repositoryMock.Object, _passwordHasherMock.Object);
+        _handler = new CriarUsuarioPerfilCommandHandler(_repositoryMock.Object, _passwordHasherMock.Object, _auditoriaMock.Object);
     }
 
     [Fact]
@@ -124,5 +125,8 @@ public class CriarUsuarioPerfilHandlerTests
 
         existente.TemAjusteDeModulos.Should().BeFalse();
         response.Modulos.Should().Equal("Arquivo");
+        // review-2 R-04: a reativação entra na auditoria de acessos.
+        _auditoriaMock.Verify(a => a.AdicionarAsync(
+            It.Is<IEnumerable<AuditoriaAcesso>>(r => r.Any(x => x.Item == "Conta")), It.IsAny<CancellationToken>()), Times.Once);
     }
 }

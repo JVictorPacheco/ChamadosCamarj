@@ -47,7 +47,7 @@ public class UsuariosController : ControllerBase
         [FromBody] CriarUsuarioPerfilCommand command,
         CancellationToken cancellationToken)
     {
-        var result = await _mediator.Send(command with { PerfilRequisitante = _currentUser.Perfil }, cancellationToken);
+        var result = await _mediator.Send(command with { PerfilRequisitante = _currentUser.Perfil, RequisitanteId = _currentUser.UsuarioId, RequisitanteNome = _currentUser.Nome }, cancellationToken);
         return StatusCode(StatusCodes.Status201Created, result);
     }
 

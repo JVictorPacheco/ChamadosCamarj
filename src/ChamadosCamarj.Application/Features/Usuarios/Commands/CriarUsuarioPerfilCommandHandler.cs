@@ -1,3 +1,4 @@
+using ChamadosCamarj.Application.Features.Acessos;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using ChamadosCamarj.Application.Common.Authorization;
@@ -13,11 +14,14 @@ public class CriarUsuarioPerfilCommandHandler : IRequestHandler<CriarUsuarioPerf
 {
     private readonly IUsuarioPerfilRepository _usuarioPerfilRepository;
     private readonly IPasswordHasher<UsuarioPerfil> _passwordHasher;
+    private readonly IAuditoriaAcessoRepository _auditoriaAcesso;
 
     public CriarUsuarioPerfilCommandHandler(
         IUsuarioPerfilRepository usuarioPerfilRepository,
-        IPasswordHasher<UsuarioPerfil> passwordHasher)
+        IPasswordHasher<UsuarioPerfil> passwordHasher,
+        IAuditoriaAcessoRepository auditoriaAcesso)
     {
+        _auditoriaAcesso = auditoriaAcesso;
         _usuarioPerfilRepository = usuarioPerfilRepository;
         _passwordHasher = passwordHasher;
     }
@@ -35,6 +39,8 @@ public class CriarUsuarioPerfilCommandHandler : IRequestHandler<CriarUsuarioPerf
 
             // E-mail pertence a um usuário desativado: reativa o registro existente em vez de
             // inserir um novo, já que o índice único de Email não distingue ativo/inativo.
+            var perfilAnterior = existente.Perfil;
+            var chatAnterior = existente.ChatPerfil;
             existente.Atualizar(request.Nome, request.Perfil, request.GrupoId);
             existente.DefinirSenhaHash(_passwordHasher.HashPassword(existente, request.Senha));
             existente.DefinirChatPerfil(request.ChatPerfil);
@@ -43,6 +49,18 @@ public class CriarUsuarioPerfilCommandHandler : IRequestHandler<CriarUsuarioPerf
             existente.VoltarAoPadraoDeModulos();
             existente.Ativar();
             await _usuarioPerfilRepository.AtualizarAsync(existente, cancellationToken);
+
+            // Reativar muda perfil, módulos e Chat: entra na auditoria de acessos (review-2 R-04).
+            var registros = new List<AuditoriaAcesso>
+            {
+                AuditoriaAcesso.Criar(existente.Id, existente.Nome, request.RequisitanteId, request.RequisitanteNome,
+                    "Conta", $"desativada ({perfilAnterior})", $"reativada como {request.Perfil}"),
+            };
+            if (chatAnterior != request.ChatPerfil)
+                registros.Add(AuditoriaAcesso.Criar(existente.Id, existente.Nome, request.RequisitanteId, request.RequisitanteNome,
+                    "Chat", AcessosTexto.Chat(chatAnterior), AcessosTexto.Chat(request.ChatPerfil)));
+            await _auditoriaAcesso.AdicionarAsync(registros, cancellationToken);
+
             return existente.ToResponse();
         }
 

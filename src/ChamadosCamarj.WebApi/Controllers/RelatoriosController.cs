@@ -1,12 +1,6 @@
 using MediatR;
-using ChamadosCamarj.Application.Common;
-using ChamadosCamarj.Application.Common.Exceptions;
-using ChamadosCamarj.Application.Common.Autorizacao;
-using ChamadosCamarj.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using ChamadosCamarj.Application.Features.Relatorios.Queries;
-using ChamadosCamarj.Application.Features.Relatorios;
-using ChamadosCamarj.Domain.Enums;
 
 namespace ChamadosCamarj.WebApi.Controllers;
 
@@ -15,16 +9,10 @@ namespace ChamadosCamarj.WebApi.Controllers;
 public class RelatoriosController : ControllerBase
 {
     private readonly IMediator _mediator;
-    private readonly ICurrentUserService _currentUser;
-    private readonly ModuloGuard _moduloGuard;
-    private readonly IChamadoRepository _chamadoRepository;
 
-    public RelatoriosController(IMediator mediator, ICurrentUserService currentUser, ModuloGuard moduloGuard, IChamadoRepository chamadoRepository)
+    public RelatoriosController(IMediator mediator)
     {
-        _moduloGuard = moduloGuard;
-        _chamadoRepository = chamadoRepository;
         _mediator = mediator;
-        _currentUser = currentUser;
     }
 
     /// <summary>
@@ -39,16 +27,9 @@ public class RelatoriosController : ControllerBase
         [FromQuery] Guid? responsavelId,
         CancellationToken cancellationToken)
     {
-        // Quem não tem o módulo é recusado (spec controle-de-acesso AC-12; antes: "Solicitante → 403").
-        // Escopo dos números (autorizacao-chamados AC-21 + controle-de-acesso AC-07): Admin vê tudo;
-        // Atendente só os próprios, qualquer que seja o responsavelId pedido; Solicitante com o módulo só os
-        // chamados que ele vê.
-        await _moduloGuard.ExigirAsync(ModuloSistema.RelatorioMensal, "Você não tem permissão para acessar o relatório.", cancellationToken);
-
-        var (escopoResponsavel, idsVisiveis) = await RelatorioEscopo.ResolverAsync(
-            _currentUser.ObterContextoAcesso(), responsavelId, _chamadoRepository, cancellationToken);
-
-        var result = await _mediator.Send(new ObterRelatorioMensalQuery(ano, mes, escopoResponsavel, idsVisiveis), cancellationToken);
+        // Quem pode ver e de quem são os números (Admin tudo; Atendente os próprios; Solicitante com o módulo
+        // os que vê) — decidido em ObterRelatorioMensalAutorizadoQueryHandler (controle-de-acesso, review-2 R-06).
+        var result = await _mediator.Send(new ObterRelatorioMensalAutorizadoQuery(ano, mes, responsavelId), cancellationToken);
         return Ok(result);
     }
 }

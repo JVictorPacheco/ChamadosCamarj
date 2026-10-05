@@ -223,4 +223,16 @@ public class AcessosCommandsTests
         validador.Validate(new SalvarAcessosCommand(Guid.NewGuid(), null!, (ChatPerfil)99)).Errors
             .Select(e => e.PropertyName).Should().Contain(["Modulos", "ChatPerfil"]);
     }
+
+    // review-2 R-05: o painel estava aberto com o perfil antigo — salvar é recusado, nada muda.
+    [Fact]
+    public async Task Salvar_ComPerfilEsperadoDiferente_RecusaSemGravar()
+    {
+        var atendente = Usuario(Perfil.Atendente); // promovido depois que o painel abriu como Solicitante
+
+        var act = () => Salvar().Handle(new SalvarAcessosCommand(atendente.Id, ["Arquivo"], ChatPerfil.SemAcesso, "Admin", _adminId, "Admin", Perfil.Solicitante), CancellationToken.None);
+
+        await act.Should().ThrowAsync<ConflictException>();
+        _usuariosMock.Verify(r => r.AtualizarAsync(It.IsAny<UsuarioPerfil>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
 }

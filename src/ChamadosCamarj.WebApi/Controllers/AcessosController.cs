@@ -53,7 +53,7 @@ public class AcessosController : ControllerBase
 
         await _mediator.Send(new SalvarAcessosCommand(
             usuarioId, request.Modulos, request.ChatPerfil.Value,
-            _currentUser.Perfil, _currentUser.UsuarioId, _currentUser.Nome), cancellationToken);
+            _currentUser.Perfil, _currentUser.UsuarioId, _currentUser.Nome, request.PerfilEsperado), cancellationToken);
         return NoContent();
     }
 
@@ -82,5 +82,5 @@ public class AcessosController : ControllerBase
     }
 }
 
-public record SalvarAcessosRequest(IReadOnlyList<string>? Modulos, ChatPerfil? ChatPerfil);
+public record SalvarAcessosRequest(IReadOnlyList<string>? Modulos, ChatPerfil? ChatPerfil, Perfil? PerfilEsperado = null);
 public record DefinirChatDeAcessoRequest(ChatPerfil? ChatPerfil);

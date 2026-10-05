@@ -20,7 +20,9 @@ public record SalvarAcessosCommand(
     ChatPerfil ChatPerfil,
     string PerfilRequisitante = "",
     Guid AdminId = default,
-    string AdminNome = "Sistema"
+    string AdminNome = "Sistema",
+    // Perfil que a tela mostrava ao abrir o painel: se mudou desde então, recusa (review-2 R-05).
+    Perfil? PerfilEsperado = null
 ) : IRequest;
 
 public class SalvarAcessosCommandHandler : IRequestHandler<SalvarAcessosCommand>
@@ -39,6 +41,8 @@ public class SalvarAcessosCommandHandler : IRequestHandler<SalvarAcessosCommand>
     public async Task Handle(SalvarAcessosCommand request, CancellationToken cancellationToken)
     {
         var usuario = await AcessosGuard.ObterAlvoAsync(_usuarios, request.UsuarioId, request.PerfilRequisitante, request.AdminId, cancellationToken);
+        if (request.PerfilEsperado is { } esperado && esperado != usuario.Perfil)
+            throw new ConflictException("O perfil desta pessoa mudou. Reabra o painel para ver os acessos atuais.");
 
         var desejados = ModulosDeAcesso.DeNomes(request.Modulos);
         var (concedidos, retirados) = ModulosDeAcesso.CalcularAjustes(usuario.Perfil, desejados);
