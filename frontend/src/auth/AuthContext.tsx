@@ -30,6 +30,8 @@ interface AuthContextValue {
   atualizarChatPerfil: (novo: ChatPerfil) => void
   atualizarAcessos: (modulos: ModuloSistema[], chatPerfil: ChatPerfil) => void
   atualizarPreferenciaLeitura: (mostrar: boolean) => Promise<void>
+  /** Relê o cadastro e confere o perfil com o do token (boot e reconexão do tempo real). */
+  revalidarSessao: () => void
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
@@ -99,7 +101,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // SignalR pra receber o evento em tempo real) nunca era refletida até um novo login. Revalida uma
   // vez no boot direto do banco. Falha de rede aqui não desloga ninguém — mantém o snapshot salvo;
   // um 401 de verdade (conta excluída/desativada) já é tratado por registrarLogoutAutomatico acima.
-  useEffect(() => {
+  // Também chamada quando o tempo real volta depois de uma queda (review-4 R-01): o aviso de perfil mudado
+  // pode ter sido perdido enquanto a conexão estava fora.
+  const revalidarSessao = () => {
     const tokenDoBoot = getToken()
     if (!tokenDoBoot) return
     obterPerfilAtual()
@@ -122,7 +126,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .catch(() => {
         // best-effort — ver comentário acima
       })
-  }, [])
+  }
+  useEffect(revalidarSessao, [])
+  // review-4 R-01: a internet voltou (Wi-Fi caiu, notebook acordou) — eventos de tempo real podem ter se
+  // perdido nesse meio-tempo, mesmo sem a conexão do SignalR ter percebido a queda.
+  useEffect(() => {
+    window.addEventListener('online', revalidarSessao)
+    return () => window.removeEventListener('online', revalidarSessao)
+  })
 
   const loginComGoogle = async (idToken: string) => {
     const resposta = await autenticarGoogle(idToken)
@@ -176,7 +187,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const value = useMemo(
-    () => ({ perfil, loginComGoogle, loginComSenha, logout, atualizarChatPerfil, atualizarAcessos, atualizarPreferenciaLeitura }),
+    () => ({ perfil, loginComGoogle, loginComSenha, logout, atualizarChatPerfil, atualizarAcessos, atualizarPreferenciaLeitura, revalidarSessao }),
     [perfil],
   )
 

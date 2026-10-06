@@ -202,3 +202,10 @@ Nenhuma de produto. Parada obrigatória para: contratos C1–C9 e, depois, aplic
 | R-04 | Painel de Chat do Admin espera a leitura nova do cadastro antes de montar o formulário (como o painel geral). |
 | R-05 (OK do usuário) | Contas `teste.acesso.*` (5), chamados `[TESTE-ACESSO]` (4) e os 50 registros ligados apagados do banco em 2026-10-06. |
 | R-06 | Só registro: a decisão do R-03 da rodada 2 foi do usuário antes do código; spec e código saíram no mesmo commit. |
+
+## 16. Ajustes após o review-4 (2026-10-06)
+
+| Achado | Ajuste |
+|---|---|
+| R-01 🟡 | `AuthContext.revalidarSessao()` (a checagem do boot) também roda quando a internet volta (evento `online` do navegador) e quando o SignalR reconecta (`onreconnected` e o reinício após `onclose`). |
+| R-02 🟡 (decisão do usuário) | Área trocada vale **no próximo login** (o token carrega `grupo_id`); registrado como pendência no STATE e nos avisos de deploy. |

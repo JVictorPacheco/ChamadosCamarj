@@ -88,3 +88,9 @@ Itens novos:
 - **`PainelChatAdmin`** — só Controle de acesso. ✅
 - **Pacote `EntityFrameworkCore.InMemory`** — só no projeto de testes; não entra no build de produção. ✅
 **🔴 0.**
+
+## Re-análise após o review-4 (2026-10-06)
+- **`revalidarSessao` no `online` e na reconexão:** consumidores = toda sessão aberta. Para quem não teve o perfil
+  mudado, é só uma leitura extra do `/auth/me` quando a rede volta (atualiza menu/Chat, como no boot). 🟡 E2E.
+- **Deixado passar:** a Área do token (`grupo_id`) como consumidora da correção do repositório — decisão do usuário:
+  vale no próximo login (pendência no STATE).

@@ -189,3 +189,27 @@ test('Pessoa com Área: trocar a Área grava, e salvar módulo + Chat juntos fun
     await desativarContaDeTeste(page, conta)
   }
 })
+
+// review-4 R-01: aba aberta, mas sem conexão no instante da mudança — o aviso em tempo real se perde. Ao a
+// conexão voltar, o sistema relê o cadastro e desconecta do mesmo jeito.
+test('Perfil mudado durante uma queda de conexão: ao reconectar, a pessoa sai com o aviso', async ({ page, browser }) => {
+  test.setTimeout(120_000)
+  await login(page)
+  const conta = await atendenteDeTeste(page)
+  const { contexto, pessoa } = await entrarComo(browser, conta)
+
+  try {
+    await expect(pessoa.getByRole('link', { name: 'Kanban' })).toBeVisible()
+    await contexto.setOffline(true)
+    await api(page, 'PUT', `/usuarios/${conta.id}`, { nome: conta.nome, perfil: 'Solicitante', ativo: true })
+    await pessoa.waitForTimeout(3000) // o aviso em tempo real sai enquanto ela está sem conexão
+    await expect(pessoa).not.toHaveURL(/\/login$/)
+
+    await contexto.setOffline(false)
+    await expect(pessoa).toHaveURL(/\/login$/, { timeout: 60_000 })
+    await expect(pessoa.getByText('Seu perfil foi alterado. Entre novamente.')).toBeVisible()
+  } finally {
+    await contexto.close()
+    await desativarContaDeTeste(page, { ...conta, perfil: 'Solicitante' })
+  }
+})
