@@ -191,3 +191,14 @@ Nenhuma de produto. Parada obrigatória para: contratos C1–C9 e, depois, aplic
 | R-04 | Reativação de conta grava "Conta" (e "Chat", se mudou) na auditoria de acessos. |
 | R-05 | Salvar manda o perfil que o painel viu (`perfilEsperado`) e o servidor recusa com 409 se mudou; o painel recarrega ao abrir; editar usuário invalida a lista de acessos. |
 | R-06 | `ObterRelatorioMensalAutorizadoQuery` (módulo + escopo + relatório) com testes; controller só repassa. |
+
+## 15. Ajustes após o review-3 (2026-10-06)
+
+| Achado | Ajuste |
+|---|---|
+| R-01 🔴 | `UsuarioPerfilRepository.AtualizarAsync` marca como alterado **só o usuário** (`Entry(usuario).State = Modified`) em vez de `Update()` no grafo. O `Update()` passava a rastrear o Grupo carregado pelo `Include`, que ficava preso e colidia na 2ª gravação da mesma requisição (módulo + Chat de quem tem Área → 500). Efeito colateral (correção de bug antigo, fora do escopo): trocar ou tirar a Área em "Editar usuário" não era gravado — o EF reaproveitava a Área antiga. Testes com o change tracker real: pacote `Microsoft.EntityFrameworkCore.InMemory` **só no projeto de testes**. |
+| R-02 (decisão do usuário) | Ao abrir o sistema (`/auth/me` no `AuthContext`), se o perfil do cadastro difere do perfil do **token** (`perfilDoToken()`, `lib/api.ts`), sai com o mesmo aviso. O tempo real passa a comparar com o token também. Resposta do `/auth/me` de uma sessão que já acabou é ignorada (corrida achada no E2E). |
+| R-03 | Testes: não-Admin → 403 em listar/detalhar/voltar ao padrão; `ObterMetricasQueryHandler` com `ModuloGuard` real. |
+| R-04 | Painel de Chat do Admin espera a leitura nova do cadastro antes de montar o formulário (como o painel geral). |
+| R-05 (OK do usuário) | Contas `teste.acesso.*` (5), chamados `[TESTE-ACESSO]` (4) e os 50 registros ligados apagados do banco em 2026-10-06. |
+| R-06 | Só registro: a decisão do R-03 da rodada 2 foi do usuário antes do código; spec e código saíram no mesmo commit. |
