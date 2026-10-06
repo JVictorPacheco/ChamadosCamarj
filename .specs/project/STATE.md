@@ -1,10 +1,10 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-10-02 (release #51 em main; ordem das próximas features)
+> Atualizado em: 2026-10-06 (controle-de-acesso fechada — PR para develop; ordem das próximas features)
 
 ---
 
-## ▶ ONDE PARAMOS (2026-10-02) — ler isto primeiro ao retomar
+## ▶ ONDE PARAMOS (2026-10-06) — ler isto primeiro ao retomar
 
 **`main` == `develop`** desde o release **#53** (mergeado pelo usuário em 2026-10-02, commit
 `d517df3`; Cloudflare Pages success). Em `main`: as 4 features do #44 + `correcoes-pre-deploy` (#49)
@@ -18,9 +18,15 @@
      2026-10-02). A versão antiga em produção continua funcionando com ela, mas até o deploy
      **não reclassificar tipo de chamado real** (a versão antiga não conhece essa ação no histórico);
    - `correcoes-pre-deploy` **não tem migration**.
+   - **a migration `AddControleDeAcesso` JÁ ESTÁ APLICADA no banco** (2026-10-02, OK do usuário; aditiva,
+     compatível com a versão em produção). Só vale para o deploy depois que `controle-de-acesso` chegar à `main`;
+   - com `controle-de-acesso`: quem tiver o **perfil** trocado é desconectado e entra de novo; e **trocar ou
+     tirar a equipe em "Editar usuário" passa a ser gravado** — antes do deploy isso **não era gravado** (bug
+     antigo, achado em 2026-10-06). Depois do deploy, conferir com o usuário se alguém teve a equipe trocada
+     e não pegou, e refazer a troca.
 1. **Editar chamado** — **em `main`** (PR #52, release #53, 2026-10-02). Ver seção da sessão abaixo.
-2. **Controle de acesso por módulo** — spec aprovada; **em andamento** na branch `feature/controle-de-acesso`
-   (`.specs/features/controle-de-acesso/`).
+2. **Controle de acesso por módulo** — **fechada em 2026-10-06**; PR da branch `feature/controle-de-acesso` para
+   `develop` (merge do usuário). Ver a seção da sessão abaixo.
 3. **SLA em dias úteis + cadastro de feriados** — decisões de negócio tomadas (ver Pendências); falta spec.
 4. **Limpeza de Categorias** — depois do deploy e de reclassificar os 40 chamados antigos ("Não classificado").
 - Avulso, a qualquer momento: correção do modal "Alterar prioridade" (abre com a prioridade de quando
@@ -33,6 +39,60 @@
 
 **Processo:** toda feature (e toda correção de bug) passa pela análise de impacto `/analise-cod` — o
 usuário pediu cuidado explícito com efeitos fora do escopo (regra 5).
+
+---
+
+## Sessão de 2026-10-02 a 2026-10-06 — Controle de Acesso por Módulo
+
+### Contexto
+Segunda feature da ordem combinada, pedida pelo usuário: o Admin dar e tirar acesso a telas por pessoa, com o
+perfil como padrão. Fluxo `/sdd` completo, com `/analise-cod` e **4 rodadas de review** (a 4ª autorizada pelo
+usuário além do limite de 3). Tudo em `.specs/features/controle-de-acesso/` (spec, design §1–16, tasks,
+impacto, review.md a review-4.md).
+
+### Decisões do usuário
+- 2026-10-02: Admin tem sempre tudo (Admin não restringe Admin); ajuste por pessoa; controle da tela inteira;
+  "Abrir chamado" e "Meus chamados" fixos; mudança vale na hora; mudar o perfil zera os ajustes e mantém o Chat
+  (AC-15); contratos C1–C9 e a migration aprovados.
+- 2026-10-05: Chat dos Admins ajustável na tela nova (review R-02); perfil mudado com o sistema aberto →
+  **sai e entra de novo** (review-2 R-03); desativar na hora as contas de teste com senha exposta.
+- 2026-10-06: perfil mudado com a pessoa fora → pede login ao abrir (review-3 R-02); apagar as contas e os
+  chamados de teste já; 4ª rodada de review; **equipe trocada vale no próximo login** (review-4 R-02).
+
+### O que foi feito
+- Cadastro: `ModulosConcedidos`/`ModulosRetirados` (só as exceções ao padrão) e tabela `AuditoriaAcessos`
+  (migration `AddControleDeAcesso`, aditiva, **aplicada em 2026-10-02**). Regra única em `ModulosDeAcesso`.
+- Servidor: rotas `/api/acessos` (listar, detalhar, salvar, Chat, voltar ao padrão), só Admin; `ModuloGuard`
+  confere o módulo **no cadastro** a cada pedido (Dashboard e Relatório); aviso em tempo real
+  `AcessosAtualizados` (com o perfil); todo caminho que muda Chat, perfil ou reativa conta grava no histórico.
+- Tela: *Controle de acesso* (lista, painel com módulos/Chat/histórico, "Voltar ao padrão", painel de Chat
+  para Admins); menu e rotas por módulo; Chat saiu da tela de Usuários; desconexão com "Seu perfil foi
+  alterado. Entre novamente." (tempo real, ao abrir o sistema, quando a internet volta e na reconexão).
+- **Bug antigo corrigido (fora do escopo, achado no review-3):** `UsuarioPerfilRepository.AtualizarAsync`
+  regravava a equipe carregada junto — salvar módulo + Chat de quem tem equipe dava 500, e **trocar/tirar a
+  equipe em "Editar usuário" nunca era gravado**. Agora grava só o usuário.
+- Obsidian: Perfis e Permissões, Administração, Chat Corporativo, Fila/Kanban/Dashboard, Relatório Mensal,
+  Grupos e Equipes, Modelo de Dados e **ADR-010** (acesso por módulo ajustável por pessoa).
+- Skill `/analise-cod`: 5 buscas obrigatórias (regra antiga espalhada, quem perde o caminho, todos os
+  caminhos que gravam o estado, **gravação real e não mock**, **abertura do sistema e reconexão**).
+
+### Verificação
+- `dotnet build` 0 erros · `dotnet test` **528/528** (eram 475) · `npm run build` ok · lint sem avisos novos.
+- **E2E 25/25** (8 de controle de acesso), os de perfil repetidos 12–16× sem falha. Testes de repositório
+  com o EF real (pacote `EntityFrameworkCore.InMemory`, só no projeto de testes).
+- Ao vivo 22/22 (antes do review) e demonstração em tela com Playwright.
+- Review: rodadas 1–3 BLOQUEADO (todos os bloqueantes corrigidos e verificados); **rodada 4 APROVADO COM
+  RESSALVAS, 0 bloqueantes** (R-01 corrigido; R-02 decisão do usuário).
+
+### Atenção
+- **Incidente (2026-10-05):** eu (Claude) escrevi a senha das contas de teste no E2E, num repositório
+  **público**. As contas foram desativadas na hora e **apagadas em 2026-10-06** com OK do usuário (5 contas, 4
+  chamados `[TESTE-ACESSO]`, 4 históricos, 45 linhas de auditoria de acessos, 1 do chat; sobra conferida: 0).
+  A senha segue no histórico do git e no `review-2.md`, mas não abre nada. O E2E agora gera senha aleatória
+  por rodada e desativa as contas no fim — os testes desativam, **não apagam**: contas `teste.acesso.*`
+  desativadas voltam a aparecer a cada rodada de E2E.
+- O gatilho "reconexão do tempo real" não tem E2E (a simulação de offline não derruba o WebSocket); o
+  gatilho "internet voltou" tem.
 
 ---
 
@@ -77,11 +137,17 @@ completo, **primeira feature com a `/analise-cod`**. Spec, design, tasks, impact
   (conferido: 0 chamados, 0 contas e 0 `ChamadoEditado` no banco).
 
 ### Pendências gerais (consolidado em 2026-10-02, pós correcoes-pre-deploy)
-- **🔐 SEGURANÇA (registrada a pedido do usuário em 2026-10-05):** um **Admin rebaixado** (perfil trocado
-  em Usuários) **continua com os direitos de Admin até o login dele vencer**, porque as rotas de
-  Administração conferem o perfil do **token**, e não o do cadastro. Pré-existente (achado R-07 do review de
-  `controle-de-acesso`). Correção sugerida: conferir o perfil no cadastro nas ações de Admin (como o
-  `ModuloGuard` já faz para Dashboard/Relatório) ou invalidar o token quando o perfil muda.
+- **🔐 SEGURANÇA (registrada a pedido do usuário em 2026-10-05; ampliada em 2026-10-06 pelo review-4):** um
+  **Admin rebaixado** (perfil trocado em Usuários) **continua com os direitos de Admin até o login dele vencer**,
+  porque as rotas de Administração conferem o perfil do **token**, e não o do cadastro. O mesmo vale para
+  qualquer rebaixamento (ex.: Atendente → Solicitante continua podendo assumir chamados) e para a **equipe**
+  (o token carrega `grupo_id`). Desde `controle-de-acesso` a **tela** desconecta a pessoa (aberta, ao abrir o
+  sistema e quando a internet volta), mas o token antigo continua aceito pelo servidor até vencer (10 h) —
+  só quem usar a API direto escapa. Correção sugerida: conferir o perfil no cadastro nas ações (como o
+  `ModuloGuard` já faz para Dashboard/Relatório) ou invalidar o token quando perfil/equipe mudam.
+- **Equipe trocada vale no próximo login** (decisão do usuário em 2026-10-06, review-4 R-02 de
+  `controle-de-acesso`): a visibilidade de chamados segue o token até a pessoa entrar de novo; os alertas de
+  SLA já seguem o cadastro.
 - **SLA — DECIDIDO pelo usuário em 2026-10-02:** conta só o **expediente de 08:00 às 18:00 em dias
   úteis**; sábado, domingo e feriados **nacionais e estaduais do RJ** não contam. Feature própria
   (ROADMAP "SLA em Dias Úteis"). Lista de feriados: **cadastro pelo Admin**, já preenchida com os do

@@ -1,7 +1,7 @@
 ---
 tipo: arquitetura
 status: vigente
-atualizado: 2026-10-02
+atualizado: 2026-10-06
 tags: [arquitetura, dados]
 ---
 
@@ -21,6 +21,7 @@ erDiagram
     COMENTARIO |o--o{ ANEXO : "pode ter"
     CHAMADO ||--o{ HISTORICO_ENTRADA : registra
     GRUPO |o--o{ USUARIO_PERFIL : agrupa
+    USUARIO_PERFIL ||--o{ AUDITORIA_ACESSO : "histórico de acessos"
     USUARIO_PERFIL |o--o{ CHAMADO : "é responsável"
 
     CHAMADO {
@@ -61,6 +62,15 @@ erDiagram
         bool Ativo
         enum ChatPerfil
         bool MostrarConfirmacaoLeitura
+        flags ModulosConcedidos "telas dadas além do padrão do perfil"
+        flags ModulosRetirados "telas tiradas do padrão do perfil"
+    }
+    AUDITORIA_ACESSO {
+        string UsuarioNome
+        string AlteradoPorNome
+        string Item "tela, Chat, Perfil ou Conta"
+        string Anterior
+        string Novo
     }
     GRUPO {
         string Nome
@@ -113,3 +123,5 @@ Tabelas de apoio do chat: **ChatPresenca** (status Online/Ausente/Offline de cad
   [[Abertura por E-mail]].
 - O **conteúdo original** de mensagens editadas ou excluídas do chat é preservado para auditoria.
 - Senhas são guardadas apenas como **hash**, nunca em texto.
+- O cadastro do usuário guarda só as **exceções** de telas em relação ao padrão do perfil; toda mudança
+  de acesso vai para o **histórico de acessos**. Ver [[ADR-010 Acesso por módulo ajustável por pessoa]].

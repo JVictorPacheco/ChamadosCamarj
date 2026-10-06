@@ -1,8 +1,8 @@
 ---
 tipo: funcionalidade
 status: vigente
-atualizado: 2026-10-02
-spec: .specs/features/relatorio-mensal/spec.md
+atualizado: 2026-10-06
+spec: .specs/features/relatorio-mensal/spec.md, .specs/features/controle-de-acesso/spec.md
 tags: [funcionalidade, relatório]
 ---
 
@@ -17,7 +17,9 @@ superintendência no fechamento do mês.
 |---|---|
 | Admin | Relatório completo, incluindo a quebra por atendente |
 | Atendente | Apenas os **próprios** números |
-| Solicitante | Sem acesso (bloqueio real) |
+| Solicitante | Por padrão, sem acesso (bloqueio real). Se o Admin der a tela, vê os números **só dos chamados que já pode ver** |
+
+O Admin pode tirar o relatório de um Atendente ou dá-lo a um Solicitante (ver [[Perfis e Permissões]]).
 
 ## Conteúdo
 - **Seletor de mês.**
