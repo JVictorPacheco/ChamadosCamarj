@@ -206,6 +206,30 @@ public class AcessosCommandsTests
         _avisos.Should().ContainSingle().Which.Perfil.Should().Be(Perfil.Admin);
     }
 
+    // AC-05 em todas as rotas do Controle de acesso, não só em Salvar/Chat (review-3 R-03).
+    [Theory]
+    [InlineData("Atendente")]
+    [InlineData("Solicitante")]
+    public async Task ListarDetalharEVoltarAoPadrao_QuemNaoEhAdmin_Forbidden(string perfil)
+    {
+        var atendente = Usuario(Perfil.Atendente);
+        atendente.AjustarModulos(ModuloSistema.Nenhum, ModuloSistema.RelatorioMensal);
+
+        var listar = () => new ListarAcessosQueryHandler(_usuariosMock.Object)
+            .Handle(new ListarAcessosQuery(perfil), CancellationToken.None);
+        var detalhar = () => new ObterAcessoUsuarioQueryHandler(_usuariosMock.Object, _auditoriaMock.Object)
+            .Handle(new ObterAcessoUsuarioQuery(atendente.Id, perfil), CancellationToken.None);
+        var voltar = () => new VoltarAoPadraoCommandHandler(_usuariosMock.Object, _auditoriaMock.Object, _mediatorMock.Object)
+            .Handle(new VoltarAoPadraoCommand(atendente.Id, perfil), CancellationToken.None);
+
+        await listar.Should().ThrowAsync<ForbiddenException>();
+        await detalhar.Should().ThrowAsync<ForbiddenException>();
+        await voltar.Should().ThrowAsync<ForbiddenException>();
+        atendente.TemAjusteDeModulos.Should().BeTrue();
+        _usuariosMock.Verify(r => r.AtualizarAsync(It.IsAny<UsuarioPerfil>(), It.IsAny<CancellationToken>()), Times.Never);
+        _usuariosMock.Verify(r => r.ListarAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
     [Fact]
     public async Task DefinirChatDeAcesso_QuemNaoEhAdmin_Forbidden()
     {

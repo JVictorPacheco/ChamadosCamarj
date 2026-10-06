@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { atualizarPreferenciaLeitura as atualizarPreferenciaLeituraApi, autenticarGoogle, login, obterPerfilAtual, type AutenticacaoResponse } from './api'
-import { clearToken, getToken, registrarLogoutAutomatico, setToken } from '@/lib/api'
+import { clearToken, getToken, perfilDoToken, registrarLogoutAutomatico, setToken } from '@/lib/api'
+import { marcarLogoutPorPerfilAlterado } from './logoutPerfilAlterado'
 import type { ChatPerfil, ModuloSistema, TipoPerfil, UsuarioPerfilResponse } from '@/types/api'
 import { modulosPadrao } from '@/lib/modulos'
 
@@ -99,9 +100,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // vez no boot direto do banco. Falha de rede aqui não desloga ninguém — mantém o snapshot salvo;
   // um 401 de verdade (conta excluída/desativada) já é tratado por registrarLogoutAutomatico acima.
   useEffect(() => {
-    if (!getToken()) return
+    const tokenDoBoot = getToken()
+    if (!tokenDoBoot) return
     obterPerfilAtual()
       .then((resposta) => {
+        // Resposta de uma sessão que já acabou (logout, ou a 2ª chamada do StrictMode depois que a 1ª
+        // desconectou): não pode ressuscitar a sessão nem apagar o aviso da tela de login.
+        if (getToken() !== tokenDoBoot) return
+        // spec controle-de-acesso AC-15 (review-3 R-02): o perfil mudou enquanto a pessoa estava fora.
+        // O token ainda tem o perfil antigo — sai e pede login novo, igual a quem estava com a tela aberta.
+        const perfilLogado = perfilDoToken()
+        if (perfilLogado && perfilLogado !== resposta.perfil) {
+          marcarLogoutPorPerfilAlterado()
+          logout()
+          return
+        }
         const atualizado = paraPerfilAtual(resposta)
         localStorage.setItem(STORAGE_KEY, JSON.stringify(atualizado))
         setPerfil(atualizado)

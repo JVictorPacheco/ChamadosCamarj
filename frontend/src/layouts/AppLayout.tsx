@@ -28,6 +28,7 @@ import { limparLogoutPorPerfilAlterado, marcarLogoutPorPerfilAlterado } from '@/
 import { PreferenciasDialog } from '@/features/chat/components/PreferenciasDialog'
 import { Kanban, LayoutDashboard, Inbox, FileBarChart, Users, Archive, Sun, Moon, Settings, Tags, FolderKanban, MessageSquare, ShieldCheck } from 'lucide-react'
 import { temModulo } from '@/lib/modulos'
+import { perfilDoToken } from '@/lib/api'
 import logoCamarj from '../assets/logo-camarj.png'
 
 export function AppLayout() {
@@ -66,12 +67,8 @@ export function AppLayout() {
   }, [location.pathname])
 
   // review-2 R-03: mesmo motivo do pathnameRef — o efeito de subscribe não reconecta a cada render,
-  // então lê o perfil da sessão e o "sair" por refs.
-  const perfilTipoRef = useRef(perfil?.tipo)
+  // então chama o "sair" por ref.
   const sairRef = useRef<() => void>(() => {})
-  useEffect(() => {
-    perfilTipoRef.current = perfil?.tipo
-  }, [perfil?.tipo])
 
   useEffect(() => {
     const unsub = subscribe((event) => {
@@ -87,8 +84,9 @@ export function AppLayout() {
       if (event.type === 'AcessosAtualizados') {
         // spec controle-de-acesso AC-15 (decisão de 2026-10-05): o Admin mudou o perfil desta pessoa.
         // O token ainda tem o perfil antigo, então ela sai e entra de novo em vez de seguir com
-        // telas e permissões do perfil anterior.
-        if (event.payload.perfil && perfilTipoRef.current && event.payload.perfil !== perfilTipoRef.current) {
+        // telas e permissões do perfil anterior. Compara com o token, como no boot (review-3 R-02).
+        const perfilLogado = perfilDoToken()
+        if (event.payload.perfil && perfilLogado && event.payload.perfil !== perfilLogado) {
           marcarLogoutPorPerfilAlterado()
           sairRef.current()
           return

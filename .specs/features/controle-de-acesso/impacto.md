@@ -68,3 +68,23 @@ Itens novos e seus consumidores (as 3 buscas obrigatórias feitas):
 - **Todos os caminhos que gravam o perfil:** `AtualizarUsuarioPerfil` (avisa) e reativação em `CriarUsuarioPerfil` (não avisa — a conta estava desativada; sessão aberta de conta desativada é a pendência de segurança já registrada no STATE). Aceito.
 - **Quem perde o caminho:** nada removido; o histórico só virou componente (`HistoricoAcessos`).
 **🔴 0.** Gates: build 0 erros · 520/520 · E2E 22/22.
+
+## Re-análise após o review-3 (2026-10-06)
+**O que esta análise deixou passar e por quê:** (1) a dupla gravação do mesmo usuário na mesma requisição foi
+dada como coberta por testes que **só usam mock** do repositório — exatamente o que a skill manda não contar;
+(2) a abertura do sistema (`/auth/me`) não foi listada como consumidora da regra "perfil mudou → sair".
+
+Itens novos:
+- **`UsuarioPerfilRepository.AtualizarAsync` (só o usuário, sem o grafo)** — consumidores: Salvar acessos,
+  Login, Resetar/Redefinir senha, Adicionar participante (chat), Definir Chat, Preferência de leitura, Criar e
+  Atualizar usuário. Nenhum grava dados do Grupo pelo usuário (busca por `.Grupo.`/`Grupo =` vazia), então
+  ninguém dependia do `Update()` levar a Área junto. **Mudança de comportamento fora do escopo:** trocar/tirar
+  a Área em "Editar usuário" passa a ser gravado (antes não era) — 🟡 coberto por `UsuarioPerfilRepositoryTests`
+  e E2E. Avisar o usuário: em produção, mudanças de Área podem não ter valido até o deploy.
+- **`perfilDoToken()` + checagem no boot do `AuthContext`** — consumidores: todo usuário ao abrir o sistema.
+  Quem tem perfil igual ao do token não muda nada; resposta de sessão encerrada é ignorada. 🟡 coberto por E2E
+  (24/24, incluindo login, inatividade e fluxo completo).
+- **`AppLayout` compara com o token** em vez do perfil salvo — 🟡 E2E "sistema aberto".
+- **`PainelChatAdmin`** — só Controle de acesso. ✅
+- **Pacote `EntityFrameworkCore.InMemory`** — só no projeto de testes; não entra no build de produção. ✅
+**🔴 0.**

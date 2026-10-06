@@ -232,10 +232,10 @@ function FormularioAcessos({ detalhe, onClose }: { detalhe: AcessoUsuarioDetalhe
 
 /** Admin: módulos são sempre totais; só o Chat é ajustável — inclusive o do próprio Admin (review R-02). */
 function PainelChatAdmin({ pessoa, onClose }: { pessoa: AcessoUsuarioResumoResponse; onClose: () => void }) {
-  const [chat, setChat] = useState<ChatPerfil>(pessoa.chatPerfil)
-  const definir = useDefinirChatDeAcesso(pessoa.id)
-  // review-2 R-02: o histórico das mudanças de Chat do Admin também fica à vista.
-  const { data: detalhe, isError } = useAcessoUsuario(pessoa.id)
+  // review-2 R-02: histórico à vista; review-3 R-04: o formulário nasce da leitura nova do cadastro, não da
+  // lista em cache (que poderia gravar um Chat velho por cima).
+  const { data: detalhe, isError, isFetchedAfterMount } = useAcessoUsuario(pessoa.id)
+  const pronto = detalhe && isFetchedAfterMount
 
   return (
     <Dialog open onOpenChange={(aberto) => { if (!aberto) onClose() }}>
@@ -244,39 +244,50 @@ function PainelChatAdmin({ pessoa, onClose }: { pessoa: AcessoUsuarioResumoRespo
           <DialogTitle>Chat de {pessoa.nome}</DialogTitle>
           <DialogDescription>Admin tem acesso total aos módulos. Aqui você ajusta só o Chat.</DialogDescription>
         </DialogHeader>
-        <div className="flex flex-col gap-1">
-          <Label htmlFor="chat-admin">Chat</Label>
-          <Select value={chat} onValueChange={(v) => setChat(v as ChatPerfil)} disabled={definir.isPending}>
-            <SelectTrigger id="chat-admin" className="max-w-xs">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {OPCOES_CHAT.map((o) => (
-                <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        {definir.error && (
+        {!pronto && !isError && <p className="text-sm text-muted-foreground">Carregando...</p>}
+        {isError && (
           <Alert variant="destructive">
-            <AlertDescription>{definir.error.message}</AlertDescription>
+            <AlertDescription>Não foi possível carregar os acessos desta pessoa.</AlertDescription>
           </Alert>
         )}
-        {detalhe ? (
-          <HistoricoAcessos auditoria={detalhe.auditoria} />
-        ) : isError ? (
-          <p className="text-xs text-muted-foreground">Não foi possível carregar o histórico.</p>
-        ) : (
-          <p className="text-xs text-muted-foreground">Carregando histórico...</p>
-        )}
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Cancelar</Button>
-          <Button disabled={definir.isPending} onClick={() => definir.mutate(chat, { onSuccess: onClose })}>
-            {definir.isPending ? 'Salvando...' : 'Salvar'}
-          </Button>
-        </DialogFooter>
+        {pronto && <FormularioChatAdmin detalhe={detalhe} onClose={onClose} />}
       </DialogContent>
     </Dialog>
+  )
+}
+
+function FormularioChatAdmin({ detalhe, onClose }: { detalhe: AcessoUsuarioDetalheResponse; onClose: () => void }) {
+  const [chat, setChat] = useState<ChatPerfil>(detalhe.chatPerfil)
+  const definir = useDefinirChatDeAcesso(detalhe.id)
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-1">
+        <Label htmlFor="chat-admin">Chat</Label>
+        <Select value={chat} onValueChange={(v) => setChat(v as ChatPerfil)} disabled={definir.isPending}>
+          <SelectTrigger id="chat-admin" className="max-w-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {OPCOES_CHAT.map((o) => (
+              <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      {definir.error && (
+        <Alert variant="destructive">
+          <AlertDescription>{definir.error.message}</AlertDescription>
+        </Alert>
+      )}
+      <HistoricoAcessos auditoria={detalhe.auditoria} />
+      <DialogFooter>
+        <Button variant="outline" onClick={onClose}>Cancelar</Button>
+        <Button disabled={definir.isPending} onClick={() => definir.mutate(chat, { onSuccess: onClose })}>
+          {definir.isPending ? 'Salvando...' : 'Salvar'}
+        </Button>
+      </DialogFooter>
+    </div>
   )
 }
 

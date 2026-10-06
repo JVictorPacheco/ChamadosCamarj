@@ -138,3 +138,54 @@ test('Painel de Chat de um Admin mostra o histórico de mudanças', async ({ pag
   await dialogo.getByRole('button', { name: 'Cancelar' }).click()
   await expect(dialogo).toBeHidden()
 })
+
+// review-3 R-02: a pessoa estava FORA (aba fechada) quando o perfil mudou — ao reabrir, sai e pede login.
+test('Perfil mudado com a pessoa fora do sistema: ao reabrir, pede login de novo com o aviso', async ({ page, browser }) => {
+  await login(page)
+  const conta = await atendenteDeTeste(page)
+  const { contexto } = await entrarComo(browser, conta)
+  const sessaoSalva = await contexto.storageState() // token e perfil salvos no navegador dela
+  await contexto.close()
+
+  await api(page, 'PUT', `/usuarios/${conta.id}`, { nome: conta.nome, perfil: 'Solicitante', ativo: true })
+
+  const reaberto = await browser.newContext({ storageState: sessaoSalva })
+  try {
+    const tela = await reaberto.newPage()
+    await tela.goto('/chamados')
+    await expect(tela).toHaveURL(/\/login$/, { timeout: 15000 })
+    await expect(tela.getByText('Seu perfil foi alterado. Entre novamente.')).toBeVisible()
+  } finally {
+    await reaberto.close()
+    await desativarContaDeTeste(page, { ...conta, perfil: 'Solicitante' })
+  }
+})
+
+// review-3 R-01: pessoa COM Área — salvar módulo e Chat juntos dava 500 (e o bug antigo de trocar/tirar Área
+// em Editar usuário não gravava). Só API: o que importa é a gravação.
+test('Pessoa com Área: trocar a Área grava, e salvar módulo + Chat juntos funciona e audita', async ({ page }) => {
+  await login(page)
+  const conta = await atendenteDeTeste(page)
+  try {
+    const grupos = await api<{ id: string }[]>(page, 'GET', '/grupos')
+    expect(grupos.length).toBeGreaterThan(0)
+    await api(page, 'PUT', `/usuarios/${conta.id}`, { nome: conta.nome, perfil: 'Atendente', ativo: true, grupoId: grupos[0].id })
+    const comArea = (await api<{ id: string; grupoId: string | null }[]>(page, 'GET', '/usuarios')).find((u) => u.id === conta.id)
+    expect(comArea?.grupoId).toBe(grupos[0].id)
+
+    await api(page, 'PUT', `/acessos/${conta.id}`, {
+      modulos: ['Arquivo', 'Kanban', 'Fila', 'Dashboard'], chatPerfil: 'Participante', perfilEsperado: 'Atendente',
+    })
+    const detalhe = await api<{ modulos: { modulo: string; efetivo: boolean }[]; chatPerfil: string; auditoria: { item: string }[] }>(
+      page, 'GET', `/acessos/${conta.id}`)
+    expect(detalhe.chatPerfil).toBe('Participante')
+    expect(detalhe.modulos.find((m) => m.modulo === 'RelatorioMensal')?.efetivo).toBe(false)
+    expect(detalhe.auditoria.map((a) => a.item)).toEqual(expect.arrayContaining(['Relatório mensal', 'Chat']))
+
+    await api(page, 'PUT', `/usuarios/${conta.id}`, { nome: conta.nome, perfil: 'Atendente', ativo: true, grupoId: null })
+    const semArea = (await api<{ id: string; grupoId: string | null }[]>(page, 'GET', '/usuarios')).find((u) => u.id === conta.id)
+    expect(semArea?.grupoId ?? null).toBeNull()
+  } finally {
+    await desativarContaDeTeste(page, conta)
+  }
+})
