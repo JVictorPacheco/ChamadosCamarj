@@ -352,7 +352,7 @@
 - [ ] Chamado aberto **fora do expediente** (ou em fim de semana/feriado): o prazo **começa a contar às 08:00 do próximo dia útil** (decisão do usuário, 2026-10-02).
 - [ ] **Aviso a quem abre fora do expediente** (decisão do usuário, 2026-10-02). Proposta a detalhar na spec: na tela de abertura, antes de enviar — "Você está abrindo o chamado fora do horário de atendimento (seg. a sex., 08:00 às 18:00). O prazo começa a contar às 08:00 de <próximo dia útil>." — e, no detalhe, o selo de prazo mostra "Prazo começa a contar em <data>, 08:00" até o início da contagem.
 
-## 🔐 Controle de Acesso por Módulo (FECHADA — 2026-10-06; PR para `develop`; migration já aplicada no banco)
+## 🔐 Controle de Acesso por Módulo (FECHADA — 2026-10-06; PR #54 para `develop`; migration já aplicada no banco)
 
 - [x] Tela "Controle de acesso" (só Admin): cada pessoa herda o padrão do perfil e o Admin liga/desliga módulos dela (Arquivo, Kanban, Fila, Dashboard, Relatório mensal); Solicitante pode **ganhar** só módulos de consulta; Chat (3 níveis) unificado nesta tela.
 - [x] Admin sempre com acesso total (só o Chat dele é ajustável); Abrir/Meus chamados fixos; mudança vale na hora; auditoria; mudança de perfil zera os ajustes (mantém o Chat) e desconecta a pessoa.

@@ -1,10 +1,19 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-10-06 (controle-de-acesso fechada — PR para develop; ordem das próximas features)
+> Atualizado em: 2026-10-08 (fim de sessão: PR #54 aberto aguardando merge do usuário; roteiro da próxima sessão)
 
 ---
 
-## ▶ ONDE PARAMOS (2026-10-06) — ler isto primeiro ao retomar
+## ▶ ONDE PARAMOS (2026-10-08) — ler isto primeiro ao retomar
+
+**Roteiro da próxima sessão:**
+1. Conferir o estado real: `git fetch`, `gh pr view 54`, `git log origin/main..origin/develop`.
+2. Se o **PR #54** (`feature/controle-de-acesso` → `develop`) foi mergeado: conferir os gates em `develop`
+   (`dotnet build`, `dotnet test` — 528 —, `npm run build`), apagar a branch e passar ao usuário o texto do
+   PR `develop` → `main` (o merge em `main` é dele). Se ainda está aberto: lembrar o usuário.
+3. Deploy pelo irmão do usuário (avisos no item 0 abaixo).
+4. Próxima feature: **SLA em dias úteis + cadastro de feriados** — começar pelo `/sdd` (fase Specify), com as
+   decisões já tomadas (ver Pendências e ROADMAP).
 
 **`main` == `develop`** desde o release **#53** (mergeado pelo usuário em 2026-10-02, commit
 `d517df3`; Cloudflare Pages success). Em `main`: as 4 features do #44 + `correcoes-pre-deploy` (#49)
@@ -25,8 +34,8 @@
      antigo, achado em 2026-10-06). Depois do deploy, conferir com o usuário se alguém teve a equipe trocada
      e não pegou, e refazer a troca.
 1. **Editar chamado** — **em `main`** (PR #52, release #53, 2026-10-02). Ver seção da sessão abaixo.
-2. **Controle de acesso por módulo** — **fechada em 2026-10-06**; PR da branch `feature/controle-de-acesso` para
-   `develop` (merge do usuário). Ver a seção da sessão abaixo.
+2. **Controle de acesso por módulo** — **fechada em 2026-10-06**; **PR #54** (`feature/controle-de-acesso` →
+   `develop`) **aberto, aguardando o merge do usuário** (conferido em 2026-10-08). Ver a seção da sessão abaixo.
 3. **SLA em dias úteis + cadastro de feriados** — decisões de negócio tomadas (ver Pendências); falta spec.
 4. **Limpeza de Categorias** — depois do deploy e de reclassificar os 40 chamados antigos ("Não classificado").
 - Avulso, a qualquer momento: correção do modal "Alterar prioridade" (abre com a prioridade de quando
