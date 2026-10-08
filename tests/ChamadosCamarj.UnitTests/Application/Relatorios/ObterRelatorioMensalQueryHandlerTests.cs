@@ -192,4 +192,24 @@ public class ObterRelatorioMensalQueryHandlerTests
         result.Comparacao.Should().NotBeNull();
         result.Comparacao!.VariacaoAbertosPercentual.Should().Be(100.0);
     }
+
+    // spec controle-de-acesso AC-07: Solicitante com o módulo vê só os chamados que ele vê.
+    [Fact]
+    public async Task Handle_ComIdsVisiveis_ContaSoOsChamadosVisiveis()
+    {
+        var inicio = new DateTime(2026, 7, 1, 0, 0, 0, DateTimeKind.Utc);
+        var fim = inicio.AddMonths(1);
+        var visivel = Evento(AcaoHistorico.Criado, inicio.AddDays(1));
+        SetupEventos(inicio, fim, [
+            visivel,
+            Evento(AcaoHistorico.Criado, inicio.AddDays(2)),
+            Evento(AcaoHistorico.Criado, inicio.AddDays(3)),
+        ]);
+
+        var todos = await _handler.Handle(new ObterRelatorioMensalQuery(2026, 7), CancellationToken.None);
+        var soVisiveis = await _handler.Handle(new ObterRelatorioMensalQuery(2026, 7, IdsVisiveis: [visivel.ChamadoId]), CancellationToken.None);
+
+        todos.TotalAbertos.Should().Be(3);
+        soVisiveis.TotalAbertos.Should().Be(1);
+    }
 }

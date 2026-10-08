@@ -5,6 +5,7 @@ import {
 } from '@microsoft/signalr'
 import type { SignalREvent } from '@/lib/signalr-events'
 import { getToken } from '@/lib/api'
+import { useAuth } from '@/auth/AuthContext'
 
 const SIGNALR_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') ?? 'http://localhost:5000'
 
@@ -30,6 +31,12 @@ export function SignalRProvider({ children }: { children: ReactNode }) {
   // useRef em vez de useState: dá identidade estável pro Set, sem forçar recriação
   // de `notify` (e portanto do efeito de conexão abaixo) a cada subscribe/unsubscribe.
   const subscribersRef = useRef<Set<(event: SignalREvent) => void>>(new Set())
+  // review-4 R-01: eventos perdidos durante uma queda (ex.: "perfil mudou") — ao voltar, relê o cadastro.
+  const { revalidarSessao } = useAuth()
+  const revalidarRef = useRef(revalidarSessao)
+  useEffect(() => {
+    revalidarRef.current = revalidarSessao
+  })
 
   const subscribe = useCallback((handler: (event: SignalREvent) => void) => {
     subscribersRef.current.add(handler)
@@ -63,12 +70,15 @@ export function SignalRProvider({ children }: { children: ReactNode }) {
     // AC-47/48: chega mesmo pra quem não tem acesso ao chat — essa conexão (/hubs/chamados) é
     // global, ao contrário do ChatHub, que só existe na tela /chat.
     conn.on('ChatPerfilAtualizado', (payload) => notify({ type: 'ChatPerfilAtualizado', payload }))
+    // spec controle-de-acesso: menu da pessoa muda na hora quando o Admin ajusta os acessos dela.
+    conn.on('AcessosAtualizados', (payload) => notify({ type: 'AcessosAtualizados', payload }))
     // Bug #10: mesmo motivo — quem não está na tela /chat precisa saber que chegou mensagem nova
     // pra atualizar o badge de não lidas da sidebar, e só esta conexão global alcança essa pessoa.
     conn.on('ChatConversaAtualizada', () => notify({ type: 'ChatConversaAtualizada' }))
 
     let cancelado = false
     let tentativa = 0
+    let jaConectou = false
     let retryTimer: ReturnType<typeof setTimeout> | null = null
 
     const tentarConectar = async () => {
@@ -78,6 +88,8 @@ export function SignalRProvider({ children }: { children: ReactNode }) {
         if (cancelado) return
         setIsConnected(true)
         tentativa = 0
+        if (jaConectou) revalidarRef.current() // voltou depois do onclose
+        jaConectou = true
       } catch {
         if (cancelado) return
         setIsConnected(false)
@@ -88,7 +100,10 @@ export function SignalRProvider({ children }: { children: ReactNode }) {
     }
 
     conn.onreconnecting(() => setIsConnected(false))
-    conn.onreconnected(() => setIsConnected(true))
+    conn.onreconnected(() => {
+      setIsConnected(true)
+      revalidarRef.current()
+    })
     // onclose só dispara depois que withAutomaticReconnect esgota as tentativas dele (ou .stop()
     // foi chamado) — nesse ponto volta a tentar do zero com o mesmo backoff manual.
     conn.onclose(() => {

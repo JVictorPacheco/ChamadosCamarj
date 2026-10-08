@@ -1,7 +1,7 @@
 ---
 tipo: funcionalidade
 status: vigente
-atualizado: 2026-10-02
+atualizado: 2026-10-06
 spec: .specs/features/area-e-tipo-do-chamado/spec.md
 tags: [funcionalidade, equipes]
 ---
@@ -32,7 +32,7 @@ responsabilidade** de um membro da equipe **ou** tem a **área** da equipe.
   chamados da equipe, e pode atuar neles. Sem equipe, vê a fila, os seus e os que abriu.
 - **Admin** vê todos os chamados, **mesmo pertencendo a uma equipe**.
 - O **Admin** cria, edita e desativa equipes e define a equipe de cada usuário. Ver
-  [[Administração]].
+  [[Administração]]. A troca de equipe de uma pessoa vale a partir do **próximo login** dela.
 - A lista de equipes é também a lista de **áreas** da abertura de chamado: a área já vem com a
   equipe de quem abre. Ver [[Abertura de Chamados]] e [[ADR-008 Área do chamado é a equipe]].
 

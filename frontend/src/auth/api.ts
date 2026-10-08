@@ -1,5 +1,5 @@
 import { apiFetch } from '@/lib/api'
-import type { ChatPerfil, TipoPerfil, UsuarioPerfilResponse } from '@/types/api'
+import type { ChatPerfil, ModuloSistema, TipoPerfil, UsuarioPerfilResponse } from '@/types/api'
 
 export interface AutenticacaoResponse {
   token: string
@@ -10,6 +10,8 @@ export interface AutenticacaoResponse {
   chatPerfil?: ChatPerfil
   mostrarConfirmacaoLeitura?: boolean
   grupoId?: string | null
+  /** Módulos que a pessoa usa (spec controle-de-acesso). */
+  modulos?: ModuloSistema[]
 }
 
 // AC-55 a AC-58: preferência global de privacidade, self-service (não passa por /usuarios).
@@ -51,7 +53,8 @@ export interface CriarUsuarioRequest {
   perfil: TipoPerfil
   senha: string
   grupoId?: string | null
-  chatPerfil: ChatPerfil
+  /** Opcional desde o controle de acesso: o Chat é ajustado na tela "Controle de acesso". */
+  chatPerfil?: ChatPerfil
 }
 
 export function criarUsuario(dados: CriarUsuarioRequest): Promise<UsuarioPerfilResponse> {
@@ -66,7 +69,8 @@ export interface AtualizarUsuarioRequest {
   perfil: TipoPerfil
   ativo: boolean
   grupoId?: string | null
-  chatPerfil: ChatPerfil
+  /** Opcional desde o controle de acesso: o Chat é ajustado na tela "Controle de acesso". */
+  chatPerfil?: ChatPerfil
 }
 
 export function atualizarUsuario(id: string, dados: AtualizarUsuarioRequest): Promise<void> {

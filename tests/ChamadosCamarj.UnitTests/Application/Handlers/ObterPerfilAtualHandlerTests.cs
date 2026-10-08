@@ -59,4 +59,21 @@ public class ObterPerfilAtualHandlerTests
 
         await act.Should().ThrowAsync<UnauthorizedException>();
     }
+
+    // spec controle-de-acesso AC-11/AC-16: o /auth/me (e o login, pela mesma função) informa os módulos
+    // efetivos — o padrão do perfil quando não há ajuste, e o ajuste quando há.
+    [Fact]
+    public async Task Handle_InformaOsModulosEfetivos()
+    {
+        var semAjuste = new UsuarioPerfil("sol@camarj.com.br", "Sol", Perfil.Solicitante);
+        var comAjuste = new UsuarioPerfil("ate@camarj.com.br", "Ate", Perfil.Atendente);
+        comAjuste.AjustarModulos(ModuloSistema.Nenhum, ModuloSistema.RelatorioMensal);
+        _repositoryMock.Setup(r => r.ObterPorIdAsync(semAjuste.Id, It.IsAny<CancellationToken>())).ReturnsAsync(semAjuste);
+        _repositoryMock.Setup(r => r.ObterPorIdAsync(comAjuste.Id, It.IsAny<CancellationToken>())).ReturnsAsync(comAjuste);
+
+        (await _handler.Handle(new ObterPerfilAtualQuery(semAjuste.Id), CancellationToken.None))
+            .Modulos.Should().Equal("Arquivo");
+        (await _handler.Handle(new ObterPerfilAtualQuery(comAjuste.Id), CancellationToken.None))
+            .Modulos.Should().Equal("Arquivo", "Kanban", "Fila", "Dashboard");
+    }
 }

@@ -127,6 +127,49 @@ export interface UsuarioPerfilResponse {
   grupoNome?: string | null;
   chatPerfil?: ChatPerfil;
   mostrarConfirmacaoLeitura?: boolean;
+  /** Módulos que a pessoa usa (spec controle-de-acesso). */
+  modulos?: ModuloSistema[];
+}
+
+/** Módulos ajustáveis no controle de acesso (spec controle-de-acesso). */
+export type ModuloSistema = "Arquivo" | "Kanban" | "Fila" | "Dashboard" | "RelatorioMensal";
+
+export interface AcessoUsuarioResumoResponse {
+  id: string;
+  nome: string;
+  email: string;
+  perfil: TipoPerfil;
+  ativo: boolean;
+  acessoTotal: boolean;
+  modulos: ModuloSistema[];
+  chatPerfil: ChatPerfil;
+  temAjuste: boolean;
+}
+
+export interface ModuloAcessoItem {
+  modulo: ModuloSistema;
+  padrao: boolean;
+  efetivo: boolean;
+  ajustavel: boolean;
+}
+
+export interface AuditoriaAcessoResponse {
+  dataHora: string;
+  alteradoPorNome: string;
+  item: string;
+  anterior: string;
+  novo: string;
+}
+
+export interface AcessoUsuarioDetalheResponse {
+  id: string;
+  nome: string;
+  email: string;
+  perfil: TipoPerfil;
+  acessoTotal: boolean;
+  modulos: ModuloAcessoItem[];
+  chatPerfil: ChatPerfil;
+  auditoria: AuditoriaAcessoResponse[];
 }
 
 export interface GrupoResponse {

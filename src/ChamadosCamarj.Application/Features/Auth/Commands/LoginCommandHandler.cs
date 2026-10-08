@@ -1,3 +1,4 @@
+using ChamadosCamarj.Application.Common.Autorizacao;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using ChamadosCamarj.Application.Common;
@@ -49,6 +50,6 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, AutenticacaoRes
 
         var token = _jwtTokenService.GerarToken(usuario);
 
-        return new AutenticacaoResponse(token, usuario.Id, usuario.Nome, usuario.Email, usuario.Perfil, usuario.ChatPerfil, usuario.MostrarConfirmacaoLeitura, usuario.GrupoId);
+        return new AutenticacaoResponse(token, usuario.Id, usuario.Nome, usuario.Email, usuario.Perfil, usuario.ChatPerfil, usuario.MostrarConfirmacaoLeitura, usuario.GrupoId, ModulosDeAcesso.Nomes(usuario.ModulosEfetivos()));
     }
 }

@@ -17,7 +17,7 @@ namespace ChamadosCamarj.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.20")
+                .HasAnnotation("ProductVersion", "9.0.19")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -73,6 +73,55 @@ namespace ChamadosCamarj.Infrastructure.Migrations
                     b.HasIndex("ComentarioId");
 
                     b.ToTable("Anexos", (string)null);
+                });
+
+            modelBuilder.Entity("ChamadosCamarj.Domain.Entities.AuditoriaAcesso", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AlteradoPorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AlteradoPorNome")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<string>("Anterior")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<DateTime?>("DataAtualizacao")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("DataCriacao")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Item")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<string>("Novo")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UsuarioNome")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.ToTable("AuditoriaAcessos", (string)null);
                 });
 
             modelBuilder.Entity("ChamadosCamarj.Domain.Entities.Categoria", b =>
@@ -639,6 +688,16 @@ namespace ChamadosCamarj.Infrastructure.Migrations
 
                     b.Property<Guid?>("GrupoId")
                         .HasColumnType("uuid");
+
+                    b.Property<int>("ModulosConcedidos")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("ModulosRetirados")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
 
                     b.Property<bool>("MostrarConfirmacaoLeitura")
                         .ValueGeneratedOnAdd()

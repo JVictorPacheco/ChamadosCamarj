@@ -11,5 +11,7 @@ public record UsuarioPerfilResponse(
     Guid? GrupoId = null,
     string? GrupoNome = null,
     ChatPerfil ChatPerfil = ChatPerfil.SemAcesso,
-    bool MostrarConfirmacaoLeitura = true
+    bool MostrarConfirmacaoLeitura = true,
+    // Módulos que a pessoa usa (spec controle-de-acesso).
+    IReadOnlyList<string>? Modulos = null
 );

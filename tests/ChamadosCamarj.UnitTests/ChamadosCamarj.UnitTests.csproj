@@ -17,6 +17,9 @@
     <!-- Sem esta referência, o Npgsql transitivo puxa o EF 9.0.1 e o Infrastructure usa o 9.0.x mais
          recente (9.*), gerando o aviso MSB3277. Mesma faixa de versão dos projetos src. -->
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.*" />
+    <!-- Repositórios testados com o change tracker real do EF (review-3 R-01 de controle-de-acesso:
+         erro que os testes com Moq não pegavam). Só nos testes; produção segue no Npgsql. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.*" />
   </ItemGroup>
 
   <ItemGroup>

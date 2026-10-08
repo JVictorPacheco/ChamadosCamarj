@@ -1,14 +1,15 @@
 ---
 tipo: funcionalidade
 status: vigente
-atualizado: 2026-10-02
-spec: .specs/features/dashboard-kanban-navegacao/spec.md, .specs/features/correcoes-pre-deploy/spec.md
+atualizado: 2026-10-06
+spec: .specs/features/dashboard-kanban-navegacao/spec.md, .specs/features/correcoes-pre-deploy/spec.md, .specs/features/controle-de-acesso/spec.md
 tags: [funcionalidade, gestão]
 ---
 
 # Fila, Kanban e Dashboard
 
-Três telas de gestão do dia a dia, exclusivas de **Atendentes e Admin**.
+Três telas de gestão do dia a dia. Por padrão, de **Atendentes e Admin**; o Admin pode ajustar por
+pessoa (ver [[Perfis e Permissões]]).
 
 ## Fila de Atendimento
 **Para quê:** saber o que ainda não tem dono.
@@ -38,5 +39,9 @@ Três telas de gestão do dia a dia, exclusivas de **Atendentes e Admin**.
 > [[Relatório Mensal]] mostra um **mês fechado** e serve para prestação de contas.
 
 ## Regras
-- Solicitantes não acessam estas telas — o bloqueio é real, não só visual.
+- **Fila e Kanban** são só de atendimento: Solicitante nunca as recebe. O Admin pode tirá-las de um
+  Atendente.
+- **Dashboard**: o Admin pode tirá-lo de um Atendente ou dá-lo a um Solicitante. Quem o tem vê os números
+  **só dos chamados que já pode ver**.
+- Sem a tela, o bloqueio é real, não só visual.
 - As três telas se atualizam em tempo real.

@@ -24,12 +24,15 @@ import { useConversas } from '@/features/chat/hooks/useConversas'
 import { useChatHeartbeat } from '@/features/chat/hooks/useChatHeartbeat'
 import { useInactivityLogout } from '@/hooks/useInactivityLogout'
 import { MINUTOS_INATIVIDADE, limparLogoutPorInatividade, marcarLogoutPorInatividade } from '@/auth/logoutInatividade'
+import { limparLogoutPorPerfilAlterado, marcarLogoutPorPerfilAlterado } from '@/auth/logoutPerfilAlterado'
 import { PreferenciasDialog } from '@/features/chat/components/PreferenciasDialog'
-import { Kanban, LayoutDashboard, Inbox, FileBarChart, Users, Archive, Sun, Moon, Settings, Tags, FolderKanban, MessageSquare } from 'lucide-react'
+import { Kanban, LayoutDashboard, Inbox, FileBarChart, Users, Archive, Sun, Moon, Settings, Tags, FolderKanban, MessageSquare, ShieldCheck } from 'lucide-react'
+import { temModulo } from '@/lib/modulos'
+import { perfilDoToken } from '@/lib/api'
 import logoCamarj from '../assets/logo-camarj.png'
 
 export function AppLayout() {
-  const { perfil, logout, atualizarChatPerfil } = useAuth()
+  const { perfil, logout, atualizarChatPerfil, atualizarAcessos } = useAuth()
   const { theme, toggleTheme } = useTheme()
   const location = useLocation()
   const navigate = useNavigate()
@@ -41,6 +44,10 @@ export function AppLayout() {
   const queryClient = useQueryClient()
 
   const temAcessoChat = perfil?.chatPerfil && perfil.chatPerfil !== 'SemAcesso'
+  // spec controle-de-acesso: o menu segue os módulos da pessoa, não mais só o perfil.
+  const temAlgumModuloDeAtendimento = (['Kanban', 'Dashboard', 'Fila', 'RelatorioMensal'] as const).some((m) => temModulo(perfil, m))
+  // Aviso deixado pela proteção de rota quando a pessoa perde o módulo da tela em que está (AC-11).
+  const avisoModulo = (location.state as { avisoModulo?: string } | null)?.avisoModulo
   useChatHeartbeat(Boolean(temAcessoChat))
   // review-fase9-independente.md #2: sem isso, todo usuário logado disparava GET /chat/conversas
   // mesmo sem nunca ter tido acesso ao chat — defesa em profundidade, complementando o filtro por
@@ -59,6 +66,10 @@ export function AppLayout() {
     pathnameRef.current = location.pathname
   }, [location.pathname])
 
+  // review-2 R-03: mesmo motivo do pathnameRef — o efeito de subscribe não reconecta a cada render,
+  // então chama o "sair" por ref.
+  const sairRef = useRef<() => void>(() => {})
+
   useEffect(() => {
     const unsub = subscribe((event) => {
       if (event.type === 'SlaAtencao' || event.type === 'SlaAtrasado') {
@@ -68,6 +79,19 @@ export function AppLayout() {
 
       if (event.type === 'ChatConversaAtualizada') {
         queryClient.invalidateQueries({ queryKey: ['chat', 'conversas'] })
+      }
+
+      if (event.type === 'AcessosAtualizados') {
+        // spec controle-de-acesso AC-15 (decisão de 2026-10-05): o Admin mudou o perfil desta pessoa.
+        // O token ainda tem o perfil antigo, então ela sai e entra de novo em vez de seguir com
+        // telas e permissões do perfil anterior. Compara com o token, como no boot (review-3 R-02).
+        const perfilLogado = perfilDoToken()
+        if (event.payload.perfil && perfilLogado && event.payload.perfil !== perfilLogado) {
+          marcarLogoutPorPerfilAlterado()
+          sairRef.current()
+          return
+        }
+        atualizarAcessos(event.payload.modulos, event.payload.chatPerfil)
       }
 
       if (event.type === 'ChatPerfilAtualizado') {
@@ -85,16 +109,20 @@ export function AppLayout() {
       }
     })
     return unsub
-  }, [subscribe, atualizarChatPerfil, queryClient])
+  }, [subscribe, atualizarChatPerfil, atualizarAcessos, queryClient])
 
   const sair = () => {
     logout()
     navigate('/login')
   }
+  useEffect(() => {
+    sairRef.current = sair
+  })
 
   // Sessão ativa nesta aba: um aviso de inatividade antigo não pode aparecer num "Sair" futuro
   // (review R2-03).
   useEffect(limparLogoutPorInatividade, [])
+  useEffect(limparLogoutPorPerfilAlterado, [])
 
   // Decisão de 2026-07-18: 20 min sem interação desconecta (spec logout-inatividade).
   useInactivityLogout(MINUTOS_INATIVIDADE, () => {
@@ -128,14 +156,16 @@ export function AppLayout() {
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={location.pathname === '/chamados/arquivo'}>
-                <Link to="/chamados/arquivo">
-                  <Archive className="h-4 w-4" />
-                  Arquivo
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+            {temModulo(perfil, 'Arquivo') && (
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={location.pathname === '/chamados/arquivo'}>
+                  <Link to="/chamados/arquivo">
+                    <Archive className="h-4 w-4" />
+                    Arquivo
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )}
           </SidebarMenu>
 
           {temAcessoChat && (
@@ -162,11 +192,12 @@ export function AppLayout() {
             </>
           )}
 
-          {perfil && perfil.tipo !== 'Solicitante' && (
+          {temAlgumModuloDeAtendimento && (
             <>
               <Separator className="my-2" />
               <div className="px-3 py-1 text-xs font-medium text-muted-foreground">Atendimento</div>
               <SidebarMenu>
+                {temModulo(perfil, 'Kanban') && (
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild isActive={location.pathname === '/atendimento/kanban'}>
                     <Link to="/atendimento/kanban">
@@ -175,6 +206,8 @@ export function AppLayout() {
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+                )}
+                {temModulo(perfil, 'Dashboard') && (
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild isActive={location.pathname === '/atendimento/dashboard'}>
                     <Link to="/atendimento/dashboard">
@@ -183,6 +216,8 @@ export function AppLayout() {
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+                )}
+                {temModulo(perfil, 'Fila') && (
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild isActive={location.pathname === '/atendimento/fila'}>
                     <Link to="/atendimento/fila">
@@ -191,6 +226,8 @@ export function AppLayout() {
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+                )}
+                {temModulo(perfil, 'RelatorioMensal') && (
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     asChild
@@ -202,6 +239,7 @@ export function AppLayout() {
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
+                )}
               </SidebarMenu>
             </>
           )}
@@ -232,6 +270,14 @@ export function AppLayout() {
                     <Link to="/admin/grupos">
                       <FolderKanban className="h-4 w-4" />
                       Áreas e Grupos
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={location.pathname === '/admin/acessos'}>
+                    <Link to="/admin/acessos">
+                      <ShieldCheck className="h-4 w-4" />
+                      Controle de acesso
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -275,6 +321,11 @@ export function AppLayout() {
               {slaAlerta}
               <button onClick={() => setSlaAlerta(null)} className="text-lg leading-none">&times;</button>
             </AlertDescription>
+          </Alert>
+        )}
+        {avisoModulo && (
+          <Alert variant="destructive" className="m-2">
+            <AlertDescription>{avisoModulo}</AlertDescription>
           </Alert>
         )}
         {avisoChatPerfil && (

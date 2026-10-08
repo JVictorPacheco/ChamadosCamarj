@@ -1,8 +1,8 @@
 ---
 tipo: visão
 status: vigente
-atualizado: 2026-10-02
-spec: .specs/features/autorizacao-chamados/spec.md, .specs/features/editar-chamado/spec.md
+atualizado: 2026-10-06
+spec: .specs/features/autorizacao-chamados/spec.md, .specs/features/editar-chamado/spec.md, .specs/features/controle-de-acesso/spec.md
 tags: [visão, permissões]
 ---
 
@@ -54,15 +54,35 @@ encontrado".
 | Alterar prioridade | — | — | ✅ |
 | Forçar encerramento | — | — | ✅ |
 
-## Acesso às telas
+## Acesso às telas (módulos)
+
+O perfil define o **padrão** de telas de cada pessoa. O Admin pode dar ou tirar telas **pessoa a pessoa**
+na tela *Controle de acesso* (ver [[Administração]]). A tabela mostra o padrão e o que pode ser ajustado:
 
 | Tela | Solicitante | Atendente | Admin |
 |---|:-:|:-:|:-:|
-| Abrir chamado, Meus chamados, Arquivo | ✅ | ✅ | ✅ |
-| Fila, Kanban, Dashboard | — | ✅ | ✅ |
-| Relatório Mensal | — | ✅ só os próprios números | ✅ completo |
-| Admin: Usuários, Tipos de chamado, Áreas e Grupos | — | — | ✅ |
+| Abrir chamado, Meus chamados | ✅ fixo | ✅ fixo | ✅ fixo |
+| Arquivo | ✅ ajustável | ✅ ajustável | ✅ fixo |
+| Fila, Kanban | — nunca | ✅ ajustável | ✅ fixo |
+| Dashboard | — ajustável (pode ganhar) | ✅ ajustável | ✅ fixo |
+| Relatório Mensal | — ajustável (pode ganhar) | ✅ ajustável, só os próprios números | ✅ completo, fixo |
+| Admin: Usuários, Controle de acesso, Tipos de chamado, Áreas e Grupos | — | — | ✅ |
 | Chat | depende do acesso ao chat | depende do acesso ao chat | depende do acesso ao chat |
+
+- **Admin tem sempre todas as telas** — só o acesso ao chat dele é ajustável (inclusive o próprio).
+- **Fila e Kanban são de atendimento**: Solicitante nunca recebe essas telas.
+- Quem ganha Dashboard ou Relatório vê **só os números dos chamados que já pode ver** — ganhar a tela não
+  amplia a visibilidade de chamados.
+- O controle é da **tela inteira**. Ações dentro das telas (comentário interno, cancelar, anexar etc.)
+  continuam seguindo a matriz de ações acima.
+- A mudança vale **na hora**: o menu da pessoa se atualiza sozinho e, se ela estiver numa tela que
+  perdeu, sai dela com o aviso "Seu acesso a este módulo foi retirado.".
+- **Mudança de perfil** (em *Usuários*): os ajustes de telas da pessoa são zerados — ela passa ao padrão do
+  perfil novo; o acesso ao chat é mantido. Ela é desconectada com o aviso "Seu perfil foi alterado. Entre
+  novamente." — na hora, se estiver com o sistema aberto, ou quando abrir o sistema/voltar a ter conexão.
+- **Mudança de equipe** (em *Usuários*): vale a partir do **próximo login** da pessoa.
+- Toda mudança de acesso (telas, chat, perfil, reativação de conta) fica no **histórico de acessos** da
+  pessoa, com quem mudou, quando, antes e depois. Ver [[ADR-010 Acesso por módulo ajustável por pessoa]].
 
 > O bloqueio é **real** e acontece no sistema, não só na tela: esconder um botão ou link é só
 > conveniência. Quem tenta uma ação sem permissão, mesmo usando ferramentas do navegador, recebe
@@ -74,7 +94,7 @@ encontrado".
 
 ## Acesso ao chat
 
-Independente do perfil acima, o Admin define o nível de cada pessoa no chat:
+Independente do perfil acima, o Admin define o nível de cada pessoa no chat, na tela *Controle de acesso*:
 
 | Nível | Pode |
 |---|---|

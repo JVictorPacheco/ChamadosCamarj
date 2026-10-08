@@ -30,6 +30,25 @@ public class UsuarioPerfil : BaseEntity
     public ChatPerfil ChatPerfil { get; private set; } = ChatPerfil.SemAcesso;
     public bool MostrarConfirmacaoLeitura { get; private set; } = true;
 
+    /// <summary>
+    /// Exceções ao padrão de módulos do perfil (spec controle-de-acesso): o que o Admin deu além do padrão
+    /// e o que tirou dele. Zero nos dois = exatamente o padrão do perfil.
+    /// </summary>
+    public ModuloSistema ModulosConcedidos { get; private set; } = ModuloSistema.Nenhum;
+    public ModuloSistema ModulosRetirados { get; private set; } = ModuloSistema.Nenhum;
+
+    public void AjustarModulos(ModuloSistema concedidos, ModuloSistema retirados)
+    {
+        ModulosConcedidos = concedidos;
+        ModulosRetirados = retirados;
+        DataAtualizacao = DateTime.UtcNow;
+    }
+
+    /// <summary>Remove os ajustes: a pessoa volta ao padrão do perfil (AC-04, AC-15).</summary>
+    public void VoltarAoPadraoDeModulos() => AjustarModulos(ModuloSistema.Nenhum, ModuloSistema.Nenhum);
+
+    public bool TemAjusteDeModulos => ModulosConcedidos != ModuloSistema.Nenhum || ModulosRetirados != ModuloSistema.Nenhum;
+
     public void DefinirChatPerfil(ChatPerfil perfil)
     {
         ChatPerfil = perfil;
