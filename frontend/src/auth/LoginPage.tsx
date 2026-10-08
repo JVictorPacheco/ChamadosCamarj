@@ -12,6 +12,7 @@ import { useTheme } from '@/hooks/useTheme'
 import { ApiError } from '@/lib/api'
 import { esqueciSenha } from './api'
 import { limparLogoutPorInatividade, saiuPorInatividade as lerSaiuPorInatividade } from './logoutInatividade'
+import { MENSAGEM_PERFIL_ALTERADO, limparLogoutPorPerfilAlterado, saiuPorPerfilAlterado as lerSaiuPorPerfilAlterado } from './logoutPerfilAlterado'
 import { registrarInicioDeSessao } from '@/hooks/useInactivityLogout'
 import logoCamarj from '../assets/logo-camarj.png'
 
@@ -22,6 +23,7 @@ export function LoginPage() {
   const [senha, setSenha] = useState('')
   const [erro, setErro] = useState<string | null>(null)
   const [saiuPorInatividade] = useState(lerSaiuPorInatividade)
+  const [saiuPorPerfilAlterado] = useState(lerSaiuPorPerfilAlterado)
   const [pendente, setPendente] = useState(false)
   const [esqueciSenhaAberto, setEsqueciSenhaAberto] = useState(false)
   const [emailRecuperacao, setEmailRecuperacao] = useState('')
@@ -37,6 +39,7 @@ export function LoginPage() {
     // Antes do login (não depois): a área logada monta assim que o perfil é gravado.
     registrarInicioDeSessao()
     limparLogoutPorInatividade()
+    limparLogoutPorPerfilAlterado()
     try {
       await loginComSenha(email, senha)
     } catch (err) {
@@ -108,6 +111,12 @@ export function LoginPage() {
             {saiuPorInatividade && (
               <Alert>
                 <AlertDescription>Sua sessão foi encerrada por inatividade. Entre novamente.</AlertDescription>
+              </Alert>
+            )}
+
+            {saiuPorPerfilAlterado && (
+              <Alert>
+                <AlertDescription>{MENSAGEM_PERFIL_ALTERADO}</AlertDescription>
               </Alert>
             )}
 

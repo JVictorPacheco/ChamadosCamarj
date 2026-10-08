@@ -26,6 +26,8 @@ export function useCriarUsuario() {
     mutationFn: (dados: CriarUsuarioRequest) => criarUsuario(dados),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['usuarios'] })
+      // Reativar conta zera os ajustes de módulos (controle-de-acesso, review-2 R-05).
+      queryClient.invalidateQueries({ queryKey: ['acessos'] })
     },
   })
 }
@@ -49,6 +51,8 @@ export function useAtualizarUsuario() {
       atualizarUsuario(id, dados),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['usuarios'] })
+      // Mudar o perfil zera os ajustes de módulos (controle-de-acesso AC-15, review-2 R-05).
+      queryClient.invalidateQueries({ queryKey: ['acessos'] })
     },
   })
 }

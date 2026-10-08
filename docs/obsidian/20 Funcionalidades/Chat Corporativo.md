@@ -1,7 +1,7 @@
 ---
 tipo: funcionalidade
 status: vigente
-atualizado: 2026-09-29
+atualizado: 2026-10-06
 spec: .specs/features/chat-corporativo/spec.md
 tags: [funcionalidade, chat]
 ---
@@ -13,7 +13,8 @@ Comunicação interna rápida e **registrada**, dentro do próprio portal — se
 aplicativos pessoais de mensagem.
 
 ## Quem usa
-Quem recebeu acesso do Admin. O acesso ao chat é independente do perfil de chamados:
+Quem recebeu acesso do Admin, na tela *Controle de acesso* (ver [[Administração]]). O acesso ao chat é
+independente do perfil de chamados e vale também para Admins (o próprio inclusive):
 
 | Nível | Pode |
 |---|---|

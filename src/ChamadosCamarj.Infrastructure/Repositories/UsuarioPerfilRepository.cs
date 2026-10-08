@@ -45,7 +45,10 @@ public class UsuarioPerfilRepository : IUsuarioPerfilRepository
 
     public async Task AtualizarAsync(UsuarioPerfil usuario, CancellationToken ct)
     {
-        _dbSet.Update(usuario);
+        // Só o usuário, sem o grafo: Update() também passava a rastrear (e regravar) o Grupo carregado pelo
+        // Include, que ficava preso depois do Detach abaixo e colidia na 2ª gravação da mesma requisição
+        // (salvar módulos + Chat de quem tem Área → 500; review-3 R-01 de controle-de-acesso).
+        _context.Entry(usuario).State = EntityState.Modified;
         await _context.SaveChangesAsync(ct);
         // Achado ao vivo pós-revisão (não estava no relatório): AtualizarUsuarioPerfilCommandHandler
         // salva o mesmo usuário duas vezes por requisição — uma vez pros campos gerais, outra

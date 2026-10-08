@@ -32,6 +32,9 @@ public class ObterRelatorioMensalQueryHandler : IRequestHandler<ObterRelatorioMe
             eventos = eventos.Where(e => e.ResponsavelId == responsavelId).ToList();
         }
 
+        if (request.IdsVisiveis is { } visiveis)
+            eventos = eventos.Where(e => visiveis.Contains(e.ChamadoId)).ToList();
+
         var abertos = eventos.Where(e => e.Acao == AcaoHistorico.Criado).ToList();
         var resolvidos = eventos.Where(e => e.Acao == AcaoHistorico.Resolvido).ToList();
         var cancelados = eventos.Where(e => e.Acao == AcaoHistorico.Cancelado).ToList();
@@ -89,6 +92,8 @@ public class ObterRelatorioMensalQueryHandler : IRequestHandler<ObterRelatorioMe
                 [AcaoHistorico.Resolvido], mesEvol, fimEvol, cancellationToken);
             if (request.ResponsavelId is { } respId)
                 eventosEvol = eventosEvol.Where(e => e.ResponsavelId == respId).ToList();
+            if (request.IdsVisiveis is { } visiveisEvol)
+                eventosEvol = eventosEvol.Where(e => visiveisEvol.Contains(e.ChamadoId)).ToList();
 
             var comSlaEvol = eventosEvol.Where(e => e.DataLimite.HasValue).ToList();
             var dentroEvol = comSlaEvol.Count(e => e.DataConclusao!.Value <= e.DataLimite!.Value);
@@ -134,6 +139,9 @@ public class ObterRelatorioMensalQueryHandler : IRequestHandler<ObterRelatorioMe
         {
             eventosMesAnterior = eventosMesAnterior.Where(e => e.ResponsavelId == responsavelId).ToList();
         }
+
+        if (request.IdsVisiveis is { } visiveisAnterior)
+            eventosMesAnterior = eventosMesAnterior.Where(e => visiveisAnterior.Contains(e.ChamadoId)).ToList();
 
         if (eventosMesAnterior.Count == 0)
         {

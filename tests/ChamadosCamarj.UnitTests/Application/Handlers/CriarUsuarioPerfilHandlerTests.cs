@@ -13,6 +13,7 @@ public class CriarUsuarioPerfilHandlerTests
 {
     private readonly Mock<IUsuarioPerfilRepository> _repositoryMock = new();
     private readonly Mock<IPasswordHasher<UsuarioPerfil>> _passwordHasherMock = new();
+    private readonly Mock<IAuditoriaAcessoRepository> _auditoriaMock = new();
     private readonly CriarUsuarioPerfilCommandHandler _handler;
 
     public CriarUsuarioPerfilHandlerTests()
@@ -21,7 +22,7 @@ public class CriarUsuarioPerfilHandlerTests
             .Setup(h => h.HashPassword(It.IsAny<UsuarioPerfil>(), It.IsAny<string>()))
             .Returns("hash-fake");
 
-        _handler = new CriarUsuarioPerfilCommandHandler(_repositoryMock.Object, _passwordHasherMock.Object);
+        _handler = new CriarUsuarioPerfilCommandHandler(_repositoryMock.Object, _passwordHasherMock.Object, _auditoriaMock.Object);
     }
 
     [Fact]
@@ -107,5 +108,25 @@ public class CriarUsuarioPerfilHandlerTests
 
         var act = async () => await _handler.Handle(command, CancellationToken.None);
         await act.Should().ThrowAsync<ForbiddenException>();
+    }
+
+    // spec controle-de-acesso, review R-03: recriar a conta não traz de volta os ajustes de módulos antigos.
+    [Fact]
+    public async Task Handle_ReativandoContaDesativada_VoltaAoPadraoDeModulos()
+    {
+        var existente = new UsuarioPerfil("ana@camarj.com.br", "Ana", Perfil.Solicitante);
+        existente.AjustarModulos(ModuloSistema.Dashboard, ModuloSistema.Nenhum);
+        existente.Desativar();
+        _repositoryMock.Setup(r => r.ObterPorEmailAsync("ana@camarj.com.br", It.IsAny<CancellationToken>())).ReturnsAsync(existente);
+
+        var response = await _handler.Handle(
+            new CriarUsuarioPerfilCommand("ana@camarj.com.br", "Ana", Perfil.Solicitante, "SenhaForte123", PerfilRequisitante: "Admin"),
+            CancellationToken.None);
+
+        existente.TemAjusteDeModulos.Should().BeFalse();
+        response.Modulos.Should().Equal("Arquivo");
+        // review-2 R-04: a reativação entra na auditoria de acessos.
+        _auditoriaMock.Verify(a => a.AdicionarAsync(
+            It.Is<IEnumerable<AuditoriaAcesso>>(r => r.Any(x => x.Item == "Conta")), It.IsAny<CancellationToken>()), Times.Once);
     }
 }

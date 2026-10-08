@@ -60,6 +60,10 @@ public interface IChamadoRepository
     /// </summary>
     Task<IReadOnlyList<Guid>> ListarAtendentesQuePodemVerAsync(Guid chamadoId, CancellationToken cancellationToken = default);
 
+    /// <summary>Ids de todos os chamados que <paramref name="acesso"/> pode ver — mesma regra do ListarAsync
+    /// (spec controle-de-acesso: relatório do Solicitante com o módulo).</summary>
+    Task<IReadOnlyCollection<Guid>> ListarIdsVisiveisAsync(ContextoAcesso acesso, CancellationToken cancellationToken = default);
+
     /// <summary>True se o comentário existe e pertence ao chamado (spec correcoes-pre-deploy AC-06/AC-07).</summary>
     Task<bool> ComentarioPertenceAoChamadoAsync(Guid comentarioId, Guid chamadoId, CancellationToken cancellationToken = default);
 

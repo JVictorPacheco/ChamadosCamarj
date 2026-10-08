@@ -44,6 +44,18 @@ public class UsuarioPerfilConfiguration : IEntityTypeConfiguration<UsuarioPerfil
             .IsRequired()
             .HasDefaultValue(true);
 
+        // spec controle-de-acesso: só as exceções ao padrão do perfil; 0 = padrão (todos os usuários
+        // existentes ficam como antes — AC-16).
+        builder.Property(u => u.ModulosConcedidos)
+            .IsRequired()
+            .HasDefaultValue(Domain.Enums.ModuloSistema.Nenhum);
+
+        builder.Property(u => u.ModulosRetirados)
+            .IsRequired()
+            .HasDefaultValue(Domain.Enums.ModuloSistema.Nenhum);
+
+        builder.Ignore(u => u.TemAjusteDeModulos);
+
         builder.HasOne(u => u.Grupo)
             .WithMany(g => g.Usuarios)
             .HasForeignKey(u => u.GrupoId)

@@ -54,3 +54,27 @@ export async function api<T = unknown>(page: Page, method: string, path: string,
   expect(resposta.ok(), `${method} ${path} → ${resposta.status()}`).toBeTruthy()
   return (resposta.status() === 204 ? undefined : await resposta.json()) as T
 }
+
+/**
+ * Conta de teste com SENHA ALEATÓRIA gerada a cada rodada — nunca escrita no código (o repositório é
+ * público). Cria, ou reativa e redefine a senha de uma já existente, sempre no padrão do perfil.
+ * Chamar `desativarContaDeTeste` no fim (review-2 R-01 de controle-de-acesso).
+ */
+export async function contaDeTeste(page: Page, email: string, nome: string, perfil: 'Atendente' | 'Solicitante') {
+  const senha = `Tst-${crypto.randomUUID()}-Aa1!`
+  const usuarios = await api<{ id: string; email: string; ativo: boolean }[]>(page, 'GET', '/usuarios')
+  const existente = usuarios.find((u) => u.email === email)
+  if (existente?.ativo) {
+    await api(page, 'PUT', `/usuarios/${existente.id}`, { nome, perfil, ativo: true })
+    await api(page, 'PATCH', `/usuarios/${existente.id}/senha`, { novaSenha: senha })
+    await api(page, 'POST', `/acessos/${existente.id}/padrao`)
+    return { id: existente.id, email, nome, perfil, senha }
+  }
+  // Nova, ou desativada (o cadastro reativa, define a senha e volta ao padrão de módulos).
+  const criada = await api<{ id: string }>(page, 'POST', '/usuarios', { email, nome, perfil, senha })
+  return { id: criada.id, email, nome, perfil, senha }
+}
+
+export async function desativarContaDeTeste(page: Page, conta: { id: string; nome: string; perfil: string }) {
+  await api(page, 'PUT', `/usuarios/${conta.id}`, { nome: conta.nome, perfil: conta.perfil, ativo: false })
+}

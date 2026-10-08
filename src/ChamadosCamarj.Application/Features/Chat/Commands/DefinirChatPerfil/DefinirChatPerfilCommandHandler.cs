@@ -4,6 +4,7 @@ using ChamadosCamarj.Application.Common.Authorization;
 using ChamadosCamarj.Application.Common.Exceptions;
 using ChamadosCamarj.Application.Common.Notifications;
 using ChamadosCamarj.Application.Mappings;
+using ChamadosCamarj.Application.Features.Acessos;
 using ChamadosCamarj.Domain.Entities;
 using ChamadosCamarj.Domain.Enums;
 using ChamadosCamarj.Domain.Interfaces;
@@ -17,14 +18,17 @@ public class DefinirChatPerfilCommandHandler : IRequestHandler<DefinirChatPerfil
     private readonly IChatConversaRepository _conversaRepository;
     private readonly IChatMensagemRepository _mensagemRepository;
     private readonly IMediator _mediator;
+    private readonly IAuditoriaAcessoRepository _auditoriaAcesso;
 
     public DefinirChatPerfilCommandHandler(
         IUsuarioPerfilRepository usuarioPerfilRepository,
         IChatHistoricoRepository historicoRepository,
         IChatConversaRepository conversaRepository,
         IChatMensagemRepository mensagemRepository,
-        IMediator mediator)
+        IMediator mediator,
+        IAuditoriaAcessoRepository auditoriaAcesso)
     {
+        _auditoriaAcesso = auditoriaAcesso;
         _usuarioPerfilRepository = usuarioPerfilRepository;
         _historicoRepository = historicoRepository;
         _conversaRepository = conversaRepository;
@@ -46,6 +50,13 @@ public class DefinirChatPerfilCommandHandler : IRequestHandler<DefinirChatPerfil
 
         usuario.DefinirChatPerfil(request.ChatPerfil);
         await _usuarioPerfilRepository.AtualizarAsync(usuario, cancellationToken);
+
+        // spec controle-de-acesso AC-14 (review R-06): toda mudança de Chat — pela tela de Controle de acesso, pela
+        // edição de usuário ou pela rota antiga — entra na auditoria de acessos, num lugar só.
+        await _auditoriaAcesso.AdicionarAsync(
+            [AuditoriaAcesso.Criar(usuario.Id, usuario.Nome, request.AdminId, request.AdminNome,
+                "Chat", AcessosTexto.Chat(perfilAnterior), AcessosTexto.Chat(request.ChatPerfil))],
+            cancellationToken);
 
         var revogou = perfilAnterior != ChatPerfil.SemAcesso && request.ChatPerfil == ChatPerfil.SemAcesso;
         // AC-46/47: simétrico à revogação — concedeu só conta como "restauração" quando a pessoa

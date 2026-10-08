@@ -1,6 +1,6 @@
 # Controle de Acesso por Módulo — Especificação
 
-> **SDD:** spec-aprovada
+> **SDD:** fechada
 > **Status:** `Pendente`
 > **Branch:** `feature/controle-de-acesso`
 > **Criada em:** 2026-10-02
@@ -95,7 +95,9 @@ Abrir chamado e Meus chamados: sempre ligados. Módulos de administração: semp
 - **AC-05:** Dado um Atendente ou Solicitante, quando tenta abrir "Controle de acesso" (pelo menu ou
   pelo endereço), então não vê o menu e recebe "sem permissão".
 - **AC-06:** Dado um Admin na tela, quando procura outro Admin, então ele aparece como "Admin — acesso
-  total", sem opções de ajuste. O Admin também não consegue ajustar a si mesmo.
+  total", sem ajuste de **módulos**. O Admin também não ajusta os próprios módulos. **O Chat dos Admins
+  continua ajustável nesta tela** — inclusive o do próprio Admin, como era na tela de Usuários (decisão do
+  usuário em 2026-10-05, após o review R-02).
 
 ### US-02 — Módulos de consulta para Solicitante
 
@@ -138,7 +140,10 @@ Abrir chamado e Meus chamados: sempre ligados. Módulos de administração: semp
 - **AC-15:** Dado uma pessoa com ajustes de módulos, quando o Admin muda o perfil dela em Usuários (ex.:
   Atendente vira Admin, ou Solicitante vira Atendente), então os ajustes de módulos são apagados e ela
   passa ao padrão do novo perfil; o acesso ao Chat é mantido. A mudança fica na auditoria (decisão do
-  usuário, 2026-10-02).
+  usuário, 2026-10-02). Se a pessoa estiver com o sistema aberto, ela é desconectada na hora com o aviso
+  "Seu perfil foi alterado. Entre novamente." e, ao entrar, já vem com o perfil novo (decisão do usuário,
+  2026-10-05, review-2 R-03). Se ela estava fora do sistema (aba fechada, sem conexão), o mesmo acontece
+  ao abrir o sistema de novo (decisão do usuário, 2026-10-06, review-3 R-02).
 
 ### Critérios Transversais
 
@@ -156,7 +161,12 @@ Abrir chamado e Meus chamados: sempre ligados. Módulos de administração: semp
 
 | Critério | Arquivo de Teste | Método de Teste | Status |
 |----------|-----------------|-----------------|--------|
-| AC-01..AC-19 | a definir no design/tasks | — | ⬜ Pendente |
+| AC-02..AC-08, AC-16 | `ModulosDeAcessoTests`, `UsuarioPerfilTests` + banco conferido | `Padroes_SaoIguaisAoMenuDeAntesDaFeature`, `Solicitante_NuncaTemKanbanNemFila_*` | ✅ |
+| AC-01..AC-06, AC-09, AC-14 | `AcessosCommandsTests` + E2E + ao vivo | `Salvar_*`, `VoltarAoPadrao_*`, `Listar_AdminComoAcessoTotal` | ✅ |
+| AC-07, AC-12 | `ObterDistribuicaoQueryHandlerTests`, `ObterRelatorioMensalQueryHandlerTests` + ao vivo | `Handle_SolicitanteComModuloDashboard_*`, `Handle_AtendenteSemModuloDashboard_*`, `Handle_ComIdsVisiveis_*` | ✅ |
+| AC-10, AC-15 | `AtualizarUsuarioPerfilHandlerTests` + ao vivo | `Handle_QuandoPerfilMuda_*`, `Handle_ChatPerfilNulo_*` | ✅ |
+| AC-11, AC-13 | `e2e/controle-de-acesso.spec.ts`, `AcessoSignalRNotificationHandlersTests` | menu muda na hora em outro navegador | ✅ |
+| AC-17..AC-19 | gates + `impacto.md` | 528 testes, E2E 25/25 (8 de controle de acesso) | ✅ |
 
 ---
 
@@ -171,6 +181,7 @@ Abrir chamado e Meus chamados: sempre ligados. Módulos de administração: semp
 | Abrir chamado e Meus chamados fixos | Tudo removível | Para tirar tudo, desativa-se a conta |
 | Chat unificado na tela nova, com os 3 níveis | Manter separado em Usuários | Um lugar só para o Admin |
 | Mudança vale na hora | No próximo login | Regra precisa valer de verdade |
+| Chat dos Admins ajustável na tela nova (2026-10-05, review R-02) | Chat automático para Admin | Mantém o que existia na tela de Usuários; 3 Admins hoje estão sem Chat por escolha |
 
 ---
 

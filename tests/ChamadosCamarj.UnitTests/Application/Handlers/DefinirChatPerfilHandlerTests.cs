@@ -17,6 +17,7 @@ public class DefinirChatPerfilHandlerTests
     private readonly Mock<IChatConversaRepository> _conversaRepositoryMock = new();
     private readonly Mock<IChatMensagemRepository> _mensagemRepositoryMock = new();
     private readonly Mock<IMediator> _mediatorMock = new();
+    private readonly Mock<IAuditoriaAcessoRepository> _auditoriaMock = new();
     private readonly DefinirChatPerfilCommandHandler _handler;
 
     public DefinirChatPerfilHandlerTests()
@@ -26,7 +27,8 @@ public class DefinirChatPerfilHandlerTests
             _historicoRepositoryMock.Object,
             _conversaRepositoryMock.Object,
             _mensagemRepositoryMock.Object,
-            _mediatorMock.Object);
+            _mediatorMock.Object,
+            _auditoriaMock.Object);
     }
 
     private UsuarioPerfil CriarUsuario(ChatPerfil chatPerfilAtual)
@@ -258,5 +260,24 @@ public class DefinirChatPerfilHandlerTests
         await _handler.Handle(command, CancellationToken.None);
 
         _historicoRepositoryMock.Verify(r => r.AdicionarAsync(It.IsAny<ChatHistorico>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    // spec controle-de-acesso AC-14 (review R-06): toda mudança de Chat entra na auditoria de acessos,
+    // venha de qual tela/rota vier.
+    [Fact]
+    public async Task Handle_QuandoChatMuda_RegistraNaAuditoriaDeAcessos()
+    {
+        var usuario = CriarUsuario(ChatPerfil.SemAcesso);
+        _usuarioRepositoryMock.Setup(r => r.ObterPorIdAsync(usuario.Id, It.IsAny<CancellationToken>())).ReturnsAsync(usuario);
+        _conversaRepositoryMock.Setup(r => r.ListarConversasComUsuarioAsync(usuario.Id, It.IsAny<CancellationToken>())).ReturnsAsync([]);
+        var registros = new List<AuditoriaAcesso>();
+        _auditoriaMock.Setup(a => a.AdicionarAsync(It.IsAny<IEnumerable<AuditoriaAcesso>>(), It.IsAny<CancellationToken>()))
+            .Callback<IEnumerable<AuditoriaAcesso>, CancellationToken>((r, _) => registros.AddRange(r))
+            .Returns(Task.CompletedTask);
+
+        await _handler.Handle(new DefinirChatPerfilCommand(usuario.Id, ChatPerfil.Participante, "Admin", Guid.NewGuid(), "Admin"), CancellationToken.None);
+
+        var linha = registros.Should().ContainSingle().Subject;
+        (linha.Item, linha.Anterior, linha.Novo).Should().Be(("Chat", "Sem acesso", "Participante"));
     }
 }
