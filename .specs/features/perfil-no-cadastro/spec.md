@@ -1,7 +1,7 @@
 # Perfil e Equipe Valem na Hora (Segurança) — Especificação
 
-> **SDD:** revisada
-> **Status:** `Pendente`
+> **SDD:** fechada
+> **Status:** `Concluída`
 > **Branch:** `feature/perfil-no-cadastro`
 > **Criada em:** 2026-10-09
 > **Atualizada em:** 2026-10-09
@@ -137,7 +137,7 @@ Perfil, equipe e situação da conta (ativa ou desativada) passam a ser conferid
 
 ## 8. Gate Checks
 
-- [ ] `dotnet build` sem erros
-- [ ] `dotnet test` sem falhas
-- [ ] `npm --prefix frontend run build` sem erros
-- [ ] `/analise-cod` sem 🔴
+- [x] `dotnet build` sem erros
+- [x] `dotnet test` sem falhas (576/576)
+- [x] `npm --prefix frontend run build` sem erros
+- [x] `/analise-cod` sem 🔴

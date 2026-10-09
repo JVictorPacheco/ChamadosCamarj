@@ -50,3 +50,8 @@
 - **Ao vivo:** 41/41 contra o banco real (API + os dois hubs), antes e depois do cache de 15 s (T1b), mais demonstração em tela (conta desativada volta ao login no primeiro clique).
 - **Cache (T1b):** não previsto na spec original; decisão do usuário após a medição (≈160 ms por pedido). Invalidação no repositório cobre todo caminho que grava usuário; edição direta no banco ou 2º servidor: até 15 s.
 - Dados de teste (`teste.perfil.*`, `[TESTE-PERFIL]` e os `[TESTE-E2E]` criados por esta verificação) apagados com OK do usuário; banco conferido: 9 usuários e 96 chamados originais.
+
+## Re-análise após as correções do review (2026-10-09)
+- Mudanças depois do `impacto.md`: cache com geração por usuário (`UsuarioPerfilRepository`), método protegido `LerIdentidadeAsync`, registro das conexões antes dos grupos (`ChamadosHub`/`ChatHub`), publicação da notificação logo após gravar (`AtualizarUsuarioPerfilCommandHandler`), comentário do `ModuloGuard`.
+- Consumidores fora do escopo: os mesmos já listados (🟡). Nenhum item novo; 3 testes novos cobrem as três correções e a suíte inteira (576) segue verde. Nenhum 🔴 novo.
+- Não revalidado ao vivo depois das correções do review (só testes automatizados); a ligação no pipeline e os hubs já tinham sido provados ao vivo (41/41) e por E2E (25/25) antes delas.

@@ -3,7 +3,7 @@ tipo: decisão
 status: vigente
 decisao: aceita
 data: 2026-10-02
-atualizado: 2026-10-06
+atualizado: 2026-10-09
 tags: [decisão, permissões]
 ---
 
@@ -32,9 +32,8 @@ trocar o perfil inteiro, o que mudava também o que a pessoa podia fazer nos cha
 - ✅ Tirar um acesso tem efeito imediato, sem esperar o login da pessoa vencer.
 - ✅ Auditoria de quem deu ou tirou cada acesso.
 - ⚠️ O controle é de tela inteira; ações dentro das telas continuam pelo perfil.
-- ⚠️ As telas de Administração ainda conferem o perfil gravado no login: um Admin rebaixado mantém os
-  direitos de Admin até o login dele vencer (pendência de segurança registrada).
-- ⚠️ Mudança de equipe só vale no próximo login da pessoa.
+- ✅ O perfil, a equipe e a situação da conta também são conferidos no cadastro a cada pedido (ver [[ADR-011 Perfil, equipe e conta valem na hora]]): um Admin rebaixado perde os direitos de Admin no pedido seguinte.
+- ✅ Mudança de equipe vale na hora (revisto em ADR-011).
 
 ## Alternativas consideradas
 | Alternativa | Por que não |
