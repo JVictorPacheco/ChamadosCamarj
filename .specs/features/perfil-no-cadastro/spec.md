@@ -1,6 +1,6 @@
 # Perfil e Equipe Valem na Hora (Segurança) — Especificação
 
-> **SDD:** em-review
+> **SDD:** revisada
 > **Status:** `Pendente`
 > **Branch:** `feature/perfil-no-cadastro`
 > **Criada em:** 2026-10-09

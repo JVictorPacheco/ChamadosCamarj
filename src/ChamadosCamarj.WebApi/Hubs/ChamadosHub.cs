@@ -23,6 +23,10 @@ public class ChamadosHub : Hub
 
     public override async Task OnConnectedAsync()
     {
+        // Registra primeiro (perfil-no-cadastro, review R-02): uma mudança de perfil ou desativação que chegue
+        // enquanto a conexão entra nos grupos já a encontra para reajustar ou derrubar.
+        _conexoes.Registrar(Context, nameof(ChamadosHub));
+
         // Grupo padrão: todos os clientes recebem notificações globais
         await Groups.AddToGroupAsync(Context.ConnectionId, "Todos");
 
@@ -33,7 +37,6 @@ public class ChamadosHub : Hub
         foreach (var grupo in GruposDoPerfil(perfil))
             await Groups.AddToGroupAsync(Context.ConnectionId, grupo);
 
-        _conexoes.Registrar(Context, nameof(ChamadosHub));
         await base.OnConnectedAsync();
     }
 

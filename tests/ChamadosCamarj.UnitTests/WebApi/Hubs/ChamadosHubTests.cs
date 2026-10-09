@@ -90,6 +90,28 @@ public class ChamadosHubTests
     }
 
     [Fact]
+    public async Task OnConnectedAsync_RegistraAConexaoAntesDeEntrarNosGrupos()
+    {
+        // Review R-02 de perfil-no-cadastro: uma mudança que chegue durante a entrada nos grupos já acha a conexão.
+        var registro = new ConexoesTempoReal();
+        var usuario = Guid.NewGuid();
+        var registradaAoEntrarNoPrimeiroGrupo = false;
+        var groupsMock = new Mock<IGroupManager>();
+        groupsMock.Setup(g => g.AddToGroupAsync("conn-1", It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .Callback<string, string, CancellationToken>((_, _, _) => registradaAoEntrarNoPrimeiroGrupo |= registro.DoUsuario(usuario).Count == 1)
+            .Returns(Task.CompletedTask);
+        var contextMock = new Mock<HubCallerContext>();
+        contextMock.SetupGet(c => c.ConnectionId).Returns("conn-1");
+        contextMock.SetupGet(c => c.UserIdentifier).Returns(usuario.ToString());
+        contextMock.SetupGet(c => c.User).Returns(Usuario("Admin"));
+
+        var hub = new ChamadosHub(registro) { Groups = groupsMock.Object, Context = contextMock.Object };
+        await hub.OnConnectedAsync();
+
+        registradaAoEntrarNoPrimeiroGrupo.Should().BeTrue();
+    }
+
+    [Fact]
     public void Hub_NaoExpoeMetodoParaOClienteEntrarEmGrupo()
     {
         // Métodos públicos de um Hub viram chamadas que qualquer cliente conectado pode invocar.

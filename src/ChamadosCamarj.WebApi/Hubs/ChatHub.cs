@@ -19,9 +19,9 @@ public class ChatHub : Hub
 
     public override async Task OnConnectedAsync()
     {
+        _conexoes.Registrar(Context, nameof(ChatHub)); // primeiro: conta desativada durante a conexão ainda é derrubada (review R-02)
         // Todo cliente conectado acompanha a presença global (visível a qualquer perfil).
         await Groups.AddToGroupAsync(Context.ConnectionId, GrupoPresencaGlobal);
-        _conexoes.Registrar(Context, nameof(ChatHub)); // perfil-no-cadastro: conta desativada tem a conexão derrubada
         await base.OnConnectedAsync();
     }
 

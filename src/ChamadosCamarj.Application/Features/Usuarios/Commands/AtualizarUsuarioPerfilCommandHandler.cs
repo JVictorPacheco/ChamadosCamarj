@@ -67,6 +67,15 @@ public class AtualizarUsuarioPerfilCommandHandler : IRequestHandler<AtualizarUsu
 
         await _usuarioPerfilRepository.AtualizarAsync(usuario, cancellationToken);
 
+        // spec perfil-no-cadastro (review R-03): a segurança não pode depender da auditoria nem do aviso de menu —
+        // se algum deles falhar, o cadastro já está gravado e uma nova tentativa não acusaria mudança. Por isso o
+        // aviso ao tempo real (reajustar grupos, derrubar conta desativada) sai logo depois da gravação.
+        if (perfilMudou || usuario.Ativo != ativoAnterior || usuario.GrupoId != grupoAnterior)
+        {
+            await _mediator.Publish(new CadastroDeAcessoAlteradoNotification(
+                usuario.Id, usuario.Perfil, usuario.Ativo, usuario.GrupoId), cancellationToken);
+        }
+
         // A review independente (review-fase8-independente.md #1) pegou essa tela duplicando a
         // auditoria/notificação de ChatPerfil do DefinirChatPerfilCommandHandler por cópia literal —
         // e a Fase 9, feita depois, só evoluiu a cópia original, deixando os dois caminhos divergirem
@@ -94,14 +103,6 @@ public class AtualizarUsuarioPerfilCommandHandler : IRequestHandler<AtualizarUsu
             // O menu da pessoa muda junto com o perfil: avisa na hora (AC-11/AC-13).
             await _mediator.Publish(new AcessosAtualizadosNotification(
                 usuario.Id, ModulosDeAcesso.Nomes(usuario.ModulosEfetivos()), usuario.ChatPerfil, usuario.Perfil), cancellationToken);
-        }
-
-        // spec perfil-no-cadastro: o servidor já usa o cadastro a cada pedido; o tempo real, que guarda a
-        // conexão aberta, precisa ser avisado para reajustar os grupos de avisos e derrubar conta desativada.
-        if (perfilMudou || usuario.Ativo != ativoAnterior || usuario.GrupoId != grupoAnterior)
-        {
-            await _mediator.Publish(new CadastroDeAcessoAlteradoNotification(
-                usuario.Id, usuario.Perfil, usuario.Ativo, usuario.GrupoId), cancellationToken);
         }
 
         return usuario.ToResponse();

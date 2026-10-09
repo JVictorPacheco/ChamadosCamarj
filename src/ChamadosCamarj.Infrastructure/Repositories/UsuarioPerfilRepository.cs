@@ -42,17 +42,36 @@ public class UsuarioPerfilRepository : IUsuarioPerfilRepository
         if (_cache.TryGetValue(ChaveIdentidade(id), out IdentidadeUsuario? guardada))
             return guardada;
 
-        var identidade = await _dbSet.AsNoTracking()
+        // Review R-01: anota a "geração" do usuário ANTES de ler o banco. Se uma gravação invalidar no meio da
+        // leitura, a geração muda e o valor lido (já velho) não vai para o cache.
+        var geracao = Geracao(id);
+
+        var identidade = await LerIdentidadeAsync(id, ct);
+
+        // Conta inexistente não é guardada: recusar de novo custa uma consulta e evita que uma conta recém-criada
+        // fique invisível durante o prazo.
+        if (identidade is not null && Geracao(id) == geracao)
+            _cache.Set(ChaveIdentidade(id), identidade, ValidadeDaIdentidade);
+
+        return identidade;
+    }
+
+    /// <summary>A leitura no banco, separada para o teste da corrida de cache (review R-01) poder intercalar uma gravação.</summary>
+    protected virtual async Task<IdentidadeUsuario?> LerIdentidadeAsync(Guid id, CancellationToken ct) =>
+        await _dbSet.AsNoTracking()
             .Where(u => u.Id == id)
             .Select(u => new IdentidadeUsuario(u.Perfil, u.Ativo, u.GrupoId))
             .FirstOrDefaultAsync(ct);
 
-        // Conta inexistente não é guardada: recusar de novo custa uma consulta e evita que uma conta recém-criada
-        // fique invisível durante o prazo.
-        if (identidade is not null)
-            _cache.Set(ChaveIdentidade(id), identidade, ValidadeDaIdentidade);
+    // Uma entrada por usuário que já teve o cadastro gravado nesta execução: poucas dezenas de números.
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, long> _geracoes = new();
 
-        return identidade;
+    private static long Geracao(Guid id) => _geracoes.GetValueOrDefault(id);
+
+    private void InvalidarIdentidade(Guid id)
+    {
+        _geracoes.AddOrUpdate(id, 1, (_, atual) => atual + 1);
+        _cache.Remove(ChaveIdentidade(id));
     }
 
     public async Task<IEnumerable<UsuarioPerfil>> ListarAsync(CancellationToken ct)
@@ -69,7 +88,7 @@ public class UsuarioPerfilRepository : IUsuarioPerfilRepository
     {
         await _dbSet.AddAsync(usuario, ct);
         await _context.SaveChangesAsync(ct);
-        _cache.Remove(ChaveIdentidade(usuario.Id)); // perfil-no-cadastro D4: a próxima conferência lê o cadastro novo
+        InvalidarIdentidade(usuario.Id); // perfil-no-cadastro D4: a próxima conferência lê o cadastro novo
         _context.Entry(usuario).State = EntityState.Detached;
     }
 
@@ -80,7 +99,7 @@ public class UsuarioPerfilRepository : IUsuarioPerfilRepository
         // (salvar módulos + Chat de quem tem Área → 500; review-3 R-01 de controle-de-acesso).
         _context.Entry(usuario).State = EntityState.Modified;
         await _context.SaveChangesAsync(ct);
-        _cache.Remove(ChaveIdentidade(usuario.Id)); // perfil-no-cadastro D4: a próxima conferência lê o cadastro novo
+        InvalidarIdentidade(usuario.Id); // perfil-no-cadastro D4: a próxima conferência lê o cadastro novo
         // Achado ao vivo pós-revisão (não estava no relatório): AtualizarUsuarioPerfilCommandHandler
         // salva o mesmo usuário duas vezes por requisição — uma vez pros campos gerais, outra
         // (indiretamente, via DefinirChatPerfilCommand) pro ChatPerfil — cada Handle carrega sua

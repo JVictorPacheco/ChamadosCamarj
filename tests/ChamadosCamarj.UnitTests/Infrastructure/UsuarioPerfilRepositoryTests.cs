@@ -169,3 +169,52 @@ public class UsuarioPerfilRepositoryTests
         (await conferencia.Set<Grupo>().CountAsync()).Should().Be(trocar ? 2 : 1); // a Área não é recriada nem apagada
     }
 }
+
+/// <summary>Review R-01 de perfil-no-cadastro: uma gravação que chega no meio de uma leitura não pode ser desfeita pelo cache.</summary>
+public class UsuarioPerfilRepositoryCorridaTests
+{
+    // Simula "a gravação do Admin termina enquanto a leitura de outro pedido ainda está no banco".
+    private sealed class RepositorioComGravacaoNoMeioDaLeitura(ApplicationDbContext contexto, IMemoryCache cache, Func<Task> gravacao)
+        : UsuarioPerfilRepository(contexto, cache)
+    {
+        protected override async Task<ChamadosCamarj.Domain.Interfaces.IdentidadeUsuario?> LerIdentidadeAsync(Guid id, CancellationToken ct)
+        {
+            var lida = await base.LerIdentidadeAsync(id, ct); // valor de ANTES da gravação
+            await gravacao();
+            return lida;
+        }
+    }
+
+    [Fact]
+    public async Task GravacaoNoMeioDaLeitura_ValorVelhoNaoVaiParaOCache()
+    {
+        var banco = Guid.NewGuid().ToString();
+        var opcoes = new DbContextOptionsBuilder<ApplicationDbContext>().UseInMemoryDatabase(banco).Options;
+        Guid id;
+        await using (var semente = new ApplicationDbContext(opcoes))
+        {
+            var u = new UsuarioPerfil("maria@camarj.com.br", "Maria", Perfil.Atendente);
+            semente.Add(u);
+            await semente.SaveChangesAsync();
+            id = u.Id;
+        }
+
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        await using var ctxLeitura = new ApplicationDbContext(opcoes);
+        await using var ctxAdmin = new ApplicationDbContext(opcoes);
+        var admin = new UsuarioPerfilRepository(ctxAdmin, cache);
+        var leitor = new RepositorioComGravacaoNoMeioDaLeitura(ctxLeitura, cache, async () =>
+        {
+            var maria = (await admin.ObterPorIdAsync(id, CancellationToken.None))!;
+            maria.Desativar();
+            await admin.AtualizarAsync(maria, CancellationToken.None);
+        });
+
+        var lidaPeloPedido = await leitor.ObterIdentidadeAsync(id, CancellationToken.None); // o pedido em andamento vê o valor antigo
+        lidaPeloPedido!.Ativo.Should().BeTrue();
+
+        // ...mas o valor antigo não pode ter ficado guardado: o pedido seguinte vê a conta desativada.
+        var seguinte = await new UsuarioPerfilRepository(new ApplicationDbContext(opcoes), cache).ObterIdentidadeAsync(id, CancellationToken.None);
+        seguinte!.Ativo.Should().BeFalse();
+    }
+}

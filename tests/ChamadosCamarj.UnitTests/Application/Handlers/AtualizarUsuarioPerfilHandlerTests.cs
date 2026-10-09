@@ -316,6 +316,22 @@ public class AtualizarUsuarioPerfilHandlerTests
     }
 
     [Fact]
+    public async Task Handle_SeAAuditoriaFalhar_ODesativarJaAvisouOTempoReal()
+    {
+        // Review R-03: o cadastro já está gravado; sem o aviso a conexão da conta desativada ficaria aberta, e
+        // repetir a ação não acusaria mudança.
+        var usuario = new UsuarioPerfil("ana@camarj.com.br", "Ana", Perfil.Atendente);
+        _repositoryMock.Setup(r => r.ObterPorIdAsync(usuario.Id, It.IsAny<CancellationToken>())).ReturnsAsync(usuario);
+        _auditoriaMock.Setup(a => a.AdicionarAsync(It.IsAny<IEnumerable<AuditoriaAcesso>>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("banco oscilou"));
+
+        var act = () => _handler.Handle(new AtualizarUsuarioPerfilCommand(usuario.Id, "Ana", Perfil.Solicitante, false, null, PerfilRequisitante: "Admin"), CancellationToken.None);
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+        _mediatorMock.Verify(m => m.Publish(It.Is<CadastroDeAcessoAlteradoNotification>(n => n.UsuarioId == usuario.Id && !n.Ativo), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
     public async Task Handle_QuandoSoONomeMuda_NaoAvisaOTempoReal()
     {
         var usuario = new UsuarioPerfil("ana@camarj.com.br", "Ana", Perfil.Atendente);
