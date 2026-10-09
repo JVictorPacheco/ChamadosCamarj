@@ -30,7 +30,7 @@
 
 ## Bloco 4 — Não-regressão (pontos de toque do design §8)
 
-- [ ] **T9** (AC-06..08) — Teste de visibilidade: usuário com equipe trocada (cadastro ≠ token original) passa a ver/não ver chamados da equipe pelo contexto de acesso atualizado; Atendente rebaixado é recusado em assumir/reatribuir/resolver/fechar.
+- [x] **T9** (AC-06..08) — Teste de visibilidade: usuário com equipe trocada (cadastro ≠ token original) passa a ver/não ver chamados da equipe pelo contexto de acesso atualizado; Atendente rebaixado é recusado em assumir/reatribuir/resolver/fechar.
   **Pronto quando:** testes novos verdes usando o mesmo caminho de claims (validador → `CurrentUserService`).
 - [ ] **T10** (AC-17, AC-18) — Rodar E2E completo (25) e a suíte inteira; medir tempo de uma listagem antes/depois no ambiente local.
   **Pronto quando:** `dotnet test` verde (≥ 528 + novos), E2E 25/25 e diferença de tempo sem impacto perceptível, registrada em `impacto.md`.
