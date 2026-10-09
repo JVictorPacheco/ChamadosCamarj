@@ -7,7 +7,7 @@
 
 - [x] **T1** (D4, C2) — Adicionar `IdentidadeUsuario` (record: Perfil, Ativo, GrupoId) e `IUsuarioPerfilRepository.ObterIdentidadeAsync`; implementar no repositório com projeção sem rastreamento, sem `Include`.
   **Pronto quando:** compila; teste de repositório (EF InMemory, como em `controle-de-acesso`) devolve a identidade de um usuário e `null` para um id inexistente.
-- [ ] **T2** (D5, C3, AC-13..15) — Criar `CadastroDeAcessoAlteradoNotification`; em `AtualizarUsuarioPerfilCommandHandler` publicá-la quando perfil, equipe ou situação da conta mudarem (e só então). Manter a publicação atual de `AcessosAtualizadosNotification`.
+- [x] **T2** (D5, C3, AC-13..15) — Criar `CadastroDeAcessoAlteradoNotification`; em `AtualizarUsuarioPerfilCommandHandler` publicá-la quando perfil, equipe ou situação da conta mudarem (e só então). Manter a publicação atual de `AcessosAtualizadosNotification`.
   **Pronto quando:** testes novos: muda só equipe → publica; muda só ativo → publica; nada muda → não publica; muda perfil → publica as duas. Testes existentes do handler seguem verdes.
 
 ## Bloco 2 — Validação do token (C1)

@@ -48,6 +48,9 @@ public class AtualizarUsuarioPerfilCommandHandler : IRequestHandler<AtualizarUsu
                 throw new ConflictException("Não é possível desativar/rebaixar o último Admin ativo do sistema.");
         }
 
+        var ativoAnterior = usuario.Ativo;
+        var grupoAnterior = usuario.GrupoId;
+
         if (request.Ativo && !usuario.Ativo)
             usuario.Ativar();
         else if (!request.Ativo && usuario.Ativo)
@@ -91,6 +94,14 @@ public class AtualizarUsuarioPerfilCommandHandler : IRequestHandler<AtualizarUsu
             // O menu da pessoa muda junto com o perfil: avisa na hora (AC-11/AC-13).
             await _mediator.Publish(new AcessosAtualizadosNotification(
                 usuario.Id, ModulosDeAcesso.Nomes(usuario.ModulosEfetivos()), usuario.ChatPerfil, usuario.Perfil), cancellationToken);
+        }
+
+        // spec perfil-no-cadastro: o servidor já usa o cadastro a cada pedido; o tempo real, que guarda a
+        // conexão aberta, precisa ser avisado para reajustar os grupos de avisos e derrubar conta desativada.
+        if (perfilMudou || usuario.Ativo != ativoAnterior || usuario.GrupoId != grupoAnterior)
+        {
+            await _mediator.Publish(new CadastroDeAcessoAlteradoNotification(
+                usuario.Id, usuario.Perfil, usuario.Ativo, usuario.GrupoId), cancellationToken);
         }
 
         return usuario.ToResponse();
