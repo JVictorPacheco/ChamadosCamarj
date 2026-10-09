@@ -12,11 +12,11 @@
 
 ## Bloco 2 — Validação do token (C1)
 
-- [ ] **T3** (D1–D4, AC-01..04, 06..08, 10, 11, 16) — Criar `CadastroClaimsValidator` (WebApi/Services): consulta `ObterIdentidadeAsync`; inexistente ou inativo → falha; senão troca os claims `perfil` e `grupo_id` (remove `grupo_id` se o cadastro não tem equipe).
+- [x] **T3** (D1–D4, AC-01..04, 06..08, 10, 11, 16) — Criar `CadastroClaimsValidator` (WebApi/Services): consulta `ObterIdentidadeAsync`; inexistente ou inativo → falha; senão troca os claims `perfil` e `grupo_id` (remove `grupo_id` se o cadastro não tem equipe).
   **Pronto quando:** testes unitários: perfil rebaixado, perfil promovido, equipe trocada, equipe removida, equipe colocada, conta desativada, conta apagada, nada mudou (claims iguais). Banco indisponível → a validação falha (nunca aceita token sem conferir).
-- [ ] **T4** (C1, AC-20) — Registrar o validador no `Program.cs` (DI) e chamá-lo em `OnTokenValidated`, preservando o `OnMessageReceived` (token do SignalR via query string).
+- [ ] **T4** (C1, AC-20) [código pronto e compilando; aguarda a verificação ao vivo da T13] — Registrar o validador no `Program.cs` (DI) e chamá-lo em `OnTokenValidated`, preservando o `OnMessageReceived` (token do SignalR via query string).
   **Pronto quando:** `dotnet build` ok; teste de integração mínimo (ou verificação ao vivo, T13) mostra 401 com token de conta desativada e escopo novo com token de perfil trocado, na API e na negociação do hub.
-- [ ] **T5** (D8, AC-17) — Conferir `ModuloGuard`, `ObterContextoAcesso` e os testes existentes: nada a mudar no código, mas o teste de `ModuloGuard` "perfil do token diferente do cadastro" continua verde.
+- [x] **T5** (D8, AC-17) — Conferir `ModuloGuard`, `ObterContextoAcesso` e os testes existentes: nada a mudar no código, mas o teste de `ModuloGuard` "perfil do token diferente do cadastro" continua verde.
   **Pronto quando:** testes existentes de `ModuloGuard` e `CurrentUserServiceExtensions` verdes sem alteração.
 
 ## Bloco 3 — Tempo real (C4)
