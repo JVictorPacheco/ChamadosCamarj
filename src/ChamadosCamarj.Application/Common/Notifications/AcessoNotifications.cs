@@ -9,3 +9,9 @@ namespace ChamadosCamarj.Application.Common.Notifications;
 /// cadastro: se ele mudou, a tela da pessoa sai e pede para entrar de novo (review-2 R-03).
 /// </summary>
 public record AcessosAtualizadosNotification(Guid UsuarioId, IReadOnlyList<string> Modulos, ChatPerfil ChatPerfil, Perfil Perfil) : INotification;
+
+/// <summary>
+/// Perfil, equipe ou situação da conta (ativa/desativada) de uma pessoa mudaram (spec perfil-no-cadastro
+/// AC-13..15): o tempo real reajusta os grupos de avisos dela e derruba a conexão de quem foi desativado.
+/// </summary>
+public record CadastroDeAcessoAlteradoNotification(Guid UsuarioId, Perfil Perfil, bool Ativo, Guid? GrupoId) : INotification;

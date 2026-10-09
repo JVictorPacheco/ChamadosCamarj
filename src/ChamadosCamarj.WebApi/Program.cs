@@ -66,6 +66,7 @@ builder.Services.AddValidatorsFromAssembly(Assembly.Load("ChamadosCamarj.Applica
 builder.Services.AddScoped<IChamadoRepository, ChamadoRepository>();
 builder.Services.AddScoped<ITipoChamadoRepository, TipoChamadoRepository>();
 builder.Services.AddScoped<IHistoricoRepository, HistoricoRepository>();
+builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IUsuarioPerfilRepository, UsuarioPerfilRepository>();
 builder.Services.AddScoped<IAuditoriaAcessoRepository, AuditoriaAcessoRepository>();
 builder.Services.AddScoped<ChamadosCamarj.Application.Common.Autorizacao.ModuloGuard>();
@@ -160,6 +161,18 @@ builder.Services
 
                 return Task.CompletedTask;
             },
+
+            // spec perfil-no-cadastro: perfil e equipe do token valem só até o próximo pedido — daqui em
+            // diante vale o cadastro; conta desativada ou apagada é recusada (401) na hora.
+            OnTokenValidated = async context =>
+            {
+                var validador = context.HttpContext.RequestServices.GetRequiredService<ChamadosCamarj.WebApi.Services.CadastroClaimsValidator>();
+                if (context.Principal is null
+                    || !await validador.ValidarEAtualizarAsync(context.Principal, context.HttpContext.RequestAborted))
+                {
+                    context.Fail("Conta inexistente ou desativada.");
+                }
+            },
         };
     });
 
@@ -170,6 +183,7 @@ builder.Services.AddAuthorizationBuilder()
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+builder.Services.AddScoped<ChamadosCamarj.WebApi.Services.CadastroClaimsValidator>();
 builder.Services.AddScoped<IVersaoLidaAccessor, VersaoLidaAccessor>();
 
 // ─────────────────────────────
@@ -190,6 +204,7 @@ builder.Services.AddControllers()
 // SignalR — notificações em tempo real
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<Microsoft.AspNetCore.SignalR.IUserIdProvider, SubClaimUserIdProvider>();
+builder.Services.AddSingleton<ConexoesTempoReal>();
 builder.Services.AddScoped<SlaAlertaNotificador>();
 builder.Services.AddHostedService<SlaMonitorService>();
 builder.Services.AddHostedService<ChatPresencaWorker>();

@@ -1,7 +1,7 @@
 ---
 tipo: arquitetura
 status: vigente
-atualizado: 2026-09-29
+atualizado: 2026-10-09
 spec: .specs/codebase/ARCHITECTURE.md
 tags: [arquitetura]
 ---
@@ -48,7 +48,7 @@ usada — elas moram no núcleo do sistema, não no navegador.
 ## Qualidade e segurança
 - **Testes automatizados:** mais de 300 testes de unidade no backend e testes de ponta a ponta
   (navegador) no frontend.
-- **Autenticação por token** em todas as chamadas; o perfil vem do token, nunca do que o navegador
+- **Autenticação por token** em todas as chamadas. O token só identifica a pessoa: o **perfil, a equipe e se a conta está ativa são lidos do cadastro a cada pedido** (com uma memória curta de 15 segundos, apagada na hora em que o cadastro muda), nunca do que o navegador
   informa.
 - **Controle de concorrência:** duas edições simultâneas do mesmo chamado geram conflito em vez
   de uma apagar a outra.

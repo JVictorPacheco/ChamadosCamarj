@@ -275,4 +275,70 @@ public class AtualizarUsuarioPerfilHandlerTests
         response!.ChatPerfil.Should().Be(ChatPerfil.CriadorDeGrupo);
         _mediatorMock.Verify(m => m.Send(It.IsAny<ChamadosCamarj.Application.Features.Chat.Commands.DefinirChatPerfil.DefinirChatPerfilCommand>(), It.IsAny<CancellationToken>()), Times.Never);
     }
+
+    // ── spec perfil-no-cadastro (AC-13..15) ───────────────────────────────────
+
+    [Fact]
+    public async Task Handle_QuandoSoAEquipeMuda_AvisaOTempoReal()
+    {
+        var usuario = new UsuarioPerfil("ana@camarj.com.br", "Ana", Perfil.Atendente);
+        _repositoryMock.Setup(r => r.ObterPorIdAsync(usuario.Id, It.IsAny<CancellationToken>())).ReturnsAsync(usuario);
+        var novaEquipe = Guid.NewGuid();
+
+        await _handler.Handle(new AtualizarUsuarioPerfilCommand(usuario.Id, "Ana", Perfil.Atendente, true, null, GrupoId: novaEquipe, PerfilRequisitante: "Admin"), CancellationToken.None);
+
+        _mediatorMock.Verify(m => m.Publish(It.Is<CadastroDeAcessoAlteradoNotification>(n => n.UsuarioId == usuario.Id && n.GrupoId == novaEquipe), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_QuandoSoASituacaoDaContaMuda_AvisaOTempoReal()
+    {
+        var usuario = new UsuarioPerfil("ana@camarj.com.br", "Ana", Perfil.Atendente);
+        _repositoryMock.Setup(r => r.ObterPorIdAsync(usuario.Id, It.IsAny<CancellationToken>())).ReturnsAsync(usuario);
+
+        await _handler.Handle(new AtualizarUsuarioPerfilCommand(usuario.Id, "Ana", Perfil.Atendente, false, null, PerfilRequisitante: "Admin"), CancellationToken.None);
+
+        _mediatorMock.Verify(m => m.Publish(It.Is<CadastroDeAcessoAlteradoNotification>(n => n.UsuarioId == usuario.Id && !n.Ativo), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_QuandoOPerfilMuda_AvisaOTempoRealEMantemOAvisoDoMenu()
+    {
+        var usuario = new UsuarioPerfil("ana@camarj.com.br", "Ana", Perfil.Admin);
+        _repositoryMock.Setup(r => r.ObterPorIdAsync(usuario.Id, It.IsAny<CancellationToken>())).ReturnsAsync(usuario);
+        _repositoryMock.Setup(r => r.ListarAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<UsuarioPerfil> { usuario, new("outro@camarj.com.br", "Outro", Perfil.Admin) });
+
+        await _handler.Handle(new AtualizarUsuarioPerfilCommand(usuario.Id, "Ana", Perfil.Solicitante, true, null, PerfilRequisitante: "Admin"), CancellationToken.None);
+
+        _mediatorMock.Verify(m => m.Publish(It.Is<CadastroDeAcessoAlteradoNotification>(n => n.Perfil == Perfil.Solicitante), It.IsAny<CancellationToken>()), Times.Once);
+        _mediatorMock.Verify(m => m.Publish(It.IsAny<AcessosAtualizadosNotification>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_SeAAuditoriaFalhar_ODesativarJaAvisouOTempoReal()
+    {
+        // Review R-03: o cadastro já está gravado; sem o aviso a conexão da conta desativada ficaria aberta, e
+        // repetir a ação não acusaria mudança.
+        var usuario = new UsuarioPerfil("ana@camarj.com.br", "Ana", Perfil.Atendente);
+        _repositoryMock.Setup(r => r.ObterPorIdAsync(usuario.Id, It.IsAny<CancellationToken>())).ReturnsAsync(usuario);
+        _auditoriaMock.Setup(a => a.AdicionarAsync(It.IsAny<IEnumerable<AuditoriaAcesso>>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("banco oscilou"));
+
+        var act = () => _handler.Handle(new AtualizarUsuarioPerfilCommand(usuario.Id, "Ana", Perfil.Solicitante, false, null, PerfilRequisitante: "Admin"), CancellationToken.None);
+
+        await act.Should().ThrowAsync<InvalidOperationException>();
+        _mediatorMock.Verify(m => m.Publish(It.Is<CadastroDeAcessoAlteradoNotification>(n => n.UsuarioId == usuario.Id && !n.Ativo), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_QuandoSoONomeMuda_NaoAvisaOTempoReal()
+    {
+        var usuario = new UsuarioPerfil("ana@camarj.com.br", "Ana", Perfil.Atendente);
+        _repositoryMock.Setup(r => r.ObterPorIdAsync(usuario.Id, It.IsAny<CancellationToken>())).ReturnsAsync(usuario);
+
+        await _handler.Handle(new AtualizarUsuarioPerfilCommand(usuario.Id, "Ana Maria", Perfil.Atendente, true, null, PerfilRequisitante: "Admin"), CancellationToken.None);
+
+        _mediatorMock.Verify(m => m.Publish(It.IsAny<CadastroDeAcessoAlteradoNotification>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
 }

@@ -13,8 +13,13 @@ public class ChatHub : Hub
 
     public static string GrupoConversa(Guid conversaId) => $"chat-{conversaId}";
 
+    private readonly ConexoesTempoReal _conexoes;
+
+    public ChatHub(ConexoesTempoReal conexoes) => _conexoes = conexoes;
+
     public override async Task OnConnectedAsync()
     {
+        _conexoes.Registrar(Context, nameof(ChatHub)); // primeiro: conta desativada durante a conexão ainda é derrubada (review R-02)
         // Todo cliente conectado acompanha a presença global (visível a qualquer perfil).
         await Groups.AddToGroupAsync(Context.ConnectionId, GrupoPresencaGlobal);
         await base.OnConnectedAsync();
@@ -22,6 +27,7 @@ public class ChatHub : Hub
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
+        _conexoes.Remover(Context.ConnectionId);
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, GrupoPresencaGlobal);
         await base.OnDisconnectedAsync(exception);
     }
