@@ -31,6 +31,31 @@ public class UsuarioPerfilRepositoryTests
     }
 
     [Fact]
+    public async Task ObterIdentidadeAsync_UsuarioExistente_DevolvePerfilAtivoEEquipe()
+    {
+        var banco = Guid.NewGuid().ToString();
+        var id = await SemearUsuarioComGrupoAsync(banco);
+        await using var contexto = NovoContexto(banco);
+        var repositorio = new UsuarioPerfilRepository(contexto);
+
+        var identidade = await repositorio.ObterIdentidadeAsync(id, CancellationToken.None);
+
+        identidade.Should().NotBeNull();
+        identidade!.Perfil.Should().Be(Perfil.Atendente);
+        identidade.GrupoId.Should().NotBeNull();
+        contexto.ChangeTracker.Entries().Should().BeEmpty(); // não rastreia: não colide com as gravações da requisição
+    }
+
+    [Fact]
+    public async Task ObterIdentidadeAsync_UsuarioInexistente_DevolveNulo()
+    {
+        await using var contexto = NovoContexto(Guid.NewGuid().ToString());
+        var repositorio = new UsuarioPerfilRepository(contexto);
+
+        (await repositorio.ObterIdentidadeAsync(Guid.NewGuid(), CancellationToken.None)).Should().BeNull();
+    }
+
+    [Fact]
     public async Task AtualizarAsync_DuasCopiasDoMesmoUsuarioComGrupoNaMesmaRequisicao_GravaAsDuas()
     {
         var banco = Guid.NewGuid().ToString();

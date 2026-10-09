@@ -26,6 +26,14 @@ public class UsuarioPerfilRepository : IUsuarioPerfilRepository
         return await _dbSet.AsNoTracking().Include(u => u.Grupo).FirstOrDefaultAsync(u => u.Id == id, ct);
     }
 
+    public async Task<IdentidadeUsuario?> ObterIdentidadeAsync(Guid id, CancellationToken ct)
+    {
+        return await _dbSet.AsNoTracking()
+            .Where(u => u.Id == id)
+            .Select(u => new IdentidadeUsuario(u.Perfil, u.Ativo, u.GrupoId))
+            .FirstOrDefaultAsync(ct);
+    }
+
     public async Task<IEnumerable<UsuarioPerfil>> ListarAsync(CancellationToken ct)
     {
         return await _dbSet.AsNoTracking().Include(u => u.Grupo).OrderBy(u => u.Nome).ToListAsync(ct);
