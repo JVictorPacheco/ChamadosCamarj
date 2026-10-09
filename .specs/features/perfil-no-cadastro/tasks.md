@@ -35,7 +35,7 @@
 
 - [x] **T9** (AC-06..08) — Teste de visibilidade: usuário com equipe trocada (cadastro ≠ token original) passa a ver/não ver chamados da equipe pelo contexto de acesso atualizado; Atendente rebaixado é recusado em assumir/reatribuir/resolver/fechar.
   **Pronto quando:** testes novos verdes usando o mesmo caminho de claims (validador → `CurrentUserService`).
-- [ ] **T10** (AC-17, AC-18) — Rodar E2E completo (25) e a suíte inteira; medir tempo de uma listagem antes/depois no ambiente local.
+- [x] **T10** (AC-17, AC-18) — Rodar E2E completo (25) e a suíte inteira; medir tempo de uma listagem antes/depois no ambiente local.
   **Pronto quando:** `dotnet test` verde (≥ 528 + novos), E2E 25/25 e diferença de tempo sem impacto perceptível, registrada em `impacto.md`.
 
 ## Bloco 5 — Frontend
@@ -47,7 +47,7 @@ Nenhuma mudança prevista (D9). Se a verificação ao vivo mostrar que a tela n�
 - [x] **T11** (impacto.md gravado: 🔴1 · 🟡7 · ✅4 — o 🔴 fecha na T10/T13) — Rodar `/analise-cod` (cinco buscas obrigatórias: regra antiga espalhada, quem perde o caminho, todos os caminhos que gravam o estado, gravação real e não mock, abertura do sistema e reconexão). Zero 🔴 para seguir.
 - [x] **T12** (AC-01..21) — Preencher a rastreabilidade da spec com os testes reais.
 - [x] **T13** (41 casos ao vivo contra o banco real + demonstração em tela; apagar os dados de teste fica para o OK do usuário) (AC-01..16) — Verificação ao vivo com contas de teste `teste.perfil.*` e chamados `[TESTE-PERFIL]`: rebaixar Admin→Solicitante e chamar rotas de administração; Atendente rebaixado tentando assumir; troca de equipe; desativar conta e reutilizar o token; conexão do hub de rebaixado/desativado; reativação. Criar e apagar os dados de teste **com OK do usuário** (ação em banco real).
-- [ ] **T14** — Gates: `dotnet build`, `dotnet test tests/ChamadosCamarj.UnitTests/`, `npm --prefix frontend run build`.
+- [x] **T14** — Gates: `dotnet build`, `dotnet test tests/ChamadosCamarj.UnitTests/`, `npm --prefix frontend run build`.
 
 ## Analyze
 

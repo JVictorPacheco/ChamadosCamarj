@@ -1,14 +1,14 @@
 # Análise de impacto — perfil-no-cadastro
 
 > **Diff:** `origin/develop...HEAD` — 21 arquivos (11 de código, 5 de teste novos/alterados, 3 de spec, 2 de contrato) · **Data:** 2026-10-09 · **Gates:** `dotnet build` 0 erros · `dotnet test` 570/570 (eram 528; +42) · `npm run build` ok (frontend não foi tocado)
-> **Veredito:** ⛔ IMPACTO SEM COBERTURA (1 item 🔴: a ligação do validador no pipeline real ainda não foi exercitada por teste — fecha com E2E e verificação ao vivo, T10/T13)
+> **Veredito:** IMPACTO COBERTO — o único 🔴 (I-01) foi fechado em 2026-10-09: E2E 25/25 (1 worker) + verificação ao vivo 41/41 passando pelo pipeline real. Gates finais: build 0 erros, 573/573 testes, npm build ok.
 
 ## Resumo
-- 🔴 1 · 🟡 7 · ✅ 4
+- 🔴 0 (1 fechado) · 🟡 7 · ✅ 4
 
 ## 🔴 Impacto sem cobertura (decisão do usuário necessária)
 
-### I-01 — A ligação no `Program.cs` (`OnTokenValidated`) afeta TODAS as rotas e os dois hubs, e só o validador isolado tem teste
+### I-01 (FECHADO em 2026-10-09) — A ligação no `Program.cs` (`OnTokenValidated`) afeta TODAS as rotas e os dois hubs, e só o validador isolado tem teste
 - **Mudou:** `src/ChamadosCamarj.WebApi/Program.cs` — `JwtBearerEvents.OnTokenValidated` passa a consultar o cadastro a cada pedido autenticado; registro do `CadastroClaimsValidator` e de `ConexoesTempoReal` na DI.
 - **Quem depende:** qualquer pedido autenticado (todas as features), negociação e conexão dos hubs `/hubs/chamados` e `/hubs/chat` (token pela query string).
 - **Antes × depois:** antes o token bastava; agora o pedido depende de uma consulta ao banco e do validador estar registrado.
@@ -44,3 +44,9 @@
 - Pontos de toque do design que de fato foram tocados: `Program.cs`, `ChamadosHub`, `ChatHub`, `AtualizarUsuarioPerfilCommandHandler`, repositório de usuário. `CurrentUserService`, `ObterContextoAcesso` e `ModuloGuard` **não** foram alterados (como previsto).
 - Tocados mas NÃO previstos no design: nenhum. (`ChamadosHubTests` só teve o construtor ajustado.)
 - Documentação funcional a atualizar no Close (regra 6): 4 notas dizem "equipe vale no próximo login" — `Perfis e Permissões`, `Administração`, `Grupos e Equipes`, `ADR-010` — e a `Visão Técnica` diz que "o perfil vem do token".
+
+## Fechamento do I-01 (2026-10-09)
+- **E2E:** 25/25 passando com 1 worker. Na primeira tentativa, com 2 workers em paralelo (máquina com pouca memória), 2 testes de `controle-de-acesso.spec.ts` falharam por tempo (aviso em tempo real demorou além do limite); os mesmos 2 passaram isolados e na rodada completa com 1 worker. Tratado como instabilidade de carga, não regressão: nenhum dos dois toca perfil/equipe/conta de forma diferente do que passava antes.
+- **Ao vivo:** 41/41 contra o banco real (API + os dois hubs), antes e depois do cache de 15 s (T1b), mais demonstração em tela (conta desativada volta ao login no primeiro clique).
+- **Cache (T1b):** não previsto na spec original; decisão do usuário após a medição (≈160 ms por pedido). Invalidação no repositório cobre todo caminho que grava usuário; edição direta no banco ou 2º servidor: até 15 s.
+- Dados de teste (`teste.perfil.*`, `[TESTE-PERFIL]` e os `[TESTE-E2E]` criados por esta verificação) apagados com OK do usuário; banco conferido: 9 usuários e 96 chamados originais.

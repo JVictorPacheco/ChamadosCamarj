@@ -1,6 +1,6 @@
 # Perfil e Equipe Valem na Hora (Segurança) — Especificação
 
-> **SDD:** implementando
+> **SDD:** em-review
 > **Status:** `Pendente`
 > **Branch:** `feature/perfil-no-cadastro`
 > **Criada em:** 2026-10-09
@@ -117,7 +117,7 @@ Perfil, equipe e situação da conta (ativa ou desativada) passam a ser conferid
 | AC-20 | `CadastroClaimsValidatorTests` (ponto único no token) | 41 casos passaram pelo mesmo ponto | ✅ |
 | AC-21 | `dotnet test` 573/573 · `npm run build` ok | — | ✅ |
 
-> E2E completo (25 testes) pelo usuário: pendente até o resultado (T10).
+> E2E completo: 25/25 (1 worker; 2 testes de controle-de-acesso oscilaram com 2 workers por falta de memória e passam isolados).
 
 ---
 
