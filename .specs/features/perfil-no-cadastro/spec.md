@@ -96,9 +96,28 @@ Perfil, equipe e situação da conta (ativa ou desativada) passam a ser conferid
 
 ## 5. Rastreabilidade
 
-| Critério | Arquivo de Teste | Método de Teste | Status |
-|----------|-----------------|-----------------|--------|
-| AC-01..AC-21 | a preencher na fase de tasks | — | ⬜ Pendente |
+| Critério | Teste automatizado | Verificação ao vivo (2026-10-09, API real + hub) | Status |
+|----------|--------------------|--------------------------------------------------|--------|
+| AC-01 | `CadastroClaimsValidatorTests.PerfilRebaixado_*`; `PerfilNoCadastroNasRegrasDeAcessoTests.AdminRebaixadoParaAtendente_*` | Admin rebaixado: usuários, edição e controle de acesso → 403 | ✅ |
+| AC-02 | `PerfilNoCadastroNasRegrasDeAcessoTests.AtendenteRebaixadoParaSolicitante_*` | Atendente rebaixado: assumir e comentário interno recusados | ✅ |
+| AC-03 | `CadastroClaimsValidatorTests.PerfilPromovido_*`; `...SolicitantePromovidoParaAtendente_*` | Solicitante promovido assume chamado com o token antigo | ✅ |
+| AC-04 | `CadastroClaimsValidatorTests.PerfilAtualizadoChegaNoCurrentUserENoContextoDeAcesso` | listagem, detalhe, comentário (escopo) conferidos nos casos acima | ✅ |
+| AC-05 | testes existentes de `AcessosAtualizados` / `logoutPerfilAlterado` sem alteração | demonstração em tela: aba aberta volta ao login no primeiro clique | ✅ |
+| AC-06..08 | `CadastroClaimsValidatorTests.Equipe*`; `...EquipeTrocada_*`, `...EquipeRemovida_*` | sem equipe/outra equipe: chamado e lista saem; na equipe: entram; comentar recusado/aceito | ✅ |
+| AC-09 | decisão registrada na spec e no design (substitui a de 2026-10-06) | — | ✅ |
+| AC-10 | `CadastroClaimsValidatorTests.ContaDesativada_*` | desativada: lista de chamados e `/auth/me` → 401; login anônimo com token antigo segue ok | ✅ |
+| AC-11 | `CadastroClaimsValidatorTests.ContaApagada_*` | conta apagada do banco: 401 | ✅ |
+| AC-12 | — (sem código novo) | reativada: login e até o token antigo voltam a valer | ✅ |
+| AC-13, 14 | `CadastroDeAcessoAlteradoNotificationHandlerTests` | Atendente rebaixado deixa de receber aviso interno; Solicitante promovido passa a receber | ✅ |
+| AC-15 | `CadastroDeAcessoAlteradoNotificationHandlerTests.ContaDesativada_*`; `ConexoesTempoRealTests` | os dois hubs derrubados; reconexão com o token antigo recusada | ✅ |
+| AC-16 | `ChamadosHubTests.GruposDoPerfil_SegueOPerfil`; validador | conexão nova nasce com o perfil do cadastro | ✅ |
+| AC-17 | 528 testes anteriores verdes sem alteração | Solicitante, Atendente e Admin sem mudança seguem como antes | ✅ |
+| AC-18 | `UsuarioPerfilRepositoryTests.*Cache*` (cache de 15 s, invalidação ao gravar) | listagem ~636 ms com cache (era ~690 ms sem); consulta fria ~135 ms | ✅ |
+| AC-19 | mensagens atuais preservadas | recusa devolve `{ message }` | ✅ |
+| AC-20 | `CadastroClaimsValidatorTests` (ponto único no token) | 41 casos passaram pelo mesmo ponto | ✅ |
+| AC-21 | `dotnet test` 573/573 · `npm run build` ok | — | ✅ |
+
+> E2E completo (25 testes) pelo usuário: pendente até o resultado (T10).
 
 ---
 

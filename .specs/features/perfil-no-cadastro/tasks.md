@@ -17,7 +17,7 @@
 
 - [x] **T3** (D1–D4, AC-01..04, 06..08, 10, 11, 16) — Criar `CadastroClaimsValidator` (WebApi/Services): consulta `ObterIdentidadeAsync`; inexistente ou inativo → falha; senão troca os claims `perfil` e `grupo_id` (remove `grupo_id` se o cadastro não tem equipe).
   **Pronto quando:** testes unitários: perfil rebaixado, perfil promovido, equipe trocada, equipe removida, equipe colocada, conta desativada, conta apagada, nada mudou (claims iguais). Banco indisponível → a validação falha (nunca aceita token sem conferir).
-- [ ] **T4** (C1, AC-20) [código pronto e compilando; aguarda a verificação ao vivo da T13] — Registrar o validador no `Program.cs` (DI) e chamá-lo em `OnTokenValidated`, preservando o `OnMessageReceived` (token do SignalR via query string).
+- [x] **T4** (C1, AC-20) [verificado ao vivo na T13: 401 com token de conta desativada e escopo novo com perfil trocado, na API e nos hubs] — Registrar o validador no `Program.cs` (DI) e chamá-lo em `OnTokenValidated`, preservando o `OnMessageReceived` (token do SignalR via query string).
   **Pronto quando:** `dotnet build` ok; teste de integração mínimo (ou verificação ao vivo, T13) mostra 401 com token de conta desativada e escopo novo com token de perfil trocado, na API e na negociação do hub.
 - [x] **T5** (D8, AC-17) — Conferir `ModuloGuard`, `ObterContextoAcesso` e os testes existentes: nada a mudar no código, mas o teste de `ModuloGuard` "perfil do token diferente do cadastro" continua verde.
   **Pronto quando:** testes existentes de `ModuloGuard` e `CurrentUserServiceExtensions` verdes sem alteração.
@@ -45,8 +45,8 @@ Nenhuma mudança prevista (D9). Se a verificação ao vivo mostrar que a tela n�
 ## Bloco 6 — Fechamento da fase Implement
 
 - [x] **T11** (impacto.md gravado: 🔴1 · 🟡7 · ✅4 — o 🔴 fecha na T10/T13) — Rodar `/analise-cod` (cinco buscas obrigatórias: regra antiga espalhada, quem perde o caminho, todos os caminhos que gravam o estado, gravação real e não mock, abertura do sistema e reconexão). Zero 🔴 para seguir.
-- [ ] **T12** (AC-01..21) — Preencher a rastreabilidade da spec com os testes reais.
-- [ ] **T13** (AC-01..16) — Verificação ao vivo com contas de teste `teste.perfil.*` e chamados `[TESTE-PERFIL]`: rebaixar Admin→Solicitante e chamar rotas de administração; Atendente rebaixado tentando assumir; troca de equipe; desativar conta e reutilizar o token; conexão do hub de rebaixado/desativado; reativação. Criar e apagar os dados de teste **com OK do usuário** (ação em banco real).
+- [x] **T12** (AC-01..21) — Preencher a rastreabilidade da spec com os testes reais.
+- [x] **T13** (41 casos ao vivo contra o banco real + demonstração em tela; apagar os dados de teste fica para o OK do usuário) (AC-01..16) — Verificação ao vivo com contas de teste `teste.perfil.*` e chamados `[TESTE-PERFIL]`: rebaixar Admin→Solicitante e chamar rotas de administração; Atendente rebaixado tentando assumir; troca de equipe; desativar conta e reutilizar o token; conexão do hub de rebaixado/desativado; reativação. Criar e apagar os dados de teste **com OK do usuário** (ação em banco real).
 - [ ] **T14** — Gates: `dotnet build`, `dotnet test tests/ChamadosCamarj.UnitTests/`, `npm --prefix frontend run build`.
 
 ## Analyze
