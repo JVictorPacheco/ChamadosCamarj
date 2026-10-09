@@ -41,7 +41,7 @@ Nenhuma mudança prevista (D9). Se a verificação ao vivo mostrar que a tela n�
 
 ## Bloco 6 — Fechamento da fase Implement
 
-- [ ] **T11** — Rodar `/analise-cod` (cinco buscas obrigatórias: regra antiga espalhada, quem perde o caminho, todos os caminhos que gravam o estado, gravação real e não mock, abertura do sistema e reconexão). Zero 🔴 para seguir.
+- [x] **T11** (impacto.md gravado: 🔴1 · 🟡7 · ✅4 — o 🔴 fecha na T10/T13) — Rodar `/analise-cod` (cinco buscas obrigatórias: regra antiga espalhada, quem perde o caminho, todos os caminhos que gravam o estado, gravação real e não mock, abertura do sistema e reconexão). Zero 🔴 para seguir.
 - [ ] **T12** (AC-01..21) — Preencher a rastreabilidade da spec com os testes reais.
 - [ ] **T13** (AC-01..16) — Verificação ao vivo com contas de teste `teste.perfil.*` e chamados `[TESTE-PERFIL]`: rebaixar Admin→Solicitante e chamar rotas de administração; Atendente rebaixado tentando assumir; troca de equipe; desativar conta e reutilizar o token; conexão do hub de rebaixado/desativado; reativação. Criar e apagar os dados de teste **com OK do usuário** (ação em banco real).
 - [ ] **T14** — Gates: `dotnet build`, `dotnet test tests/ChamadosCamarj.UnitTests/`, `npm --prefix frontend run build`.
