@@ -10,6 +10,9 @@
 - [x] **T2** (D5, C3, AC-13..15) — Criar `CadastroDeAcessoAlteradoNotification`; em `AtualizarUsuarioPerfilCommandHandler` publicá-la quando perfil, equipe ou situação da conta mudarem (e só então). Manter a publicação atual de `AcessosAtualizadosNotification`.
   **Pronto quando:** testes novos: muda só equipe → publica; muda só ativo → publica; nada muda → não publica; muda perfil → publica as duas. Testes existentes do handler seguem verdes.
 
+- [x] **T1b** (D4 revisado, AC-18) — Cache de 15 s na identidade, com invalidação no próprio repositório: `UsuarioPerfilRepository` recebe `IMemoryCache`; `ObterIdentidadeAsync` usa o cache (não guarda "inexistente"); `AtualizarAsync` e `AdicionarAsync` invalidam; `AddMemoryCache()` no `Program.cs`.
+  **Pronto quando:** testes (EF real): segunda leitura dentro do prazo vem do cache mesmo com o banco alterado por fora; depois de `AtualizarAsync` a leitura devolve o valor novo; depois de `AdicionarAsync` idem; usuário inexistente não é guardado; verificação ao vivo repete os 41 casos e a medição cai.
+
 ## Bloco 2 — Validação do token (C1)
 
 - [x] **T3** (D1–D4, AC-01..04, 06..08, 10, 11, 16) — Criar `CadastroClaimsValidator` (WebApi/Services): consulta `ObterIdentidadeAsync`; inexistente ou inativo → falha; senão troca os claims `perfil` e `grupo_id` (remove `grupo_id` se o cadastro não tem equipe).

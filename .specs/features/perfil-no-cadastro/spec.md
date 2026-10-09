@@ -109,6 +109,7 @@ Perfil, equipe e situação da conta (ativa ou desativada) passam a ser conferid
 - Conta desativada ou apagada é bloqueada na hora.
 - Alcance: tudo que depende de perfil/equipe — administração, chamados, chat e tempo real.
 - Segunda camada (invalidar logins antigos) fica como feature futura de segurança.
+- 2026-10-09 (após a verificação ao vivo): conferir o banco em todo pedido custava ~160 ms por chamada; o usuário aprovou um **cache curto (15 s) com invalidação imediata** a cada mudança feita pelo sistema. "No pedido seguinte" (AC-01 a AC-11) vale para toda mudança feita pelo sistema; só edição direta no banco, ou um segundo servidor de backend, demora até 15 s.
 
 ## 7. Dependências
 

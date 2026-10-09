@@ -4,6 +4,7 @@ using ChamadosCamarj.Infrastructure.Data;
 using ChamadosCamarj.Infrastructure.Repositories;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace ChamadosCamarj.UnitTests.Infrastructure;
 
@@ -36,7 +37,7 @@ public class UsuarioPerfilRepositoryTests
         var banco = Guid.NewGuid().ToString();
         var id = await SemearUsuarioComGrupoAsync(banco);
         await using var contexto = NovoContexto(banco);
-        var repositorio = new UsuarioPerfilRepository(contexto);
+        var repositorio = new UsuarioPerfilRepository(contexto, new MemoryCache(new MemoryCacheOptions()));
 
         var identidade = await repositorio.ObterIdentidadeAsync(id, CancellationToken.None);
 
@@ -46,11 +47,67 @@ public class UsuarioPerfilRepositoryTests
         contexto.ChangeTracker.Entries().Should().BeEmpty(); // não rastreia: não colide com as gravações da requisição
     }
 
+    // spec perfil-no-cadastro D4: cache de 15 s, apagado na hora por quem grava pelo repositório.
+    [Fact]
+    public async Task ObterIdentidadeAsync_SegundaLeituraVemDoCache_AteOBancoMudarPorFora()
+    {
+        var banco = Guid.NewGuid().ToString();
+        var id = await SemearUsuarioComGrupoAsync(banco);
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        await using var contexto = NovoContexto(banco);
+        var repositorio = new UsuarioPerfilRepository(contexto, cache);
+        (await repositorio.ObterIdentidadeAsync(id, CancellationToken.None))!.Perfil.Should().Be(Perfil.Atendente);
+
+        await using (var porFora = NovoContexto(banco)) // edição direta no banco, sem passar pelo repositório
+        {
+            var usuario = await porFora.Set<UsuarioPerfil>().SingleAsync(u => u.Id == id);
+            usuario.Atualizar("Pessoa", Perfil.Solicitante, null);
+            await porFora.SaveChangesAsync();
+        }
+
+        (await repositorio.ObterIdentidadeAsync(id, CancellationToken.None))!.Perfil.Should().Be(Perfil.Atendente); // ainda guardado
+    }
+
+    [Fact]
+    public async Task AtualizarAsync_ApagaDoCache_ALeituraSeguinteVeOCadastroNovo()
+    {
+        var banco = Guid.NewGuid().ToString();
+        var id = await SemearUsuarioComGrupoAsync(banco);
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        await using var contexto = NovoContexto(banco);
+        var repositorio = new UsuarioPerfilRepository(contexto, cache);
+        await repositorio.ObterIdentidadeAsync(id, CancellationToken.None); // guarda no cache
+
+        var usuario = (await repositorio.ObterPorIdAsync(id, CancellationToken.None))!;
+        usuario.Atualizar("Pessoa", Perfil.Solicitante, null);
+        usuario.Desativar();
+        await repositorio.AtualizarAsync(usuario, CancellationToken.None);
+
+        var identidade = (await repositorio.ObterIdentidadeAsync(id, CancellationToken.None))!;
+        identidade.Perfil.Should().Be(Perfil.Solicitante);
+        identidade.Ativo.Should().BeFalse();
+        identidade.GrupoId.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task AdicionarAsync_ApagaDoCache_UsuarioNovoNaoFicaInvisivel()
+    {
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        await using var contexto = NovoContexto(Guid.NewGuid().ToString());
+        var repositorio = new UsuarioPerfilRepository(contexto, cache);
+        var novo = new UsuarioPerfil("novo@camarj.com.br", "Novo", Perfil.Atendente);
+
+        (await repositorio.ObterIdentidadeAsync(novo.Id, CancellationToken.None)).Should().BeNull(); // inexistente: não é guardado
+        await repositorio.AdicionarAsync(novo, CancellationToken.None);
+
+        (await repositorio.ObterIdentidadeAsync(novo.Id, CancellationToken.None)).Should().NotBeNull();
+    }
+
     [Fact]
     public async Task ObterIdentidadeAsync_UsuarioInexistente_DevolveNulo()
     {
         await using var contexto = NovoContexto(Guid.NewGuid().ToString());
-        var repositorio = new UsuarioPerfilRepository(contexto);
+        var repositorio = new UsuarioPerfilRepository(contexto, new MemoryCache(new MemoryCacheOptions()));
 
         (await repositorio.ObterIdentidadeAsync(Guid.NewGuid(), CancellationToken.None)).Should().BeNull();
     }
@@ -61,7 +118,7 @@ public class UsuarioPerfilRepositoryTests
         var banco = Guid.NewGuid().ToString();
         var id = await SemearUsuarioComGrupoAsync(banco);
         await using var contexto = NovoContexto(banco); // um contexto por requisição, como no DI
-        var repositorio = new UsuarioPerfilRepository(contexto);
+        var repositorio = new UsuarioPerfilRepository(contexto, new MemoryCache(new MemoryCacheOptions()));
 
         // 1ª gravação: módulos (SalvarAcessosCommandHandler).
         var primeira = (await repositorio.ObterPorIdAsync(id, CancellationToken.None))!;
@@ -101,7 +158,7 @@ public class UsuarioPerfilRepositoryTests
         }
 
         await using var contexto = NovoContexto(banco);
-        var repositorio = new UsuarioPerfilRepository(contexto);
+        var repositorio = new UsuarioPerfilRepository(contexto, new MemoryCache(new MemoryCacheOptions()));
         var usuario = (await repositorio.ObterPorIdAsync(id, CancellationToken.None))!;
         usuario.Grupo.Should().NotBeNull();
         usuario.Atualizar("Pessoa", Perfil.Atendente, novaArea);

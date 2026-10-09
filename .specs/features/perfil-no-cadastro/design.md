@@ -17,7 +17,7 @@ Para o tempo real, onde a conexão fica aberta e o token só é validado na cone
 | D1 | `JwtBearerEvents.OnTokenValidated` chama o `CadastroClaimsValidator` (classe nova, testável sem HTTP). | Ponto único; vale para API REST e para a negociação dos hubs. | 01–04, 06–08, 10, 11, 16, 20 |
 | D2 | Usuário inexistente ou `Ativo == false` → `context.Fail(...)` → 401. | A tela já leva ao login em 401 (`lib/api.ts:84`). | 10, 11, 15 |
 | D3 | Perfil e equipe do cadastro **substituem** os claims `perfil` e `grupo_id` (remove e adiciona no `ClaimsIdentity`). Sem equipe no cadastro → remove `grupo_id`. | `CurrentUserService`, `ObterContextoAcesso` e o hub passam a ver o valor atual sem mudar. | 01–04, 06–08, 16 |
-| D4 | **Sem cache** da consulta. Consulta por chave primária que devolve só `Perfil`, `Ativo` e `GrupoId` (sem `Include` de Grupo, sem rastreamento). | "Vale no pedido seguinte" exige ler a cada pedido. Chave primária é barata. | 18 |
+| D4 | Consulta por chave primária que devolve só `Perfil`, `Ativo` e `GrupoId` (sem `Include` de Grupo, sem rastreamento), **com cache em memória de 15 s e invalidação imediata** feita pelo próprio repositório: `AtualizarAsync` e `AdicionarAsync` apagam o registro do usuário depois de gravar. Conta inexistente não é guardada em cache. | **Revisado em 2026-10-09** (decisão do usuário, depois da medição ao vivo): sem cache, cada pedido pagava ~160 ms de ida ao banco (Supabase), sobre ~530 ms de uma listagem. Invalidar no repositório cobre **todos** os caminhos que gravam usuário (edição, criação/reativação, Chat, módulos) sem depender de cada handler lembrar. Mudança feita pelo sistema vale no pedido seguinte; edição direta no banco, ou um 2º servidor de backend, demora até 15 s. | 01–04, 06–08, 10, 11, 18 |
 | D5 | `AtualizarUsuarioPerfilCommandHandler` publica uma notificação nova quando mudam perfil, equipe ou situação da conta. | Hoje só publica quando o perfil muda; equipe e desativação não avisam o tempo real. | 13–15 |
 | D6 | `ConexoesTempoReal` (singleton) guarda `ConnectionId → (usuarioId, HubCallerContext)` dos dois hubs, preenchido em `OnConnectedAsync` e limpo em `OnDisconnectedAsync`. | O `IHubContext` só consegue mexer em grupo e derrubar conexão sabendo o `ConnectionId`. | 13–15 |
 | D7 | Handler da notificação (WebApi) reajusta, para cada conexão do usuário no `ChamadosHub`, a entrada nos grupos `Atendimento` e `Admins` conforme o perfil novo; se a conta foi desativada, chama `Abort()` nas conexões dos dois hubs. | Rebaixado deixa de receber alertas restritos; promovido passa a receber. A reconexão de desativado falha em D2. | 13–15 |
@@ -27,6 +27,8 @@ Para o tempo real, onde a conexão fica aberta e o token só é validado na cone
 ## 3. Mudanças no Domain
 
 - `IUsuarioPerfilRepository`: **novo método** `ObterIdentidadeAsync(Guid id, CancellationToken)` → `IdentidadeUsuario?` (record `Perfil`, `Ativo`, `GrupoId`). Aditivo.
+- `UsuarioPerfilRepository` (Infrastructure): passa a receber `IMemoryCache` (singleton, `AddMemoryCache()` no `Program.cs`); `ObterIdentidadeAsync` usa o cache (15 s); `AtualizarAsync` e `AdicionarAsync` invalidam a entrada do usuário. Construtor muda (consumidor de produção: só a DI; testes de repositório ajustados).
+- Risco aceito: uma leitura em andamento pode regravar no cache um valor lido antes de uma gravação concorrente; o valor velho vive no máximo 15 s.
 
 ## 4. Mudanças no Application
 

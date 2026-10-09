@@ -66,6 +66,7 @@ builder.Services.AddValidatorsFromAssembly(Assembly.Load("ChamadosCamarj.Applica
 builder.Services.AddScoped<IChamadoRepository, ChamadoRepository>();
 builder.Services.AddScoped<ITipoChamadoRepository, TipoChamadoRepository>();
 builder.Services.AddScoped<IHistoricoRepository, HistoricoRepository>();
+builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IUsuarioPerfilRepository, UsuarioPerfilRepository>();
 builder.Services.AddScoped<IAuditoriaAcessoRepository, AuditoriaAcessoRepository>();
 builder.Services.AddScoped<ChamadosCamarj.Application.Common.Autorizacao.ModuloGuard>();
