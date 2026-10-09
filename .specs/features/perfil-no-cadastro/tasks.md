@@ -21,11 +21,11 @@
 
 ## Bloco 3 — Tempo real (C4)
 
-- [ ] **T6** (D6) — Criar `ConexoesTempoReal` (singleton, thread-safe): registrar, remover, listar conexões por usuário, guardando o `HubCallerContext`. Registrar no DI.
+- [x] **T6** (D6) — Criar `ConexoesTempoReal` (singleton, thread-safe): registrar, remover, listar conexões por usuário, guardando o `HubCallerContext`. Registrar no DI.
   **Pronto quando:** testes: registra duas conexões do mesmo usuário, remove uma, lista a restante; concorrência simples sem exceção.
-- [ ] **T7** (D6) — `ChamadosHub` e `ChatHub`: registrar/remover a conexão em `OnConnectedAsync`/`OnDisconnectedAsync`. Extrair em `ChamadosHub` a regra "quais grupos de perfil" (Atendimento/Admins) para método estático reutilizado, sem alterar `EhAtendimento`/`EhAdmin`.
+- [x] **T7** (D6) — `ChamadosHub` e `ChatHub`: registrar/remover a conexão em `OnConnectedAsync`/`OnDisconnectedAsync`. Extrair em `ChamadosHub` a regra "quais grupos de perfil" (Atendimento/Admins) para método estático reutilizado, sem alterar `EhAtendimento`/`EhAdmin`.
   **Pronto quando:** testes existentes de `EhAtendimento`/`EhAdmin` verdes; teste novo do cálculo de grupos por perfil.
-- [ ] **T8** (D7, AC-13..15) — `CadastroDeAcessoAlteradoNotificationHandler` (WebApi/Notifications): conta desativada → `Abort()` nas conexões do usuário nos dois hubs; senão reajusta, no `ChamadosHub`, as entradas em `Atendimento` e `Admins` conforme o perfil novo.
+- [x] **T8** (D7, AC-13..15) — `CadastroDeAcessoAlteradoNotificationHandler` (WebApi/Notifications): conta desativada → `Abort()` nas conexões do usuário nos dois hubs; senão reajusta, no `ChamadosHub`, as entradas em `Atendimento` e `Admins` conforme o perfil novo.
   **Pronto quando:** testes com `IHubContext`/grupos simulados: rebaixado Admin→Solicitante sai de `Admins` e `Atendimento`; Solicitante→Atendente entra em `Atendimento`; desativado tem `Abort()` chamado; reativado não faz nada.
 
 ## Bloco 4 — Não-regressão (pontos de toque do design §8)

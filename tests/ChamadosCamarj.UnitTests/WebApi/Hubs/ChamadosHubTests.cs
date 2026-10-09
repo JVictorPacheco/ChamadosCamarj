@@ -49,7 +49,7 @@ public class ChamadosHubTests
         contextMock.SetupGet(c => c.ConnectionId).Returns("conn-1");
         contextMock.SetupGet(c => c.User).Returns(Usuario(perfil));
 
-        var hub = new ChamadosHub { Groups = groupsMock.Object, Context = contextMock.Object };
+        var hub = new ChamadosHub(new ConexoesTempoReal()) { Groups = groupsMock.Object, Context = contextMock.Object };
         await hub.OnConnectedAsync();
 
         grupos.Should().Contain("Todos");
@@ -72,10 +72,21 @@ public class ChamadosHubTests
         contextMock.SetupGet(c => c.ConnectionId).Returns("conn-1");
         contextMock.SetupGet(c => c.User).Returns(Usuario(perfil));
 
-        var hub = new ChamadosHub { Groups = groupsMock.Object, Context = contextMock.Object };
+        var hub = new ChamadosHub(new ConexoesTempoReal()) { Groups = groupsMock.Object, Context = contextMock.Object };
         await hub.OnConnectedAsync();
 
         grupos.Contains(ChamadosHub.GrupoAdmins).Should().Be(entraEmAdmins);
+    }
+
+    // spec perfil-no-cadastro D7: a mesma regra de grupos serve à conexão nova e ao reajuste de quem já está conectado.
+    [Theory]
+    [InlineData("Admin", new[] { "Atendimento", "Admins" })]
+    [InlineData("Atendente", new[] { "Atendimento" })]
+    [InlineData("Solicitante", new string[0])]
+    [InlineData(null, new string[0])]
+    public void GruposDoPerfil_SegueOPerfil(string? perfil, string[] esperado)
+    {
+        ChamadosHub.GruposDoPerfil(perfil).Should().BeEquivalentTo(esperado);
     }
 
     [Fact]

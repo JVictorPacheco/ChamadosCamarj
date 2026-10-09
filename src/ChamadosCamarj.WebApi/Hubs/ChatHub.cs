@@ -13,15 +13,21 @@ public class ChatHub : Hub
 
     public static string GrupoConversa(Guid conversaId) => $"chat-{conversaId}";
 
+    private readonly ConexoesTempoReal _conexoes;
+
+    public ChatHub(ConexoesTempoReal conexoes) => _conexoes = conexoes;
+
     public override async Task OnConnectedAsync()
     {
         // Todo cliente conectado acompanha a presença global (visível a qualquer perfil).
         await Groups.AddToGroupAsync(Context.ConnectionId, GrupoPresencaGlobal);
+        _conexoes.Registrar(Context, nameof(ChatHub)); // perfil-no-cadastro: conta desativada tem a conexão derrubada
         await base.OnConnectedAsync();
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
+        _conexoes.Remover(Context.ConnectionId);
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, GrupoPresencaGlobal);
         await base.OnDisconnectedAsync(exception);
     }

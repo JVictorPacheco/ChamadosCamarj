@@ -203,6 +203,7 @@ builder.Services.AddControllers()
 // SignalR — notificações em tempo real
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<Microsoft.AspNetCore.SignalR.IUserIdProvider, SubClaimUserIdProvider>();
+builder.Services.AddSingleton<ConexoesTempoReal>();
 builder.Services.AddScoped<SlaAlertaNotificador>();
 builder.Services.AddHostedService<SlaMonitorService>();
 builder.Services.AddHostedService<ChatPresencaWorker>();
