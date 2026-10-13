@@ -362,7 +362,7 @@
 
 > **Ordem de execução combinada (2026-10-02):** deploy → Editar Chamado → Controle de Acesso → SLA em Dias Úteis → Limpeza de Categorias.
 
-## 🔒 Perfil e Equipe Valem na Hora (FECHADA — 2026-10-09; PR → `develop` a cargo do usuário; sem migration)
+## 🔒 Perfil e Equipe Valem na Hora (FECHADA — 2026-10-09; PR #56 mergeado em `develop` em 2026-10-13; sem migration; falta ir para `main` e o deploy)
 
 - [x] O servidor confere o cadastro a cada pedido: perfil e equipe do cadastro substituem os do login (que valia 10 h); conta desativada ou apagada é recusada na hora; vale para toda a API e para os dois canais de tempo real.
 - [x] Tempo real acompanha o cadastro: rebaixado deixa de receber alertas restritos, promovido passa a receber, conta desativada tem a conexão derrubada.
