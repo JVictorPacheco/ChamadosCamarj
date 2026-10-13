@@ -1,53 +1,99 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-10-08 (fim de sessão: PR #54 aberto aguardando merge do usuário; roteiro da próxima sessão)
+> Atualizado em: 2026-10-09 (feature `perfil-no-cadastro` fechada: PR para `develop` a abrir pelo usuário; deploy ainda pendente)
 
 ---
 
-## ▶ ONDE PARAMOS (2026-10-08) — ler isto primeiro ao retomar
+## ▶ ONDE PARAMOS (2026-10-09) — ler isto primeiro ao retomar
 
 **Roteiro da próxima sessão:**
-1. Conferir o estado real: `git fetch`, `gh pr view 54`, `git log origin/main..origin/develop`.
-2. Se o **PR #54** (`feature/controle-de-acesso` → `develop`) foi mergeado: conferir os gates em `develop`
-   (`dotnet build`, `dotnet test` — 528 —, `npm run build`), apagar a branch e passar ao usuário o texto do
-   PR `develop` → `main` (o merge em `main` é dele). Se ainda está aberto: lembrar o usuário.
-3. Deploy pelo irmão do usuário (avisos no item 0 abaixo).
+1. Conferir o estado real: `git fetch`, `gh pr list`, `git log origin/main..origin/develop`.
+2. **PR da `feature/perfil-no-cadastro` → `develop`** (merge do usuário). Se mergeado: conferir os gates em
+   `develop` (`dotnet build`, `dotnet test` — 576 —, `npm run build`), apagar a branch e passar ao usuário o texto
+   do PR `develop` → `main` (o merge em `main` é dele).
+3. **Deploy pelo irmão do usuário** (backend e frontend juntos; avisos abaixo). Hoje `main` está em `45c4706`
+   (release #55, 2026-10-08, `main == develop` até a feature nova entrar).
 4. Próxima feature: **SLA em dias úteis + cadastro de feriados** — começar pelo `/sdd` (fase Specify), com as
-   decisões já tomadas (ver Pendências e ROADMAP).
+   decisões já tomadas (ver Pendências e ROADMAP). Antes dela, corrigir neste arquivo o que ficou velho.
+5. Feature de segurança futura (já combinada com o usuário): **invalidar os logins antigos quando perfil/equipe
+   mudam** ("opção B", segunda camada por cima de `perfil-no-cadastro`).
 
-**`main` == `develop`** desde o release **#53** (mergeado pelo usuário em 2026-10-02, commit
-`d517df3`; Cloudflare Pages success). Em `main`: as 4 features do #44 + `correcoes-pre-deploy` (#49)
-+ `editar-chamado` (#52) + docs (#48, #50). **Falta só o deploy** pelo irmão do usuário.
+**Avisos do deploy (backend e frontend precisam subir juntos):**
+- quem estiver logado vai precisar entrar de novo uma vez (logout por inatividade e mudança de perfil);
+- o Kanban do Atendente sem equipe passa a mostrar só o que é dele;
+- as migrations `AddAreaETipoChamado` e `AddControleDeAcesso` **já estão aplicadas** no banco (dev = prod,
+  2026-10-02), aditivas e compatíveis com a versão em produção; até o deploy **não reclassificar tipo de chamado
+  real**; `perfil-no-cadastro` e `correcoes-pre-deploy` **não têm migration**;
+- com `controle-de-acesso`: quem tiver o **perfil** trocado é desconectado e entra de novo; e **trocar ou tirar a
+  equipe em "Editar usuário" passa a ser gravado** (antes não era — bug antigo, achado em 2026-10-06). Depois do
+  deploy, conferir com o usuário se alguém teve a equipe trocada e não pegou, e refazer a troca;
+- com `perfil-no-cadastro`: perfil, equipe e conta desativada passam a valer **na hora**, no servidor inteiro e no
+  tempo real; o servidor passa a consultar o cadastro (com memória de 15 s) a cada pedido.
 
-**Ordem de execução combinada com o usuário (2026-10-02):**
-0. **Deploy pelo irmão do usuário.** **Backend e frontend precisam subir juntos.** Avisos do deploy:
-   - quem estiver logado vai precisar entrar de novo uma vez (logout por inatividade);
-   - o Kanban do Atendente sem equipe passa a mostrar só o que é dele;
-   - **a migration `AddAreaETipoChamado` JÁ ESTÁ APLICADA no banco** (dev = prod, aplicada em
-     2026-10-02). A versão antiga em produção continua funcionando com ela, mas até o deploy
-     **não reclassificar tipo de chamado real** (a versão antiga não conhece essa ação no histórico);
-   - `correcoes-pre-deploy` **não tem migration**.
-   - **a migration `AddControleDeAcesso` JÁ ESTÁ APLICADA no banco** (2026-10-02, OK do usuário; aditiva,
-     compatível com a versão em produção). Só vale para o deploy depois que `controle-de-acesso` chegar à `main`;
-   - com `controle-de-acesso`: quem tiver o **perfil** trocado é desconectado e entra de novo; e **trocar ou
-     tirar a equipe em "Editar usuário" passa a ser gravado** — antes do deploy isso **não era gravado** (bug
-     antigo, achado em 2026-10-06). Depois do deploy, conferir com o usuário se alguém teve a equipe trocada
-     e não pegou, e refazer a troca.
-1. **Editar chamado** — **em `main`** (PR #52, release #53, 2026-10-02). Ver seção da sessão abaixo.
-2. **Controle de acesso por módulo** — **fechada em 2026-10-06**; **PR #54** (`feature/controle-de-acesso` →
-   `develop`) **aberto, aguardando o merge do usuário** (conferido em 2026-10-08). Ver a seção da sessão abaixo.
-3. **SLA em dias úteis + cadastro de feriados** — decisões de negócio tomadas (ver Pendências); falta spec.
-4. **Limpeza de Categorias** — depois do deploy e de reclassificar os 40 chamados antigos ("Não classificado").
-- Avulso, a qualquer momento: correção do modal "Alterar prioridade" (abre com a prioridade de quando
-  a página carregou) — como bugfix, com `/analise-cod`.
-- Avulso: o diálogo de **Reabrir** diz "voltará para o status Em Andamento", mas reabrir leva a
-  **Aberto** (pré-existente, achado em 2026-10-02) — corrigir o texto como bugfix.
+**Ordem combinada com o usuário:** deploy → ~~Editar chamado~~ (em `main`, #52/#53) → ~~Controle de acesso por
+módulo~~ (em `main`, #54/#55) → ~~Perfil e equipe na hora~~ (PR aberto, 2026-10-09) → **SLA em dias úteis +
+feriados** (falta spec) → **Limpeza de Categorias** (depois do deploy e de reclassificar os 40 chamados antigos
+"Não classificado").
+- Avulso, a qualquer momento: o modal "Alterar prioridade" abre com a prioridade de quando a página carregou; o
+  diálogo de **Reabrir** diz "Em Andamento", mas reabrir leva a **Aberto** — ambos como bugfix com `/analise-cod`.
 - Do usuário: trocar a senha de `suporte@camarj.com.br`; verificar os AC-49 a AC-52 do chat.
-- Backlog sem prioridade: abertura por e-mail (IMAP), filtro de SLA na tela, exportação CSV/PDF, carga
-  por atendente.
+- Backlog sem prioridade: abertura por e-mail (IMAP), filtro de SLA na tela, exportação CSV/PDF, carga por
+  atendente; segurança do realtime (ver Pendências).
 
-**Processo:** toda feature (e toda correção de bug) passa pela análise de impacto `/analise-cod` — o
-usuário pediu cuidado explícito com efeitos fora do escopo (regra 5).
+**Processo:** toda feature (e toda correção de bug) passa pela análise de impacto `/analise-cod` — o usuário pediu
+cuidado explícito com efeitos fora do escopo (regra 5).
+
+---
+
+## Sessão de 2026-10-09 — Perfil e Equipe Valem na Hora (segurança)
+
+### Contexto
+Pendência de segurança de 05/10: um Admin rebaixado, ou quem teve equipe trocada ou conta desativada, mantinha os
+direitos antigos até o login vencer (10 h), porque o servidor lia perfil e equipe do token. Pedido do usuário:
+corrigir antes do deploy, "o máximo de segurança possível", com a segunda camada (invalidar tokens) depois.
+Fluxo `/sdd` completo. Spec, design, tasks, impacto e review em `.specs/features/perfil-no-cadastro/`.
+
+### Decisões do usuário (2026-10-09)
+- Passa a valer o cadastro (não "recusar até relogar"); **equipe também na hora** — substitui a decisão de
+  2026-10-06 (review-4 R-02 de `controle-de-acesso`); conta desativada/apagada bloqueada na hora; alcance: tudo
+  que depende de perfil/equipe, inclusive o tempo real.
+- Contratos C1–C4 aprovados antes de implementar. Depois da medição ao vivo (+~160 ms por pedido), aprovou **cache
+  de 15 s com invalidação imediata** (D4 revisado antes do código).
+- Verificação ao vivo contra o banco real, com demonstração em tela, e apagar os dados de teste (lista conferida).
+
+### O que foi feito
+- Servidor: a validação do JWT (`OnTokenValidated`) consulta o cadastro, recusa conta inexistente/desativada (401)
+  e **troca os claims `perfil` e `grupo_id` pelos do cadastro** (`CadastroClaimsValidator`). Como todo o servidor só
+  lê esses claims (`CurrentUserService`, `ChamadosHub`), as 39 leituras e qualquer rota nova já ficam protegidas.
+- Repositório de usuário: `ObterIdentidadeAsync` (projeção enxuta) com cache de 15 s, apagado em
+  `AtualizarAsync`/`AdicionarAsync` (todo caminho que grava usuário) e protegido contra corrida por "geração".
+- Tempo real: `ConexoesTempoReal` (registro das conexões dos dois hubs); `CadastroDeAcessoAlteradoNotification`
+  (publicada na edição de usuário logo após gravar) reajusta os grupos `Atendimento`/`Admins` e derruba as conexões
+  de conta desativada; a reconexão é recusada na autenticação.
+- Sem migration e sem mudança no frontend. Obsidian: Perfis e Permissões, Administração, Grupos e Equipes, Visão
+  Técnica, ADR-010 (revisto) e **ADR-011** (novo).
+
+### Verificação
+- `dotnet build` 0 erros · `dotnet test` **576/576** (eram 528) · `npm run build` ok.
+- **Ao vivo 41/41** contra o banco real (API + os dois hubs), antes e depois do cache; demonstração em tela
+  (conta desativada volta ao login no primeiro clique). **E2E 25/25** com 1 worker (com 2 workers em paralelo, 2
+  testes de `controle-de-acesso` estouraram o tempo por pouca memória na máquina e passam isolados).
+- **`/analise-cod`:** 🔴 0 (1 fechado: ligação no `Program.cs` só provada por E2E/ao vivo) · 🟡 7 · ✅ 4.
+- **Review independente:** APROVADO COM RESSALVAS, 0 bloqueantes; R-01 (corrida do cache), R-02 (registro antes dos
+  grupos) e R-03 (aviso antes da auditoria) corrigidos com teste; R-04 era esta documentação.
+- Dados de teste (`teste.perfil.*`, `[TESTE-PERFIL]` e os `[TESTE-E2E]` desta verificação) apagados com OK; banco
+  conferido: 9 usuários e 96 chamados originais.
+
+### Pendências
+- **Segunda camada (feature futura):** invalidar os logins antigos quando perfil/equipe mudam ("opção B").
+- Cache de 15 s: edição direta no banco, ou um 2º servidor de backend, demora até 15 s para valer.
+- Sem teste automatizado do pipeline de autenticação (`WebApplicationFactory`): provado por E2E e ao vivo.
+- **Segurança do tempo real (preexistente, achada no review, fora do escopo):** `ChatHub.EntrarConversa` entra em
+  qualquer conversa sem checar participação; o grupo `Todos` do `ChamadosHub` recebe `ChamadoCriado`/`StatusAlterado`
+  sem filtro de perfil/equipe.
+- Janela de milissegundos: conexão aberta no instante exato de uma mudança de perfil só se corrige ao reconectar.
+- AC-18: a medição de desempenho foi 2 rodadas de 30 pedidos (≈636 ms com cache, ≈690 ms sem); ganho no ruído.
+- Máquina com pouca memória: E2E com `--workers=1`.
 
 ---
 
@@ -146,7 +192,7 @@ completo, **primeira feature com a `/analise-cod`**. Spec, design, tasks, impact
   (conferido: 0 chamados, 0 contas e 0 `ChamadoEditado` no banco).
 
 ### Pendências gerais (consolidado em 2026-10-02, pós correcoes-pre-deploy)
-- **🔐 SEGURANÇA (registrada a pedido do usuário em 2026-10-05; ampliada em 2026-10-06 pelo review-4):** um
+- ✅ **RESOLVIDO em 2026-10-09 pela feature `perfil-no-cadastro` (o servidor passou a conferir o cadastro a cada pedido; resta só a segunda camada, "invalidar tokens").** Texto original: **🔐 SEGURANÇA (registrada a pedido do usuário em 2026-10-05; ampliada em 2026-10-06 pelo review-4):** um
   **Admin rebaixado** (perfil trocado em Usuários) **continua com os direitos de Admin até o login dele vencer**,
   porque as rotas de Administração conferem o perfil do **token**, e não o do cadastro. O mesmo vale para
   qualquer rebaixamento (ex.: Atendente → Solicitante continua podendo assumir chamados) e para a **equipe**
@@ -154,7 +200,7 @@ completo, **primeira feature com a `/analise-cod`**. Spec, design, tasks, impact
   sistema e quando a internet volta), mas o token antigo continua aceito pelo servidor até vencer (10 h) —
   só quem usar a API direto escapa. Correção sugerida: conferir o perfil no cadastro nas ações (como o
   `ModuloGuard` já faz para Dashboard/Relatório) ou invalidar o token quando perfil/equipe mudam.
-- **Equipe trocada vale no próximo login** (decisão do usuário em 2026-10-06, review-4 R-02 de
+- ✅ **SUPERADO em 2026-10-09: a equipe agora vale na hora (perfil-no-cadastro).** Regra antiga: **Equipe trocada vale no próximo login** (decisão do usuário em 2026-10-06, review-4 R-02 de
   `controle-de-acesso`): a visibilidade de chamados segue o token até a pessoa entrar de novo; os alertas de
   SLA já seguem o cadastro.
 - **SLA — DECIDIDO pelo usuário em 2026-10-02:** conta só o **expediente de 08:00 às 18:00 em dias

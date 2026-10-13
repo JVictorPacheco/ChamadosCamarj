@@ -52,6 +52,7 @@ implementação ficam na seção Arquitetura e nas specs do projeto.
 - [[ADR-008 Área do chamado é a equipe]]
 - [[ADR-009 Edição simultânea por versão do chamado]]
 - [[ADR-010 Acesso por módulo ajustável por pessoa]]
+- [[ADR-011 Perfil, equipe e conta valem na hora]]
 
 **90 Modelos** — para criar notas novas no mesmo padrão
 - [[Modelo - Funcionalidade]] · [[Modelo - Decisão (ADR)]]

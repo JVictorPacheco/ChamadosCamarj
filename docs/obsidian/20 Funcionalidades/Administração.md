@@ -1,7 +1,7 @@
 ---
 tipo: funcionalidade
 status: vigente
-atualizado: 2026-10-06
+atualizado: 2026-10-09
 spec: .specs/features/fase-6-admin-log/spec.md, .specs/features/controle-de-acesso/spec.md
 tags: [funcionalidade, admin]
 ---
@@ -14,7 +14,7 @@ Telas exclusivas do **Admin**, no menu *Admin*.
 - Cadastrar com **nome, e-mail, perfil, equipe e senha inicial**.
 - Editar perfil, equipe e situação (ativo/inativo).
   - Mudar o perfil zera os ajustes de telas da pessoa e a desconecta, pedindo novo login.
-  - Mudar a equipe vale a partir do próximo login da pessoa.
+  - Mudar a equipe vale na hora; desativar a conta bloqueia a pessoa na hora e derruba o que ela tinha aberto.
   - Cadastrar de novo um e-mail de conta desativada **reativa** a conta, já no padrão de telas do perfil.
 - **Redefinir senha** de um usuário.
 - Proteção: não é possível desativar nem rebaixar o **último Admin ativo**.

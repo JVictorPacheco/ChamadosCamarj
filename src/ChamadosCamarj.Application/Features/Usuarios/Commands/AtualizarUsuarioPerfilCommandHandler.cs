@@ -48,6 +48,9 @@ public class AtualizarUsuarioPerfilCommandHandler : IRequestHandler<AtualizarUsu
                 throw new ConflictException("Não é possível desativar/rebaixar o último Admin ativo do sistema.");
         }
 
+        var ativoAnterior = usuario.Ativo;
+        var grupoAnterior = usuario.GrupoId;
+
         if (request.Ativo && !usuario.Ativo)
             usuario.Ativar();
         else if (!request.Ativo && usuario.Ativo)
@@ -63,6 +66,15 @@ public class AtualizarUsuarioPerfilCommandHandler : IRequestHandler<AtualizarUsu
             usuario.VoltarAoPadraoDeModulos();
 
         await _usuarioPerfilRepository.AtualizarAsync(usuario, cancellationToken);
+
+        // spec perfil-no-cadastro (review R-03): a segurança não pode depender da auditoria nem do aviso de menu —
+        // se algum deles falhar, o cadastro já está gravado e uma nova tentativa não acusaria mudança. Por isso o
+        // aviso ao tempo real (reajustar grupos, derrubar conta desativada) sai logo depois da gravação.
+        if (perfilMudou || usuario.Ativo != ativoAnterior || usuario.GrupoId != grupoAnterior)
+        {
+            await _mediator.Publish(new CadastroDeAcessoAlteradoNotification(
+                usuario.Id, usuario.Perfil, usuario.Ativo, usuario.GrupoId), cancellationToken);
+        }
 
         // A review independente (review-fase8-independente.md #1) pegou essa tela duplicando a
         // auditoria/notificação de ChatPerfil do DefinirChatPerfilCommandHandler por cópia literal —

@@ -352,12 +352,27 @@
 - [ ] Chamado aberto **fora do expediente** (ou em fim de semana/feriado): o prazo **começa a contar às 08:00 do próximo dia útil** (decisão do usuário, 2026-10-02).
 - [ ] **Aviso a quem abre fora do expediente** (decisão do usuário, 2026-10-02). Proposta a detalhar na spec: na tela de abertura, antes de enviar — "Você está abrindo o chamado fora do horário de atendimento (seg. a sex., 08:00 às 18:00). O prazo começa a contar às 08:00 de <próximo dia útil>." — e, no detalhe, o selo de prazo mostra "Prazo começa a contar em <data>, 08:00" até o início da contagem.
 
-## 🔐 Controle de Acesso por Módulo (FECHADA — 2026-10-06; PR #54 para `develop`; migration já aplicada no banco)
+## 🔐 Controle de Acesso por Módulo (FECHADA — 2026-10-06; PR #54 → `develop` e release #55 → `main` em 2026-10-08; migration já aplicada no banco)
 
 - [x] Tela "Controle de acesso" (só Admin): cada pessoa herda o padrão do perfil e o Admin liga/desliga módulos dela (Arquivo, Kanban, Fila, Dashboard, Relatório mensal); Solicitante pode **ganhar** só módulos de consulta; Chat (3 níveis) unificado nesta tela.
 - [x] Admin sempre com acesso total (só o Chat dele é ajustável); Abrir/Meus chamados fixos; mudança vale na hora; auditoria; mudança de perfil zera os ajustes (mantém o Chat) e desconecta a pessoa.
 - [x] Corrigido junto (bug antigo): trocar/tirar a equipe em "Editar usuário" não era gravado.
-- [ ] Pendência: equipe trocada vale só no próximo login; ações e Administração ainda conferem o perfil do token (ver STATE, pendência de segurança).
+- [x] Pendência de segurança (equipe só no próximo login; ações e Administração com o perfil do token) resolvida em 2026-10-09 por `perfil-no-cadastro`.
 - Spec: `.specs/features/controle-de-acesso/spec.md`.
 
 > **Ordem de execução combinada (2026-10-02):** deploy → Editar Chamado → Controle de Acesso → SLA em Dias Úteis → Limpeza de Categorias.
+
+## 🔒 Perfil e Equipe Valem na Hora (FECHADA — 2026-10-09; PR → `develop` a cargo do usuário; sem migration)
+
+- [x] O servidor confere o cadastro a cada pedido: perfil e equipe do cadastro substituem os do login (que valia 10 h); conta desativada ou apagada é recusada na hora; vale para toda a API e para os dois canais de tempo real.
+- [x] Tempo real acompanha o cadastro: rebaixado deixa de receber alertas restritos, promovido passa a receber, conta desativada tem a conexão derrubada.
+- [x] Memória de 15 s da identidade, apagada ao gravar qualquer mudança no usuário (decisão do usuário após medir +160 ms por pedido).
+- [x] 576 testes, ao vivo 41/41 contra o banco real, E2E 25/25, review independente sem bloqueantes. ADR-011 no Obsidian.
+- Spec: `.specs/features/perfil-no-cadastro/spec.md`.
+
+## 🛡️ Segurança — próximas camadas (BACKLOG)
+
+- [ ] **Invalidar os logins antigos** quando perfil, equipe ou conta mudam ("opção B"): segunda camada por cima de `perfil-no-cadastro`, para que um login antigo deixe de valer mesmo que alguma regra nova esqueça de conferir o cadastro. Combinado com o usuário em 2026-10-09.
+- [ ] Chat: `EntrarConversa` entra em qualquer conversa sem checar se a pessoa participa (preexistente, achado no review de 2026-10-09).
+- [ ] Tempo real: o grupo `Todos` recebe `ChamadoCriado`/`StatusAlterado` sem filtro de perfil/equipe (preexistente).
+- [ ] Teste de integração do pipeline de autenticação (`WebApplicationFactory`: 401 em rota protegida, anônimo passa, banco fora → 500).

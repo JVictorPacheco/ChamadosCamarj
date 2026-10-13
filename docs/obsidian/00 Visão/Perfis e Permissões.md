@@ -1,7 +1,7 @@
 ---
 tipo: visão
 status: vigente
-atualizado: 2026-10-06
+atualizado: 2026-10-09
 spec: .specs/features/autorizacao-chamados/spec.md, .specs/features/editar-chamado/spec.md, .specs/features/controle-de-acesso/spec.md
 tags: [visão, permissões]
 ---
@@ -80,7 +80,8 @@ na tela *Controle de acesso* (ver [[Administração]]). A tabela mostra o padrã
 - **Mudança de perfil** (em *Usuários*): os ajustes de telas da pessoa são zerados — ela passa ao padrão do
   perfil novo; o acesso ao chat é mantido. Ela é desconectada com o aviso "Seu perfil foi alterado. Entre
   novamente." — na hora, se estiver com o sistema aberto, ou quando abrir o sistema/voltar a ter conexão.
-- **Mudança de equipe** (em *Usuários*): vale a partir do **próximo login** da pessoa.
+- **Mudança de equipe** (em *Usuários*): vale **na hora** — a pessoa passa a ver e atuar nos chamados da equipe nova (e deixa de ver os da antiga) sem entrar de novo.
+- **Conta desativada ou apagada** perde o acesso na hora, mesmo com o sistema aberto; e quem teve o perfil trocado passa a ter os direitos do perfil novo no pedido seguinte. Ver [[ADR-011 Perfil, equipe e conta valem na hora]].
 - Toda mudança de acesso (telas, chat, perfil, reativação de conta) fica no **histórico de acessos** da
   pessoa, com quem mudou, quando, antes e depois. Ver [[ADR-010 Acesso por módulo ajustável por pessoa]].
 

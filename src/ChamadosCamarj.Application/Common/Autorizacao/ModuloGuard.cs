@@ -27,7 +27,8 @@ public class ModuloGuard
         if (usuario is null || !usuario.Ativo || !usuario.ModulosEfetivos().HasFlag(modulo))
             throw new ForbiddenException(mensagem);
 
-        // O escopo dos números (quem vê o quê) vem do perfil do token. Se o cadastro já tem outro perfil,
+        // O escopo dos números (quem vê o quê) vem do perfil do pedido, que desde perfil-no-cadastro já é o do
+        // cadastro; só diverge se a identidade em cache estiver velha (até 15 s, corrida). Se o cadastro tem outro perfil,
         // recusa: nunca entregar números no escopo de um perfil antigo (review R-07).
         if (!string.Equals(usuario.Perfil.ToString(), _currentUser.Perfil, StringComparison.OrdinalIgnoreCase))
             throw new ForbiddenException(MensagemPerfilMudou);
