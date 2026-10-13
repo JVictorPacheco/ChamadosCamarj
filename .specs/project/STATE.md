@@ -1,18 +1,16 @@
 # STATE — Memória do Projeto
 
-> Atualizado em: 2026-10-09 (feature `perfil-no-cadastro` fechada: PR para `develop` a abrir pelo usuário; deploy ainda pendente)
+> Atualizado em: 2026-10-13 (PR #56 `perfil-no-cadastro` mergeado em `develop`; falta a promoção `develop` → `main` e o deploy)
 
 ---
 
-## ▶ ONDE PARAMOS (2026-10-09) — ler isto primeiro ao retomar
+## ▶ ONDE PARAMOS (2026-10-13) — ler isto primeiro ao retomar
 
 **Roteiro da próxima sessão:**
 1. Conferir o estado real: `git fetch`, `gh pr list`, `git log origin/main..origin/develop`.
-2. **PR da `feature/perfil-no-cadastro` → `develop`** (merge do usuário). Se mergeado: conferir os gates em
-   `develop` (`dotnet build`, `dotnet test` — 576 —, `npm run build`), apagar a branch e passar ao usuário o texto
-   do PR `develop` → `main` (o merge em `main` é dele).
+2. **PR #56 (`perfil-no-cadastro` → `develop`) MERGEADO pelo usuário em 2026-10-13 11:09 UTC (`5266d58`)**; gates conferidos em `develop` (0 erros, 576 testes, npm build ok) e branch apagada. **Falta passar o texto do PR `develop` → `main`** (o merge em `main` é do usuário).
 3. **Deploy pelo irmão do usuário** (backend e frontend juntos; avisos abaixo). Hoje `main` está em `45c4706`
-   (release #55, 2026-10-08, `main == develop` até a feature nova entrar).
+   (release #55, 2026-10-08); `develop` está à frente de `main` só pela feature `perfil-no-cadastro` (#56).
 4. Próxima feature: **SLA em dias úteis + cadastro de feriados** — começar pelo `/sdd` (fase Specify), com as
    decisões já tomadas (ver Pendências e ROADMAP). Antes dela, corrigir neste arquivo o que ficou velho.
 5. Feature de segurança futura (já combinada com o usuário): **invalidar os logins antigos quando perfil/equipe
@@ -31,7 +29,7 @@
   tempo real; o servidor passa a consultar o cadastro (com memória de 15 s) a cada pedido.
 
 **Ordem combinada com o usuário:** deploy → ~~Editar chamado~~ (em `main`, #52/#53) → ~~Controle de acesso por
-módulo~~ (em `main`, #54/#55) → ~~Perfil e equipe na hora~~ (PR aberto, 2026-10-09) → **SLA em dias úteis +
+módulo~~ (em `main`, #54/#55) → ~~Perfil e equipe na hora~~ (em `develop`, #56, 2026-10-13; falta ir para `main`) → **SLA em dias úteis +
 feriados** (falta spec) → **Limpeza de Categorias** (depois do deploy e de reclassificar os 40 chamados antigos
 "Não classificado").
 - Avulso, a qualquer momento: o modal "Alterar prioridade" abre com a prioridade de quando a página carregou; o
